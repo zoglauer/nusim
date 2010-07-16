@@ -1,0 +1,329 @@
+#!/bin/bash
+
+confhelp() {
+    echo ""
+    echo "Configuration script for NuSIM"
+    echo ""
+    echo "Usage: $0 [architecture] [options]";
+    echo "";
+    echo "Architecture (mandatory):";
+    echo "  Standard:";
+    echo "    -linux          Linux operating system using g++ (gcc 3.3 or higher)";
+    echo "    -linuxicc       Linux operating system using intel compiler (icc 8.x or higher)";
+    echo "    -macosx         MacOSX 10.4 (or higher) operating system";
+    echo ""
+    echo "Additional options (default: no optimization and no debugging):";
+    echo "    -optimized      create optimized (-O) code";
+    echo "    -debug          create debugging (-g) code";
+    echo ""
+}
+
+
+createdir() {
+    if (`test ! -f $1/Makefile`); then
+        if (`test ! -d $1`); then
+            echo "Creating directory $1"
+            mkdir $1
+        fi
+        echo "Copying Makefile to $1"
+        cp config/Makefile.EmptyDir $1/Makefile
+    fi
+}
+
+
+# Test if help is requested:
+case $1 in
+-h|--help) 
+                confhelp; 
+                exit 0;;
+esac
+
+
+# Start configuration
+echo ""
+echo "Configuring NuSIM for compilation on your system"
+echo "=================================================="
+
+# Test if an architecture is given
+if [ $# -lt 1 ] ; then
+    echo ""
+    echo "Error: You must specify an architecture";
+    confhelp; 
+    exit 0;
+fi
+
+
+echo ""
+echo ""
+echo "Testing paths and programs..."
+
+
+
+# Check for path to NuSIM
+echo ""
+echo "(1) NuSIM"
+echo ""
+if ( `test $NUSIM` ); then
+    echo "Found NuSIM: $NUSIM";
+else
+    echo "NuSIM installation not found!";
+    echo ""
+    echo "-> Please add the path to NuSIM to your resource file (e.g. .bashrc or .tcshrc)";
+    echo "   Example for .bashrc: export NUSIM=$HOME/NuSIM";
+    echo "   Example for .tcshrc: setenv NUSIM ${HOME}/NuSIM";
+    echo ""
+    exit 0;
+fi
+
+
+# Check for ROOT
+echo ""
+echo "(2) ROOT"
+echo ""
+if ( `test $(which root 2> /dev/null)` ); then
+    echo "Found ROOT: $(which root)";
+else
+    echo "ROOT installation not found!";
+    echo ""
+    echo "--> Please add the path to ROOT to your resource file (e.g. .bashrc or .tcshrc)";
+    echo "    Example for .bashrc: export ROOTSYS=/usr/local/root";
+    echo "    Example for .tcshrc: setenv ROOTSYS ${HOME}/root";
+    echo ""
+    echo "    If ROOT is not installed go to http://root.cern.ch and install it first!"
+    echo ""
+    exit 0;
+fi
+
+bash ${NUSIM}/config/configure_rootversiontest -s;
+RootVersionOK=$?;
+if ([ "$RootVersionOK" == "1" ]); then
+    exit 0;
+fi
+
+
+# Check for path to Geant4
+#echo ""
+#echo "(3) GEANT4"
+#echo ""
+
+Geant4Found=1;
+Geant4DawnFileFound=1;
+Geant4OpenGLFound=1;
+
+#if ( `test $G4INSTALL` ); then
+#    echo "Found Geant4: $G4INSTALL";
+#    Geant4Found=0;
+#
+#    bash ${NUSIM}/config/configure_geant4versiontest -s;
+#    Geant4VersionOK=$?;
+#    if [ $Geant4VersionOK -eq 1 ]; then
+#        Geant4Found=1;
+#    fi
+#
+#    Geant4DawnFileFound=1;
+#    Geant4OpenGLFound=1;
+#    Geant4ConfigFile="$G4INSTALL/.config/bin/Linux-g++/config.sh";
+#    if ( `test -f $Geant4ConfigFile` ); then
+#        found=`grep -e "g4vis_use_dawnfile='y'" $Geant4ConfigFile`; 
+#        if [ "$found" != "" ]; then 
+#            echo "Found Geant4 visualization: DAWNFILE";
+#            Geant4DawnFileFound=0;
+#        fi; 
+#        found=`grep -e "g4vis_use_openglx='y'" $Geant4ConfigFile`; 
+#        if [ "$found" != "" ]; then 
+#            echo "Found Geant4 visualization: OPENGLX";
+#            Geant4OpenGLFound=0;
+#        fi; 
+#    else 
+#        echo "GEANT4 is not installed or not configured!";
+#        echo ""
+#        echo "-> This is only a problem if you want to do simulations with Cosima, you can use the rest of NuSIM without it.";
+#        echo "   If you reinstall GEANT4 later, please rerun configure and recompile";
+#        Geant4Found=1
+#    fi
+#else
+#    echo "GEANT4 installation not found!";
+#    echo ""
+#    echo "-> This is only a problem if you want to do simulations with Cosima, you can use the rest of NuSIM without it.";
+#    echo "   If you reinstall GEANT4 later, please rerun configure and recompile";
+#    Geant4Found=1
+#fi
+
+
+# Check for path to HEASOFT
+echo ""
+echo "(3) HEAsoft"
+echo ""
+
+HEAsoftFound=1
+
+if ( `test $HEADAS` ); then
+    echo "Found HEAsoft: $HEADAS";
+    HEAsoftFound=0
+else
+    echo "HEAsoft installation not found (or at least the HEADAS environment variable)!";
+    echo ""
+    echo "HEASOFT is required for fits file reading. Please download and install HEASOFT from ";
+    echo "http://heasarc.nasa.gov/lheasoft/"
+    echo ""
+    HEAsoftFound=1
+    exit 0;
+fi
+
+
+# Copy makefile:
+echo ""
+echo ""
+case $1 in
+-h|--help) 
+    confhelp; 
+    exit 0 ;;
+-linux|-linuxgcc|-softlinux) 
+    echo "Configuring for Linux with gcc 3.x or higher compiler..."
+    cp config/Makefile.softlinux config/Makefile.config;;
+-linuxicc|-softlinuxicc) 
+    echo "Configuring for Linux with icc 8.x or higher compiler..."
+    cp config/Makefile.softlinuxicc config/Makefile.config;;
+-macosx|-softmacosx) 
+    echo "Configuring for MaxOSX with gcc compiler..."
+    cp config/Makefile.softmacosx config/Makefile.config;;
+*) 
+    confhelp; 
+    exit 0;;
+esac
+
+
+ARCH=$1
+shift
+
+# Set default values for the options
+OPT=""
+G4DEBUG="G4DEBUG = 0"
+# Check for additional options
+if [ $# -gt 0 ]; then
+    while [ "$1" != "" ]; do
+        case $1 in
+            --help|-h) 
+                confhelp;   
+                exit 0;;
+            -optimized) 
+                OPT=${OPT}"-O -DNDEBUG ";;
+            -debug)
+                G4DEBUG="G4DEBUG = 1"
+                if ([ $ARCH = "-solaris" ] || [ $ARCH = "-softsol28" ] || [ $ARCH = "-hardsol28" ] || [ $ARCH = "-hardsol25" ]); then
+                    OPT=${OPT}"-g -xs ";
+                else
+                    OPT=${OPT}"-g ";
+                fi;;
+            *) 
+                echo ""
+                echo "Error: Invalid option $1!";
+                echo "See $0 --help for a list of all options!";
+                echo "";
+                exit 1;;
+        esac
+   shift
+   done
+fi
+
+
+# Dump the options
+rm -f config/Makefile.options
+
+if ([ "$OPT" != "" ]); then
+    echo ""
+    echo "Adding the following compiler optimizations: "
+    echo "OPT = $OPT"
+    if ( [ $Geant4Found -eq 0 ] ); then 
+        echo "$G4DEBUG"
+    fi
+fi
+
+echo "# Additional platform independend Makefile options" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# This file is overwritten the next time configure is called." >> config/Makefile.options
+echo "# If you want to define your own user options, then defined them in Makefile.user" >> config/Makefile.options
+echo " " >> config/Makefile.options
+
+echo "# " >> config/Makefile.options
+echo "# Section A: Additional libraries" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# Important: Don't modify this sections by yourself " >> config/Makefile.options
+echo " " >> config/Makefile.options
+echo "GEANT4INSTALLED  = ${Geant4Found}" >> config/Makefile.options
+echo "HEASOFTINSTALLED = ${HEAsoftFound}" >> config/Makefile.options
+echo " " >> config/Makefile.options
+
+echo "# " >> config/Makefile.options
+echo "# Section B: Compiler optimizations" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# Important comments" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# If you want to eliminate all massert, mdebug, etc. code use: -DNDEBUG" >> config/Makefile.options
+echo "# If you want to produce debug infos in your executables use: -g" >> config/Makefile.options
+echo "# The default optimization level is: -O" >> config/Makefile.options
+echo "# You can combine all those options: -O -g -DNDEBUG" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "Please see the file config/Makefile.options for more optimization options for the intel and GNU compiler"
+echo "" >> config/Makefile.options
+echo "OPT = $OPT" >> config/Makefile.options
+if ( [ $Geant4Found -eq 0 ] ); then 
+    echo "$G4DEBUG" >> config/Makefile.options
+fi
+if ( [ $ARCH = "-linuxicc" ] || [ $ARCH = "-softlinuxicc" ] ); then
+    cat config/Makefile.icc_optimizations >> config/Makefile.options
+fi
+if ( [ $ARCH = "-linux" ] ||  [ $ARCH = "-linuxgcc" ] || [ $ARCH = "-softlinux" ] ); then
+    cat config/Makefile.gcc_optimizations >> config/Makefile.options
+fi
+echo "" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# Section C: Geant4 visualization options" >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "# Important: Only OpenGL and DawnFile can be detected by this script " >> config/Makefile.options
+echo "#            If you have anything else, set it in Makefile.user " >> config/Makefile.options
+echo "# " >> config/Makefile.options
+echo "" >> config/Makefile.options
+if ( [ $Geant4OpenGLFound -eq 0 ] ); then 
+    echo "G4VIS_USE_OPENGLX=1" >> config/Makefile.options
+fi
+if ( [ $Geant4DawnFileFound -eq 0 ] ); then 
+    echo "G4VIS_USE_DAWNFILE=1" >> config/Makefile.options
+fi
+echo "" >> config/Makefile.options
+
+
+# Check if all directories are present, if not create them
+if (`test ! -d bin`); then
+    echo "Creating directory bin"
+    mkdir bin
+fi
+if (`test ! -d include`); then
+    echo "Creating directory include"
+    mkdir include
+fi
+if (`test ! -d lib`); then
+    echo "Creating directory lib"
+    mkdir lib
+fi
+
+
+# If the file config/Makefile.user not exists, create it
+if (`test ! -f config/Makefile.user`); then
+    echo "# Addional user options for the makefile can be set here" >> config/Makefile.user
+    echo "# This file is not overwritten during the configure process" >> config/Makefile.user
+    echo " " >> config/Makefile.user
+    echo " " >> config/Makefile.user
+fi
+
+# Remove the old build
+echo ""
+echo "Removing old build..."
+make clean
+
+echo ""
+echo "Type 'make' to compile and link NuSIM"
+echo ""
+     
+
+exit 0

@@ -1,0 +1,33 @@
+# An example run for Cosima
+
+
+# Global parameters:
+Version               1
+Geometry              DetSim.geo.setup
+
+# Physics list
+PhysicsListEM                        Livermore
+PhysicsListEMActivateFluorescence    false
+
+# Output formats
+StoreCalibrated                      true
+StoreSimulationInfo                  true
+StoreSimulationInfoIonization        false
+DiscretizeHits                       true
+
+
+# Run 1:
+
+Run Heaven
+Heaven.FileName                      RunTestHeaven
+Heaven.NTriggers                     10000000
+
+Heaven.Trigger Heaven_D1D2
+Heaven_D1D2.AddPositiveDetectorType  4
+
+Heaven.Source Heaven_FirstSource
+Heaven_FirstSource.ParticleType      1
+Heaven_FirstSource.Beam              PointSource 0.0 0.0 0.0 
+Heaven_FirstSource.Spectrum          Linear 1.0 100.0
+Heaven_FirstSource.Flux              1.0
+

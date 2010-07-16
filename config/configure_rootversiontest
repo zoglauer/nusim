@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Allowed versions
+RootVersionMin=522
+RootVersionMax=528
+
+
+ShowSuccess=1;
+
+case $1 in
+-s) 
+    ShowSuccess=0;;
+esac
+
+# If we don't have ROOT, we do not do a version check...
+if (`test ! -f $ROOTSYS/bin/root-config`); then
+    exit 0;
+fi
+
+# Check for version of ROOT
+rv=`root-config --version`
+version=`echo $rv | awk -F. '{ print $1 }'`;
+release=`echo $rv | awk -F/ '{ print $1 }' | awk -F. '{ print $2 }'`;
+patch=`echo $rv | awk -F/ '{ print $2 }'`;
+RootVersion=$((100*${version} + ${release}))
+
+RootVersionMinString="${RootVersionMin:(-3):1}.${RootVersionMin:(-2):2}"
+RootVersionMaxString="${RootVersionMax:(-3):1}.${RootVersionMax:(-2):2}"
+
+if ([ ${RootVersion} -ge ${RootVersionMin} ] && [ ${RootVersion} -le ${RootVersionMax} ]);
+then
+    if [ $ShowSuccess -eq 0 ]; then
+        echo "Found ROOT version: ${rv} (minimum: ${RootVersionMinString}, maximum: ${RootVersionMaxString})"
+    fi
+else
+    echo ""
+    echo "No acceptable ROOT version found!"
+    echo "-> For this version of NuSIM you require ROOT version ${RootVersionMinString} up to version ${RootVersionMaxString} and not ${rv}!"
+    echo ""
+    if ([ ${RootVersion} -gt ${RootVersionMax} ]);
+    then
+        echo "You seem to use a ROOT version which is more current than the ones tested with NuSIM."
+        echo "This ROOT version might or might not work."
+        echo "If you are adventurous open the file ${NUSIM}/config/configure_rootversiontest,"
+        echo "and set RootVersionMax to ${RootVersion}. Then retry configuring NuSIM."
+    fi
+
+    exit 1;
+fi       
+
+exit 0

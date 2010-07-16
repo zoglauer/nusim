@@ -1,0 +1,37 @@
+# This example shows how to use some of the beams
+# The detector is a high resolution 2D pixel detector, to enable debugging the beam profile
+# Check your beam profile with revans spatial hit distribution
+
+
+# Global parameters:
+Version               1
+Geometry              EngineTest.geo.setup
+
+# Physics list
+PhysicsListEM                        Penelope
+#PhysicsListEMActivateFluorescence    true
+
+# Output formats
+StoreCalibrated                      true
+StoreSimulationInfo                  true
+StoreSimulationInfoIonization        false
+DiscretizeHits                       false
+
+
+
+# Run 1: A homogeneous beam
+
+Run MyHomogeneousBeam
+MyHomogeneousBeam.FileName                      NUSIM_SimTest_Liv_10keV
+MyHomogeneousBeam.Triggers                      1000000
+
+MyHomogeneousBeam.Trigger MyHomogeneousBeamTrigger
+MyHomogeneousBeamTrigger.AddPositiveDetectorType  4
+
+MyHomogeneousBeam.Source MyHomogeneousBeamSource
+MyHomogeneousBeamSource.ParticleType            1
+MyHomogeneousBeamSource.Beam                    HomogeneousBeam  0 0 2  0 0 -1  0.000000001
+MyHomogeneousBeamSource.Spectrum                Mono 10.5
+MyHomogeneousBeamSource.Flux                    1000.0
+
+

@@ -1,0 +1,341 @@
+/*
+ * NGUIOptionsSource.cxx
+ *
+ *
+ * Copyright (C) 1998-2009 by Andreas Zoglauer.
+ * All rights reserved.
+ *
+ *
+ * This code implementation is the intellectual property of
+ * Andreas Zoglauer.
+ *
+ * By copying, distributing or modifying the Program (or any work
+ * based on the Program) you indicate your acceptance of this statement,
+ * and all its terms.
+ *
+ */
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// NGUIOptionsSource
+//
+//
+// This class is an elementary GUI-widget:
+//
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
+// Include the header:
+#include "NGUIOptionsSource.h"
+
+// Standard libs:
+
+// ROOT libs:
+#include <TGFont.h>
+#include <TGResourcePool.h>
+
+// MEGAlib libs:
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+#ifdef ___CINT___
+ClassImp(NGUIOptionsSource)
+#endif
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NGUIOptionsSource::NGUIOptionsSource(NSource* Source, const TGWindow* Parent) :
+  TGCompositeFrame(Parent, 100, 100, kChildFrame), m_Source(Source)
+{
+  // Standard constructor
+
+  c_BeamComboBox = 1;
+  c_SpectralComboBox = 2;
+
+  m_BeamOptionsSubFrame = 0;
+  m_P1 = 0;
+  m_P2 = 0;
+  m_P3 = 0;
+  m_SpectralOptionsSubFrame = 0;
+  m_E1 = 0;
+  m_E2 = 0;
+  m_E3 = 0;
+  m_E4 = 0;
+  m_E5 = 0;
+  m_EF = 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NGUIOptionsSource::~NGUIOptionsSource()
+{
+  // Destruct this instance of NGUIOptionsSource
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NGUIOptionsSource::Create()
+{
+  // Create the label and the input-field.
+
+  TGLayoutHints* Default = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 0, 0, 0, 0);
+  TGLayoutHints* LayoutL1 = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 20, 20, 10, 10);
+  TGLayoutHints* LayoutL1b = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsCenterX | kLHintsExpandX, 100, 20, 0, 10);
+  TGLayoutHints* LayoutL2 = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY, 0, 20, 0, 10);
+  TGLayoutHints* LayoutL2b = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 0, 0, 0, 10);
+
+  m_Name = new MGUIEEntry(this, "Name: ", false, m_Source->GetName());
+  m_Name->SetEntryFieldSize(200);
+  AddFrame(m_Name, LayoutL1);
+
+
+
+  TGCompositeFrame* BeamTypeFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
+  AddFrame(BeamTypeFrame, LayoutL1);
+
+  TGLabel* BeamTypeLabel = new TGLabel(BeamTypeFrame, "Beam type:");
+  BeamTypeLabel->SetWidth(120);
+  BeamTypeFrame->AddFrame(BeamTypeLabel, LayoutL2);
+
+  m_BeamTypes = new TGComboBox(BeamTypeFrame, c_BeamComboBox);
+  for (int b = NSource::c_FirstBeamType; b <= NSource::c_LastBeamType; ++b) {
+    m_BeamTypes->AddEntry(NSource::GetBeamTypeName(b), b);
+  }
+  m_BeamTypes->Associate(this);
+  m_BeamTypes->SetHeight(20);
+  m_BeamTypes->Select(m_Source->GetBeamType());
+  BeamTypeFrame->AddFrame(m_BeamTypes, LayoutL2b);
+
+  m_BeamOptionsFrame = new TGGroupFrame(this, "Beam options");
+  AddFrame(m_BeamOptionsFrame, LayoutL1b);
+
+  m_BeamOptionsSubFrame = new TGCompositeFrame(m_BeamOptionsFrame);
+  m_BeamOptionsFrame->AddFrame(m_BeamOptionsSubFrame, Default);
+
+  TGCompositeFrame* SpectralTypeFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
+  AddFrame(SpectralTypeFrame, LayoutL1);
+
+  TGLabel* SpectralTypeLabel = new TGLabel(SpectralTypeFrame, "Spectral type:");
+  SpectralTypeLabel->SetWidth(120);
+  SpectralTypeFrame->AddFrame(SpectralTypeLabel, LayoutL2);
+
+  m_SpectralTypes = new TGComboBox(SpectralTypeFrame, c_SpectralComboBox);
+  for (int b = NSource::c_FirstSpectralType; b <= NSource::c_LastSpectralType; ++b) {
+    m_SpectralTypes->AddEntry(NSource::GetSpectralTypeName(b), b);
+  }
+  m_SpectralTypes->Associate(this);
+  m_SpectralTypes->SetHeight(20);
+  m_SpectralTypes->Select(m_Source->GetSpectralType());
+  SpectralTypeFrame->AddFrame(m_SpectralTypes, LayoutL2b);
+
+  m_SpectralOptionsFrame = new TGGroupFrame(this, "Spectral options");
+  AddFrame(m_SpectralOptionsFrame, LayoutL1b);
+
+  m_SpectralOptionsSubFrame = new TGCompositeFrame(m_SpectralOptionsFrame);
+  m_SpectralOptionsFrame->AddFrame(m_SpectralOptionsSubFrame, Default);
+
+  m_Flux = new MGUIEEntry(this, "Flux [TBD]: ", false, m_Source->GetFlux());
+  m_Flux->SetEntryFieldSize(200);
+  AddFrame(m_Flux, LayoutL1);
+
+
+  UpdateOptions();
+
+  Resize(400, 500); 
+
+  return;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NGUIOptionsSource::ProcessMessage(long Message, long Parameter1, 
+                                long Parameter2)
+{
+  // Process the messages for this application, mainly the scollbar moves:
+
+  switch (GET_MSG(Message)) {
+  case kC_COMMAND:
+    switch (GET_SUBMSG(Message)) {
+    case kCM_CHECKBUTTON:
+      break;
+    case kCM_COMBOBOX:
+      UpdateOptions();
+      break;
+    case kCM_BUTTON:
+    case kCM_MENU:
+      switch (Parameter1) {
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
+
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NGUIOptionsSource::UpdateOptions()
+{
+  //UpdateSource();
+
+  TGLayoutHints* Default = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 0, 0, 0, 0);
+
+//   if (m_BeamOptionsSubFrame != 0) {
+//     m_BeamOptionsSubFrame->UnmapWindow();
+//     m_BeamOptionsFrame->RemoveAll();
+//     delete m_BeamOptionsSubFrame;
+//     m_P1 = 0;
+//     m_P2 = 0;
+//     m_P3 = 0;
+//   }
+  
+  if (m_BeamOptionsSubFrame != 0) {
+    TGFrameElement* E;
+    TIter Next(m_BeamOptionsSubFrame->GetList());
+    while ((E = (TGFrameElement *) Next())) {
+      m_BeamOptionsSubFrame->HideFrame(E->fFrame);
+      m_BeamOptionsSubFrame->RemoveFrame(E->fFrame);
+      delete E->fFrame;
+    } 
+    m_P1 = 0;
+    m_P2 = 0;
+    m_P3 = 0;
+  }
+
+  if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint || 
+      m_BeamTypes->GetSelected() == NSource::c_NearFieldRestrictedPoint) {
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position X [mm]: ", false, m_Source->GetPositionParameter1());
+    m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position Y [mm]: ", false, m_Source->GetPositionParameter2());
+    m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
+    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position Z [mm]: ", false, m_Source->GetPositionParameter3());
+    m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
+    m_Flux->SetLabel("Flux [ph/s]:");
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Theta [arcmin]: ", false, m_Source->GetPositionParameter1());
+    m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Phi [arcmin]: ", false, m_Source->GetPositionParameter2());
+    m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
+    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Theta [arcmin]: ", false, m_Source->GetPositionParameter1());
+    m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Phi [arcmin]: ", false, m_Source->GetPositionParameter2());
+    m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
+    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [arcmin]: ", false, m_Source->GetPositionParameter3());
+    m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
+    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+  }
+
+
+
+  if (m_SpectralOptionsSubFrame != 0) {
+    TGFrameElement* E;
+    TIter Next(m_SpectralOptionsSubFrame->GetList());
+    while ((E = (TGFrameElement *) Next())) {
+      m_SpectralOptionsSubFrame->HideFrame(E->fFrame);
+      m_SpectralOptionsSubFrame->RemoveFrame(E->fFrame);
+      delete E->fFrame;
+    } 
+    m_E1 = 0;
+    m_E2 = 0;
+    m_E3 = 0;
+    m_E4 = 0;
+    m_E5 = 0;
+    m_EF = 0;
+  }
+
+  if (m_SpectralTypes->GetSelected() == NSource::c_Monoenergetic) {
+    m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
+  } else if (m_SpectralTypes->GetSelected() == NSource::c_Linear) {
+    m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy min [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
+    m_E2 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy max [keV]: ", false, m_Source->GetEnergyParameter2(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
+  } else if (m_SpectralTypes->GetSelected() == NSource::c_PowerLaw) {
+    m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy min [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
+    m_E2 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy max [keV]: ", false, m_Source->GetEnergyParameter2(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
+    m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Alpha: ", false, m_Source->GetEnergyParameter3(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E3, Default);
+  } else if (m_SpectralTypes->GetSelected() == NSource::c_BrokenPowerLaw) {
+    m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy min [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
+    m_E2 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy max [keV]: ", false, m_Source->GetEnergyParameter2(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
+    m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy break [keV]: ", false, m_Source->GetEnergyParameter3(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E3, Default);
+    m_E4 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Alpha min: ", false, m_Source->GetEnergyParameter4(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E4, Default);
+    m_E5 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Alpha max: ", false, m_Source->GetEnergyParameter5(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E5, Default);
+  } else if (m_SpectralTypes->GetSelected() == NSource::c_FileDifferentialFlux) {
+    m_EF = new MGUIEFileSelector(m_SpectralOptionsSubFrame, "Choose a file containing the spectrum:", 
+                                 m_Source->GetEnergyFileName());
+    m_EF->SetFileType("Spectrum", "*.dat");
+    m_SpectralOptionsSubFrame->AddFrame(m_EF, Default);
+  }
+  
+  MapSubwindows();
+  MapWindow();  
+  Layout();
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NGUIOptionsSource::UpdateSource()
+{
+  //! Update the source data
+
+  m_Source->SetName(m_Name->GetAsString());
+
+  m_Source->SetBeamType(m_BeamTypes->GetSelected());
+  double P1 = 0, P2 = 0, P3 = 0;
+  if (m_P1 != 0) P1 = m_P1->GetAsDouble(); 
+  if (m_P2 != 0) P2 = m_P2->GetAsDouble(); 
+  if (m_P3 != 0) P3 = m_P3->GetAsDouble();
+  m_Source->SetPosition(P1, P2, P3);
+
+  m_Source->SetSpectralType(m_SpectralTypes->GetSelected());
+  double E1 = 0, E2 = 0, E3 = 0, E4 = 0, E5 = 0;
+  if (m_E1 != 0) E1 = m_E1->GetAsDouble(); 
+  if (m_E2 != 0) E2 = m_E2->GetAsDouble(); 
+  if (m_E3 != 0) E3 = m_E3->GetAsDouble(); 
+  if (m_E4 != 0) E4 = m_E4->GetAsDouble(); 
+  if (m_E5 != 0) E5 = m_E5->GetAsDouble(); 
+  m_Source->SetEnergy(E1, E2, E3, E4, E5);
+  if (m_EF != 0) m_Source->SetEnergy(m_EF->GetFileName());
+
+  m_Source->SetFlux(m_Flux->GetAsDouble());
+}
+
+
+// NGUIOptionsSource.cxx: the end...
+////////////////////////////////////////////////////////////////////////////////
