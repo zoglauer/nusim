@@ -55,7 +55,7 @@ ClassImp(NGlobal)
 
 
 const TString g_MajorVersion = "0.9";
-const TString g_MinorVersion = ".0";
+const TString g_MinorVersion = ".1";
 const TString g_Version = g_MajorVersion + g_MinorVersion;
 const TString g_CopyrightYear = "2010"; 
 const TString g_Homepage = "TBD"; 
