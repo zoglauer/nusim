@@ -2,7 +2,13 @@
 
 # Saves the current revision number
 
-NewRev=`svn info | grep "Revision" | awk -F: '{ print $2 }'`
+# NewRev=`svn info | grep "Revision" | awk -F: '{ print $2 }'`
+#NewRev=`svnversion | awk -F: '{ print $2 }' | awk -F'M' '{ print $1 }'`
+NewRev=`svnversion`
+NewRev=$(echo $NewRev|sed 's/M/ /g'); 
+if [[ $NewRev == *:* ]]; then 
+  NewRev=`echo $NewRev | awk -F: '{ print $2 }'`; 
+fi;
 
 if (`test ! -f ${NUSIM}/config/revision.txt`); then
   echo "Create revision file: $NewRev"
