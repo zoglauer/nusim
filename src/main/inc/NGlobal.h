@@ -38,6 +38,7 @@ using namespace std;
 extern const TString g_MajorVersion;
 extern const TString g_PatchVersion;
 extern const TString g_Version;
+extern int g_SVNRevision;
 
 extern const TString g_CopyrightYear;
 extern const TString g_Homepage;

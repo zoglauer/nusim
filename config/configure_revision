@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Saves the current revision number
+
+NewRev=`svn info | grep "Revision" | awk -F: '{ print $2 }'`
+
+if (`test ! -f ${NUSIM}/config/revision.txt`); then
+  echo "Create revision file: $NewRev"
+  echo $NewRev >>  ${NUSIM}/config/revision.txt
+  echo " " >>  ${NUSIM}/config/revision.txt  
+else 
+  OldRev=`cat ${NUSIM}/config/revision.txt`
+  if [ $NewRev -gt $OldRev ]; then
+    echo "Updating revision file to: $NewRev"
+    echo $NewRev >>  ${NUSIM}/config/revision.txt  
+    echo " " >>  ${NUSIM}/config/revision.txt  
+  else 
+    echo "Revision file up to date: $OldRev"
+  fi 
+fi
+
+exit 0;
+

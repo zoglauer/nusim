@@ -28,6 +28,9 @@
 
 // Standard libs:
 #include <limits>
+#include <fstream>
+#include <iostream>
+#include <cstdlib>
 using namespace std;
 
 // ROOT libs:
@@ -36,6 +39,7 @@ using namespace std;
 #include <TError.h>
 
 // MEGAlib libs:
+#include "MFile.h"
 #include "MStreams.h"
 
 
@@ -55,6 +59,7 @@ const TString g_MinorVersion = ".0";
 const TString g_Version = g_MajorVersion + g_MinorVersion;
 const TString g_CopyrightYear = "2010"; 
 const TString g_Homepage = "TBD"; 
+int g_SVNRevision = 0;
 
 const TString g_MEGAlibPath = "$(NUSIM)";
 
@@ -130,6 +135,24 @@ bool NGlobal::Initialize()
   gErrorIgnoreLevel = kError;
   // Abort on errors
   // gErrorAbortLevel = kError;
+
+  // Set the revision:
+  TString RevFile = "$(NUSIM)/config/revision.txt";
+  MFile::ExpandFileName(RevFile);
+  if (MFile::Exists(RevFile) == false) {
+    cout<<"Error: Cannot find NuSim revision file..."<<endl;
+  }
+
+  ifstream in;
+  in.open(RevFile);
+  //TString Line;
+  //Line.ReadLine(in);
+  //cout<<Line<<endl;
+  //g_SVNRevision = atoi(Line);
+  in >> g_SVNRevision;
+  in.close();
+  
+  cout<<"Found NuSim revision "<<g_SVNRevision<<endl;
 
   return true;
 }

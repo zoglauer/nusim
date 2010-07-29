@@ -217,10 +217,13 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   if (!iFont) iFont = gClient->GetResourcePool()->GetDefaultFont();
   FontStruct_t ItalicFont = iFont->GetFontStruct();
 
-  TGLabel* SubTitle = new TGLabel(m_SatelliteFrame, TString("The NuSTAR science simulator (v") + g_Version + TString(")"));
+  ostringstream Text;
+  Text<<"The NuSTAR science simulator (Version: "<<g_Version<<", SVN revision "<<g_SVNRevision<<")"<<endl;
+
+  TGLabel* SubTitle = new TGLabel(m_SatelliteFrame, Text.str().c_str());
   SubTitle->SetTextFont(ItalicFont);
 	m_SatelliteFrame->AddFrame(SubTitle);
-  SubTitle->Move(StartX + 2.0*m_ButtonSizeX + 1.5*m_ButtonDistanceX - 110, 100);
+  SubTitle->Move(StartX + 2.0*m_ButtonSizeX + 1.5*m_ButtonDistanceX - 180, 100);
 
 
   // The buttons
@@ -307,10 +310,13 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   if (!iFont) iFont = gClient->GetResourcePool()->GetDefaultFont();
   FontStruct_t ItalicFont = iFont->GetFontStruct();
 
-  TGLabel* SubTitle = new TGLabel(m_PipelineFrame, TString("The NuSTAR science simulator (v") + g_Version + TString(")"));
+  ostringstream Text;
+  Text<<"The NuSTAR science simulator (Version: "<<g_Version<<", SVN revision "<<g_SVNRevision<<")"<<endl;
+
+  TGLabel* SubTitle = new TGLabel(m_PipelineFrame, Text.str().c_str());
   SubTitle->SetTextFont(ItalicFont);
 	m_PipelineFrame->AddFrame(SubTitle);
-  SubTitle->Move(StartX + 2.5*m_ButtonSizeX + 2*m_ButtonDistanceX - 110, 100);
+  SubTitle->Move(StartX + 2.5*m_ButtonSizeX + 2*m_ButtonDistanceX - 180, 100);
 
 
   TGVertical3DLine* VLine = 0;

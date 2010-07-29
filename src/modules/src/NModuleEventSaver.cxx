@@ -103,6 +103,9 @@ bool NModuleEventSaver::Initialize()
 
   m_Out<<"# NuSIM event file"<<endl;
   m_Out<<endl;
+  m_Out<<"# NuSTAR revision:"<<endl;
+  m_Out<<"RV "<<g_SVNRevision<<endl;
+  m_Out<<endl;
   m_Out<<"# Stored after the following module type: "<<endl;
   m_Out<<"CM "<<m_ChosenType<<endl;
   m_Out<<endl;

@@ -80,6 +80,7 @@ ROOTVERSIONOK   = $(shell bash $(CF)/configure_rootversiontest )
 #GEANT4VERSIONOK = $(shell bash $(CF)/configure_geant4versiontest )
 
 info:
+	bash $(CF)/configure_revision
 ifneq ($(strip $(ROOTVERSIONOK)),)
 	echo "$(ROOTVERSIONOK)"
 	exit 1;		

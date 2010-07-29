@@ -329,6 +329,20 @@ bool NSupervisor::Run()
     m_DiagnosticsGUI->Create();
   }
 
+  // If we have an exit module which is also an IO module we save the configuration
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceExit*>((*Iter).second) != 0 && 
+      dynamic_cast<NModuleInterfaceIO*>((*Iter).second) != 0) {
+      TString Name = dynamic_cast<NModuleInterfaceIO*>((*Iter).second)->GetFileName();
+      Size_t Last = Name.Last('.');
+      if (Last != 0) {
+        Name = Name.Remove(Last, Name.Length() - Last);      
+      }
+      Name.Append(".cfg");
+      Save(Name);
+    }
+  }
+
   // Reference to the pipeline (source or background) which has to be simulated next
   vector<NModuleInterfaceEvent*> NextPipeline = m_PipelineModules;
 
@@ -1416,6 +1430,7 @@ bool NSupervisor::Save(TString FileName)
 
   // Version string: 1
   new MXmlNode(Document, "Version", 2);
+  new MXmlNode(Document, "NuSIMRevision", g_SVNRevision);
 
   new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetSeconds());
   new MXmlNode(Document, "UpdateInterval", m_UpdateInterval);
