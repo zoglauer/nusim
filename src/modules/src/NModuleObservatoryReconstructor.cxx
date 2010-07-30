@@ -232,7 +232,7 @@ bool NModuleObservatoryReconstructor::AnalyzeEvent(NEvent& Event)
   
   for (unsigned int h = 0; h < Event.GetNHits(); ++h) {
     m_ObservatoryReconstructor.Reconstruct(Event.GetHitRef(h));
-    //cout << "OB =" << OB.ToString() << endl;  // for diagnostics
+    cout << "OB =" << OB.ToString() << endl;  // for diagnostics
   }
   
   // For debugging add all current orientations to the event

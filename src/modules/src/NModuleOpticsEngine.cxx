@@ -193,26 +193,23 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     
 	NOrientation FPorient = m_Satellite.GetOrientationFocalPlaneModule(Event.GetTime(), Event.GetTelescope());
     
-	iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); // need to get right displacement (this will have thermal motion)
-    iPhoton.SetDirection(MVector(-RTDir[1], -RTDir[2], -RTDir[3]));
+	iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); 
+	iPhoton.SetDirection(MVector(-RTDir[1], -RTDir[2], -RTDir[3]));
  
     Orientation.TransformIn(iPhoton);
 	FPorient.TransformOut(iPhoton);
 	
-	//cout<<iPhoton.GetPosition()<<endl;
 	MVector DetectorTop(0.0, 0.0, 0.0);
     MVector DetectorNormal(0.0, 0.0, 1.0);
 	PropagateToPlane(iPhoton, DetectorTop, DetectorNormal);
 		
 	FPorient.TransformIn(iPhoton);
 	Orientation.TransformOut(iPhoton);
-	//cout<<iPhoton.GetPosition()<<endl;
-
-
-    //InPos[1] = 0.0;
-    //InPos[2] = 0.0;
-    //InPos[3] = 0.0; 
-    //MovePhoton(InPos, RTDir, 10150.);
+	
+    InPos[1] = 0.0;
+    InPos[2] = 0.0;
+    InPos[3] = 0.0; 
+    MovePhoton(InPos, RTDir, 10150.);
   }
   //*************
 
@@ -241,8 +238,8 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   //************* Perfect Optic
   // Construct the new direction cosines as being the vector that connects the exit location of the ray, RTpos, to the 'ideal' spot on the FP, InPos.
   if (m_UseIdealOptics) {
-    //MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - MVector(InPos[1], InPos[2], InPos[3]);
-    MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - iPhoton.GetPosition();
+    MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - MVector(InPos[1], InPos[2], InPos[3]);
+    //MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - iPhoton.GetPosition();
     Photon.SetDirection(MVector(-Pnew[0],-Pnew[1],Pnew[2]));
   }
   //*************
@@ -302,7 +299,7 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   r0 = sqrt(Square(r[1]) + Square(r[2]));
 
   // Use 0.0 if you don't want scattering
-  if (m_UseScattering) scatter = 3.5e-5;
+  if (m_UseScattering) scatter = 6e-5;
   else scatter = 0.0;
   Rmin = m_Rm2[1];
   Rmax = m_Rm1[133];

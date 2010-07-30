@@ -137,10 +137,10 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   Set1.SetOriginalLaserHit(P1); // updates the metrology set1 module with coordinates
   Set1.SetTime(m_Time); 
   Err = gRandom->Gaus(0,MD1Err);
-  //P1[0] = P1[0]-Err;
-  //P1[1] = P1[1]-Err;
+  P1[0] = P1[0]-Err;
+  Err = gRandom->Gaus(0,MD1Err);
+  P1[1] = P1[1]-Err;
   Set1.SetCalibratedLaserHit(P1); 
-  //cout<<"After="<<P1<<endl;
   
   NMetrologyDataSet Set2;
   Laser.SetPosition(MVector(0.0, 0.0, 0.0));
@@ -152,8 +152,9 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   Set2.SetOriginalLaserHit(P2);
   Set2.SetTime(m_Time);
   Err = gRandom->Gaus(0,MD2Err);
-  //P2[0] = P2[0]-Err;
-  //P2[1] = P2[1]-Err;
+  P2[0] = P2[0]-Err;
+  Err = gRandom->Gaus(0,MD2Err);
+  P2[1] = P2[1]-Err;
   Set2.SetCalibratedLaserHit(P2); 
   // Done!
 

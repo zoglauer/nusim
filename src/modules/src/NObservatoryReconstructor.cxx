@@ -139,6 +139,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   
   // Vector implementation
   FP.TransformOut(event);      // Transform event from detector coordinates into Focal Plane
+  MVector FPevent=event;
   Rfbob.TransformIn(event); 
   MVector pF = OMF-event;
   pF.Unitize();
@@ -152,8 +153,8 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
     //cout<<module<<OA<<event<<endl; 
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
     //cout<<module<<pFin<<OAin<<endl;
-  //cout<<module<<pF<<OA<<endl;
-    //cout<<"RA "<<atan(pF[1]/pF[0])<<" DEC "<<asin(pF[2])<<endl;
+  cout<<module<<pF<<OA<<endl;
+  cout<<"RA "<<atan(pF[1]/pF[0])<<" DEC "<<asin(pF[2])<<endl;
     //cout<<"RA "<<atan(OA[1]/OA[0])<<" DEC "<<asin(OA[2])<<endl;
 
   // Point implementation
@@ -161,7 +162,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   FP.TransformOut(OADet);
   Rfbob.TransformIn(OADet);
   
-  //cout<<module<<event<<OADet<<endl; 
+  cout<<module<<event<<OADet<<endl; 
   
   // The necessary things to save are:
   // 1) OA  - direction in inertial space of the optical axis
@@ -173,7 +174,8 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   // All data should be stored in the obervatory data set
   Obs.SetTime(m_Time);
   Obs.SetDirectionOpticalAxisInIS(OA);
-  Obs.SetDirectionEventInIS(pF);
+  Obs.SetDirectionEventInIS(pF);   
+  //Obs.SetDirectionEventInIS(event);
   Obs.SetOrientationFocalPlaneToOB(Rfbob);
   Obs.SetOrientationOBToIS(Robin);
 
