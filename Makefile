@@ -72,6 +72,8 @@ modules: link megalib
 data: link megalib
 	@$(MAKE) data -C src
 
+debug: all
+	@gdb $(BN)/nusim -x resource/gdb.ini
 
 #------------------------------------------------------------------------------
 # Version check:
