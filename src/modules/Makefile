@@ -31,6 +31,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleSourceDistributionFarFieldPointSource.o \
 	$(LB)/NGUIOptionsSource.o \
 	$(LB)/NGUIOptionsSourceDistribution.o \
+	$(LB)/NGUIDiagnosticsSourceDistribution.o \
 	$(LB)/NModuleSourceDistribution.o \
 	$(LB)/NModuleOpticsEngine.o \
 	$(LB)/NGUIOptionsOpticsEngine.o \

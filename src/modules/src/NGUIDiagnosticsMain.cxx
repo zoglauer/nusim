@@ -50,6 +50,7 @@ NGUIDiagnosticsMain::NGUIDiagnosticsMain() : MGUIDialog(gClient->GetRoot(), gCli
   gStyle->SetPalette(1, 0);
 
   // No deep clean-up allowed in this function!
+  SetCleanup(kNoCleanup);
 }
 
 

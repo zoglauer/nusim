@@ -28,6 +28,7 @@
 // NuSTAR libs:
 #include "NModuleInterfaceEntry.h"
 #include "NGUIOptionsSourceDistribution.h"
+#include "NGUIDiagnosticsSourceDistribution.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,10 +61,10 @@ NModuleSourceDistribution::NModuleSourceDistribution(NSatellite& Satellite) : NM
   m_ModuleType = c_SourceGenerator;
 
   // Set if this module has a diagnostics GUI
-  m_HasDiagnosticsGUI = false;
+  m_HasDiagnosticsGUI = true;
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsSourceDistribution)
   // and implement all your GUI options
-  //m_Diagnostics = new MGUIDiagnosticsSourceDistribution();
+  m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
 
   // Additional data:
 }
@@ -89,6 +90,9 @@ bool NModuleSourceDistribution::Initialize()
     cerr<<"No sources!"<<endl;
     return false;
   }
+
+  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa()*c_Deg*60, 
+                                                                                      m_Satellite.GetPointing(0).GetDec()*c_Deg*60);
 
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
@@ -171,7 +175,10 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   Ra = atan(SP[1]/SP[0]);
   Dec = asin(SP[2]);
 
-  //cout<<SP<<Ra<<" "<<Dec<<endl;
+  cout<<"RA/DEC: "<<Ra*c_Deg<<" "<<Dec*c_Deg<<endl;
+  cout<<"Poinitng: "<<m_Satellite.GetPointing(0).GetRa()*c_Deg<<":"
+    <<m_Satellite.GetPointing(0).GetDec()*c_Deg<<endl;
+
   Event.SetRaDec(Ra, Dec);
   
   
@@ -192,6 +199,9 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
   DetermineNext();
     
+  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra*c_Deg*60, Dec*c_Deg*60);
+  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddEnergy(Photon.GetEnergy());
+  
   return true;
 }
 
