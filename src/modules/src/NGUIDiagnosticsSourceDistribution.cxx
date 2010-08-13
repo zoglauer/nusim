@@ -47,8 +47,8 @@ NGUIDiagnosticsSourceDistribution::NGUIDiagnosticsSourceDistribution() : NGUIDia
 
   // Add all histograms and canvases below
   m_Origin = new TH2D("Origin distribution", "Origin distribution", 161, -8, 8, 161, -8, 8);
-  m_Origin->SetXTitle("DEC - relative to initial pointing [arcmin]");
-  m_Origin->SetYTitle("RA - relative to initial pointing [arcmin]");
+  m_Origin->SetXTitle("RA - relative to initial pointing [arcmin]");
+  m_Origin->SetYTitle("DEC - relative to initial pointing [arcmin]");
 
   m_Energy = new TH1D("Spectrum", "Spectrum", 148, 6, 80);
   m_Energy->SetXTitle("keV");
@@ -82,7 +82,7 @@ void NGUIDiagnosticsSourceDistribution::AddOrigin(double Ra, double Dec)
 {
   //! Add data to the initial direction histogram 
 
-  m_Origin->Fill(Dec - m_InitialDec, Ra - m_InitialRa);
+  m_Origin->Fill(Ra - m_InitialRa, Dec - m_InitialDec);
 }
 
 

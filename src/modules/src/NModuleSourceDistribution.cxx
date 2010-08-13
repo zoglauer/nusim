@@ -86,6 +86,9 @@ bool NModuleSourceDistribution::Initialize()
 {
   // Initialize the module - since this is an entry module determine the time of the first event
 
+  delete m_Diagnostics;
+  m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
+
   if (m_Sources.size() == 0) {
     cerr<<"No sources!"<<endl;
     return false;
