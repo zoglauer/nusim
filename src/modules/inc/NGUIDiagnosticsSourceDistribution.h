@@ -58,7 +58,7 @@ class NGUIDiagnosticsSourceDistribution : public NGUIDiagnostics
   virtual void Update();
 
   //! Set the initial pointing 
-  void SetInitialPointing(double Ra, double Dec) { m_InitialRa = Ra; m_InitialDec = Dec; }
+  void SetInitialPointing(double Ra, double Dec);
 
   //! Add data to the initial direction histogram 
   void AddOrigin(double Ra, double Dec);

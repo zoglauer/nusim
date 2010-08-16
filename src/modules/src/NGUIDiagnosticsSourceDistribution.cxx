@@ -74,6 +74,22 @@ NGUIDiagnosticsSourceDistribution::~NGUIDiagnosticsSourceDistribution()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NGUIDiagnosticsSourceDistribution::SetInitialPointing(double Ra, double Dec) 
+{ 
+  //! Set the initial pointing 
+
+  if (cos(Dec*60*c_Rad) == 0) { 
+    m_Origin->GetXaxis()->SetLimits(-180*60, +180*60);
+  } else {
+    cout<<"RA limits: +-"<<+8/cos(Dec/60*c_Rad)<<":"<<Dec<<endl;
+    m_Origin->GetXaxis()->SetLimits(-8/cos(Dec/60*c_Rad), +8/cos(Dec/60*c_Rad));
+  }
+
+  m_InitialRa = Ra; m_InitialDec = Dec; 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
