@@ -248,11 +248,11 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk Z [mm]: ", false, m_Source->GetPositionParameter3());
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
-    m_P4 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction X [0..1]: ", false, m_Source->GetPositionParameter4(), true, -1.0, 1.0);
+    m_P4 = new MGUIEEntry(m_BeamOptionsSubFrame, "Start direction X: ", false, m_Source->GetPositionParameter4(), true, -1.0, 1.0);
     m_BeamOptionsSubFrame->AddFrame(m_P4, Default);
-    m_P5 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction Y [0..1]: ", false, m_Source->GetPositionParameter5(), true, -1.0, 1.0);
+    m_P5 = new MGUIEEntry(m_BeamOptionsSubFrame, "Start direction Y: ", false, m_Source->GetPositionParameter5(), true, -1.0, 1.0);
     m_BeamOptionsSubFrame->AddFrame(m_P5, Default);
-    m_P6 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction Z [0..1]: ", false, m_Source->GetPositionParameter6(), true, -1.0, 1.0);
+    m_P6 = new MGUIEEntry(m_BeamOptionsSubFrame, "Start direction Z: ", false, m_Source->GetPositionParameter6(), true, -1.0, 1.0);
     m_BeamOptionsSubFrame->AddFrame(m_P6, Default);
     m_P7 = new MGUIEEntry(m_BeamOptionsSubFrame, "Radius [mm]: ", false, m_Source->GetPositionParameter7(), true, 0.0000001);
     m_BeamOptionsSubFrame->AddFrame(m_P7, Default);

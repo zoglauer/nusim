@@ -50,10 +50,10 @@ const int NSource::c_NearField                    = 2;
 const int NSource::c_FarFieldPoint                = 1;
 const int NSource::c_FarFieldDisk                 = 2;
 const int NSource::c_NearFieldPoint               = 3;
-const int NSource::c_NearFieldBeam                = 5;
+const int NSource::c_NearFieldBeam                = 4;
 
 const int NSource::c_FirstBeamType                = 1;
-const int NSource::c_LastBeamType                 = 5;
+const int NSource::c_LastBeamType                 = 4;
 
 
 const int NSource::c_NearFieldRestrictedPoint     = 104;
@@ -297,7 +297,7 @@ TString NSource::GetBeamTypeName(const int BeamType)
     Name = "Point source restricted (near field)";
     break;
   case c_NearFieldBeam:
-    Name = "Beam (near field)";
+    Name = "Pencil beam (near field)";
     break;
   case c_FarFieldPoint:
     Name = "Point source (far field)";
@@ -326,7 +326,7 @@ int NSource::GetBeamType(TString Name)
     Type = c_NearFieldPoint;
   } else if (Name == "Point source restricted (near field)") {
     Type = c_NearFieldRestrictedPoint;
-  } else if (Name == "Beam (near field)") {
+  } else if (Name == "Pencil beam (near field)") {
     Type = c_NearFieldBeam;
   } else if (Name == "Point source (far field)") {
     Type = c_FarFieldPoint;
