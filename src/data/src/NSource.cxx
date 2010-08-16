@@ -50,30 +50,30 @@ const int NSource::c_NearField                    = 2;
 const int NSource::c_FarFieldPoint                = 1;
 const int NSource::c_FarFieldDisk                 = 2;
 const int NSource::c_NearFieldPoint               = 3;
+const int NSource::c_NearFieldBeam                = 5;
 
 const int NSource::c_FirstBeamType                = 1;
-const int NSource::c_LastBeamType                 = 3;
+const int NSource::c_LastBeamType                 = 5;
 
 
-const int NSource::c_NearFieldRestrictedPoint     = 4;
-const int NSource::c_FarFieldFile                 = 5;
-const int NSource::c_FarFieldGaussian             = 7;
-const int NSource::c_FarFieldArea                 = 8;
-const int NSource::c_FarFieldFileZenithDependent  = 9;
-const int NSource::c_NearFieldLine                = 12;
-const int NSource::c_NearFieldBox                 = 13;
-const int NSource::c_NearFieldDisk                = 14;
-const int NSource::c_NearFieldSphere              = 15;
-const int NSource::c_NearFieldBeam                = 16;
-const int NSource::c_NearFieldActivation          = 17;
-const int NSource::c_NearFieldBeam1DProfile       = 18;
-const int NSource::c_NearFieldBeam2DProfile       = 19;
-const int NSource::c_NearFieldConeBeam            = 20;
-const int NSource::c_NearFieldConeBeamGauss       = 21;
-const int NSource::c_NearFieldIlluminatedDisk     = 22;
-const int NSource::c_NearFieldIlluminatedSquare   = 23;
-const int NSource::c_NearFieldVolume              = 24;
-const int NSource::c_NearFieldFlatMap             = 25;
+const int NSource::c_NearFieldRestrictedPoint     = 104;
+const int NSource::c_FarFieldFile                 = 105;
+const int NSource::c_FarFieldGaussian             = 107;
+const int NSource::c_FarFieldArea                 = 108;
+const int NSource::c_FarFieldFileZenithDependent  = 109;
+const int NSource::c_NearFieldLine                = 112;
+const int NSource::c_NearFieldBox                 = 113;
+const int NSource::c_NearFieldDisk                = 114;
+const int NSource::c_NearFieldSphere              = 115;
+const int NSource::c_NearFieldActivation          = 117;
+const int NSource::c_NearFieldBeam1DProfile       = 118;
+const int NSource::c_NearFieldBeam2DProfile       = 119;
+const int NSource::c_NearFieldConeBeam            = 120;
+const int NSource::c_NearFieldConeBeamGauss       = 121;
+const int NSource::c_NearFieldIlluminatedDisk     = 122;
+const int NSource::c_NearFieldIlluminatedSquare   = 123;
+const int NSource::c_NearFieldVolume              = 124;
+const int NSource::c_NearFieldFlatMap             = 125;
 
 const int NSource::c_Invalid                      = -99999987;
 
@@ -296,6 +296,9 @@ TString NSource::GetBeamTypeName(const int BeamType)
   case c_NearFieldRestrictedPoint:
     Name = "Point source restricted (near field)";
     break;
+  case c_NearFieldBeam:
+    Name = "Beam (near field)";
+    break;
   case c_FarFieldPoint:
     Name = "Point source (far field)";
     break;
@@ -323,6 +326,8 @@ int NSource::GetBeamType(TString Name)
     Type = c_NearFieldPoint;
   } else if (Name == "Point source restricted (near field)") {
     Type = c_NearFieldRestrictedPoint;
+  } else if (Name == "Beam (near field)") {
+    Type = c_NearFieldBeam;
   } else if (Name == "Point source (far field)") {
     Type = c_FarFieldPoint;
   } else if (Name == "Disk source (far field)") {

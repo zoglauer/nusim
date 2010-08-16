@@ -62,6 +62,10 @@ NGUIOptionsSource::NGUIOptionsSource(NSource* Source, const TGWindow* Parent) :
   m_P1 = 0;
   m_P2 = 0;
   m_P3 = 0;
+  m_P4 = 0;
+  m_P5 = 0;
+  m_P6 = 0;
+  m_P7 = 0;
   m_SpectralOptionsSubFrame = 0;
   m_E1 = 0;
   m_E2 = 0;
@@ -222,6 +226,10 @@ void NGUIOptionsSource::UpdateOptions()
     m_P1 = 0;
     m_P2 = 0;
     m_P3 = 0;
+    m_P4 = 0;
+    m_P5 = 0;
+    m_P6 = 0;
+    m_P7 = 0;
   }
 
   if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint || 
@@ -232,6 +240,22 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position Z [mm]: ", false, m_Source->GetPositionParameter3());
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
+    m_Flux->SetLabel("Flux [ph/s]:");
+  } else if (m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk X [mm]: ", false, m_Source->GetPositionParameter1());
+    m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk Y [mm]: ", false, m_Source->GetPositionParameter2());
+    m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
+    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk Z [mm]: ", false, m_Source->GetPositionParameter3());
+    m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
+    m_P4 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction X [0..1]: ", false, m_Source->GetPositionParameter4(), true, -1.0, 1.0);
+    m_BeamOptionsSubFrame->AddFrame(m_P4, Default);
+    m_P5 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction Y [0..1]: ", false, m_Source->GetPositionParameter5(), true, -1.0, 1.0);
+    m_BeamOptionsSubFrame->AddFrame(m_P5, Default);
+    m_P6 = new MGUIEEntry(m_BeamOptionsSubFrame, "Direction Z [0..1]: ", false, m_Source->GetPositionParameter6(), true, -1.0, 1.0);
+    m_BeamOptionsSubFrame->AddFrame(m_P6, Default);
+    m_P7 = new MGUIEEntry(m_BeamOptionsSubFrame, "Radius [mm]: ", false, m_Source->GetPositionParameter7(), true, 0.0000001);
+    m_BeamOptionsSubFrame->AddFrame(m_P7, Default);
     m_Flux->SetLabel("Flux [ph/s]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Theta [arcmin]: ", false, m_Source->GetPositionParameter1());
@@ -317,11 +341,15 @@ void NGUIOptionsSource::UpdateSource()
   m_Source->SetName(m_Name->GetAsString());
 
   m_Source->SetBeamType(m_BeamTypes->GetSelected());
-  double P1 = 0, P2 = 0, P3 = 0;
+  double P1 = 0, P2 = 0, P3 = 0, P4 = 0, P5 = 0, P6 = 0, P7 = 0;
   if (m_P1 != 0) P1 = m_P1->GetAsDouble(); 
   if (m_P2 != 0) P2 = m_P2->GetAsDouble(); 
   if (m_P3 != 0) P3 = m_P3->GetAsDouble();
-  m_Source->SetPosition(P1, P2, P3);
+  if (m_P4 != 0) P4 = m_P4->GetAsDouble();
+  if (m_P5 != 0) P5 = m_P5->GetAsDouble();
+  if (m_P6 != 0) P6 = m_P6->GetAsDouble();
+  if (m_P7 != 0) P7 = m_P7->GetAsDouble();
+  m_Source->SetPosition(P1, P2, P3, P4, P5, P6, P7);
 
   m_Source->SetSpectralType(m_SpectralTypes->GetSelected());
   double E1 = 0, E2 = 0, E3 = 0, E4 = 0, E5 = 0;

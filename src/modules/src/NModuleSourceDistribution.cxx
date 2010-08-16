@@ -178,10 +178,6 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   Ra = atan(SP[1]/SP[0]);
   Dec = asin(SP[2]);
 
-  cout<<"RA/DEC: "<<Ra*c_Deg<<" "<<Dec*c_Deg<<endl;
-  cout<<"Poinitng: "<<m_Satellite.GetPointing(0).GetRa()*c_Deg<<":"
-    <<m_Satellite.GetPointing(0).GetDec()*c_Deg<<endl;
-
   Event.SetRaDec(Ra, Dec);
   
   

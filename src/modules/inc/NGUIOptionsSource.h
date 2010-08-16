@@ -80,6 +80,10 @@ class NGUIOptionsSource : public TGCompositeFrame
   MGUIEEntry* m_P1;
   MGUIEEntry* m_P2;
   MGUIEEntry* m_P3;
+  MGUIEEntry* m_P4;
+  MGUIEEntry* m_P5;
+  MGUIEEntry* m_P6;
+  MGUIEEntry* m_P7;
   MGUIEEntry* m_E1;
   MGUIEEntry* m_E2;
   MGUIEEntry* m_E3;
