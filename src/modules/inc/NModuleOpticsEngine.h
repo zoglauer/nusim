@@ -149,7 +149,15 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   
   // private members:
  private:
-  unsigned int m_BlockedPhotons;
+  //! Number photons which are blocked because they do not reached the optics plane from above
+  unsigned int m_BlockedPhotonsPlaneNoReached;
+  //! Number of photons which are blocked, because they do not reach the mirror opening
+  unsigned int m_BlockedPhotonsOpeningNotReached;
+  //! Number of photons which are blocked because their energy is above the scatter limit
+  unsigned int m_BlockedPhotonsEnergyTooHigh;
+  //! Number of photons which do not exit the optics module
+  unsigned int m_BlockedPhotonsDoNotExitOptics;
+
   unsigned int m_ScatteredPhotons;
 
 

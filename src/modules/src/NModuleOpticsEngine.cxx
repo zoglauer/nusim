@@ -117,8 +117,11 @@ bool NModuleOpticsEngine::Initialize()
   }
 
   m_ScatteredPhotons = 0;
-  m_BlockedPhotons = 0;
-
+  m_BlockedPhotonsPlaneNoReached = 0;
+  m_BlockedPhotonsOpeningNotReached = 0;
+  m_BlockedPhotonsEnergyTooHigh = 0;
+  m_BlockedPhotonsDoNotExitOptics = 0;
+  
   return true;
 }
 
@@ -153,6 +156,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     // The plane is unreachable thus we quit here
     Orientation.TransformOut(Photon);
     Event.SetBlocked(true);
+    ++m_BlockedPhotonsPlaneNoReached;
     return true;
   }
 
@@ -164,10 +168,12 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     // The plane is unreachable thus we quit here
     Orientation.TransformOut(Photon);
     Event.SetBlocked(true);
+    ++m_BlockedPhotonsOpeningNotReached;
     return true;
   }
   if (Photon.GetEnergy() > 84.) {
     Event.SetBlocked(true);
+    ++m_BlockedPhotonsEnergyTooHigh;
     return true;
   }
 
@@ -216,9 +222,9 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
    
   int Code = RayTrace(Photon.GetEnergy(), RTDir, RTPos); 
   if (Code == 0) {
-    ++m_BlockedPhotons;
     Orientation.TransformOut(Photon);
     Event.SetBlocked(true);
+    ++m_BlockedPhotonsDoNotExitOptics;
     return true;
   }
 
@@ -259,13 +265,19 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
 
 
 bool NModuleOpticsEngine::Finalize()
-{
-  if (m_ScatteredPhotons+m_BlockedPhotons > 0) {
-    double EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotons+m_ScatteredPhotons)/100;
-    double EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotons+m_ScatteredPhotons)/100;
+{  
+  if (m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics > 0) {
+    double EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+    double EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     cout<<endl;
     cout<<"Optics engine summary:"<<endl;
     cout<<"Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
+    cout<<endl;
+    cout<<"Blockage reasons: "<<endl;
+    cout<<"  Optics plane not reached form above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
+    cout<<"  Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
+    cout<<"  Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
+    cout<<"  Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
   }
 
   return true;
