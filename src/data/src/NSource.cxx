@@ -782,7 +782,7 @@ bool NSource::UpgradeFlux()
   m_Flux = m_InputFlux;
 
   if (m_CoordinateSystem == c_FarField) {
-    double Radius = m_Satellite.GetOpticsSurroundingSphereRadius();
+    double Radius = m_Satellite.GetSurroundingSphereRadius();
     m_Flux *= c_Pi*Radius*Radius;
   } else {
 //     if (m_BeamType == c_NearFieldRestrictedPoint) {
@@ -982,7 +982,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 
       // Determine start position on disk on sphere
       double x = 0.0, y = 0.0, z = 0.0;
-      double Radius = m_Satellite.GetOpticsSurroundingSphereRadius();
+      double Radius = m_Satellite.GetSurroundingSphereRadius();
       // Disk is currently fixed on (0, 0, Radius)
       while (true) {
         x = Radius*(2*(gRandom->Rndm()-0.5));

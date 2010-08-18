@@ -121,7 +121,7 @@ void NEvent::Clear()
   m_Ra = 0.0;
   m_Dec = 0.0;
 
-  m_Orientations.Clear();
+  if (m_Orientations.IsEmpty() == false) m_Orientations.Clear();
   
   m_Interactions.clear();
   m_PHEData.Clear();

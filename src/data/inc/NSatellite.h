@@ -262,7 +262,10 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
     return m_GeometryAndDetectorProperties->CreateInteractionClostestNeighborPixel(Telescope, Detector, Position); }
 
   //! Get the radius of a sphere surriounding on optics module
-  virtual double GetOpticsSurroundingSphereRadius() { return m_GeometryAndDetectorProperties->GetOpticsSurroundingSphereRadius(); }
+  virtual double GetSurroundingSphereRadius() { return m_GeometryAndDetectorProperties->GetSurroundingSphereRadius(); }
+  //! Get the z offset in optics module coordinates the top of the optics module
+  virtual double GetSurroundingSphereZOffsetInOpticsModuleCoordinates() { return m_GeometryAndDetectorProperties->GetSurroundingSphereZOffsetInOpticsModuleCoordinates(); }
+
 
   //! Return the total CZT absorption coefficient (= macroscopic cross section)
   virtual double GetCZTAbsorptionCoefficient(double Energy) { return m_GeometryAndDetectorProperties->GetCZTAbsorptionCoefficient(Energy); }

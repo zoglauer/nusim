@@ -273,7 +273,9 @@ bool NModuleOpticsEngine::Finalize()
     cout<<"Optics engine summary:"<<endl;
     cout<<"Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
     cout<<endl;
-    cout<<"Blockage reasons: "<<endl;
+    cout<<"Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
+    cout<<"Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
+    cout<<"Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
     cout<<"  Optics plane not reached form above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
     cout<<"  Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
     cout<<"  Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;

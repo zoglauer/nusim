@@ -27,8 +27,6 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceIO.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
 	$(LB)/NModuleTemplate.o \
-	$(LB)/NGUIOptionsSourceDistributionFarFieldPointSource.o \
-	$(LB)/NModuleSourceDistributionFarFieldPointSource.o \
 	$(LB)/NGUIOptionsSource.o \
 	$(LB)/NGUIOptionsSourceDistribution.o \
 	$(LB)/NGUIDiagnosticsSourceDistribution.o \

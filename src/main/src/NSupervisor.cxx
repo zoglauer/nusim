@@ -45,7 +45,6 @@ using namespace std;
 #include "NModuleInterfaceGeometryAndDetectorProperties.h"
 
 #include "NModuleSourceDistribution.h"
-#include "NModuleSourceDistributionFarFieldPointSource.h"
 
 #include "NModuleOpticsEngine.h"
 #include "NModuleOpticsEngineNone.h"
@@ -142,7 +141,6 @@ NSupervisor::NSupervisor()
   
   // Pipeline modules
   m_AvailableModules.push_back(new NModuleSourceDistribution(m_Satellite));
-  m_AvailableModules.push_back(new NModuleSourceDistributionFarFieldPointSource(m_Satellite));
   m_AvailableModules.push_back(new NModuleApertureEngineNone(m_Satellite));
   m_AvailableModules.push_back(new NModuleApertureEngineTrivial(m_Satellite));
   m_AvailableModules.push_back(new NModuleOpticsEngine(m_Satellite));

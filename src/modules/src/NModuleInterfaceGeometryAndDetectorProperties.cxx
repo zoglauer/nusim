@@ -44,8 +44,9 @@ NModuleInterfaceGeometryAndDetectorProperties::NModuleInterfaceGeometryAndDetect
   m_PixelsX = 32; // That's intentionally not correct 
   m_PixelsY = 32;
 
-  m_SurroundingSphere = 500.0;
-
+  m_SurroundingSphereRadius = 500.0;
+  m_SurroundingSphereZOffsetInOpticsModuleCoordinates = 227.0;
+  
   LoadCrossSections();
 }
 

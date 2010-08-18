@@ -207,7 +207,7 @@ if [ $# -gt 0 ]; then
                 confhelp;   
                 exit 0;;
             -optimized) 
-                OPT=${OPT}"-O -DNDEBUG ";;
+                OPT=${OPT}"-O2 -DNDEBUG ";;
             -debug)
                 G4DEBUG="G4DEBUG = 1"
                 if ([ $ARCH = "-solaris" ] || [ $ARCH = "-softsol28" ] || [ $ARCH = "-hardsol28" ] || [ $ARCH = "-hardsol25" ]); then

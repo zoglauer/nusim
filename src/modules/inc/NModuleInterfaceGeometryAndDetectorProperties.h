@@ -60,8 +60,11 @@ class NModuleInterfaceGeometryAndDetectorProperties
   //! Create an interaction in the clostest neighboring pixel
   virtual NInteraction CreateInteractionClostestNeighborPixel(int Telescope, int Detector, MVector Position);
 
-  //! Get the radius of a sphere surriounding on optics module
-  virtual double GetOpticsSurroundingSphereRadius() { return m_SurroundingSphere; }
+  //! Get the radius of a sphere surrounding the top of the optics module
+  virtual double GetSurroundingSphereRadius() { return m_SurroundingSphereRadius; }
+
+  //! Get the z offset in optics module coordinates the top of the optics module
+  virtual double GetSurroundingSphereZOffsetInOpticsModuleCoordinates() { return m_SurroundingSphereRadius; }
 
   //! Load the cross sections (during initilize)
   bool LoadCrossSections();
@@ -108,8 +111,11 @@ class NModuleInterfaceGeometryAndDetectorProperties
   //! The detector pixels in y-direction (detector coordinate system)
   int m_PixelsY;
 
-  //! Radius of urounding sphere for an optics module
-  double m_SurroundingSphere;
+  //! Radius of surounding sphere for far field simulations
+  double m_SurroundingSphereRadius;
+  //! z offset in optics module coordinates
+  double m_SurroundingSphereZOffsetInOpticsModuleCoordinates;
+
 
   // private members:
  private:
