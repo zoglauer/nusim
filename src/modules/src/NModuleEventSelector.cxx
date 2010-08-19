@@ -132,8 +132,6 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   }
   
 
-
-
   // Deselect the event if the number of interaction > 2, the total energy > 79 < 6 keV
   double TotalEnergy = 0.0;
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
@@ -147,7 +145,6 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   } else {
     //cout<<"Accepted"<<endl;
   }
-
 
   return true;
 }

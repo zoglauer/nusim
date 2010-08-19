@@ -57,17 +57,17 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   //! Set the time
   void SetTime(const NTime Time) { m_Time = Time; }
 
+  //! Set the initial pointing 
+  void SetInitialPointing(double Ra, double Dec);
+
   //! The creation part which gets overwritten
   virtual void Create();
 
   //! Update the frame
   virtual void Update();
 
-  //! Add data to the initial direction histogram 
-  void AddInitialDirection(MVector Pos);
-
   //! Add data to the backprojection histogram
-  void AddBackprojection(MVector Pos);
+  void AddBackprojection(double RA, double DEC);
 
   //! Add data to the energy histogram
   void AddEnergy(double Energy);
@@ -81,10 +81,6 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
 
   // private members:
  private:
-  //! Initial image canvas
-  TRootEmbeddedCanvas* m_InitialCanvas;
-  //! Initial histyogram
-  TH2D* m_InitialDistribution;
   //! Backprojection canvas
   TRootEmbeddedCanvas* m_BackprojectionCanvas;
   //! Backprojection histogram
@@ -95,7 +91,12 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   TH1D* m_Energy;
   //! Normalized energy histogram
   TH1D* m_NormalizedEnergy;
-  
+    
+  //! Initial pointing RA
+  double m_InitialRa;
+  //! Initial pointing DEC
+  double m_InitialDec;
+
   //! The energy range
   double m_EnergyWidth;
 

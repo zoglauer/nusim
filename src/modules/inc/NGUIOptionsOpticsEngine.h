@@ -63,6 +63,7 @@ class NGUIOptionsOpticsEngine : public NGUIOptions
   // protected members:
  protected:
   TGCheckButton* m_EnableScattering;
+  TGCheckButton* m_EnableGhostRays;
   TGCheckButton* m_EnableIdealOptics;
 
   // private members:

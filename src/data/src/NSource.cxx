@@ -24,6 +24,9 @@ using namespace std;
 #include "MStreams.h"
 #include "MAssert.h"
 
+// NuSIM:
+#include "NExtractFitsImage.h"
+
 
 /******************************************************************************/
 
@@ -37,10 +40,10 @@ const int NSource::c_FileDifferentialFlux         = 5;
 const int NSource::c_FirstSpectralType            = 1;
 const int NSource::c_LastSpectralType             = 5;
 
-const int NSource::c_Gaussian                     = 15; 
-const int NSource::c_ThermalBremsstrahlung        = 16; 
-const int NSource::c_BlackBody                    = 17; 
-const int NSource::c_BandFunction                 = 18; 
+const int NSource::c_Gaussian                     = 105; 
+const int NSource::c_ThermalBremsstrahlung        = 106; 
+const int NSource::c_BlackBody                    = 107; 
+const int NSource::c_BandFunction                 = 108; 
 
 
 
@@ -51,12 +54,14 @@ const int NSource::c_FarFieldPoint                = 1;
 const int NSource::c_FarFieldDisk                 = 2;
 const int NSource::c_NearFieldPoint               = 3;
 const int NSource::c_NearFieldBeam                = 4;
+const int NSource::c_FarFieldFitsFile             = 5;
 
 const int NSource::c_FirstBeamType                = 1;
-const int NSource::c_LastBeamType                 = 4;
+const int NSource::c_LastBeamType                 = 5;
 
 
-const int NSource::c_NearFieldRestrictedPoint     = 104;
+// Not used just kept since this is the original cosima code: 
+const int NSource::c_NearFieldRestrictedPoint     = 100;
 const int NSource::c_FarFieldFile                 = 105;
 const int NSource::c_FarFieldGaussian             = 107;
 const int NSource::c_FarFieldArea                 = 108;
@@ -235,7 +240,7 @@ int NSource::GetSpectralType(TString Name)
   } else if (Name == "File with differential flux") {
     Type = c_FileDifferentialFlux;
   } else {
-    mout<<"Unknown beam type: "<<Name<<endl;
+    mout<<"Unknown spectral type: "<<Name<<endl;
   }
  
   return Type;
@@ -271,6 +276,7 @@ bool NSource::SetBeamType(const int& BeamType)
   case c_FarFieldArea:
   case c_FarFieldGaussian:
   case c_FarFieldFile:
+  case c_FarFieldFitsFile:
   case c_FarFieldFileZenithDependent:
     m_CoordinateSystem = c_FarField;
     m_BeamType = BeamType;
@@ -308,6 +314,9 @@ TString NSource::GetBeamTypeName(const int BeamType)
   case c_FarFieldFile:
     Name = "From file (far field)";
     break;
+  case c_FarFieldFitsFile:
+    Name = "From FITS file (far field)";
+    break;
   default:
     mout<<"Unknown beam type: "<<BeamType<<endl;
     break;
@@ -334,6 +343,8 @@ int NSource::GetBeamType(TString Name)
     Type = c_FarFieldDisk;
   } else if (Name == "From file (far field)") {
     Type = c_FarFieldFile;
+  } else if (Name == "From FITS file (far field)") {
+    Type = c_FarFieldFitsFile;
   } else {
     mout<<"Unknown beam type: "<<Name<<endl;
   }
@@ -544,6 +555,8 @@ bool NSource::UpgradePosition()
  */  
 bool NSource::SetPosition(TString FileName)
 {
+  m_PositionFileName = FileName;
+  
   if (m_BeamType == c_FarFieldFileZenithDependent) {
     if (m_PositionFunction.Set(FileName, "DP") == false) {
       mout<<m_Name<<": SphericalFileZenithDependent: Unable to load beam!"<<endl;
@@ -569,6 +582,12 @@ bool NSource::SetPosition(TString FileName)
   } else if (m_BeamType == c_NearFieldBeam2DProfile || m_BeamType == c_NearFieldFlatMap) {
     if (m_PositionFunction2D.Set(FileName, "AV") == false) {
       mout<<m_Name<<": Unable to load 2D distribution!"<<endl;
+      return false;
+    }
+  } else if (m_BeamType == c_FarFieldFitsFile) {
+    NExtractFitsImage Extractor;
+    if (Extractor.Extract(FileName, m_PositionFunction2D) == false) {
+      mout<<m_Name<<": Unable to load 2D distribution from fits file!"<<endl;
       return false;
     }
   } else {
@@ -923,56 +942,101 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 {
   MVector Position;
   MVector Direction;
-
+  
 	if (m_CoordinateSystem == c_FarField) {
+    double RA = 0.0;
+    double DEC = 0.0;
+
     double Theta = 0.0;
     double Phi = 0.0;
     if (m_BeamType == c_FarFieldPoint || 
         m_BeamType == c_FarFieldDisk ||
         m_BeamType == c_FarFieldArea ||
+        m_BeamType == c_FarFieldFitsFile ||
         m_BeamType == c_FarFieldFileZenithDependent) {
       if (m_BeamType == c_FarFieldPoint) {
         // Fixed start direction
-        Theta = m_PositionParam1/60*c_Rad;
-        Phi = m_PositionParam2/60*c_Rad;
+        DEC = m_PositionParam1/60*c_Rad;
+        RA = m_PositionParam2/60*c_Rad;
       } else if (m_BeamType == c_FarFieldDisk) {
         // Start with random position in disk on axis
         MVector Dir;
         Dir.SetMagThetaPhi(1.0, acos(1 - gRandom->Rndm()*(1 - cos(m_PositionParam3/60*c_Rad))), gRandom->Rndm()*2*c_Pi); 
 
-        Theta = m_PositionParam1/60*c_Rad;
-        Phi = m_PositionParam2/60*c_Rad;
+        DEC = m_PositionParam1/60*c_Rad;
+        RA = m_PositionParam2/60*c_Rad;
 
+        // For the following rotation we must make sure DEC is from 0..pi and not pi/2..-pi/2:
+        DEC = c_Pi/2 - DEC;
+        
         // Rotate the direction vector according to theta and phi
         // left-handed rotation-matrix: first theta (rotation around y-axis) then phi (rotation around z-axis):
         // | +cosp -sinp 0 |   | +cost 0 +sint |   | x |
         // | +sinp +cosp 0 | * |   0   1   0   | * | y | 
         // |   0     0   1 |   | -sint 0 +cost |   | z |        
         double px = Dir.X(), py = Dir.Y(), pz = Dir.Z();
-        Dir[0] = (px*cos(Theta)+pz*sin(Theta))*cos(Phi) - py*sin(Phi);
-        Dir[1] = (px*cos(Theta)+pz*sin(Theta))*sin(Phi) + py*cos(Phi);
-        Dir[2] = -px*sin(Theta)+pz*cos(Theta);
+        Dir[0] = (px*cos(DEC)+pz*sin(DEC))*cos(RA) - py*sin(RA);
+        Dir[1] = (px*cos(DEC)+pz*sin(DEC))*sin(RA) + py*cos(RA);
+        Dir[2] = -px*sin(DEC)+pz*cos(DEC);
 
-        Theta = Dir.Theta();
-        Phi = Dir.Phi();
+        DEC = Dir.Theta();
+        RA = Dir.Phi();
+        
+        // Switch back to real DEC's
+        DEC = c_Pi/2 - DEC;
+        
       } else if (m_BeamType == c_FarFieldArea) {
 
-        Theta = acos(cos(m_PositionParam1/60*c_Rad) - gRandom->Rndm()*(cos(m_PositionParam1/60*c_Rad) - cos(m_PositionParam2/60*c_Rad)));
-        Phi = m_PositionParam3/60*c_Rad + gRandom->Rndm()*(m_PositionParam4/60*c_Rad - m_PositionParam3/60*c_Rad);
+        DEC = acos(cos(m_PositionParam1/60*c_Rad) - gRandom->Rndm()*(cos(m_PositionParam1/60*c_Rad) - cos(m_PositionParam2/60*c_Rad)));
+        RA = m_PositionParam3/60*c_Rad + gRandom->Rndm()*(m_PositionParam4/60*c_Rad - m_PositionParam3/60*c_Rad);
 
       } else if (m_BeamType == c_FarFieldFileZenithDependent) {
         // Determine a random position on the sphere between 
         // theta min and theta max in the file:
 
         while (true) {
-          Theta = acos(cos(m_PositionParam1) - gRandom->Rndm()*(cos(m_PositionParam1) - cos(m_PositionParam2)));
-          Phi = gRandom->Rndm()*c_Pi;
+          DEC = acos(cos(m_PositionParam1) - gRandom->Rndm()*(cos(m_PositionParam1) - cos(m_PositionParam2)));
+          RA = gRandom->Rndm()*c_Pi;
           if (gRandom->Rndm() <= m_PositionFunction.Eval(Theta)/m_PositionParam3) {
             break;
           }
         }    
-
+      } else if (m_BeamType == c_FarFieldFitsFile) {
+        // Determine random RA / DEC
+        m_PositionFunction2D.GetRandom(RA, DEC);
+        RA *= c_Rad;
+        DEC *= c_Rad;
       }
+      
+      // Create a pointing to create a rotation quaternion:
+      NPointing PhotonOrigin;
+      PhotonOrigin.SetRaDec(RA, DEC);
+        
+      NPhoton Test;
+      Test.SetDirection(MVector(0.0, 0.0, 1.0));
+      Test.SetPosition(MVector(0.0, 0.0, 0.0));
+        
+      NOrientation PhotonOriginOrientation;
+      PhotonOriginOrientation.SetRotation(PhotonOrigin.GetQuaternion());
+      PhotonOriginOrientation.TransformOut(Test);
+        
+      // Into star tracker system:
+      NOrientation StarTrackerSystem;
+      StarTrackerSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
+      StarTrackerSystem.TransformIn(Test);
+        
+      // Into optical bench:
+      m_Satellite.GetCalibratedOrientationStarTrackerRelOpticalBench(4).TransformIn(Test);
+       
+      // Into optics:
+      m_Satellite.GetOrientationOpticsRelOpticalBench(m_NextEmission, Telescope).TransformIn(Test);
+     
+      // 
+      Theta = Test.GetDirection().Theta();
+      Phi = Test.GetDirection().Phi();
+      
+      //cout<<"T: "<<Theta<<" - P: "<<Phi<<endl;
+
       
       // Generate start direction:
       Direction.SetMagThetaPhi(1, Theta, Phi);
@@ -1020,6 +1084,8 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 
       // Rotate and transform into the world frame = focal bench system
       m_Satellite.GetOrientationOpticalBench(m_NextEmission).TransformOut(Photon);
+      
+      //cout<<"Dir WF: "<<Photon.GetDirection()<<endl;
     } 
 
     else if  (m_BeamType == c_FarFieldGaussian) {
@@ -1295,6 +1361,10 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (PositionParam11Node != 0) {
     m_PositionParam11 = PositionParam11Node->GetValueAsDouble();
   }
+  MXmlNode* PositionFileNameNode = Node->GetNode("PositionFileName");
+  if (PositionFileNameNode != 0) {
+    m_PositionFileName = PositionFileNameNode->GetValueAsString();
+  }
   MXmlNode* EnergyParam1Node = Node->GetNode("EnergyParam1");
   if (EnergyParam1Node != 0) {
     m_EnergyParam1 = EnergyParam1Node->GetValueAsDouble();
@@ -1328,6 +1398,7 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
               m_PositionParam4, m_PositionParam5, m_PositionParam6, 
               m_PositionParam7, m_PositionParam8, m_PositionParam9, 
               m_PositionParam10, m_PositionParam11);
+  SetPosition(m_PositionFileName);
   SetEnergy(m_EnergyFileName);
   SetFlux(m_InputFlux);
 
@@ -1359,6 +1430,7 @@ MXmlNode* NSource::CreateXmlConfiguration()
   new MXmlNode(Node, "PositionParam9", m_PositionParam9);
   new MXmlNode(Node, "PositionParam10", m_PositionParam10);
   new MXmlNode(Node, "PositionParam11", m_PositionParam11);
+  new MXmlNode(Node, "PositionFileName", m_PositionFileName);
   new MXmlNode(Node, "EnergyParam1", m_EnergyParam1);
   new MXmlNode(Node, "EnergyParam2", m_EnergyParam2);
   new MXmlNode(Node, "EnergyParam3", m_EnergyParam3);

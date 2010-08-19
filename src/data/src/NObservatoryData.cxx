@@ -95,7 +95,8 @@ double NObservatoryData::GetDEC()
   double Value = m_DirectionEventInIS[0]*m_DirectionEventInIS[0] + m_DirectionEventInIS[1]*m_DirectionEventInIS[1] + m_DirectionEventInIS[2]*m_DirectionEventInIS[2];
   if (Value <= 0) return 0.0;
 
-  return acos(m_DirectionEventInIS[2]/sqrt(Value));
+  return asin(m_DirectionEventInIS[2]/sqrt(Value));
+  //return acos(m_DirectionEventInIS[2]/sqrt(Value));
 }
 
 

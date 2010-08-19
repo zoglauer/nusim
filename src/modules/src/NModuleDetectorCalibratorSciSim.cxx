@@ -23,6 +23,7 @@
 #include "TGClient.h"
 
 // MEGAlib libs:
+#include "TRandom.h"
 
 // NuSTAR libs:
 #include "NHit.h"
@@ -104,10 +105,15 @@ bool NModuleDetectorCalibratorSciSim::AnalyzeEvent(NEvent& Event)
     
     NHit H;
 
-    double x = (0.5 + Niner.GetXPixel()) * (2*m_Satellite.GetDetectorHalfDimension().X()/NPixelsX) - m_Satellite.GetDetectorHalfDimension().X();
-    double y = (0.5 + Niner.GetYPixel()) * (2*m_Satellite.GetDetectorHalfDimension().Y()/NPixelsY) - m_Satellite.GetDetectorHalfDimension().Y();
+    mimp<<"Do we really want to randomize the position within the pixel?"<<show;
+    double x = (gRandom->Rndm() + Niner.GetXPixel()) * (2*m_Satellite.GetDetectorHalfDimension().X()/NPixelsX) - m_Satellite.GetDetectorHalfDimension().X();
+    double y = (gRandom->Rndm() + Niner.GetYPixel()) * (2*m_Satellite.GetDetectorHalfDimension().Y()/NPixelsY) - m_Satellite.GetDetectorHalfDimension().Y();
+    //double x = (0.5 + Niner.GetXPixel()) * (2*m_Satellite.GetDetectorHalfDimension().X()/NPixelsX) - m_Satellite.GetDetectorHalfDimension().X();
+    //double y = (0.5 + Niner.GetYPixel()) * (2*m_Satellite.GetDetectorHalfDimension().Y()/NPixelsY) - m_Satellite.GetDetectorHalfDimension().Y();
     double z = Niner.GetNoisedAverageDepth();
 
+    // Randomize x & y within pixel:
+    
     // We have to calculate the depth at some point...
     MVector Position(x, y, z);
 

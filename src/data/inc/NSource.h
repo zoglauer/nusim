@@ -186,6 +186,8 @@ public:
                    double PositionParam11 = 0.0);
   //! Return true, if the file containing the beam could be set correctly
   bool SetPosition(TString FileName);
+  //! Return the energy file name
+  TString GetPositionFileName() { return m_PositionFileName; }
 
   //! Return true, if the energy vector could be set correctly
   bool SetEnergy(double EnergyParam1 = 0.0, 
@@ -273,6 +275,8 @@ public:
   static const int c_FarFieldFile;
   //! Id of a beam distribution from file in form of a zenith dependent distribution
   static const int c_FarFieldFileZenithDependent;
+  //! Id of a beam distribution from file in form of FITS file
+  static const int c_FarFieldFitsFile;
 
   //! Id of a point like source in Cartesian coordinates
   static const int c_NearFieldPoint;
@@ -399,6 +403,9 @@ private:
   //! e.g. for CartesianConeBeamGaus: the probability density function for the beam internal zenith angle
   TF1* m_PositionTF1;
 
+  //! The file name of the energy functiomn
+  TString m_PositionFileName;
+
   //! Parameter 1 of the energy 
   double m_EnergyParam1;
   //! Parameter 2 of the energy 
@@ -417,7 +424,7 @@ private:
   //! A file containing the spectrum
   MFunction m_EnergyFunction;
 
-  //! The file name of the nergy functiomn
+  //! The file name of the energy functiomn
   TString m_EnergyFileName;
 };
 

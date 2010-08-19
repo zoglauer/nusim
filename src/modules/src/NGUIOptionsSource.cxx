@@ -66,6 +66,7 @@ NGUIOptionsSource::NGUIOptionsSource(NSource* Source, const TGWindow* Parent) :
   m_P5 = 0;
   m_P6 = 0;
   m_P7 = 0;
+  m_PF = 0;
   m_SpectralOptionsSubFrame = 0;
   m_E1 = 0;
   m_E2 = 0;
@@ -205,15 +206,6 @@ void NGUIOptionsSource::UpdateOptions()
   //UpdateSource();
 
   TGLayoutHints* Default = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 0, 0, 0, 0);
-
-//   if (m_BeamOptionsSubFrame != 0) {
-//     m_BeamOptionsSubFrame->UnmapWindow();
-//     m_BeamOptionsFrame->RemoveAll();
-//     delete m_BeamOptionsSubFrame;
-//     m_P1 = 0;
-//     m_P2 = 0;
-//     m_P3 = 0;
-//   }
   
   if (m_BeamOptionsSubFrame != 0) {
     TGFrameElement* E;
@@ -230,6 +222,7 @@ void NGUIOptionsSource::UpdateOptions()
     m_P5 = 0;
     m_P6 = 0;
     m_P7 = 0;
+    m_PF = 0;
   }
 
   if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint || 
@@ -258,18 +251,24 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P7, Default);
     m_Flux->SetLabel("Flux [ph/s]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
-    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Theta [arcmin]: ", false, m_Source->GetPositionParameter1());
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
-    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Phi [arcmin]: ", false, m_Source->GetPositionParameter2());
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_Flux->SetLabel("Flux [ph/s/mm2]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
-    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Theta [arcmin]: ", false, m_Source->GetPositionParameter1());
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
-    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Phi [arcmin]: ", false, m_Source->GetPositionParameter2());
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
-    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [arcmin]: ", false, m_Source->GetPositionParameter3());
+    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [deg]: ", false, m_Source->GetPositionParameter3()/60);
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
+    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
+    m_PF = new MGUIEFileSelector(m_BeamOptionsSubFrame, "Choose a FITS file:", 
+                                 m_Source->GetPositionFileName());
+    m_PF->SetFileType("FITS file", "*.fits");
+    m_BeamOptionsSubFrame->AddFrame(m_PF, Default);
     m_Flux->SetLabel("Flux [ph/s/mm2]:");
   }
 
@@ -342,14 +341,32 @@ void NGUIOptionsSource::UpdateSource()
 
   m_Source->SetBeamType(m_BeamTypes->GetSelected());
   double P1 = 0, P2 = 0, P3 = 0, P4 = 0, P5 = 0, P6 = 0, P7 = 0;
-  if (m_P1 != 0) P1 = m_P1->GetAsDouble(); 
-  if (m_P2 != 0) P2 = m_P2->GetAsDouble(); 
-  if (m_P3 != 0) P3 = m_P3->GetAsDouble();
+  if (m_P1 != 0) {
+    P1 = m_P1->GetAsDouble();
+    if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint ||
+        m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
+      P1 *= 60;  // deg --> arcmin
+    }
+  }
+  if (m_P2 != 0)  {
+    P2 = m_P2->GetAsDouble();
+    if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint ||
+        m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
+      P2 *= 60;  // deg --> arcmin
+    }
+  } 
+  if (m_P3 != 0)  {
+    P3 = m_P3->GetAsDouble();
+    if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
+      P3 *= 60;  // deg --> arcmin
+    }
+  }
   if (m_P4 != 0) P4 = m_P4->GetAsDouble();
   if (m_P5 != 0) P5 = m_P5->GetAsDouble();
   if (m_P6 != 0) P6 = m_P6->GetAsDouble();
   if (m_P7 != 0) P7 = m_P7->GetAsDouble();
   m_Source->SetPosition(P1, P2, P3, P4, P5, P6, P7);
+  if (m_PF != 0) m_Source->SetPosition(m_PF->GetFileName());
 
   m_Source->SetSpectralType(m_SpectralTypes->GetSelected());
   double E1 = 0, E2 = 0, E3 = 0, E4 = 0, E5 = 0;

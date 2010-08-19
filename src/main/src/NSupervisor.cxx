@@ -560,7 +560,10 @@ bool NSupervisor::Run()
           mout<<"Analysis failed for event "<<Event.GetID()<<" ("<<Event.GetOriginString()<<") in module \""<<dynamic_cast<NModule*>(NextPipeline[m])->GetFullName()<<"\""<<endl;
           break;
         }
+        
         // Redisplay the GUI...
+        gSystem->ProcessEvents();
+        
       }
       if (Event.GetBlocked() == false && Event.GetVeto() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
         NPassedEvents++;

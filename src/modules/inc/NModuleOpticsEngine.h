@@ -71,6 +71,11 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   //! Return true if scattering is enabled
   bool GetUseScattering() const { return m_UseScattering; }
 
+  //! Enable or disable ghost rays
+  void SetUseGhostRays(bool UseGhostRays) { m_UseGhostRays = UseGhostRays; }
+  //! Return true if ghost rays are enabled
+  bool GetUseGhostRays() const { return m_UseGhostRays; }
+
   //! Enable or disable ideal optics
   void SetUseIdealOptics(bool UseIdealOptics) { m_UseIdealOptics = UseIdealOptics; }
   //! Return true if ideal optics is enabled

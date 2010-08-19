@@ -73,6 +73,15 @@ void NGUIOptionsOpticsEngine::Create()
   }
   AddFrame(m_EnableScattering, LabelLayout);
 
+  m_EnableGhostRays = new TGCheckButton(this, "Enable ghost rays");
+  m_EnableGhostRays->Associate(this);
+  if (dynamic_cast<NModuleOpticsEngine*>(m_Module)->GetUseGhostRays() == true) {
+    m_EnableGhostRays->SetState(kButtonDown);
+  } else {
+    m_EnableGhostRays->SetState(kButtonUp);    
+  }
+  AddFrame(m_EnableGhostRays, LabelLayout);
+
   m_EnableIdealOptics = new TGCheckButton(this, "Enable ideal optics");
   m_EnableIdealOptics->Associate(this);
   if (dynamic_cast<NModuleOpticsEngine*>(m_Module)->GetUseIdealOptics() == true) {
@@ -128,6 +137,12 @@ bool NGUIOptionsOpticsEngine::OnApply()
     dynamic_cast<NModuleOpticsEngine*>(m_Module)->SetUseScattering(true);
   } else {
     dynamic_cast<NModuleOpticsEngine*>(m_Module)->SetUseScattering(false);    
+  }
+
+  if (m_EnableGhostRays->GetState() == kButtonDown) {
+    dynamic_cast<NModuleOpticsEngine*>(m_Module)->SetUseGhostRays(true);
+  } else {
+    dynamic_cast<NModuleOpticsEngine*>(m_Module)->SetUseGhostRays(false);    
   }
 
   if (m_EnableIdealOptics->GetState() == kButtonDown) {

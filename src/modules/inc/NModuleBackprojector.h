@@ -69,8 +69,6 @@ class NModuleBackprojector : public NModule, public NModuleInterfaceEvent
  private:
 
 
-
-
 #ifdef ___CINT___
  public:
   ClassDef(NModuleBackprojector, 0) // no description

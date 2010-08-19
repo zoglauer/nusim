@@ -22,6 +22,7 @@ using namespace std;
 
 // MEGAlib libs:
 #include "NGlobal.h"
+#include "MStreams.h"
 
 // NuSTAR libs:
 
@@ -52,9 +53,13 @@ class NPointing
   void SetQuaternion(const NQuaternion& Q) { m_Empty = false; m_Q = Q; QuaternionToRaDec(); }
 
   //! Get the right ascension
-  double GetRa() const { return m_Ra; }
+  double GetRa() const { 
+    mimp<<"BUG: RA is in rad not arcmin - fix after review"<<show; 
+    return m_Ra; }
   //! Get the declination
-  double GetDec() const { return m_Dec; } 
+  double GetDec() const { 
+    mimp<<"BUG: Dec is in rad not arcmin - fix after review"<<show; 
+    return m_Dec; } 
   //! Get the quaternoin representation
   NQuaternion GetQuaternion() const { return m_Q; }
 

@@ -328,6 +328,27 @@ bool MFunction2D::Set(const TString FileName, const TString KeyWord,
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool MFunction2D::Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, unsigned int InterpolationType)
+{
+  //! Set the basic data from a 1D ResponseMatrix
+
+  m_X = X;
+  m_Y = Y;
+  m_Z = Z;
+  
+  m_InterpolationType = InterpolationType;
+
+  // Clean up:
+  m_Maximum = g_DoubleNotDefined;
+  m_Cumulative.clear();
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void MFunction2D::ScaleZ(double Scaler)
 {
   // Scale the z-content by some value

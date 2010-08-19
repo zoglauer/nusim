@@ -132,12 +132,12 @@ class NEvent
   NPhoton& GetOriginalPhotonRef() { return m_OriginalPhoton; }
 
 
-  //! Set the original right ascension and declination of the photon
-  void SetRaDec(double Ra, double Dec) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; }
+  //! Set the original right ascension and declination of the photon not the reconstructed one
+  void SetOriginalPhotonRaDec(double Ra, double Dec) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; }
   //! Get the original right ascension - only reasonable when GetOrigin() == c_OriginSource
-  double GetRa() const { return m_Ra; }
+  double GetOriginalPhotonRa() const { return m_Ra; }
   //! Get the original declination - only reasonable when GetOrigin() == c_OriginSource
-  double GetDec() const { return m_Dec; } 
+  double GetOriginalPhotonDec() const { return m_Dec; } 
 
 
   //! Set the current photon parameters 

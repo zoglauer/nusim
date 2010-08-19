@@ -53,6 +53,9 @@ class MFunction2D
            const TString KeyWord, 
            const unsigned int InterpolationType = c_InterpolationLinear);
 
+  //! Set the basic data from two vector
+  bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Values, unsigned int InterpolationType = c_InterpolationLinear);
+
   //! Multiply the x-axis by some value
   void ScaleX(double Scaler);
 

@@ -69,6 +69,7 @@ ClassImp(NModuleOpticsEngine)
   //m_Diagnostics = new MGUIDiognosticsOpticsApertureSimulator();
   
   m_UseScattering = true;
+  m_UseGhostRays = true;
   m_UseIdealOptics = false;
 }
 
@@ -88,7 +89,7 @@ NModuleOpticsEngine::~NModuleOpticsEngine()
 bool NModuleOpticsEngine::Initialize()
 {
   // Initialize the module 
-  
+   
   m_ShellLength = 227; // mm
   m_Gap	= 2; // mm
   m_SubstrateThickness = .21; // mm
@@ -279,17 +280,18 @@ bool NModuleOpticsEngine::Finalize()
     double EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     cout<<endl;
     cout<<"Optics engine summary:"<<endl;
-    cout<<"Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
-	cout<<"Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
-    cout<<"Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
-	cout<<endl;
-    cout<<"Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
-    cout<<"Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
-    cout<<"Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
-    cout<<"  Optics plane not reached form above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
-    cout<<"  Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
-    cout<<"  Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
-    cout<<"  Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
+    cout<<"  Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
+    cout<<endl;
+    cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
+    cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
+    cout<<endl;
+    cout<<"  Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
+    cout<<"  Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
+    cout<<"  Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
+    cout<<"    Optics plane not reached form above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
+    cout<<"    Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
+    cout<<"    Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
+    cout<<"    Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
   }
 
   return true;
@@ -489,15 +491,22 @@ bool NModuleOpticsEngine::LoadReflectivity()
   /* READ IN THE FILENAMES */
   infile = fopen(FileName.Data(), "r");
   if (infile == 0) {
-    cerr<<"Unable to read file: "<<FileName<<endl;
+    cerr<<"Unable to read reflectivity master file: "<<FileName<<endl;
     return false;
   }
-  if (fscanf(infile,"%s \n", directory) != 1) return false;
+  if (fscanf(infile,"%s \n", directory) != 1) {
+    cerr<<"Unable to read directory from reflectivity master file: "<<FileName<<endl;
+    return false;
+  }
   for (i=0; i < m_NGroups; i++) {
-    if (fscanf(infile,"%s\n",Rfile[i]) != 1) return false;
+    if (fscanf(infile,"%s\n",Rfile[i]) != 1) {
+      cerr<<"Unable to read reflectivity file from reflectivity master file: "<<FileName<<endl;
+      return false;
+    }
   } 
   fclose(infile);
 
+  
   /* GET R-file size */
 
   ref_e = new float[ne+1]; // vector(0, ne);
@@ -508,19 +517,32 @@ bool NModuleOpticsEngine::LoadReflectivity()
     
     infile = fopen(FileName.Data(),"r");
     if (infile == 0) {
-      cerr<<"Unable to read file: "<<FileName.Data()<<endl;
+      cerr<<"Unable to open file: "<<FileName.Data()<<endl;
       return false;
     }
-    if (fscanf(infile, "%s %s \n", buffer, buffer) != 2) return false;
-    if (fscanf(infile, "%s \n",buffer) != 1) return false;
+    if (fscanf(infile, "%s %s \n", buffer, buffer) != 2) {
+      cerr<<"Unable to parse first line in file: "<<FileName.Data()<<endl;
+      return false;
+    }
+    if (fscanf(infile, "%s \n",buffer) != 1) {
+      cerr<<"Unable to parse second line in file: "<<FileName.Data()<<endl;
+      return false;
+    }
     for (j=0; j < ne; j++){
-      if (fscanf(infile, "%f ", &ref_e[j]) != 1) return false;
+      if (fscanf(infile, "%f ", &ref_e[j]) != 1) {
+        cerr<<"Unable to parse file (energy value): "<<FileName.Data()<<endl;
+        return false;
+      }
       for (l=0; l < na; l++) {
-        if (fscanf(infile, "%f ", &m_Reflectivity[i+1][j][l]) != 1) return false; 
+        if (fscanf(infile, "%f ", &m_Reflectivity[i+1][j][l]) != 1) {
+          cerr<<"Unable to parse file (reflectivity value): "<<FileName.Data()<<endl;
+          return false;
+        }
       }
     }
     fclose(infile);
   } /* for (i=0; i < m_NGroups; i++) */
+
 
   return true;
 }
@@ -894,6 +916,10 @@ bool NModuleOpticsEngine::ReadXmlConfiguration(MXmlNode* Node)
   if (UseScatteringNode != 0) {
     m_UseScattering = UseScatteringNode->GetValueAsBoolean();
   }
+  MXmlNode* UseGhostRaysNode = Node->GetNode("UseGhostRays");
+  if (UseGhostRaysNode != 0) {
+    m_UseGhostRays = UseGhostRaysNode->GetValueAsBoolean();
+  }
   MXmlNode* UseIdealOpticsNode = Node->GetNode("UseIdealOptics");
   if (UseIdealOpticsNode != 0) {
     m_UseIdealOptics = UseIdealOpticsNode->GetValueAsBoolean();
@@ -912,6 +938,7 @@ MXmlNode* NModuleOpticsEngine::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   new MXmlNode(Node, "UseScattering", m_UseScattering);
+  new MXmlNode(Node, "UseGhostRays", m_UseGhostRays);
   new MXmlNode(Node, "UseIdealOptics", m_UseIdealOptics);
 
   return Node;

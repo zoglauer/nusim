@@ -32,6 +32,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NMetrologyDataSet.o \
 	$(LB)/NMetrologyData.o \
 	$(LB)/NObservatoryData.o \
+	$(LB)/NExtractFitsImage.o \
 
 
 SOBJ = $(LB)/libData.$(DLL)

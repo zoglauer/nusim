@@ -93,7 +93,7 @@ bool NModuleSourceDistribution::Initialize()
     cerr<<"No sources!"<<endl;
     return false;
   }
-
+  
   dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa()*c_Deg*60, 
                                                                                       m_Satellite.GetPointing(0).GetDec()*c_Deg*60);
 
@@ -163,7 +163,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   // Need the reverse direction, only reverse Z. Has to do with how it was defined in the raytrace module.
   MVector SP = Photon.GetDirection();
   SP[2]=-SP[2];
-	
+  
   NPointing P = m_Satellite.GetPointing(m_Time);
   NOrientation OB = m_Satellite.GetOrientationOpticalBench(m_Time);
   NOrientation Robst = m_Satellite.GetOrientationStarTrackerRelOpticalBench(m_Time, 4);
@@ -173,12 +173,13 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   // Need to flip x/y but only in OB system....
   SP = Qob.Rotation(SP);
   SP = Qobin.Rotation(SP);
-  	  
+ 
+  
   // Store RA and DEC of the original photon  
   Ra = atan(SP[1]/SP[0]);
   Dec = asin(SP[2]);
 
-  Event.SetRaDec(Ra, Dec);
+  Event.SetOriginalPhotonRaDec(Ra, Dec);
   
   
   // (d) Store all the data:
@@ -197,10 +198,10 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
 
   m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
   DetermineNext();
-    
+
   dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra*c_Deg*60, Dec*c_Deg*60);
   dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddEnergy(Photon.GetEnergy());
-  
+ 
   return true;
 }
 

@@ -93,6 +93,10 @@ bool NModuleBackprojector::Initialize()
                                                                                     m_Satellite.GetDetectorPixelsX(),
                                                                                     m_Satellite.GetDetectorPixelsY());
 
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa()*c_Deg*60, 
+                                                                                 m_Satellite.GetPointing(0).GetDec()*c_Deg*60);
+                                                                                    
+                                                                                    
   return true;
 }
 
@@ -106,31 +110,30 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
 
   // Backproject the event...
 
-  if (Event.GetOriginalPhoton().IsEmpty() == false) {
-    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddInitialDirection(-Event.GetOriginalPhoton().GetDirection());
-  }
-
   // Do a trivial backprojection ;-)
   double Energy = 0.0;
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
-    // This function goes along with the trivial optics engine:
-    // A position 0/0 means on axis focal spot
-    // For each 0.3 mm deviation corresponds to 1 arcmin distance
     
-    MVector Pos = Event.GetHit(i).GetPosition(); // Position in in focal plane module
-    // Randomize within pixel:
-    Pos[0] += m_Satellite.GetDetectorAveragePixelSizeX()*(gRandom->Rndm()-0.5);
-    Pos[1] += m_Satellite.GetDetectorAveragePixelSizeY()*(gRandom->Rndm()-0.5);
 
-    double RadiusInArcmin = sqrt(Pos.X()*Pos.X() + Pos.Y()*Pos.Y())/3;
-    MVector Origin(-Pos.X(), -Pos.Y(), 1000.0);
-    //cout<<"Origin: "<<Origin.Theta()*c_Deg<<":"<<Origin.Phi()*c_Deg<<endl;
-    Origin.SetTheta(RadiusInArcmin/60*c_Rad);
-    //cout<<"Origin: "<<RadiusInArcmin<<"  -->"<<RadiusInArcmin/60*c_Rad<<"  -->"<<Origin.Theta()*c_Deg<<":"<<Origin.Phi()*c_Deg<<endl;
-
+    
+    double RA = Event.GetHit(i).GetObservatoryData().GetRA()*180/c_Pi*60;
+    double DEC = Event.GetHit(i).GetObservatoryData().GetDEC()*180/c_Pi*60;
+    
+    MVector D = Event.GetHit(i).GetObservatoryData().GetDirectionEventInIS();
+    
+    //cout<<endl;
+    //cout<<"RA/DEC hit:"<<Event.GetHit(i).GetObservatoryData().GetRA()*180/c_Pi<<":"<<Event.GetHit(i).GetObservatoryData().GetDEC()*180/c_Pi<<endl;
+    //cout<<"RA/DEC ini:"<<m_InitialRa/60<<" : "<<m_InitialDec/60<<endl;
+    /*
+    cout<<"RA/DEC dif:"<<RA<<" : "<<DEC<<endl;
+    cout<<"RA/DEC evt:"<<Event.GetOriginalPhotonRa()*180/c_Pi*60<<":"<<Event.GetOriginalPhotonDec()*180/c_Pi*60<<endl;
+    //cout<<"RA/DEC tst:"<<(atan(D[1]/D[0])-rr[0].rd_0)*!radeg*3600<<":"<<(asin(D[2])-rr[0].rd_1)*!radeg*3600.<<endl;
+    cout<<"RA/DEC tst:"<<atan(D[1]/D[0])*180/c_Pi*60<<":"<<asin(D[2])*180/c_Pi*60<<endl;
+    */
+    
     Energy += Event.GetHit(i).GetEnergy();
 
-    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddBackprojection(Origin);
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddBackprojection(RA, DEC);
   }
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddEnergy(Energy);
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(Event.GetTime());

@@ -43,16 +43,12 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
   // standard constructor
 
   // Set the new title of the tab here:
-  m_TabTitle = "Backprojections";
+  m_TabTitle = "Results";
 
   // Add all histograms and canvases below
-  m_InitialDistribution = new TH2D("Initial distribution", "Initial distribution", 161, -8, 8, 161, -8, 8);
-  m_InitialDistribution->SetXTitle("[arcmin]");
-  m_InitialDistribution->SetYTitle("[arcmin]");
-
-  m_Backprojection = new TH2D("Backprojection", "Backprojection", 321, -8, 8, 321, -8, 8);
-  m_Backprojection->SetXTitle("[arcmin]");
-  m_Backprojection->SetYTitle("[arcmin]");
+  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 81, -8, 8, 81, -8, 8);
+  m_Backprojection->SetXTitle("RA - relative to initial pointing [arcmin]");
+  m_Backprojection->SetYTitle("DEC - relative to initial pointing [arcmin]");
 
   m_Energy = new TH1D("Spectrum", "Spectrum", 148, 6, 80);
   m_Energy->SetXTitle("keV");
@@ -65,12 +61,14 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
 
   m_EnergyWidth = m_NormalizedEnergy->GetXaxis()->GetXmax() - m_NormalizedEnergy->GetXaxis()->GetXmin();
 
-  m_InitialCanvas = 0;
   m_BackprojectionCanvas = 0;
   m_EnergyCanvas = 0;
 
   m_Area = 0;
   m_Time = 0;
+  
+  m_InitialRa = 0;
+  m_InitialDec = 0;
 
   // use hierarchical cleaning
   SetCleanup(kDeepCleanup);
@@ -89,6 +87,24 @@ NGUIDiagnosticsBackprojector::~NGUIDiagnosticsBackprojector()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec) 
+{ 
+  //! Set the initial pointing 
+
+  if (cos(Dec*60*c_Rad) == 0) { 
+    m_Backprojection->GetXaxis()->SetLimits(-180*60, +180*60);
+  } else {
+    m_Backprojection->GetXaxis()->SetLimits(-8/cos(Dec/60*c_Rad), +8/cos(Dec/60*c_Rad));
+  }
+
+  m_InitialRa = Ra; 
+  m_InitialDec = Dec; 
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NGUIDiagnosticsBackprojector::SetDetectorParameters(const MVector& Center, const MVector& HalfSize, const int NPixelsX, const int NPixelsY)
 {
   //! Set the detector parameters for improved display
@@ -101,22 +117,11 @@ void NGUIDiagnosticsBackprojector::SetDetectorParameters(const MVector& Center, 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NGUIDiagnosticsBackprojector::AddInitialDirection(MVector Dir)
-{
-  //! Add data to the initial direction histogram 
-
-  m_InitialDistribution->Fill(Dir.Theta()*cos(Dir.Phi())*c_Deg*60, Dir.Theta()*sin(Dir.Phi())*c_Deg*60);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-void NGUIDiagnosticsBackprojector::AddBackprojection(MVector Dir)
+void NGUIDiagnosticsBackprojector::AddBackprojection(double Ra, double Dec)
 {
   //! Add data to the backprojection histogram
 
-  m_Backprojection->Fill(Dir.Theta()*cos(Dir.Phi())*c_Deg*60, Dir.Theta()*sin(Dir.Phi())*c_Deg*60);
+  m_Backprojection->Fill(Ra - m_InitialRa, Dec - m_InitialDec);
 }
 
 
@@ -140,14 +145,6 @@ void NGUIDiagnosticsBackprojector::Create()
 
   TGLayoutHints* CanvasLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
                                                   2, 2, 2, 2);
-
-  
-  m_InitialCanvas = new TRootEmbeddedCanvas("Initial", this, 100, 100);
-  AddFrame(m_InitialCanvas, CanvasLayout);
-
-  m_InitialCanvas->GetCanvas()->cd();
-  m_InitialDistribution->Draw("colz");
-  m_InitialCanvas->GetCanvas()->Update();
 
   m_BackprojectionCanvas = new TRootEmbeddedCanvas("Final", this, 100, 100);
   AddFrame(m_BackprojectionCanvas, CanvasLayout);
@@ -173,13 +170,8 @@ void NGUIDiagnosticsBackprojector::Update()
 {
   //! Update the frame
 
-  if (m_InitialCanvas != 0) {
-    m_InitialCanvas->GetCanvas()->Modified();
-    m_InitialCanvas->GetCanvas()->Update();
-    gSystem->ProcessEvents();
-  }
-
   if (m_BackprojectionCanvas != 0) {
+    m_Backprojection->SetTitle(TString("Backprojected hits after T = ") + m_Time.ToString());
     m_BackprojectionCanvas->GetCanvas()->Modified();
     m_BackprojectionCanvas->GetCanvas()->Update();
     gSystem->ProcessEvents();
