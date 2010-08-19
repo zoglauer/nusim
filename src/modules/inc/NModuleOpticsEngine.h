@@ -147,6 +147,9 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   //! True if ideal optics is activated
   bool m_UseIdealOptics;
   
+  //! True if ghost rays are activated
+  bool m_UseGhostRays;
+  
   // private members:
  private:
   //! Number photons which are blocked because they do not reached the optics plane from above
@@ -159,7 +162,10 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   unsigned int m_BlockedPhotonsDoNotExitOptics;
 
   unsigned int m_ScatteredPhotons;
-
+  //! Single reflected photons from the upper mirror
+  unsigned int m_UpperGhosts;
+  //! Single reflected photons from the lower mirror
+  unsigned int m_LowerGhosts;
 
 #ifdef ___CINT___
  public:

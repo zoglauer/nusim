@@ -143,8 +143,7 @@ bool NModuleObservatoryReconstructor::AnalyzeEvent(NEvent& Event)
 
   // Step 1.1: Metrology data
 
-  mimp<<"Interpolations are dummies & the implementation is very inefficient!"<<show;
-
+  
   // Find the first data set after Time in the Metrology data set stream:
   list<NMetrologyData>::iterator IterMetrology;
   list<NMetrologyData>::iterator LowerBoundMetrology;
@@ -232,7 +231,7 @@ bool NModuleObservatoryReconstructor::AnalyzeEvent(NEvent& Event)
   
   for (unsigned int h = 0; h < Event.GetNHits(); ++h) {
     m_ObservatoryReconstructor.Reconstruct(Event.GetHitRef(h));
-    cout << "OB =" << OB.ToString() << endl;  // for diagnostics
+    //cout << "OB =" << OB.ToString() << endl;  // for diagnostics
   }
   
   // For debugging add all current orientations to the event

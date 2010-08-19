@@ -32,6 +32,7 @@
 #include "NGUIOptionsOpticsEngine.h"
 
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -94,7 +95,6 @@ bool NModuleOpticsEngine::Initialize()
   m_AngularMesh = 5e-5;  // stepsize mrad in reflectivity file
   m_EnergyMesh = .1; // keV
 
-
   m_NShells = 133;
   m_NGroups = 10; 
 
@@ -121,6 +121,8 @@ bool NModuleOpticsEngine::Initialize()
   m_BlockedPhotonsOpeningNotReached = 0;
   m_BlockedPhotonsEnergyTooHigh = 0;
   m_BlockedPhotonsDoNotExitOptics = 0;
+  m_UpperGhosts = 0;
+  m_LowerGhosts = 0;
   
   return true;
 }
@@ -218,7 +220,6 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     MovePhoton(InPos, RTDir, 10150.);
   }
   //*************
-
    
   int Code = RayTrace(Photon.GetEnergy(), RTDir, RTPos); 
   if (Code == 0) {
@@ -227,8 +228,13 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     ++m_BlockedPhotonsDoNotExitOptics;
     return true;
   }
+  if (Code == 3) ++m_UpperGhosts;
+  if (Code == 2) ++m_LowerGhosts;
 
-  ++m_ScatteredPhotons;
+  if (m_UseGhostRays) ++m_ScatteredPhotons;
+  else {
+    if (Code == 1) ++m_ScatteredPhotons;
+  }
   //cout<<"Passed ray trace"<<endl;
 
   // Step 3: 
@@ -244,11 +250,13 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   //************* Perfect Optic
   // Construct the new direction cosines as being the vector that connects the exit location of the ray, RTpos, to the 'ideal' spot on the FP, InPos.
   if (m_UseIdealOptics) {
-    MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - MVector(InPos[1], InPos[2], InPos[3]);
-    //MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - iPhoton.GetPosition();
+    MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - MVector(InPos[1], InPos[2], InPos[3]);   // Only focus at F
+    //MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - iPhoton.GetPosition();  // follow FP and focus on the top
     Photon.SetDirection(MVector(-Pnew[0],-Pnew[1],Pnew[2]));
   }
   //*************
+
+  //cout<<Photon.GetPosition()<<endl;
 
    // (b) Rotate back in world coordinate system
   Orientation.TransformOut(Photon);
@@ -272,7 +280,9 @@ bool NModuleOpticsEngine::Finalize()
     cout<<endl;
     cout<<"Optics engine summary:"<<endl;
     cout<<"Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
-    cout<<endl;
+	cout<<"Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
+    cout<<"Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
+	cout<<endl;
     cout<<"Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
     cout<<"Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
     cout<<"Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
@@ -298,7 +308,8 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     j_index,
     e_index,           /* energy index */
     shell_index,
-    mirror_group;
+    mirror_group,
+	flag=0;				/*flag for keeping track og ghost rays*/
   float photon_energy,
     Rmin,Rmax,    /* for restricting the simulation space *********/
     apex1,apex2,  /* cone apices */
@@ -345,11 +356,16 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   mirror_group = GetMirrorGroup(m_Alpha1[shell_index], m_NGroups+1);
   z_interaction = ConeReflectionPoint(k,r,apex1,m_Alpha1[shell_index]);
 
-  if (z_interaction >= -m_Gap) {
-    //cout<<"Block 4: "<<z_interaction<<" vs. Gap: "<<-m_Gap<<endl;
-    return 0;
+  if (z_interaction >= -m_Gap && z_interaction <= m_Gap) { 
+   // miss between upper and lower mirror sections
+      return 0;
   }
-  if (z_interaction < -m_Gap){   /* does it hit mirror, excluding gap */
+  if (z_interaction > m_Gap) {
+    //cout<<"Block 4: "<<z_interaction<<" vs. Gap: "<<-m_Gap<<endl;
+	// Ghostray: miss first reflection and flag it. 
+	flag = 2;
+  }
+  if (z_interaction < -m_Gap && z_interaction > -m_ShellLength){   /* does it hit mirror, excluding gap */
     /*calculate reflected vector (new k,r)*/
     MovePhoton(r,k,z_interaction);
     incidence_angle1 = Reflection(r,k,m_Alpha1[shell_index],scatter);
@@ -364,18 +380,25 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   MovePhoton(r,k,-m_Gap); /* move to lower part of upper mirror */
 
   r0 = sqrt(Square(r[1]) + Square(r[2])); 
-  if (r0 < (m_Rm2[shell_index - 1] + m_SubstrateThickness)){
+  if ((r0 < (m_Rm2[shell_index - 1] + m_SubstrateThickness)) || (r0 >= m_Rm2[shell_index])){
     //cout<<"Block 6: "<<endl;
     return 0;
   }
     
-  MovePhoton(r,k,m_Gap); /* move to upper part of lower mirror */
+  MovePhoton(r,k,0); /* Intersection between upper and lower + GAP. */
   z_interaction = ConeReflectionPoint(k,r,apex2,m_Alpha2[shell_index]);
-
-  if (z_interaction >=m_ShellLength || z_interaction <= m_Gap) {
-    //cout<<"Block 7: "<<z_interaction<<endl;
-    return 0;
+  
+  if (z_interaction <= m_Gap) {
+      return 0;
   }
+	
+  MovePhoton(r,k,m_Gap); /* move to upper part of lower mirror */
+  
+  if (z_interaction >=m_ShellLength) {
+	// Ghost: Miss lower reflection and flag it.
+	flag = 3;
+  }
+  
   if (z_interaction < m_ShellLength && z_interaction > m_Gap){
     /*calculate reflected vector (new k,r)*/
     MovePhoton(r,k,z_interaction);
@@ -400,7 +423,10 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     return 0;
   } 
 
-  return 1; /* succesfull hit */
+  if (flag == 2) return 2;
+  if (flag == 3) return 3;
+  
+  return 1; /* succesfull double bounce hit */
 }
 
 
