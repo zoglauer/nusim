@@ -74,10 +74,10 @@ void NGUIOptionsPointingPredefined::Create()
 
   NPointing P = dynamic_cast<NModulePointingPredefined*>(m_Module)->GetPointingCenter();
 
-  m_Ra = new MGUIEEntry(this, "Right ascension: ", false, P.GetRa());
-  AddFrame(m_Ra, StandardLayout);
-  m_Dec = new MGUIEEntry(this, "Declination: ", false, P.GetDec());
+  m_Dec = new MGUIEEntry(this, "Declination [deg]: ", false, P.GetDec()/60);
   AddFrame(m_Dec, StandardLayout);
+  m_Ra = new MGUIEEntry(this, "Right ascension [deg]: ", false, P.GetRa()/60);
+  AddFrame(m_Ra, StandardLayout);
 
   TGCompositeFrame* MotionPatternFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
   AddFrame(MotionPatternFrame, ComboFrameLayout);
@@ -139,7 +139,7 @@ bool NGUIOptionsPointingPredefined::OnApply()
 	// Modify this to store the data in the module!
   
   NPointing P = dynamic_cast<NModulePointingPredefined*>(m_Module)->GetPointingCenter();
-  P.SetRaDec(m_Ra->GetAsDouble(), m_Dec->GetAsDouble());
+  P.SetRaDec(m_Ra->GetAsDouble()*60, m_Dec->GetAsDouble()*60);
   dynamic_cast<NModulePointingPredefined*>(m_Module)->SetPointingCenter(P);
   dynamic_cast<NModulePointingPredefined*>(m_Module)->SetMotionPattern(m_MotionPatterns->GetSelected());
 

@@ -94,8 +94,8 @@ bool NModuleSourceDistribution::Initialize()
     return false;
   }
   
-  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa()*c_Deg*60, 
-                                                                                      m_Satellite.GetPointing(0).GetDec()*c_Deg*60);
+  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
+                                                                                      m_Satellite.GetPointing(0).GetDec());
 
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
@@ -176,8 +176,8 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
  
   
   // Store RA and DEC of the original photon  
-  Ra = atan(SP[1]/SP[0]);
-  Dec = asin(SP[2]);
+  Ra = atan(SP[1]/SP[0])*60*c_Deg;
+  Dec = asin(SP[2])*60*c_Deg;
 
   Event.SetOriginalPhotonRaDec(Ra, Dec);
   
@@ -199,7 +199,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
   DetermineNext();
 
-  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra*c_Deg*60, Dec*c_Deg*60);
+  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra, Dec);
   dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddEnergy(Photon.GetEnergy());
  
   return true;

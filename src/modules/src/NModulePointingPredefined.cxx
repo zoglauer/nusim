@@ -42,7 +42,7 @@ ClassImp(NModulePointingPredefined)
 
 
 // make sure thos eare in sequence!
-const int NModulePointingPredefined::c_MotionPatternPredefined       = 0;
+const int NModulePointingPredefined::c_MotionPatternPredefined  = 0;
 const int NModulePointingPredefined::c_MotionPatternRandomWalk  = 1;
 // Update those too!!
 const int NModulePointingPredefined::c_MotionPatternMin         = 0;
@@ -77,7 +77,7 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
   //m_Diagnostics = new MGUIDiognosticsPointing();
 
   // Some default initilizations:
-  m_PointingCenter.SetRaDec(c_Pi, c_Pi/4);
+  m_PointingCenter.SetRaDec(180*60, 45*60);
   m_MotionPattern = c_MotionPatternPredefined;
 }
 
@@ -113,7 +113,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime Time)
   // Return the pointing of the satellite at a given time
 
   if (m_MotionPattern == c_MotionPatternRandomWalk) {
-    double Move = c_Pi/180/60/60/60; // Movement per sec -> 60 arcsec per hour
+    double Move = 1.0/60/60/60; // Movement per sec -> 60 arcsec per hour
     double MoveTime = 1.0;
 
     double Ra = m_RWPointing.GetRa(); // ~12:00 hrs
@@ -196,7 +196,7 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  double Ra = c_Pi, Dec = c_Pi/4;
+  double Ra = 180*60, Dec = 45*60;
 
   MXmlNode* RaNode = Node->GetNode("Ra");
   if (RaNode != 0) {

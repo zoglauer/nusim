@@ -93,8 +93,8 @@ bool NModuleBackprojector::Initialize()
                                                                                     m_Satellite.GetDetectorPixelsX(),
                                                                                     m_Satellite.GetDetectorPixelsY());
 
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa()*c_Deg*60, 
-                                                                                 m_Satellite.GetPointing(0).GetDec()*c_Deg*60);
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
+                                                                                 m_Satellite.GetPointing(0).GetDec());
                                                                                     
                                                                                     
   return true;

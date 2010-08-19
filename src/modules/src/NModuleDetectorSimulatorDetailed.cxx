@@ -501,10 +501,12 @@ bool NModuleDetectorSimulatorDetailed::SimulateRayleigh(NPhoton& Photon, NEvent&
 
 bool NModuleDetectorSimulatorDetailed::Finalize()
 {
-  cout<<"Photo:        "<<m_NPhoto<<endl;
-  cout<<"Compton:      "<<m_NCompton<<endl;
-  cout<<"Rayleigh:     "<<m_NRayleigh<<endl;
-  cout<<"Fluorescence: "<<m_NFluorescence<<endl;
+  cout<<endl;
+  cout<<"Detector interaction simulator (detailed):"<<endl;
+  cout<<"  Photo:        "<<m_NPhoto<<endl;
+  cout<<"  Compton:      "<<m_NCompton<<endl;
+  cout<<"  Rayleigh:     "<<m_NRayleigh<<endl;
+  cout<<"  Fluorescence: "<<m_NFluorescence<<endl;
 
   return true;
 }

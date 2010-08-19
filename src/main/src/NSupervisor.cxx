@@ -647,14 +647,14 @@ bool NSupervisor::Run()
   cout<<endl;
   cout<<"Supervisor summary:"<<endl;
   cout<<endl;
-  cout<<"CPU Timer:        "<<Timer.GetElapsed()<<" sec"<<endl;
-  cout<<"Observation time: "<<m_Satellite.GetTimeIdeal().GetSeconds()<<" sec"<<endl;
+  cout<<"  CPU Timer:        "<<Timer.GetElapsed()<<" sec"<<endl;
+  cout<<"  Observation time: "<<m_Satellite.GetTimeIdeal().GetSeconds()<<" sec"<<endl;
   cout<<endl;
-  cout<<"Started events:   "<<EventID+1<<endl;
-  cout<<"Blocked events:   "<<NBlockedEvents<<endl;
-  cout<<"Vetoed events:    "<<NVetoedEvents<<"\t"<<NVetoedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"Cut events:       "<<NCutEvents<<"\t"<<NCutEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"Passed events:    "<<NPassedEvents<<"\t"<<NPassedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Started events:   "<<EventID+1<<endl;
+  cout<<"  Blocked events:   "<<NBlockedEvents<<endl;
+  cout<<"  Vetoed events:    "<<NVetoedEvents<<"\t"<<NVetoedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Cut events:       "<<NCutEvents<<"\t"<<NCutEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Passed events:    "<<NPassedEvents<<"\t"<<NPassedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<endl;
 
   m_Running = false;
