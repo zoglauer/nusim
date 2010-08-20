@@ -577,7 +577,8 @@ TString MGUIEEntry::MakeSmartString(double Number)
       Str.Replace(Str.Length()-1, 1, TString(""));
     }
   }
-  
+  if (Str.Length() == 0) Str = "0";
+    
   return Str;
 }
 
