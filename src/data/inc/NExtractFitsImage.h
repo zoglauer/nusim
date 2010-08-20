@@ -40,7 +40,7 @@ class NExtractFitsImage
   virtual ~NExtractFitsImage();
 
   //! Extract the image as a (MEGAlib) 2D function. Returns false on error
-  bool Extract(const TString& FileName, MFunction2D& Image);
+  bool Extract(TString FileName, MFunction2D& Image);
   
   
   // protected methods:

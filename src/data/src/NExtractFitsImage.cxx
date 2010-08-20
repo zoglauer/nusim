@@ -58,11 +58,12 @@ NExtractFitsImage::~NExtractFitsImage()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NExtractFitsImage::Extract(const TString& FileName, MFunction2D& Image)
+bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
 {
   //! Extract the image as a (MEGAlib) 2D function. Returns false on error
   
- // Load all fits files
+  // Load all fits files
+  MFile::ExpandFileName(FileName);
   
   int Status = 0;
   
