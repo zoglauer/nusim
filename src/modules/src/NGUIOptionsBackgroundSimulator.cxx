@@ -94,7 +94,7 @@ void NGUIOptionsBackgroundSimulator::Create()
 	AddFrame(m_DetectorDB, FileLayout);
 
 
-  TGLabel* ShieldLabel = new TGLabel(this, "Shield hits without detector hits (can be left empty to significantly speed up simulations):");
+  TGLabel* ShieldLabel = new TGLabel(this, "Shield hits without detector hits (leave empty unless interested in shield rates):");
   AddFrame(ShieldLabel, LabelLayout);
 
   m_ShieldFile = new MGUIEFileSelector(this, "Choose the shield distribution:", 
