@@ -43,7 +43,7 @@ NGUIDiagnosticsDetectorEffectsEngine::NGUIDiagnosticsDetectorEffectsEngine() : N
   // standard constructor
 
   // Set the new title of the tab here:
-  m_TabTitle = "DEE combined";
+  m_TabTitle = "DEE 1";
 
   // Add all histograms and canvases below
   m_PositionsBefore = new TH2D("PositionsBeforeDEE", "Positions before", 200, -25, 25, 200, -25, 25);

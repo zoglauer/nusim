@@ -275,7 +275,7 @@ bool NModuleDetectorEffectsEngineSciSim::AnalyzeEvent(NEvent& Event)
 
   // Step 0: Create diagnostics window information
   for (unsigned int i = 0; i < Event.GetNInteractions(); ++i) {
-    if (Event.GetInteraction(i).IsDetector() == true) {
+    if (Event.GetInteraction(i).IsDetector() == true && Event.GetTelescope() == 1) {
       // (a) Create the BEFORE info for the diagnostics window
       NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetInteraction(i).GetTelescope(), Event.GetInteraction(i).GetDetector());
       MVector Pos = Event.GetInteraction(i).GetPosition();
@@ -411,6 +411,8 @@ bool NModuleDetectorEffectsEngineSciSim::AnalyzeEvent(NEvent& Event)
   // Step inf: Create the AFTER info for the diagnostics window
   for (unsigned int h = 0; h < Event.GetNPixelHits(); ++h) {
     //cout<<"N pixel hits: "<<Event.GetNPixelHits()<<endl;
+    
+    if (Event.GetTelescope() != 1) continue;
     
     NPixelHit& P = Event.GetPixelHitRef(h);
  

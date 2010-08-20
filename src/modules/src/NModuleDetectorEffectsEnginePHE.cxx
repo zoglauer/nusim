@@ -378,11 +378,13 @@ bool NModuleDetectorEffectsEnginePHE::AnalyzeEvent(NEvent& Event)
   // (7) Update the GUI
   
   // Before:
-  NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetTelescope(), Detector);
-  MVector Pos = Photon.GetPosition();
-  O.TransformOut(Pos);
-  dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Photon.GetEnergy());
-
+  if (Event.GetTelescope() == 1) {
+    NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetTelescope(), Detector);
+    MVector Pos = Photon.GetPosition();
+    O.TransformOut(Pos);
+    dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Photon.GetEnergy());
+  }
+  
   // After:
   // TBD we should use the PHE data here
 

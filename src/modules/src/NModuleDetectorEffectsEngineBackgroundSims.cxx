@@ -139,11 +139,13 @@ bool NModuleDetectorEffectsEngineBackgroundSims::AnalyzeEvent(NEvent& Event)
     if (Event.GetInteraction(i).IsDetector() == true) {
       if (Event.GetInteraction(i).GetEnergy() < m_TriggerThreshold) continue;
       // (a) Create the BEFORE info for the diagnostics window
-      NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetInteraction(i).GetTelescope(), Event.GetInteraction(i).GetDetector());
-      MVector Pos = Event.GetInteraction(i).GetPosition();
-      O.TransformOut(Pos);
-      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
-
+      if (Event.GetTelescope() == 1) {
+        NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetInteraction(i).GetTelescope(), Event.GetInteraction(i).GetDetector());
+        MVector Pos = Event.GetInteraction(i).GetPosition();
+        O.TransformOut(Pos);
+        dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
+      }
+      
       // (b) Create the pixel hit(s)
       NPixelHit P;
       P.SetTelescope(Event.GetInteraction(i).GetTelescope());
@@ -193,16 +195,19 @@ bool NModuleDetectorEffectsEngineBackgroundSims::AnalyzeEvent(NEvent& Event)
       }
 
       // (c) Create the AFTER info for the diagnostics window
-      Pos[0] = (0.5 + P.GetXPixel()) * (2*m_Satellite.GetDetectorHalfDimension().X()/NPixelsX) - m_Satellite.GetDetectorHalfDimension().X();
-      Pos[1] = (0.5 + P.GetYPixel()) * (2*m_Satellite.GetDetectorHalfDimension().Y()/NPixelsY) - m_Satellite.GetDetectorHalfDimension().Y();
-      Pos[2] = P.GetNoisedAverageDepth();
-      if (Pos[2] > m_Satellite.GetDetectorHalfDimension().Z()) Pos[2] = 0.999*m_Satellite.GetDetectorHalfDimension().Z();
-      if (Pos[2] < -m_Satellite.GetDetectorHalfDimension().Z()) Pos[2] = -0.999*m_Satellite.GetDetectorHalfDimension().Z();
+      if (Event.GetTelescope() == 1) {
+        MVector Pos;
+        Pos[0] = (0.5 + P.GetXPixel()) * (2*m_Satellite.GetDetectorHalfDimension().X()/NPixelsX) - m_Satellite.GetDetectorHalfDimension().X();
+        Pos[1] = (0.5 + P.GetYPixel()) * (2*m_Satellite.GetDetectorHalfDimension().Y()/NPixelsY) - m_Satellite.GetDetectorHalfDimension().Y();
+        Pos[2] = P.GetNoisedAverageDepth();
+        if (Pos[2] > m_Satellite.GetDetectorHalfDimension().Z()) Pos[2] = 0.999*m_Satellite.GetDetectorHalfDimension().Z();
+        if (Pos[2] < -m_Satellite.GetDetectorHalfDimension().Z()) Pos[2] = -0.999*m_Satellite.GetDetectorHalfDimension().Z();
 
-      O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), P.GetTelescope(), P.GetDetector());
-      O.TransformOut(Pos);
-      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetNoisedEnergy());
-
+        NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), P.GetTelescope(), P.GetDetector());
+        O.TransformOut(Pos);
+      
+        dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetNoisedEnergy());
+      }
     } else {
       // Shield hits: 
       NShieldHit S;
