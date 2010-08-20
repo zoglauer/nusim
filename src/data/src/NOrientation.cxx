@@ -278,7 +278,7 @@ NOrientation NOrientation::operator*(const NOrientation& O) const
 
 
 
-void NOrientation::TransformIn(NPhoton& Photon)
+void NOrientation::TransformIn(NPhoton& Photon) const
 {
   // Translate and rotate a photon into this coordinate system
 
@@ -312,7 +312,7 @@ void NOrientation::TransformIn(NPhoton& Photon)
 
 
 
-void NOrientation::TransformOut(NPhoton& Photon)
+void NOrientation::TransformOut(NPhoton& Photon) const
 {
   // Translate and rotate a photon into this coordinate system
 
@@ -349,7 +349,7 @@ void NOrientation::TransformOut(NPhoton& Photon)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOrientation::TransformIn(MVector& Position)
+void NOrientation::TransformIn(MVector& Position) const
 {
   //! Translate and rotate a vector into this coordinate system
   // Translate:
@@ -367,7 +367,7 @@ void NOrientation::TransformIn(MVector& Position)
 
 
 
-void NOrientation::TransformOut(MVector& Position)
+void NOrientation::TransformOut(MVector& Position) const
 {
   //! Translate and rotate a vector into this coordinate system
 
@@ -394,7 +394,7 @@ void NOrientation::TransformOut(MVector& Position)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOrientation::TransformIn(NQuaternion& Q)
+void NOrientation::TransformIn(NQuaternion& Q) const
 {
   //! Rotate a quaternion Q with m_Q and express in m_Q frame
 
@@ -406,7 +406,7 @@ void NOrientation::TransformIn(NQuaternion& Q)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOrientation::TransformOut(NQuaternion& Q)
+void NOrientation::TransformOut(NQuaternion& Q) const
 {
   //! Rotate m_Q with Q expressed in Q frame. 
   //  There is no translation

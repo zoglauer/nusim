@@ -82,24 +82,24 @@ class NOrientation
   NOrientation operator*(const NOrientation& O) const;
 
   //! Translate and rotate a photon into this coordinate system
-  void TransformIn(NPhoton& Photon);
+  void TransformIn(NPhoton& Photon) const;
   
   //! Translate and rotate a photon into this coordinate system
-  void TransformOut(NPhoton& Photon);
+  void TransformOut(NPhoton& Photon) const;
 
   
   //! Translate and rotate a vector into this coordinate system
-  void TransformIn(MVector& Vector);
+  void TransformIn(MVector& Vector) const;
   
   //! Translate and rotate a vector into this coordinate system
-  void TransformOut(MVector& Vector);
+  void TransformOut(MVector& Vector) const;
 
   
   //! Rotate a quaternion into this coordinate system
-  void TransformIn(NQuaternion& Q);
+  void TransformIn(NQuaternion& Q) const;
   
   //! Rotate a quaternion out of this coordinate system
-  void TransformOut(NQuaternion& Q);
+  void TransformOut(NQuaternion& Q) const;
 
 
   //! Print the content of this class as a string
