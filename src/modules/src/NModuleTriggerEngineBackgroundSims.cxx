@@ -81,7 +81,7 @@ bool NModuleTriggerEngineBackgroundSims::Initialize()
 {
   // Initialize the module 
 
-  m_LowTrigger = 50;
+  m_LowTrigger = 75;
   m_HighTrigger = 5000;
   m_TriggerThreshold = 5;
 
