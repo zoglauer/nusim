@@ -38,6 +38,15 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent
   //! Default destructor
   virtual ~NModuleEventSelector();
 
+  //! Set the minimum energy
+  void SetEnergyMin(const double EnergyMin) { m_EnergyMin = EnergyMin; }
+  //! Get the minimum energy
+  double GetEnergyMin() const { return m_EnergyMin; }
+  //! Set the maximum energy
+  void SetEnergyMax(const double EnergyMax) { m_EnergyMax = EnergyMax; }
+  //! Get the maximum energy
+  double GetEnergyMax() const { return m_EnergyMax; }
+  
   //! Initialize the module
   virtual bool Initialize();
 
@@ -67,7 +76,10 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent
 
   // private members:
  private:
-
+  //! The minimum energy 
+  double m_EnergyMin;
+  //! The maximum energy
+  double m_EnergyMax;
 
 
 

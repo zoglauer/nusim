@@ -116,8 +116,8 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
     
 
     
-    double RA = Event.GetHit(i).GetObservatoryData().GetRA()*180/c_Pi*60;
-    double DEC = Event.GetHit(i).GetObservatoryData().GetDEC()*180/c_Pi*60;
+    double RA = Event.GetHit(i).GetObservatoryData().GetRa();
+    double DEC = Event.GetHit(i).GetObservatoryData().GetDec();
     
     MVector D = Event.GetHit(i).GetObservatoryData().GetDirectionEventInIS();
     

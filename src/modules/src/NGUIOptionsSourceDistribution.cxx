@@ -12,6 +12,7 @@
 
 // Standard libs:
 #include <vector>
+#include <fstream>
 using namespace std;
 
 // ROOT libs:
@@ -20,6 +21,7 @@ using namespace std;
 #include <TGLabel.h>
 #include <TFormula.h>
 #include <TGResourcePool.h>
+#include <TGFileDialog.h>
 
 // MEGAlib libs:
 #include "MStreams.h"
@@ -78,14 +80,20 @@ void NGUIOptionsSourceDistribution::Create()
 	TGLayoutHints* ButtonFrameLayout =	new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsCenterX, 20, 20, 5, 0);
 	AddFrame(ButtonFrame, ButtonFrameLayout);
 
-	TGTextButton* AddButton = new TGTextButton(ButtonFrame, "Add a source", c_Add); 
+  TGTextButton* AddButton = new TGTextButton(ButtonFrame, "Add new source", c_Add); 
   TGLayoutHints* AddButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
   AddButton->SetMargins(20, 20, 2, 2);
   AddButton->Associate(this);
   ButtonFrame->AddFrame(AddButton, AddButtonLayout);
 
+  TGTextButton* ListButton = new TGTextButton(ButtonFrame, "Add sources from list", c_List); 
+  TGLayoutHints* ListButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 10, 10, 0, 0);
+  ListButton->SetMargins(20, 20, 2, 2);
+  ListButton->Associate(this);
+  ButtonFrame->AddFrame(ListButton, ListButtonLayout);
+
 	TGTextButton* RemoveButton = new TGTextButton(ButtonFrame, "Remove current source", c_Remove); 
-  TGLayoutHints* RemoveButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 20, 0, 0, 0);
+  TGLayoutHints* RemoveButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 0, 0, 0, 0);
   RemoveButton->SetMargins(20, 20, 2, 2);
   RemoveButton->Associate(this);
   ButtonFrame->AddFrame(RemoveButton, RemoveButtonLayout);
@@ -111,6 +119,8 @@ bool NGUIOptionsSourceDistribution::ProcessMessage(long Message, long Parameter1
     case kCM_BUTTON:
       if (Parameter1 == c_Add) {
         Status = OnAdd();
+      } else if (Parameter1 == c_List) {
+        Status = OnList();
       } else if (Parameter1 == c_Remove) {
         Status = OnRemove();
       } 
@@ -151,9 +161,74 @@ void NGUIOptionsSourceDistribution::CreateTab(NSource* Source)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NGUIOptionsSourceDistribution::OnList()
+{
+  // Modify this to store the data in the module!
+
+  // Load a file
+  const char** Types = new const char*[4];
+  Types[0] = "All files";
+  Types[1] = "*";
+  Types[2] = 0;
+  Types[3] = 0;
+  
+  TGFileInfo Info;
+  //Info.fFilename = StrDup(gSystem->BaseName(FileName));
+  //Info.fIniDir = StrDup(gSystem->DirName(FileName));
+  Info.fFileTypes = Types;
+  
+  new TGFileDialog(gClient->GetRoot(), gClient->GetRoot(), kFDOpen, &Info);
+
+  // Get the filename ...
+  TString FileName;
+  if ((char *) Info.fFilename != 0) {
+    FileName = TString((char *) Info.fFilename);
+    cout<<"New Name: "<<FileName<<endl;
+    if (FileName.CompareTo("") == 0) {
+      return false;
+    }
+  } 
+  // ... or return when cancel has been pressed
+  else {
+    return false;
+  }
+
+  ifstream in;
+  in.open(FileName);
+  if (in.is_open() == false) {
+    mgui<<"Unable to opne file: "<<FileName<<show;
+    return false;
+  }
+
+  TString Line;
+  vector<NSource*>& Sources = dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetSourcesRef();
+  while (Line.ReadLine(in)) {   
+    NSource* Source = new NSource(m_Module->GetSatelliteRef());
+    if (Source->ParseLine(Line) == true) {
+      Sources.push_back(Source);
+      CreateTab(Sources.back());
+      m_Tab->SetTab(Sources.size()-1);
+    } else {
+      cout<<"Unable to parse line: "<<Line<<endl;
+      delete Source; 
+    }
+  }
+  in.close();
+
+  m_Tab->Layout();
+  m_Tab->MapSubwindows();
+  m_Tab->MapWindow();
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 bool NGUIOptionsSourceDistribution::OnAdd()
 {
-	// Modify this to store the data in the module!
+  // Modify this to store the data in the module!
 
   vector<NSource*>& Sources = dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetSourcesRef();
   NSource* Source = new NSource(m_Module->GetSatelliteRef());
@@ -176,7 +251,7 @@ bool NGUIOptionsSourceDistribution::OnAdd()
   m_Tab->MapSubwindows();
   m_Tab->MapWindow();
 
-	return true;
+  return true;
 }
 
 

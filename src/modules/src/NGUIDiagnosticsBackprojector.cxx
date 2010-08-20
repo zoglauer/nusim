@@ -146,15 +146,19 @@ void NGUIDiagnosticsBackprojector::Create()
   TGLayoutHints* CanvasLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
                                                   2, 2, 2, 2);
 
-  m_BackprojectionCanvas = new TRootEmbeddedCanvas("Final", this, 100, 100);
-  AddFrame(m_BackprojectionCanvas, CanvasLayout);
+  TGHorizontalFrame* HFrame = new TGHorizontalFrame(this);
+  AddFrame(HFrame, CanvasLayout);
+
+                                                  
+  m_BackprojectionCanvas = new TRootEmbeddedCanvas("Final", HFrame, 100, 100);
+  HFrame->AddFrame(m_BackprojectionCanvas, CanvasLayout);
 
   m_BackprojectionCanvas->GetCanvas()->cd();
   m_Backprojection->Draw("colz");
   m_BackprojectionCanvas->GetCanvas()->Update();
 
-  m_EnergyCanvas = new TRootEmbeddedCanvas("Energy", this, 100, 100);
-  AddFrame(m_EnergyCanvas, CanvasLayout);
+  m_EnergyCanvas = new TRootEmbeddedCanvas("Energy", HFrame, 100, 100);
+  HFrame->AddFrame(m_EnergyCanvas, CanvasLayout);
 
   m_EnergyCanvas->GetCanvas()->cd();
   m_EnergyCanvas->GetCanvas()->SetGridy();

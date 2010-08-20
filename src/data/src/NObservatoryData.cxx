@@ -77,26 +77,27 @@ void NObservatoryData::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-double NObservatoryData::GetRA()
+double NObservatoryData::GetRa()
 {
   //! Return the right ascension
   
-  return atan2(m_DirectionEventInIS[1], m_DirectionEventInIS[0]);
+  double Value = atan2(m_DirectionEventInIS[1], m_DirectionEventInIS[0])*c_Deg*60;
+  if (Value < 0.0) Value += 360*60;
+  return Value;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-double NObservatoryData::GetDEC()
+double NObservatoryData::GetDec()
 {
   //! Return the declination
 
   double Value = m_DirectionEventInIS[0]*m_DirectionEventInIS[0] + m_DirectionEventInIS[1]*m_DirectionEventInIS[1] + m_DirectionEventInIS[2]*m_DirectionEventInIS[2];
   if (Value <= 0) return 0.0;
 
-  return asin(m_DirectionEventInIS[2]/sqrt(Value));
-  //return acos(m_DirectionEventInIS[2]/sqrt(Value));
+  return asin(m_DirectionEventInIS[2]/sqrt(Value))*c_Deg*60;
 }
 
 

@@ -23,6 +23,7 @@ using namespace std;
 // MEGAlib:
 #include "MStreams.h"
 #include "MAssert.h"
+#include "MTokenizer.h"
 
 // NuSIM:
 #include "NExtractFitsImage.h"
@@ -383,12 +384,12 @@ bool NSource::SetPosition(double PositionParam1,
 
   // Some sanity checks:
   if (m_BeamType == c_FarFieldPoint) {
-    if (m_PositionParam1 < 0 || m_PositionParam1 > 180*60) {
+    if (m_PositionParam1 < -90*60 || m_PositionParam1 > 90*60) {
       mout<<m_Name<<": Theta must be within [0..180*60] arcmin"<<endl;
       return false;
     }
   } else if (m_BeamType == c_FarFieldDisk) {
-    if (m_PositionParam1 < 0 || m_PositionParam1 > 180*60) {
+    if (m_PositionParam1 < -90*60 || m_PositionParam1 > 90*60) {
       mout<<m_Name<<": Theta must be within [0..180*60] arcmin"<<endl;
       return false;
     }
@@ -590,10 +591,7 @@ bool NSource::SetPosition(TString FileName)
       mout<<m_Name<<": Unable to load 2D distribution from fits file!"<<endl;
       return false;
     }
-  } else {
-    mout<<m_Name<<": Wrong region type for this option "<<m_BeamType<<endl;
-    return false;
-  }
+  } 
 
   return true;
 }
@@ -1293,6 +1291,49 @@ double NSource::BandFunction(const double Energy, double Alpha,
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NSource::ParseLine(TString Line)
+{
+  // This is NOT a universal parser - just a quick hack to convert some data
+  // Format: 164700.1-460559  1  251.75063  -46.10000  3   5.0  80.0  2.0  0.000035200
+  
+  MTokenizer T(' ', false);
+  T.Analyze(Line);
+  if (T.GetNTokens() != 9) {
+    cout<<"Line parser source: Number of tokens not OK: "<<T.GetNTokens()<<endl;
+    return false;
+  }
+  int Pos = 0;
+  m_Name = T.GetTokenAtAsString(Pos++);
+  m_BeamType = T.GetTokenAtAsInt(Pos++);
+  if (m_BeamType != 1) return false;
+  m_PositionParam2 = T.GetTokenAtAsDouble(Pos++)*60;
+  m_PositionParam1 = T.GetTokenAtAsDouble(Pos++)*60;
+  m_SpectralType = T.GetTokenAtAsInt(Pos++);
+  if (m_SpectralType != 3) return false;
+  m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+  m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+  m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+  m_InputFlux = T.GetTokenAtAsDouble(Pos++);
+  
+  // Do an official "set" to initialize all the other variables:
+  SetSpectralType(m_SpectralType);
+  SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5);
+  SetBeamType(m_BeamType);
+  SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
+              m_PositionParam4, m_PositionParam5, m_PositionParam6, 
+              m_PositionParam7, m_PositionParam8, m_PositionParam9, 
+              m_PositionParam10, m_PositionParam11);
+  SetPosition(m_PositionFileName);
+  SetEnergy(m_EnergyFileName);
+  SetFlux(m_InputFlux);
+  
+  return true;
+}
+  
 
 ////////////////////////////////////////////////////////////////////////////////
 

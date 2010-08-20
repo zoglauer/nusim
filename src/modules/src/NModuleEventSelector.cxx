@@ -25,7 +25,7 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
-#include "NGUIOptions.h"
+#include "NGUIOptionsEventSelector.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,10 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   m_HasDiagnosticsGUI = false;
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsEventSelector)
   // and implement all your GUI options
-  //m_Diagnostics = new MGUIDiognosticsEventSelector();
+  //m_Diagnostics = new NGUIDiagnosticsEventSelector();
+  
+  m_EnergyMin = 5;
+  m_EnergyMax = 80;
 }
 
 
@@ -139,7 +142,7 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   }
   //cout<<"Energy: "<<TotalEnergy<<endl;
 
-  if (TotalEnergy > 80 || TotalEnergy < 6 || PatternRejection == true) {
+  if (TotalEnergy > m_EnergyMax || TotalEnergy < m_EnergyMin || PatternRejection == true) {
     Event.SetEventCut(true);
     //cout<<"Rejected"<<endl;
   } else {
@@ -162,10 +165,7 @@ void NModuleEventSelector::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsTemplate* Options = new NGUIOptionsTemplate(this);
+  NGUIOptionsEventSelector* Options = new NGUIOptionsEventSelector(this);
 
   // this stays always the same:
   Options->Create();
@@ -180,12 +180,14 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode.GetValue();
+  MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
+  if (EnergyMinNode != 0) {
+    m_EnergyMin = EnergyMinNode->GetValueAsDouble();
   }
-  */
+  MXmlNode* EnergyMaxNode = Node->GetNode("EnergyMax");
+  if (EnergyMaxNode != 0) {
+    m_EnergyMax = EnergyMaxNode->GetValueAsDouble();
+  }
 
   return true;
 }
@@ -199,10 +201,8 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "EnergyMin", m_EnergyMin);
+  new MXmlNode(Node, "EnergyMax", m_EnergyMax);
 
   return Node;
 }

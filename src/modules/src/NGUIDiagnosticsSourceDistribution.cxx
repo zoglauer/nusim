@@ -123,17 +123,20 @@ void NGUIDiagnosticsSourceDistribution::Create()
   TGLayoutHints* CanvasLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
                                                   2, 2, 2, 2);
 
-  
-  m_OriginCanvas = new TRootEmbeddedCanvas("Origin", this, 100, 100);
-  AddFrame(m_OriginCanvas, CanvasLayout);
+  TGHorizontalFrame* HFrame = new TGHorizontalFrame(this);
+  AddFrame(HFrame, CanvasLayout);
+
+
+  m_OriginCanvas = new TRootEmbeddedCanvas("Origin", HFrame, 100, 100);
+  HFrame->AddFrame(m_OriginCanvas, CanvasLayout);
 
   m_OriginCanvas->GetCanvas()->cd();
   m_Origin->Draw("colz");
   m_OriginCanvas->GetCanvas()->Update();
 
   
-  m_EnergyCanvas = new TRootEmbeddedCanvas("Energy", this, 100, 100);
-  AddFrame(m_EnergyCanvas, CanvasLayout);
+  m_EnergyCanvas = new TRootEmbeddedCanvas("Energy", HFrame, 100, 100);
+  HFrame->AddFrame(m_EnergyCanvas, CanvasLayout);
 
   m_EnergyCanvas->GetCanvas()->cd();
   m_EnergyCanvas->GetCanvas()->SetGridy();

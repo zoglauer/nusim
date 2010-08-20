@@ -60,6 +60,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleDetectorCalibratorSciSim.o \
 	$(LB)/NModuleDetectorCalibratorIdeal.o \
 	$(LB)/NModuleDetectorCalibratorBackgroundSims.o \
+	$(LB)/NGUIOptionsEventSelector.o \
 	$(LB)/NModuleEventSelector.o \
 	$(LB)/NGUIDiagnosticsBackprojector.o \
 	$(LB)/NModuleBackprojector.o \

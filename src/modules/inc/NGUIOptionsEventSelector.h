@@ -1,5 +1,5 @@
 /*
- * NGUIOptionsSourceDistribution.h
+ * NGUIOptionsEventSelector.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NGUIOptionsSourceDistribution__
-#define __NGUIOptionsSourceDistribution__
+#ifndef __NGUIOptionsEventSelector__
+#define __NGUIOptionsEventSelector__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 
 // MEGAlib libs:
 #include "NGlobal.h"
-#include "MGUIEEntryList.h"
+#include "MGUIEMinMaxEntry.h"
 
 // NuSTAR libs
 #include "NModule.h"
@@ -40,14 +40,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NGUIOptionsSourceDistribution : public NGUIOptions
+class NGUIOptionsEventSelector : public NGUIOptions
 {
   // public Session:
  public:
   //! Default constructor
-  NGUIOptionsSourceDistribution(NModule* Module);
+  NGUIOptionsEventSelector(NModule* Module);
   //! Default destructor
-  virtual ~NGUIOptionsSourceDistribution();
+  virtual ~NGUIOptionsEventSelector();
 
   //! Process all button, etc. messages
   virtual bool ProcessMessage(long Message, long Parameter1, long Parameter2);
@@ -55,21 +55,11 @@ class NGUIOptionsSourceDistribution : public NGUIOptions
   //! The creation part which gets overwritten
   virtual void Create();
 
-  static const int c_Add    = 1001;
-  static const int c_List   = 1002;
-  static const int c_Remove = 1003;
-
   // protected methods:
  protected:
 
   //! Actions after the Apply or OK button has been pressed
 	virtual bool OnApply();
-  //! Actions after the Add button has been pressed
-  virtual bool OnAdd();
-  //! Actions after the List button has been pressed
-  virtual bool OnList();
-  //! Actions after the Remove button has been pressed
-	virtual bool OnRemove();
 
   //! Create the tab
   void CreateTab(NSource* Source);
@@ -79,16 +69,14 @@ class NGUIOptionsSourceDistribution : public NGUIOptions
 
   // private members:
  private:
-  //! The main Tab
-  TGTab* m_Tab;
-  //! List of all tab frames
-  vector<TGCompositeFrame*> m_TabFrames;
-  //! List of all source frames
-  vector<NGUIOptionsSource*> m_SourceFrames;
+  //! Choose the energy window
+  MGUIEMinMaxEntry* m_Energies;
+
+
 
 #ifdef ___CINT___
  public:
-  ClassDef(NGUIOptionsSourceDistribution, 1) // basic class for dialog windows
+  ClassDef(NGUIOptionsEventSelector, 1) // basic class for dialog windows
 #endif
 
 };

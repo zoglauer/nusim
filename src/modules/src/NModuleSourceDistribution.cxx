@@ -176,7 +176,8 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
  
   
   // Store RA and DEC of the original photon  
-  Ra = atan(SP[1]/SP[0])*60*c_Deg;
+  Ra = atan2(SP[1], SP[0])*60*c_Deg;
+  if (Ra < 0) Ra += 360*60;
   Dec = asin(SP[2])*60*c_Deg;
 
   Event.SetOriginalPhotonRaDec(Ra, Dec);

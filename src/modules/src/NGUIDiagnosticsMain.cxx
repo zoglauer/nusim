@@ -45,7 +45,7 @@ ClassImp(NGUIDiagnosticsMain)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NGUIDiagnosticsMain::NGUIDiagnosticsMain() : MGUIDialog(gClient->GetRoot(), gClient->GetRoot(), 400, 700)
+NGUIDiagnosticsMain::NGUIDiagnosticsMain() : MGUIDialog(gClient->GetRoot(), gClient->GetRoot(), 900, 500)
 {
   gStyle->SetPalette(1, 0);
 
@@ -83,11 +83,11 @@ void NGUIDiagnosticsMain::Create()
 
    
   // The subtitle
-  AddSubTitle(TString("Press the tab-bar to switch between diagnostics modules"));
+  //AddSubTitle(TString("Diagnostics"));
 
-  m_MainTab = new TGTab(this, 400, 700);
+  m_MainTab = new TGTab(this, 900, 550);
   m_MainTabLayout = 
-    new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 10, 10, 0, 0);
+    new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 10, 10, 20, 0);
   AddFrame(m_MainTab, m_MainTabLayout);
 
   for (unsigned int d = 0; d < m_DiagnosticTabs.size(); ++d) {
@@ -100,9 +100,10 @@ void NGUIDiagnosticsMain::Create()
   AddButtons(c_Ok | c_Apply, true);
 
   m_ApplyButton->SetText("Update");
+  m_OKButton->SetText("Close");
 
   // Give this element the default size of its content:
-  Resize(400, 700); 
+  Resize(900, 550); 
 
   MapSubwindows();
   MapWindow();  

@@ -211,7 +211,8 @@ public:
   //! Create an XML node tree from the configuration
   virtual MXmlNode* CreateXmlConfiguration();
 
-
+  // This is NOT a universal parser - just a quick hack to convert some data
+  bool ParseLine(TString Line);
 
 
   //! Id of an invalid type

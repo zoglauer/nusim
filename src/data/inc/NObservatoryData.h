@@ -70,9 +70,9 @@ class NObservatoryData
   MVector GetDirectionEventInIS() { return m_DirectionEventInIS; }
 
   //! Return the right ascension
-  double GetRA();
+  double GetRa();
   //! Return the declination
-  double GetDEC();
+  double GetDec();
 
   //! Set the direction of the focal plane in optic bench plane
   void SetOrientationFocalPlaneToOB(const NOrientation& O) { m_Empty = false; m_OrientationFocalPlaneToOB = O; }
