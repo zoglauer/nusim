@@ -49,6 +49,9 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   //! Main data analysis routine, which updates the event to a new level 
   virtual bool AnalyzeEvent(NEvent& Event);
 
+  //! Finalize the module
+  bool Finalize();
+  
   //! Show the options GUI
   virtual void ShowOptionsGUI();
 
@@ -114,7 +117,13 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   //! The shield hit distribution file name
   TString m_ShieldHitSpectrum;
 
-
+  //! The number of generated aperture hits
+  unsigned int m_NApertureHits;
+  //! The number of generated detector hits
+  unsigned int m_NDetectorHits;
+  //! The number of generated shield-only hits
+  unsigned int m_NShieldOnlyHits;
+  
 #ifdef ___CINT___
  public:
   ClassDef(NModuleBackgroundSimulator, 0) // no description

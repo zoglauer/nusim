@@ -151,9 +151,28 @@ bool NModuleBackgroundSimulator::Initialize()
 
   DetermineNext();
 
+  m_NApertureHits = 0;
+  m_NDetectorHits = 0;
+  m_NShieldOnlyHits = 0;
+  
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleBackgroundSimulator::Finalize()
+{
+  cout<<endl;
+  cout<<"Background simulator summary:"<<endl;
+  cout<<"  Detector DB hits:  "<<m_NDetectorHits<<endl;
+  cout<<"  Aperture hits:     "<<m_NApertureHits<<endl;
+  cout<<"  Shield-only hits:  "<<m_NShieldOnlyHits<<endl;
+
+  return true;
+}
+  
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -167,6 +186,16 @@ bool NModuleBackgroundSimulator::AnalyzeEvent(NEvent& Event)
 
   bool Return = m_NextComponent->AnalyzeEvent(Event);
 
+  if (Return == true) {
+    if ( m_NextComponent == m_ShieldOnly) {
+      ++m_NShieldOnlyHits;
+    } else if (m_NextComponent == m_Aperture) {
+      ++m_NApertureHits;
+    } else if (m_NextComponent == m_DataBase) {
+      ++m_NDetectorHits;
+    }
+  }
+  
   DetermineNext();
 
   return Return;
