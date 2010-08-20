@@ -1,7 +1,7 @@
 /*
  * MGUIEEntry.h
  *
- * Copyright (C) 1998-2009 by Andreas Zoglauer.
+ * Copyright (C) 1998-2010 by Andreas Zoglauer.
  * All rights reserved.
  *
  * Please see the source-file for the copyright-notice.
@@ -26,10 +26,10 @@
 #include <TGNumberEntry.h>
 
 // Standard libs::
-#include <limits.h>
-#include <float.h>
-#include <stdlib.h>
+#include <limits>
+#include <cstdlib>
 #include <ctype.h>
+using namespace std;
 
 // MEGAlib libs:
 #include "MGlobal.h"
@@ -57,25 +57,29 @@ class MGUIEEntry : public MGUIElement
  public:
   MGUIEEntry(const TGWindow* Parent, TString Label, bool Emphasize, 
              double Value = 0.0, bool Limits = true, 
-             double Min = -DBL_MAX, double Max = DBL_MAX); 
+             double Min = -numeric_limits<double>::max(), double Max = numeric_limits<double>::max()); 
   MGUIEEntry(const TGWindow* Parent, TString Label, bool Emphasize, 
              int Value = 0, bool Limits = true, 
-             int Min = -INT_MAX, int Max = INT_MAX); 
+             int Min = -numeric_limits<int>::max(), int Max = numeric_limits<int>::max()); 
   MGUIEEntry(const TGWindow* Parent, TString Label, bool Emphasize, TString Value = " "); 
   virtual ~MGUIEEntry();
 
   void Init();
 
+  //! Return true if the content has been modified 
+  bool IsModified() { return m_IsModified; }
+
+  //! Reset the label
+  void SetLabel(TString Label) { m_Label = Label; if (m_TextLabel != 0) m_TextLabel->SetText(m_Label); }
+
   void Associate(TGCompositeFrame* w, int Id);
   bool ProcessMessage(long Message, long Parameter1, long Parameter2);
-
-  void SetLabel(TString Label) { m_Label = Label; if (m_TextLabel != 0) m_TextLabel->SetText(m_Label); }
 
   void SetEntryFieldSize(int Size = 70);
 	virtual void SetEnabled(bool flag = true);
 
-  bool IsInt(int Min = -INT_MAX, int Max = INT_MAX);
-  bool IsDouble(double Min = -DBL_MAX, double Max = DBL_MAX);
+  bool IsInt(int Min = -numeric_limits<int>::max(), int Max = numeric_limits<int>::max());
+  bool IsDouble(double Min = -numeric_limits<double>::max(), double Max = numeric_limits<double>::max());
 
   TString GetAsString();
   int GetAsInt();
@@ -99,6 +103,9 @@ class MGUIEEntry : public MGUIElement
  private:
   TGCompositeFrame* m_MessageWindow;
   int m_Id;
+
+  //! Flag indicating that the content was modifed
+  bool m_IsModified;
 
   TString m_Label;
 

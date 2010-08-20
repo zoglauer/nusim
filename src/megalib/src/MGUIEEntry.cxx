@@ -2,7 +2,7 @@
  * MGUIEEntry.cxx
  *
  *
- * Copyright (C) 1998-2009 by Andreas Zoglauer.
+ * Copyright (C) 1998-2010 by Andreas Zoglauer.
  * All rights reserved.
  *
  *
@@ -175,7 +175,7 @@ void MGUIEEntry::Init()
 
   m_Size = 85;
 
-  m_TextLabel = 0;
+  m_IsModified = false;
 
   Create();
 }
@@ -239,6 +239,8 @@ void MGUIEEntry::Create()
   // Give this element the default size of its content:
   Resize(GetDefaultWidth(), GetDefaultHeight()); 
 
+  m_IsModified = false;
+
   return;
 }
 
@@ -251,7 +253,7 @@ bool MGUIEEntry::ProcessMessage(long Message, long Parameter1,
 {
   // Process the messages for this application, mainly the scollbar moves:
   
-  //cout<<"Entry Msg: "<<Message<<"!"<<Parameter1<<"!"<<Parameter2<<endl;
+  // cout<<"Entry Msg: "<<GET_MSG(Message)<<"!"<<GET_SUBMSG(Message)<<"!"<<Parameter1<<"!"<<Parameter2<<endl;
 
   switch (GET_MSG(Message)) {
   case kC_TEXTENTRY:
@@ -263,6 +265,9 @@ bool MGUIEEntry::ProcessMessage(long Message, long Parameter1,
         SendMessage(m_MessageWindow, MK_MSG((EWidgetMessageTypes) kC_ENTRY, 
                                             (EWidgetMessageTypes) kET_CHANGED), m_Id, 0);
       }
+      m_IsModified = true;
+      //cout<<"Modified: "<<m_Label<<": "<<m_NumberInput->GetNumber()<<endl;
+      break;
     default:
       break;
     }
@@ -289,6 +294,7 @@ void MGUIEEntry::SetValue(double Value)
     m_NumberInput->SetNumber(m_ValueAsDouble);
   }
   Layout();
+  m_IsModified = false;
 }
 
 
@@ -306,6 +312,7 @@ void MGUIEEntry::SetValue(int Value)
     m_NumberInput->SetNumber(m_ValueAsDouble);
   }
   Layout();
+  m_IsModified = false;
 }
 
 
@@ -323,6 +330,7 @@ void MGUIEEntry::SetValue(unsigned int Value)
     m_NumberInput->SetNumber(m_ValueAsDouble);
   }
   Layout();
+  m_IsModified = false;
 }
 
 
@@ -339,6 +347,7 @@ void MGUIEEntry::SetValue(TString Value)
     m_NumberInput->SetNumber(m_ValueAsDouble);
   }
   Layout();
+  m_IsModified = false;
 }
 
 
@@ -551,13 +560,10 @@ TString MGUIEEntry::MakeSmartString(double Number)
 {
   // Make a smart string, i.e. cut of zeros, etc.
 
-  char c[20];
-
-  sprintf(c, "%f", Number);
-  TString Str(c);
+  TString Str;
+  Str += Number;
   
   while (true) {
-    if (Str.Length() == 0) break;
     if (TString(Str(Str.Length()-1)).CompareTo(".") == 0) { // if ... is true
       Str.Replace(Str.Length()-1, 1, TString(""));
       break;
@@ -571,8 +577,7 @@ TString MGUIEEntry::MakeSmartString(double Number)
       Str.Replace(Str.Length()-1, 1, TString(""));
     }
   }
-  if (Str.Length() == 0) Str = "0";
-
+  
   return Str;
 }
 

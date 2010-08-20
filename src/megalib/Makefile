@@ -17,6 +17,7 @@ LOBJS = $(LB)/MAssert.o \
 	$(LB)/MGUIDialog.o \
 	$(LB)/MGUIElement.o \
 	$(LB)/MGUIEEntry.o \
+	$(LB)/MGUIEMinMaxEntry.o \
 	$(LB)/MGUIEEntryList.o \
 	$(LB)/MGUIEFileSelector.o \
 	$(LB)/MGUIERBList.o \
