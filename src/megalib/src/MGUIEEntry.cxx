@@ -560,8 +560,9 @@ TString MGUIEEntry::MakeSmartString(double Number)
 {
   // Make a smart string, i.e. cut of zeros, etc.
 
-  TString Str;
-  Str += Number;
+  char c[1024];
+  sprintf(c, "%lf", Number);
+  TString Str(c);
   
   while (true) {
     if (TString(Str(Str.Length()-1)).CompareTo(".") == 0) { // if ... is true
