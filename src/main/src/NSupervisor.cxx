@@ -76,6 +76,8 @@ using namespace std;
 #include "NModuleDetectorCalibratorBackgroundSims.h"
 
 #include "NModuleEventSelector.h"
+#include "NModuleEventSelectorBackgroundSims.h"
+
 #include "NModuleBackprojector.h"
 #include "NModuleImageDeconvolver.h"
 
@@ -165,7 +167,10 @@ NSupervisor::NSupervisor()
   m_AvailableModules.push_back(new NModuleDetectorCalibratorSciSim(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorCalibratorIdeal(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorCalibratorBackgroundSims(m_Satellite));
+
   m_AvailableModules.push_back(new NModuleEventSelector(m_Satellite));
+  m_AvailableModules.push_back(new NModuleEventSelectorBackgroundSims(m_Satellite));
+  
   m_AvailableModules.push_back(new NModuleBackprojector(m_Satellite));
 
   m_AvailableModules.push_back(new NModuleEventLoader(m_Satellite));

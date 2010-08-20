@@ -1,5 +1,5 @@
 /*
- * NModuleEventSelector.cxx
+ * NModuleEventSelectorBackgroundSims.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NModuleEventSelector
+// NModuleEventSelectorBackgroundSims
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NModuleEventSelector.h"
+#include "NModuleEventSelectorBackgroundSims.h"
 
 // Standard libs:
 
@@ -25,43 +25,43 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
-#include "NGUIOptionsEventSelector.h"
+#include "NGUIOptions.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef ___CINT___
-ClassImp(NModuleEventSelector)
+ClassImp(NModuleEventSelectorBackgroundSims)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent()
+NModuleEventSelectorBackgroundSims::NModuleEventSelectorBackgroundSims(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent()
 {
-  // Construct an instance of NModuleEventSelector
+  // Construct an instance of NModuleEventSelectorBackgroundSims
 
   // Set all module relevant information
 
   // Set the module name --- has to be unique
-  m_Name = "Standard selector";
+  m_Name = "Selector for background sims";
 
   // Set the XML tag --- has to be unique --- no spaces allowed
-  m_XmlTag = "XmlTagEventSelector";
+  m_XmlTag = "XmlTagEventSelectorBackgroundSims";
 
   // Set the tool tip text
-  m_ToolTip = "This will be a universal event selector --- currently is does nothing...";
+  m_ToolTip = "This is a replica of the event selections used for the original background analysis.";
 
   // Set the module type
   m_ModuleType = c_EventSelector;
 
   // Set if this module has a diagnostics GUI
   m_HasDiagnosticsGUI = false;
-  // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsEventSelector)
+  // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsEventSelectorBackgroundSims)
   // and implement all your GUI options
-  //m_Diagnostics = new NGUIDiagnosticsEventSelector();
+  //m_Diagnostics = new NGUIDiagnosticsEventSelectorBackgroundSims();
   
   m_EnergyMin = 5;
   m_EnergyMax = 80;
@@ -71,16 +71,16 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleEventSelector::~NModuleEventSelector()
+NModuleEventSelectorBackgroundSims::~NModuleEventSelectorBackgroundSims()
 {
-  // Delete this instance of NModuleEventSelector
+  // Delete this instance of NModuleEventSelectorBackgroundSims
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleEventSelector::Initialize()
+bool NModuleEventSelectorBackgroundSims::Initialize()
 {
   // Initialize the module 
 
@@ -91,7 +91,7 @@ bool NModuleEventSelector::Initialize()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleEventSelector::AnalyzeEvent(NEvent& Event) 
+bool NModuleEventSelectorBackgroundSims::AnalyzeEvent(NEvent& Event) 
 {
   // Main data analysis routine, which updates the event to a new level 
 
@@ -100,7 +100,14 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   if (Event.GetNHits() > 1) {
     bool MultipleTelescopes = false;
     bool MultipleDetectors = false;
+    bool NotAdjacent = false;
 
+    double xPitch = 2*m_Satellite.GetDetectorHalfDimension().X()/m_Satellite.GetDetectorPixelsX();
+    double yPitch = 2*m_Satellite.GetDetectorHalfDimension().Y()/m_Satellite.GetDetectorPixelsY();
+
+    for (unsigned int h1 = 0; h1 < Event.GetNHits(); ++h1) {
+      //cout<<Event.GetID()<<" - "<<h1<<": "<<Event.GetHit(h1).GetEnergy()<<":"<<Event.GetHit(h1).GetPosition()<<endl;
+    }
     for (unsigned int h1 = 0; h1 < Event.GetNHits(); ++h1) {
       for (unsigned int h2 = h1+1; h2 < Event.GetNHits(); ++h2) {
         if (Event.GetHit(h1).GetTelescope() != Event.GetHit(h2).GetTelescope()) {
@@ -111,10 +118,18 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
           MultipleDetectors = true;
           //cout<<Event.GetID()<<": Multiple detectors"<<endl;
         }
+
+
+        if ((fabs(Event.GetHit(h1).GetPosition().X() - Event.GetHit(h2).GetPosition().X()) > 1.2*xPitch) ||
+            (fabs(Event.GetHit(h1).GetPosition().Y() - Event.GetHit(h2).GetPosition().Y()) > 1.2*yPitch)) {
+          NotAdjacent = true;
+          //cout<<Event.GetID()<<": Not adjacent"<<endl;
+          break;
+        }
       }
     }
 
-    if (MultipleTelescopes == true || MultipleDetectors == true) {
+    if (MultipleTelescopes == true || MultipleDetectors == true || NotAdjacent == true) {
       PatternRejection = true;
     }
   }
@@ -125,9 +140,13 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
     TotalEnergy += Event.GetHit(i).GetEnergy();
   }
+  //cout<<"Energy: "<<TotalEnergy<<endl;
 
   if (TotalEnergy > m_EnergyMax || TotalEnergy < m_EnergyMin || PatternRejection == true) {
     Event.SetEventCut(true);
+    //cout<<"Rejected"<<endl;
+  } else {
+    //cout<<"Accepted"<<endl;
   }
 
   return true;
@@ -137,7 +156,7 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NModuleEventSelector::ShowOptionsGUI()
+void NModuleEventSelectorBackgroundSims::ShowOptionsGUI()
 {
   //! Show the options GUI --- has to be overwritten!
 
@@ -146,7 +165,7 @@ void NModuleEventSelector::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptionsEventSelector* Options = new NGUIOptionsEventSelector(this);
+  NGUIOptions* Options = new NGUIOptions(this);
 
   // this stays always the same:
   Options->Create();
@@ -157,7 +176,7 @@ void NModuleEventSelector::ShowOptionsGUI()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
+bool NModuleEventSelectorBackgroundSims::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
@@ -177,7 +196,7 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-MXmlNode* NModuleEventSelector::CreateXmlConfiguration() 
+MXmlNode* NModuleEventSelectorBackgroundSims::CreateXmlConfiguration() 
 {
   //! Create an XML node tree from the configuration
 
@@ -189,5 +208,5 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
 }
 
 
-// NModuleEventSelector.cxx: the end...
+// NModuleEventSelectorBackgroundSims.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////
