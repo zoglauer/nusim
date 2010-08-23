@@ -108,6 +108,9 @@ bool NObservatoryData::Stream(ofstream& S, bool Compact)
 {
   //! Stream the content to an ASCII file 
 
+  streamsize OriginalPrecision = S.precision();
+  S.precision(9);
+  
   if (Compact == false) {
     if (m_Empty == true) {
       S<<"OD -"<<endl;
@@ -133,7 +136,9 @@ bool NObservatoryData::Stream(ofstream& S, bool Compact)
        <<m_OrientationOBToIS.GetRotationQuaternion()[0]<<" "<<m_OrientationOBToIS.GetRotationQuaternion()[1]<<" "<<m_OrientationOBToIS.GetRotationQuaternion()[2]<<" "<<m_OrientationOBToIS.GetRotationQuaternion()[3]<<endl;
     }
   }
-  
+
+  S.precision(OriginalPrecision);
+
   return true;
 }
 
