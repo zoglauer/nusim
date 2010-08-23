@@ -1006,26 +1006,46 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
         DEC *= c_Rad;
       }
       
+      // Procedure
+      // The focal bench points at the pointing you give in the pointing engine.
+
+      // set up a rotation in the RA/DEC system. 
+      // -> create a test vector in RA/DEC
+      // -> determine its direction in star tracker system
+      // -> determine its direction in optical bench
+      // -> determine its direction in optics module
+      // -> start photon relative to optics module
+
       // Create a pointing to create a rotation quaternion:
       NPointing PhotonOrigin;
       PhotonOrigin.SetRaDec(RA*60*c_Deg, DEC*60*c_Deg);
-        
+      
+      // Create a test photon (can I just use a test direction too???)
       NPhoton Test;
       Test.SetDirection(MVector(0.0, 0.0, 1.0));
       Test.SetPosition(MVector(0.0, 0.0, 0.0));
-        
+      
+      // Create an orientation from the pointing
       NOrientation PhotonOriginOrientation;
       PhotonOriginOrientation.SetRotation(PhotonOrigin.GetQuaternion());
       PhotonOriginOrientation.TransformOut(Test);
-        
+      
+      // Into the FB systen
+      NOrientation FBSystem;
+      FBSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
+      FBSystem.TransformIn(Test);
+          
       // Into star tracker system:
-      NOrientation StarTrackerSystem;
-      StarTrackerSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
-      StarTrackerSystem.TransformIn(Test);
+      //NOrientation StarTrackerSystem;
+      //StarTrackerSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
+      //StarTrackerSystem.TransformIn(Test);
         
       // Into optical bench:
-      m_Satellite.GetCalibratedOrientationStarTrackerRelOpticalBench(4).TransformIn(Test);
+      //m_Satellite.GetCalibratedOrientationStarTrackerRelOpticalBench(4).TransformIn(Test);
        
+      // Into optical bench
+      m_Satellite.GetOrientationOpticalBench(m_NextEmission).TransformIn(Test);
+      
       // Into optics:
       m_Satellite.GetOrientationOpticsRelOpticalBench(m_NextEmission, Telescope).TransformIn(Test);
      

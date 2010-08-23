@@ -160,6 +160,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   double Ra = 0;
   double Dec = 0;
 
+  /* Old relative to star tracker:
   // Need the reverse direction, only reverse Z. Has to do with how it was defined in the raytrace module.
   MVector SP = Photon.GetDirection();
   SP[2]=-SP[2];
@@ -173,7 +174,19 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   // Need to flip x/y but only in OB system....
   SP = Qob.Rotation(SP);
   SP = Qobin.Rotation(SP);
- 
+  */
+  
+  // New relative to FB
+  
+  // Need the reverse direction, only reverse Z. Has to do with how it was defined in the raytrace module.
+  // Didn't Kristin want to fix the optics module????
+  MVector SP = Photon.GetDirection();
+  SP[2]=-SP[2];
+
+  // SP is alreday in focal bench corrdinates, thus we only have to apply the pointing rotation:
+  NPointing P = m_Satellite.GetPointing(m_Time);
+  SP = P.GetQuaternion().Rotation(SP);
+  
   
   // Store RA and DEC of the original photon  
   Ra = atan2(SP[1], SP[0])*60*c_Deg;
