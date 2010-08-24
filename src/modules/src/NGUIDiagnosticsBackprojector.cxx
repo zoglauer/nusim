@@ -65,7 +65,7 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
   m_EnergyCanvas = 0;
 
   m_Area = 0;
-  m_Time = 0;
+  m_Time.SetSeconds(0);
   
   m_InitialRa = 0;
   m_InitialDec = 0;
@@ -164,6 +164,8 @@ void NGUIDiagnosticsBackprojector::Create()
   m_EnergyCanvas->GetCanvas()->SetGridy();
   m_NormalizedEnergy->Draw();
   m_EnergyCanvas->GetCanvas()->Update();
+  
+  Update();
 }
 
 

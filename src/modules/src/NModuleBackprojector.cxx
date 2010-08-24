@@ -95,7 +95,8 @@ bool NModuleBackprojector::Initialize()
 
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
                                                                                  m_Satellite.GetPointing(0).GetDec());
-                                                                                    
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetTimeIdeal());
+                                                                   
                                                                                     
   return true;
 }
@@ -147,9 +148,22 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NModuleBackprojector::Finalize()
+{
+  // Finalize the module
+  
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetTimeIdeal());
+  
+  return true;
+}
+  
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NModuleBackprojector::ShowOptionsGUI()
 {
-  //! Show the options GUI 
+  // Show the options GUI 
 
   // The default behaviour is to show the base class telling the user 
   // that there are no options to select.
