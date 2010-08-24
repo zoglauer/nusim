@@ -637,16 +637,16 @@ bool NSupervisor::Run()
     if (m_Interrupt == true) break;
   }
 
-  if (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->IsMapped()) {
-    gSystem->ProcessEvents();
-    m_DiagnosticsGUI->Update();
-  }
-
   // Finalize the module data:
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
     if ((*Iter).second->Finalize() == false) {
       cout<<"Unable to finalize module: "<<(*Iter).second->GetFullName()<<" - but who cares..."<<endl;
     }
+  }
+
+  if (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->IsMapped()) {
+    gSystem->ProcessEvents();
+    m_DiagnosticsGUI->Update();
   }
 
   cout<<endl;
