@@ -22,7 +22,7 @@ if (`test ! -f ${NUSIM}/config/revision.txt`); then
   echo $NewRev >>  ${NUSIM}/config/revision.txt
 else 
   OldRev=`cat ${NUSIM}/config/revision.txt`
-  if ([ $NewRev -gt $OldRev ]); then
+  if ([ $NewRev -ne $OldRev ]); then
     rm -f ${NUSIM}/config/revision.txt 
     echo "Updating revision file to: $NewRev"
     echo $NewRev >>  ${NUSIM}/config/revision.txt  
