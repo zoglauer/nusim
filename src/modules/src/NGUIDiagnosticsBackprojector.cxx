@@ -46,7 +46,7 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
   m_TabTitle = "Results";
 
   // Add all histograms and canvases below
-  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 81, -8, 8, 81, -8, 8);
+  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 100, -10, 10, 100, -10, 10);
   m_Backprojection->SetXTitle("RA - relative to initial pointing [arcmin]");
   m_Backprojection->SetYTitle("DEC - relative to initial pointing [arcmin]");
 
@@ -94,7 +94,7 @@ void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec)
   if (cos(Dec*60*c_Rad) == 0) { 
     m_Backprojection->GetXaxis()->SetLimits(-180*60, +180*60);
   } else {
-    m_Backprojection->GetXaxis()->SetLimits(-8/cos(Dec/60*c_Rad), +8/cos(Dec/60*c_Rad));
+    m_Backprojection->GetXaxis()->SetLimits(-10/cos(Dec/60*c_Rad), +10/cos(Dec/60*c_Rad));
   }
 
   m_InitialRa = Ra; 

@@ -46,7 +46,7 @@ NGUIDiagnosticsSourceDistribution::NGUIDiagnosticsSourceDistribution() : NGUIDia
   m_TabTitle = "Source";
 
   // Add all histograms and canvases below
-  m_Origin = new TH2D("Origin distribution", "Origin distribution", 161, -8, 8, 161, -8, 8);
+  m_Origin = new TH2D("Origin distribution", "Origin distribution", 200, -10, 10, 200, -10, 10);
   m_Origin->SetXTitle("RA - relative to initial pointing [arcmin]");
   m_Origin->SetYTitle("DEC - relative to initial pointing [arcmin]");
 
@@ -84,7 +84,7 @@ void NGUIDiagnosticsSourceDistribution::SetInitialPointing(double Ra, double Dec
   if (cos(Dec*60*c_Rad) == 0) { 
     m_Origin->GetXaxis()->SetLimits(-180*60, +180*60);
   } else {
-    m_Origin->GetXaxis()->SetLimits(-8/cos(Dec/60*c_Rad), +8/cos(Dec/60*c_Rad));
+    m_Origin->GetXaxis()->SetLimits(-10/cos(Dec/60*c_Rad), +10/cos(Dec/60*c_Rad));
   }
 
   m_InitialRa = Ra; m_InitialDec = Dec; 
