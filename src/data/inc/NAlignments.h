@@ -1,5 +1,5 @@
 /*
- * NOrientations.h
+ * NAlignments.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NOrientations__
-#define __NOrientations__
+#ifndef __NAlignments__
+#define __NAlignments__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,14 +33,14 @@
 
 //! \brief This class contains all available orientations in NuSIM
 
-class NOrientations
+class NAlignments
 {
   // public interface:
  public:
   //! Default constructor
-  NOrientations();
+  NAlignments();
   //! Default destructor
-  virtual ~NOrientations();
+  virtual ~NAlignments();
 
   //! Resets all data to default values
   virtual void Clear();
@@ -199,7 +199,7 @@ class NOrientations
 
 #ifdef ___CINT___
  public:
-  ClassDef(NOrientations, 0) // no description
+  ClassDef(NAlignments, 0) // no description
 #endif
 
 };

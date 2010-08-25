@@ -18,7 +18,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NHit.o \
 	$(LB)/NInteraction.o \
 	$(LB)/NOrientation.o \
-	$(LB)/NOrientations.o \
+	$(LB)/NAlignments.o \
 	$(LB)/NOrbit.o \
 	$(LB)/NPhoton.o \
 	$(LB)/NPixelHit.o \

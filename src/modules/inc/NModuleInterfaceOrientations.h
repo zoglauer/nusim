@@ -24,7 +24,7 @@
 // NuSTAR libs:
 #include "NTime.h"
 #include "NOrientation.h"
-#include "NOrientations.h"
+#include "NAlignments.h"
 #include "NMetrologyUncertainties.h"
 #include "NOpticsUncertainties.h"
 
@@ -37,7 +37,7 @@
 //! \brief This interface provides the base functionality for retrieving orientation data for the satellite modules
 //! This is a special decorator for satellite modules. It provides function to retrieve orientation data.
 
-class NModuleInterfaceOrientations : public NOrientations
+class NModuleInterfaceOrientations : public NAlignments
 {
   // public interface:
  public:
@@ -50,7 +50,7 @@ class NModuleInterfaceOrientations : public NOrientations
   // Pertubed 
   
   //! Get all orientations at time t
-  virtual NOrientations GetAllOrientations(const NTime& t) { AdvanceTime(t); return *dynamic_cast<NOrientations*>(this); }
+  virtual NAlignments GetAllAlignments(const NTime& t) { AdvanceTime(t); return *dynamic_cast<NAlignments*>(this); }
   
   //! Get the optic bench orientation at time t                      
   virtual NOrientation GetOrientationSpaceCraftRelInertial(const NTime& t) { AdvanceTime(t); return m_LatestPerturbedAlignments.GetOrientationSpaceCraftRelInertial(); }
@@ -149,13 +149,13 @@ class NModuleInterfaceOrientations : public NOrientations
   // protected members:
  protected:
   //! The current (= last calculated) pertubed aligments
-  NOrientations m_LatestPerturbedAlignments;
+  NAlignments m_LatestPerturbedAlignments;
   //! The current (= last calculated) metrology uncertainties
   NMetrologyUncertainties m_LatestMetrologyUncertainties;
   //! The current (= last calculated) optics uncertainties
   NOpticsUncertainties m_LatestOpticsUncertainties;
   //! The ground calibrated alignments
-  NOrientations m_CalibratedAlignments;
+  NAlignments m_CalibratedAlignments;
   
   // private members:
  private:

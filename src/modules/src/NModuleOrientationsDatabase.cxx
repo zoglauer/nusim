@@ -254,7 +254,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedAlignmentsDB(TString FileName)
   Line.ReadLine(in);
   TString Rotations = Line;
 
-  NOrientations O;
+  NAlignments O;
   if (O.ParseDB(Positions, Rotations) == false) {
     mgui<<"Parsing failed: Something is wrong with your calibrated alignments data base!"<<show;
     in.close();
@@ -313,7 +313,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
         }
         Rotations = Line;
 
-        NOrientations O;
+        NAlignments O;
         if (O.ParseDB(Positions, Rotations) == false) {
           mgui<<"Parsing failed: Something is wrong with your calibrated alignments data base!"<<show;
           in.close();

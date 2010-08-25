@@ -25,7 +25,7 @@ using namespace std;
 
 // NuSTAR libs:
 #include "NTime.h"
-#include "NOrientations.h"
+#include "NAlignments.h"
 #include "NPhoton.h"
 #include "NInteraction.h"
 #include "NPixelHit.h"
@@ -213,11 +213,11 @@ class NEvent
 
   
   //! Set all orientations at the time of the event
-  void SetOrientations(const NOrientations& Orientations) { m_Orientations = Orientations; }
+  void SetOrientations(const NAlignments& Orientations) { m_Orientations = Orientations; }
   //! Get A COPY of all orientations
-  NOrientations GetOrientations() { return m_Orientations; }
+  NAlignments GetOrientations() { return m_Orientations; }
   //! Get A REFERENCE to all orientations
-  NOrientations& GetOrientationsRef() { return m_Orientations; }
+  NAlignments& GetOrientationsRef() { return m_Orientations; }
   
 
   //! Stream the content to an ASCII file 
@@ -269,7 +269,7 @@ class NEvent
   double m_Dec;
   
   //! The orientations of the satellite, mast, etc at the event time
-  NOrientations m_Orientations;
+  NAlignments m_Orientations;
   
   //! Original photon parameters 
   NPhoton m_OriginalPhoton;

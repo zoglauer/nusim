@@ -1,5 +1,5 @@
 /*
- * NOrientations.cxx
+ * NAlignments.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NOrientations
+// NAlignments
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NOrientations.h"
+#include "NAlignments.h"
 
 // Standard libs:
 #include <cstdlib>
@@ -31,32 +31,32 @@ using namespace std;
 
 
 #ifdef ___CINT___
-ClassImp(NOrientations)
+ClassImp(NAlignments)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientations::NOrientations() : m_Empty(true)
+NAlignments::NAlignments() : m_Empty(true)
 {
-  // Construct an instance of NOrientations
+  // Construct an instance of NAlignments
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientations::~NOrientations()
+NAlignments::~NAlignments()
 {
-  // Delete this instance of NOrientations
+  // Delete this instance of NAlignments
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOrientations::Clear()
+void NAlignments::Clear()
 {
   //! Resets all data to default values
  
@@ -84,7 +84,7 @@ void NOrientations::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationSpaceCraftRelInertial() 
+NOrientation NAlignments::GetOrientationSpaceCraftRelInertial() 
 { 
   //! Get the space craft orientation relativ eto the inertial system
 
@@ -95,7 +95,7 @@ NOrientation NOrientations::GetOrientationSpaceCraftRelInertial()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationFocalPlaneRelSC() 
+NOrientation NAlignments::GetOrientationFocalPlaneRelSC() 
 { 
   //! Get the focal plane orientation relative to the space craft
 
@@ -105,7 +105,7 @@ NOrientation NOrientations::GetOrientationFocalPlaneRelSC()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationOpticalBench() 
+NOrientation NAlignments::GetOrientationOpticalBench() 
 { 
   // Get the optic bench orientation at time t                      
 
@@ -116,7 +116,7 @@ NOrientation NOrientations::GetOrientationOpticalBench()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationOptics(int OpticsID) 
+NOrientation NAlignments::GetOrientationOptics(int OpticsID) 
 {
   // Get the optics 1 orientation at time t                      
    
@@ -135,7 +135,7 @@ NOrientation NOrientations::GetOrientationOptics(int OpticsID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationOpticsRelOpticalBench(int OpticsID) 
+NOrientation NAlignments::GetOrientationOpticsRelOpticalBench(int OpticsID) 
 { 
   // Get the optics orientation realtive to the optical bench at time t                      
   
@@ -154,7 +154,7 @@ NOrientation NOrientations::GetOrientationOpticsRelOpticalBench(int OpticsID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationAperture(int ApertureID) 
+NOrientation NAlignments::GetOrientationAperture(int ApertureID) 
 { 
   // Get the aperture orientation at time t
 
@@ -173,7 +173,7 @@ NOrientation NOrientations::GetOrientationAperture(int ApertureID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationMetrologyLaser(int MetrologyID) 
+NOrientation NAlignments::GetOrientationMetrologyLaser(int MetrologyID) 
 { 
   // Get the metrology orientation at time t
 
@@ -194,7 +194,7 @@ NOrientation NOrientations::GetOrientationMetrologyLaser(int MetrologyID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationMetrologyLaserRelOpticalBench(int MetrologyID) 
+NOrientation NAlignments::GetOrientationMetrologyLaserRelOpticalBench(int MetrologyID) 
 { 
   // Get the metrology orientation realtive to the optical bench at time t
 
@@ -215,7 +215,7 @@ NOrientation NOrientations::GetOrientationMetrologyLaserRelOpticalBench(int Metr
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationMetrologyDetector(int MetrologyID) 
+NOrientation NAlignments::GetOrientationMetrologyDetector(int MetrologyID) 
 { 
   // Get the metrology orientation at time t
 
@@ -236,7 +236,7 @@ NOrientation NOrientations::GetOrientationMetrologyDetector(int MetrologyID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationStarTracker(int StarTrackerID) 
+NOrientation NAlignments::GetOrientationStarTracker(int StarTrackerID) 
 { 
   //! Get the star tracker orientation at time t
 
@@ -253,7 +253,7 @@ NOrientation NOrientations::GetOrientationStarTracker(int StarTrackerID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationStarTrackerRelOpticalBench(int StarTrackerID) 
+NOrientation NAlignments::GetOrientationStarTrackerRelOpticalBench(int StarTrackerID) 
 { 
   //! Get the star tracker orientation realtive to the optical bench at time t
 
@@ -270,7 +270,7 @@ NOrientation NOrientations::GetOrientationStarTrackerRelOpticalBench(int StarTra
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationFocalPlaneModule(int ModuleID) 
+NOrientation NAlignments::GetOrientationFocalPlaneModule(int ModuleID) 
 { 
   //! Get the focal plane detector module  orientation at time t
 
@@ -290,7 +290,7 @@ NOrientation NOrientations::GetOrientationFocalPlaneModule(int ModuleID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NOrientations::GetOrientationDetectorRelFocalPlaneModule(int ModuleID, int DetectorID) 
+NOrientation NAlignments::GetOrientationDetectorRelFocalPlaneModule(int ModuleID, int DetectorID) 
 { 
   //! Get the focal plane detector module - detector orientation at time t
 
@@ -334,7 +334,7 @@ NOrientation NOrientations::GetOrientationDetectorRelFocalPlaneModule(int Module
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NOrientations::Stream(ofstream& S)
+bool NAlignments::Stream(ofstream& S)
 {
   //! Stream the content to an ASCII file 
 
@@ -368,7 +368,7 @@ bool NOrientations::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NOrientations::Parse(TString& Line)
+bool NAlignments::Parse(TString& Line)
 {
   //! Stream the content from a line of an ASCII file  
   
@@ -411,7 +411,7 @@ bool NOrientations::Parse(TString& Line)
   
 
 
-bool NOrientations::ParseDB(TString Positions, TString Rotations)
+bool NAlignments::ParseDB(TString Positions, TString Rotations)
 {
   // Parse some input from file
   double Time;
@@ -565,7 +565,7 @@ bool NOrientations::ParseDB(TString Positions, TString Rotations)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-TString NOrientations::ToString() const
+TString NAlignments::ToString() const
 {
   //! Return the content as text
   
@@ -600,5 +600,5 @@ TString NOrientations::ToString() const
   return out.str().c_str();
 }
 
-// NOrientations.cxx: the end...
+// NAlignments.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

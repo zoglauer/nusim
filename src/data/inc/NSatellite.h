@@ -90,7 +90,7 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
 
   //! Get all orientations
-  virtual NOrientations GetAllOrientations(const NTime& t) { return m_Orientations->GetAllOrientations(t); }
+  virtual NAlignments GetAllAlignments(const NTime& t) { return m_Orientations->GetAllAlignments(t); }
 
   //! Get the optic bench orientation at time t                      
   virtual NOrientation GetOrientationSpaceCraftRelInertial(const NTime& t) { return m_Orientations->GetOrientationSpaceCraftRelInertial(t); }

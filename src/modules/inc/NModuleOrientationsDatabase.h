@@ -112,7 +112,7 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Time wrap for the perturbed alignments time index
   NTime m_TimeWrapPerturbedAlignments;
   //! The pertubed alignments in space as a function of time...
-  vector<NOrientations> m_PerturbedAlignments;   
+  vector<NAlignments> m_PerturbedAlignments;   
 
 
   //! Start your search for the perturbed alignments at this index...
