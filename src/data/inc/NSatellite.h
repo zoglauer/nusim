@@ -133,15 +133,6 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
 
 
-
-	//! Get the calibrated optical axis of optics module (independent of time)
-	virtual MVector GetCalibratedPointingOpticalAxisRelOM(int OpticsID) { return m_Orientations->GetCalibratedPointingOpticalAxisRelOM(OpticsID); }
-
-	//! Get the calibrated pointing direction of the metrology laser (independent of time)
-	virtual MVector GetCalibratedPointingMetrologyLaserRelML(int MetrologyID) { return m_Orientations->GetCalibratedPointingMetrologyLaserRelML(MetrologyID); }
-
-
-
   //! Get the CALIBRATED focal plane detector module orientation
   virtual NOrientation GetCalibratedOrientationFocalPlaneModule(int ModuleID) { return m_Orientations->GetCalibratedOrientationFocalPlaneModule(ModuleID); }
 
@@ -161,15 +152,41 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual NOrientation GetCalibratedOrientationStarTrackerRelOpticalBench(int StarTrackerID) { return m_Orientations->GetCalibratedOrientationStarTrackerRelOpticalBench(StarTrackerID); }
 
 
+  // Optics
+
+  //! The bore sight of an optics module 
+  MVector GetBoreSightOpticsModule(const NTime& t, int ModuleID) { return m_Orientations->GetBoreSightOpticsModule(t, ModuleID); }
+
+
+
+  // Metrology/Star tracker
+
+  //! Get the pointing error of the star tracker
+  virtual double GetPointingErrorStarTracker(const NTime& t, int StarTrackerID) { return m_Orientations->GetPointingErrorStarTracker(t, StarTrackerID); }
+ 
+  //! Get the calibrated pointing direction of the metrology laser (independent of time)
+  virtual MVector GetPointingMetrologyLaserRelML(const NTime& t, int MetrologyID) { return m_Orientations->GetPointingMetrologyLaserRelML(t, MetrologyID); }
+
+  //! Get the centroiding error of the metrology detector
+  virtual double GetCentroidingErrorMetrologyDetector(const NTime& t, int MetrologyID) { return m_Orientations->GetCentroidingErrorMetrologyDetector(t, MetrologyID); }
+
+
+  /*
+  //! Get the calibrated optical axis of optics module (independent of time)
+  virtual MVector GetCalibratedPointingOpticalAxisRelOM(int OpticsID) { return m_Orientations->GetCalibratedPointingOpticalAxisRelOM(OpticsID); }
+
+  //! Get the calibrated pointing direction of the metrology laser (independent of time)
+  virtual MVector GetCalibratedPointingMetrologyLaserRelML(int MetrologyID) { return m_Orientations->GetCalibratedPointingMetrologyLaserRelML(MetrologyID); }
+
 
 	//! Get the centroiding error of the metrology detector
 	virtual double GetCentroidingErrorMetrologyDetector(int MetrologyID) { return m_Orientations->GetCentroidingErrorMetrologyDetector(MetrologyID); }
 
 	//! Get the pointing error of the star tracker
 	virtual double GetPointingErrorStarTracker(int StarTrackerID) { return m_Orientations->GetPointingErrorStarTracker(StarTrackerID); }
+  */
 
-
-
+  /*
   //! Get the xyz uncertainty of determining the focal plane detector module orientation
   virtual MVector GetErrorXYZOrientationFocalPlaneModule(int ModuleID) { return m_Orientations->GetErrorXYZOrientationFocalPlaneModule(ModuleID); }
 
@@ -213,7 +230,7 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
   //! Get dcm uncertainty of determining the star tracker orientation relative to the optical bench
   virtual MVector GetErrorDCMOrientationStarTrackerRelOpticalBench(int StarTrackerID) { return m_Orientations->GetErrorDCMOrientationStarTrackerRelOpticalBench(StarTrackerID); }
-
+  */
 
 
 

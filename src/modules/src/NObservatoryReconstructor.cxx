@@ -153,7 +153,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
     //cout<<module<<pFin<<OAin<<endl;
   //cout<<module<<pF<<OA<<endl;
-      cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
+     // cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
     //cout<<"RA "<<atan(OA[1]/OA[0])<<" DEC "<<asin(OA[2])<<endl;
 
   // Point implementation

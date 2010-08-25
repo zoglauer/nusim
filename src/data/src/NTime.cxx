@@ -178,7 +178,7 @@ NTime& NTime::operator-=(const double& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::operator==(const NTime& T)
+bool NTime::operator==(const NTime& T) const
 {
   // > operator
 
@@ -189,7 +189,7 @@ bool NTime::operator==(const NTime& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::operator>(const NTime& T)
+bool NTime::operator>(const NTime& T) const
 {
   // > operator
 
@@ -200,7 +200,7 @@ bool NTime::operator>(const NTime& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::operator<(const NTime& T)
+bool NTime::operator<(const NTime& T) const
 {
   // < operator
 
@@ -211,7 +211,7 @@ bool NTime::operator<(const NTime& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::operator>=(const NTime& T)
+bool NTime::operator>=(const NTime& T) const
 {
   // >= operator
 
@@ -222,7 +222,7 @@ bool NTime::operator>=(const NTime& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::operator<=(const NTime& T)
+bool NTime::operator<=(const NTime& T) const
 {
   // < operator
 
@@ -233,7 +233,7 @@ bool NTime::operator<=(const NTime& T)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NTime::operator+(const NTime& Time)
+NTime NTime::operator+(const NTime& Time) const
 {
   //! The + operator 
 
@@ -244,7 +244,7 @@ NTime NTime::operator+(const NTime& Time)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NTime::operator+(const double& Time)
+NTime NTime::operator+(const double& Time) const
 {
   //! The + operator with a double
 
@@ -255,7 +255,7 @@ NTime NTime::operator+(const double& Time)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NTime::operator-(const NTime& Time)
+NTime NTime::operator-(const NTime& Time) const
 {
   //! The - operator 
 
@@ -266,11 +266,33 @@ NTime NTime::operator-(const NTime& Time)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NTime::operator-(const double& Time)
+NTime NTime::operator-(const double& Time) const
 {
   //! The - operator with a double
 
   return NTime(m_Seconds - Time);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NTime::operator*(const double& Scale) const
+{
+  //! The * operator with a double
+
+  return NTime(m_Seconds*Scale);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NTime::operator/(const double& Scale) const
+{
+  //! The / operator with a double
+
+  return NTime(m_Seconds/Scale);
 }
 
 

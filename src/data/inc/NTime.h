@@ -73,24 +73,31 @@ class NTime
   NTime& operator-=(const double& Time);
 
   //! The + operator 
-  NTime operator+(const NTime& Time);
+  NTime operator+(const NTime& Time) const;
   //! The + operator with a double
-  NTime operator+(const double& Time);
+  NTime operator+(const double& Time) const;
   //! The - operator 
-  NTime operator-(const NTime& Time);
+  NTime operator-(const NTime& Time) const;
   //! The - operator with a double
-  NTime operator-(const double& Time);
+  NTime operator-(const double& Time) const;
 
+  //! The * operator with a double
+  NTime operator*(const double& Scalar) const;
+
+  //! The / operator with a double
+  NTime operator/(const double& Scalar) const;
+
+  
   //! The == operator
-  bool operator==(const NTime& Time);
+  bool operator==(const NTime& Time) const;
   //! The > operator
-  bool operator>(const NTime& Time);
+  bool operator>(const NTime& Time) const;
   //! The < operator
-  bool operator<(const NTime& Time);
+  bool operator<(const NTime& Time) const;
   //! The >= operator
-  bool operator>=(const NTime& Time);
+  bool operator>=(const NTime& Time) const;
   //! The <= operator
-  bool operator<=(const NTime& Time);
+  bool operator<=(const NTime& Time) const;
 
 
   //! Dump the time as string ion seconds

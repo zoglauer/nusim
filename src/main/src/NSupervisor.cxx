@@ -105,7 +105,6 @@ using namespace std;
 #include "NModuleOrbitStationary.h"
 #include "NModulePointingPredefined.h"
 #include "NModulePointingDatabase.h"
-#include "NModuleOrientationsIdeal.h"
 #include "NModuleOrientationsDatabase.h"
 #include "NModuleGeometryAndDetectorProperties.h"
 
@@ -137,7 +136,6 @@ NSupervisor::NSupervisor()
   m_AvailableModules.push_back(new NModuleOrbitStationary(m_Satellite));
   m_AvailableModules.push_back(new NModulePointingPredefined(m_Satellite));
   m_AvailableModules.push_back(new NModulePointingDatabase(m_Satellite));
-  m_AvailableModules.push_back(new NModuleOrientationsIdeal(m_Satellite));
   m_AvailableModules.push_back(new NModuleOrientationsDatabase(m_Satellite));
   m_AvailableModules.push_back(new NModuleGeometryAndDetectorProperties(m_Satellite));
   

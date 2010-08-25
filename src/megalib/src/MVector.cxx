@@ -428,7 +428,7 @@ bool MVector::Coplanar(const MVector& A, const MVector& B, const MVector& C,
 ////////////////////////////////////////////////////////////////////////////////
 
 
-TString MVector::ToString()
+TString MVector::ToString() const
 {
   //! Return a string of the content of this class
 

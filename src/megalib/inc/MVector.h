@@ -164,7 +164,7 @@ public:
   bool Coplanar(const MVector& A, const MVector& B, const MVector& C, double Tolerance = 1E-6);
 
   //! Return a string of the content of this class
-  TString ToString();
+  TString ToString() const;
 
   // private - not private - for speed
 

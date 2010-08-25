@@ -69,11 +69,26 @@ void NGUIOptionsOrientationsDatabase::Create()
 
   TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 10);
 
-  m_OrientationsDB = new MGUIEFileSelector(this, "Choose an orientations database:", 
-                                           dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetFileName());
-  m_OrientationsDB->SetFileType("Orientations data base", "*.csv");
+  m_MetrologyDB = new MGUIEFileSelector(this, "Metrology system errors database:", 
+                                           dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetMetrologyDBFileName());
+  m_MetrologyDB->SetFileType("CSV data base", "*.csv");
+  AddFrame(m_MetrologyDB, FileLayout);
 
-	AddFrame(m_OrientationsDB, FileLayout);
+  m_OpticsDB = new MGUIEFileSelector(this, "Optics system errors database:", 
+                                           dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetOpticsDBFileName());
+  m_OpticsDB->SetFileType("CSV data base", "*.csv");
+  AddFrame(m_OpticsDB, FileLayout);
+
+  m_CalibratedAlignmentsDB = new MGUIEFileSelector(this, "Calibrated alignments database:", 
+                                           dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetCalibratedAlignmentsDBFileName());
+  m_CalibratedAlignmentsDB->SetFileType("CSV data base", "*.csv");
+  AddFrame(m_CalibratedAlignmentsDB, FileLayout);
+
+  m_PerturbedAlignmentsDB = new MGUIEFileSelector(this, "Choose either a perturbed or an ideal alignments database:", 
+                                           dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetPerturbedAlignmentsDBFileName());
+  m_PerturbedAlignmentsDB->SetFileType("CSV data base", "*.csv");
+  AddFrame(m_PerturbedAlignmentsDB, FileLayout);
+
 
 
   PostCreate();
@@ -118,7 +133,10 @@ bool NGUIOptionsOrientationsDatabase::OnApply()
 {
 	// Modify this to store the data in the module!
 
-  dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->SetFileName(m_OrientationsDB->GetFileName());
+  dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->SetMetrologyDBFileName(m_MetrologyDB->GetFileName());
+  dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->SetOpticsDBFileName(m_OpticsDB->GetFileName());
+  dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->SetCalibratedAlignmentsDBFileName(m_CalibratedAlignmentsDB->GetFileName());
+  dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->SetPerturbedAlignmentsDBFileName(m_PerturbedAlignmentsDB->GetFileName());
 
 	return true;
 }

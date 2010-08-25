@@ -114,8 +114,8 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   //cout << "OMD1 =" << OMD1.ToString() << m_Time << endl;
   //cout << "OML1 =" << OML1.ToString() << endl;
   
-  double MD1Err=m_Satellite.GetCentroidingErrorMetrologyDetector(1);
-  double MD2Err=m_Satellite.GetCentroidingErrorMetrologyDetector(2);
+  double MD1Err = m_Satellite.GetCentroidingErrorMetrologyDetector(m_Time, 1);
+  double MD2Err = m_Satellite.GetCentroidingErrorMetrologyDetector(m_Time, 2);
   double Err;
 
   // ... and do something with them to generate to generate all three initial metrology data sets as measured

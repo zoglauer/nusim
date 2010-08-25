@@ -90,7 +90,6 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NGUIOptionsPointingPredefined.o \
 	$(LB)/NModulePointingPredefined.o \
 	$(LB)/NModulePointingDatabase.o \
-	$(LB)/NModuleOrientationsIdeal.o \
 	$(LB)/NModuleOrientationsDatabase.o \
 	$(LB)/NGUIOptionsOrientationsDatabase.o \
 	$(LB)/NModuleTimeIdeal.o \

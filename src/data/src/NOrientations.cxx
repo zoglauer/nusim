@@ -332,7 +332,8 @@ NOrientation NOrientations::GetOrientationDetectorRelFocalPlaneModule(int Module
 
 
 ////////////////////////////////////////////////////////////////////////////////
-  
+
+
 bool NOrientations::Stream(ofstream& S)
 {
   //! Stream the content to an ASCII file 
@@ -410,11 +411,10 @@ bool NOrientations::Parse(TString& Line)
   
 
 
-bool NOrientations::Parse(TString Positions, TString Rotations)
+bool NOrientations::ParseDB(TString Positions, TString Rotations)
 {
   // Parse some input from file
   double Time;
-  char c;
   double xSC = 0, ySC = 0, zSC = 0, tSC = 0;
   double xFP = 0, yFP = 0, zFP = 0, tFP = 0;
   double xFPM1 = 0, yFPM1 = 0, zFPM1 = 0, tFPM1 = 0;
@@ -430,7 +430,7 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
   double xML2 = 0, yML2 = 0, zML2 = 0, tML2 = 0;
   double xST4 = 0, yST4 = 0, zST4 = 0, tST4 = 0;
  
-  int E = sscanf(Positions.Data(), "%lf,%c,,,,"
+  int E = sscanf(Positions.Data(), "%lf,v,"
                  "%lf,%lf,%lf,," // m_SpaceCraftRelInertial
                  "%lf,%lf,%lf,," // m_FocalPlaneRelSC
                  "%lf,%lf,%lf,," // m_FocalPlaneModule1
@@ -444,9 +444,9 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
                  "%lf,%lf,%lf,," // m_Optics2RelOB
                  "%lf,%lf,%lf,," // m_MetrologyLaser1RelOB
                  "%lf,%lf,%lf,," // m_MetrologyLaser2RelOB
-                 "%lf,%lf,%lf," // m_StarTracker4RelOB
+                 "%lf,%lf,%lf,"  // m_StarTracker4RelOB
                  ,
-                 &Time, &c, 
+                 &Time, 
 								 &xSC, &ySC, &zSC,
 								 &xFP, &yFP, &zFP,
                  &xFPM1, &yFPM1, &zFPM1,
@@ -461,8 +461,8 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
                  &xML1, &yML1, &zML1, 
                  &xML2, &yML2, &zML2, 
                  &xST4, &yST4, &zST4);
-  if (E != 44) {
-    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 44"<<endl;
+  if (E != 43) {
+    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 43"<<endl;
     cerr<<Positions.Data()<<endl;
     //return false;
   }
@@ -483,7 +483,7 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
   m_StarTracker4RelOB.SetTranslation(xST4, yST4, zST4);
 
 
-  if (sscanf(Rotations.Data(), "%lf,%c,,,,"
+  E = sscanf(Rotations.Data(), "%lf,q,"
              "%lf,%lf,%lf,%lf," // m_SpaceCraftRelInertial
              "%lf,%lf,%lf,%lf," // m_FocalPlaneRelSC
              "%lf,%lf,%lf,%lf," // m_FocalPlaneModule1
@@ -499,7 +499,7 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
              "%lf,%lf,%lf,%lf," // m_MetrologyLaser2RelOB
              "%lf,%lf,%lf,%lf"  // m_StarTracker4RelOB
              , 
-             &Time, &c,
+             &Time,
 						 &xSC, &ySC, &zSC, &tSC,
 						 &xFP, &yFP, &zFP, & tFP,
              &xFPM1, &yFPM1, &zFPM1, &tFPM1,
@@ -513,12 +513,13 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
              &xO2, &yO2, &zO2, &tO2, 
              &xML1, &yML1, &zML1, &tML1, 
              &xML2, &yML2, &zML2, &tML2, 
-             &xST4, &yST4, &zST4, &tST4) != 58) {
-    cerr<<"Unable to scan rotations!"<<endl;
-    cerr<<Rotations.Data()<<endl;
+             &xST4, &yST4, &zST4, &tST4);
+  if (E != 57) {
+    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 57"<<endl;
+    cerr<<Positions.Data()<<endl;
     //return false;
   }
-  
+           
   m_SpaceCraftRelInertial.SetRotation(xSC, ySC, zSC, tSC);
   m_FocalPlaneRelSC.SetRotation(xFP, yFP, zFP, tFP);
   m_FocalPlaneModule1.SetRotation(xFPM1, yFPM1, zFPM1, tFPM1);
@@ -536,189 +537,25 @@ bool NOrientations::Parse(TString Positions, TString Rotations)
 
   m_Time.SetSeconds(Time);
   
-  m_Empty = false;
+  //! Those are currently !NOT! in the alignments DB  
+  m_FocalPlaneModule1Detector1RelFocalPlaneModule1.SetTranslation(-10.25, -10.25, 0.0);
+  m_FocalPlaneModule1Detector1RelFocalPlaneModule1.SetRotation(0.0, 0.0, 90.0*c_Rad);
+  m_FocalPlaneModule1Detector2RelFocalPlaneModule1.SetTranslation(-10.25, +10.25, 0.0);
+  m_FocalPlaneModule1Detector2RelFocalPlaneModule1.SetRotation(0.0, 0.0, 180.0*c_Rad);
+  m_FocalPlaneModule1Detector3RelFocalPlaneModule1.SetTranslation(+10.25, -10.25, 0.0);
+  m_FocalPlaneModule1Detector3RelFocalPlaneModule1.SetRotation(0.0, 0.0, 270.0*c_Rad);
+  m_FocalPlaneModule1Detector4RelFocalPlaneModule1.SetTranslation(+10.25, +10.25, 0.0);
+  m_FocalPlaneModule1Detector4RelFocalPlaneModule1.SetRotation(0.0, 0.0, 0.0);
 
-  return true;
-}
+  m_FocalPlaneModule2Detector1RelFocalPlaneModule2.SetTranslation(-10.25, -10.25, 0.0);
+  m_FocalPlaneModule2Detector1RelFocalPlaneModule2.SetRotation(0.0, 0.0, 90.0*c_Rad);
+  m_FocalPlaneModule2Detector2RelFocalPlaneModule2.SetTranslation(-10.25, +10.25, 0.0);
+  m_FocalPlaneModule2Detector2RelFocalPlaneModule2.SetRotation(0.0, 0.0, 180.0*c_Rad);
+  m_FocalPlaneModule2Detector3RelFocalPlaneModule2.SetTranslation(+10.25, -10.25, 0.0);
+  m_FocalPlaneModule2Detector3RelFocalPlaneModule2.SetRotation(0.0, 0.0, 270.0*c_Rad);
+  m_FocalPlaneModule2Detector4RelFocalPlaneModule2.SetTranslation(+10.25, +10.25, 0.0);
+  m_FocalPlaneModule2Detector4RelFocalPlaneModule2.SetRotation(0.0, 0.0, 0.0);
 
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-bool NOrientations::ParseCalibrations(TString Positions, TString Rotations)
-{
-  // Parse some input from file
-  double xFPM1 = 0, yFPM1 = 0, zFPM1 = 0, tFPM1 = 0;
-  double xFPM2 = 0, yFPM2 = 0, zFPM2 = 0, tFPM2 = 0;
-  double xMD1 = 0, yMD1 = 0, zMD1 = 0, tMD1 = 0;
-  double xMD2 = 0, yMD2 = 0, zMD2 = 0, tMD2 = 0;
-  double xOB = 0, yOB = 0, zOB = 0, tOB = 0;
-  double xO1 = 0, yO1 = 0, zO1 = 0, tO1 = 0;
-  double xO2 = 0, yO2 = 0, zO2 = 0, tO2 = 0;
-  double xML1 = 0, yML1 = 0, zML1 = 0, tML1 = 0;
-  double xML2 = 0, yML2 = 0, zML2 = 0, tML2 = 0;
-  double xST4 = 0, yST4 = 0, zST4 = 0, tST4 = 0;
- 
-  int E = sscanf(Positions.Data(), ",,,,cal xyz2,"
-                 ",,,," // m_SpaceCraftRelInertial
-                 ",,,," // m_FocalPlaneRelSC
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule1
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule2
-                 "%lf,%lf,%lf,," // m_MetrologyDetector1
-                 "%lf,%lf,%lf,," // m_MetrologyDetector2
-                 ",,,," // m_Aperture1
-                 ",,,," // m_Aperture2
-                 "%lf,%lf,%lf,," // m_OpticalBench
-                 "%lf,%lf,%lf,," // m_Optics1RelOB
-                 "%lf,%lf,%lf,," // m_Optics2RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser1RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser2RelOB
-                 ,
-                 &xFPM1, &yFPM1, &zFPM1,
-                 &xFPM2, &yFPM2, &zFPM2,
-                 &xMD1, &yMD1, &zMD1, 
-                 &xMD2, &yMD2, &zMD2, 
-                 &xOB, &yOB, &zOB, 
-                 &xO1, &yO1, &zO1, 
-                 &xO2, &yO2, &zO2, 
-                 &xML1, &yML1, &zML1, 
-                 &xML2, &yML2, &zML2);
-  if (E != 27) {
-    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 27"<<endl;
-    cerr<<Positions.Data()<<endl;
-    //return false;
-  }
-  
-  m_FocalPlaneModule1.SetTranslation(xFPM1, yFPM1, zFPM1);
-  m_FocalPlaneModule2.SetTranslation(xFPM2, yFPM2, zFPM2);
-  m_MetrologyDetector1.SetTranslation(xMD1, yMD1, zMD1);
-  m_MetrologyDetector2.SetTranslation(xMD2, yMD2, zMD2);
-  m_OpticalBench.SetTranslation(xOB, yOB, zOB);
-  m_Optics1RelOB.SetTranslation(xO1, yO1, zO1);
-  m_Optics2RelOB.SetTranslation(xO2, yO2, zO2);
-  m_MetrologyLaser1RelOB.SetTranslation(xML1, yML1, zML1);
-  m_MetrologyLaser2RelOB.SetTranslation(xML2, yML2, zML2);
-
-
-  if (sscanf(Rotations.Data(), ",,,,cal quat2,"
-             ",,,," // m_SpaceCraftRelInertial
-             ",,,," // m_FocalPlaneRelSC
-             "%lf,%lf,%lf,%lf," // m_FocalPlaneModule1
-             "%lf,%lf,%lf,%lf," // m_FocalPlaneModule2
-             "%lf,%lf,%lf,%lf," // m_MetrologyDetector1
-             "%lf,%lf,%lf,%lf," // m_MetrologyDetector2
-             ",,,," // m_Aperture1
-             ",,,," // m_Aperture2
-             "%lf,%lf,%lf,%lf," // m_OpticalBench
-             "%lf,%lf,%lf,%lf," // m_Optics1RelOB
-             "%lf,%lf,%lf,%lf," // m_Optics2RelOB
-             "%lf,%lf,%lf,%lf," // m_MetrologyLaser1RelOB
-             "%lf,%lf,%lf,%lf," // m_MetrologyLaser2RelOB
-             "%lf,%lf,%lf,%lf"  // m_StarTracker4RelOB
-             , 
-             &xFPM1, &yFPM1, &zFPM1, &tFPM1,
-             &xFPM2, &yFPM2, &zFPM2, &tFPM2,
-             &xMD1, &yMD1, &zMD1, &tMD1, 
-             &xMD2, &yMD2, &zMD2, &tMD2,  
-             &xOB, &yOB, &zOB, &tOB, 
-             &xO1, &yO1, &zO1, &tO1, 
-             &xO2, &yO2, &zO2, &tO2, 
-             &xML1, &yML1, &zML1, &tML1, 
-             &xML2, &yML2, &zML2, &tML2, 
-             &xST4, &yST4, &zST4, &tST4) != 40) {
-    cerr<<"Unable to scan rotations!"<<endl;
-    cerr<<Rotations.Data()<<endl;
-    //return false;
-  }
-  
-  m_FocalPlaneModule1.SetRotation(xFPM1, yFPM1, zFPM1, tFPM1);
-  m_FocalPlaneModule2.SetRotation(xFPM2, yFPM2, zFPM2, tFPM2);
-  m_MetrologyDetector1.SetRotation(xMD1, yMD1, zMD1, tMD1);
-  m_MetrologyDetector2.SetRotation(xMD2, yMD2, zMD2, tMD2);
-  m_OpticalBench.SetRotation(xOB, yOB, zOB, tOB);
-  m_Optics1RelOB.SetRotation(xO1, yO1, zO1, tO1);
-  m_Optics2RelOB.SetRotation(xO2, yO2, zO2, tO2);
-  m_MetrologyLaser1RelOB.SetRotation(xML1, yML1, zML1, tML1);
-  m_MetrologyLaser2RelOB.SetRotation(xML2, yML2, zML2, tML2);
-  m_StarTracker4RelOB.SetRotation(xST4, yST4, zST4, tST4);
-
-  m_Time.SetSeconds(0);
-  
-  m_Empty = false;
-
-  return true;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-bool NOrientations::ParseErrors(TString Positions)
-{
-  // Parse some input from file
-
-  double xFPM1 = 0, yFPM1 = 0, zFPM1 = 0;
-  double xFPM2 = 0, yFPM2 = 0, zFPM2 = 0;
-  double xMD1 = 0, yMD1 = 0, zMD1 = 0;
-  double xMD2 = 0, yMD2 = 0, zMD2 = 0;
-  double xA1 = 0, yA1 = 0, zA1 = 0;
-  double xA2 = 0, yA2 = 0, zA2 = 0;
-  double xOB = 0, yOB = 0, zOB = 0;
-  double xO1 = 0, yO1 = 0, zO1 = 0;
-  double xO2 = 0, yO2 = 0, zO2 = 0;
-  double xML1 = 0, yML1 = 0, zML1 = 0;
-  double xML2 = 0, yML2 = 0, zML2 = 0;
-  double xST4 = 0, yST4 = 0, zST4 = 0;
- 
-  int E = sscanf(Positions.Data(), ",,,,stdevs %*c%*c%*c,"
-                 ",,,," // m_SpaceCraftRelInertial
-                 ",,,," // m_FocalPlaneRelSC
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule1
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule2
-                 "%lf,%lf,%lf,," // m_MetrologyDetector1
-                 "%lf,%lf,%lf,," // m_MetrologyDetector2
-                 "%lf,%lf,%lf,," // m_Aperture1
-                 "%lf,%lf,%lf,," // m_Aperture2
-                 "%lf,%lf,%lf,," // m_OpticalBench
-                 "%lf,%lf,%lf,," // m_Optics1RelOB
-                 "%lf,%lf,%lf,," // m_Optics2RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser1RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser2RelOB
-                 "%lf,%lf,%lf," // m_StarTracker4RelOB
-                 ,
-                 &xFPM1, &yFPM1, &zFPM1,
-                 &xFPM2, &yFPM2, &zFPM2,
-                 &xMD1, &yMD1, &zMD1, 
-                 &xMD2, &yMD2, &zMD2, 
-                 &xA1, &yA1, &zA1, 
-                 &xA2, &yA2, &zA2, 
-                 &xOB, &yOB, &zOB, 
-                 &xO1, &yO1, &zO1, 
-                 &xO2, &yO2, &zO2, 
-                 &xML1, &yML1, &zML1, 
-                 &xML2, &yML2, &zML2, 
-                 &xST4, &yST4, &zST4);
-  if (E != 36) {
-    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 36"<<endl;
-    cerr<<Positions.Data()<<endl;
-    //return false;
-  }
-  
-  m_FocalPlaneModule1.SetTranslation(xFPM1, yFPM1, zFPM1);
-  m_FocalPlaneModule2.SetTranslation(xFPM2, yFPM2, zFPM2);
-  m_MetrologyDetector1.SetTranslation(xMD1, yMD1, zMD1);
-  m_MetrologyDetector2.SetTranslation(xMD2, yMD2, zMD2);
-  m_Aperture1.SetTranslation(xA1, yA1, zA1);
-  m_Aperture2.SetTranslation(xA2, yA2, zA2);
-  m_OpticalBench.SetTranslation(xOB, yOB, zOB);
-  m_Optics1RelOB.SetTranslation(xO1, yO1, zO1);
-  m_Optics2RelOB.SetTranslation(xO2, yO2, zO2);
-  m_MetrologyLaser1RelOB.SetTranslation(xML1, yML1, zML1);
-  m_MetrologyLaser2RelOB.SetTranslation(xML2, yML2, zML2);
-  m_StarTracker4RelOB.SetTranslation(xST4, yST4, zST4);
-
-  m_Time.SetSeconds(0.0);
-  
   m_Empty = false;
 
   return true;
