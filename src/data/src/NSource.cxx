@@ -1011,7 +1011,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 
       // set up a rotation in the RA/DEC system. 
       // -> create a test vector in RA/DEC
-      // -> determine its direction in star tracker system
+      // -> rotate it into the FB system
       // -> determine its direction in optical bench
       // -> determine its direction in optics module
       // -> start photon relative to optics module
@@ -1083,34 +1083,17 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       Position[0] = (x*cos(Theta)+z*sin(Theta))*cos(Phi) - y*sin(Phi);
       Position[1] = (x*cos(Theta)+z*sin(Theta))*sin(Phi) + y*cos(Phi);
       Position[2] = -x*sin(Theta)+z*cos(Theta);
-      
-      //cout<<"Start pos: "<<Position/cm<<":"<<x/cm<<":"<<y/cm<<":"<<z/cm<<endl;
-      
-      // Original: Add translation (not rotation!) from optics module to world frame = focal bench system
-      // MVector Null(0.0, 0.0, 0.0);
-      // m_Satellite.GetOrientationOptics(m_NextEmission, Telescope).TransformOut(Null);
-      // Position += Null;
-      // Photon.SetPosition(Position);      
-      // Photon.SetDirection(Direction);
-
-      
-      // Translate into the optical bench
-      MVector Null(0.0, 0.0, 0.0);
-      m_Satellite.GetOrientationOpticsRelOpticalBench(m_NextEmission, Telescope).TransformOut(Null);
-      Position += Null;
 
       Photon.SetPosition(Position);      
       Photon.SetDirection(Direction);
-
+      
+      // Translate into the optical bench
+      m_Satellite.GetOrientationOpticsRelOpticalBench(m_NextEmission, Telescope).TransformOut(Photon);
+      
       // Rotate and transform into the world frame = focal bench system
       m_Satellite.GetOrientationOpticalBench(m_NextEmission).TransformOut(Photon);
-	  
-	  // There is still a remaining error in the above. I have checked that this is the right form of the photon by
-	  // transforming the RA,DEC into FP coords. This photon is travelling downwards -z.
-	  MVector ideal = Photon.GetDirection();
-      Photon.SetDirection(MVector(-ideal[0],-ideal[1],ideal[2]));
       
-      //cout<<"Dir WF: "<<Photon.GetDirection()<<endl;
+      //cout<<"Dir WF: "<<Photon.GetDirection()<<":"<<Photon.GetPosition()<<endl;
     } 
 
     else if  (m_BeamType == c_FarFieldGaussian) {
