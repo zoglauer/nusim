@@ -98,6 +98,8 @@ class MFunction2D
 
   // protected methods:
  protected:
+  //! Perform an optimized (partially binary) search for the bin
+  int FindBin(const vector<double>& Array, double Value) const;
 
   // private methods:
  private:

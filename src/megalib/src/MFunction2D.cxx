@@ -452,22 +452,10 @@ double MFunction2D::Eval(double x, double y) const
 
   } else if (m_InterpolationType == c_InterpolationLinear) {
 
+   
     // Get Position:
-    int xPosition = -1; 
-    for (unsigned int i = 0; i < m_X.size(); ++i) {
-      if (m_X[i] > x) {
-        break;
-      } 
-      xPosition = (int) i;
-    }
-
-    int yPosition = -1; 
-    for (unsigned int i = 0; i < m_Y.size(); ++i) {
-      if (m_Y[i] > y) {
-        break;
-      } 
-      yPosition = (int) i;
-    }
+    int xPosition = FindBin(m_X, x);
+    int yPosition = FindBin(m_Y, y);
 
     if (xPosition < 0) xPosition = 0;
     if (yPosition < 0) yPosition = 0;
@@ -491,6 +479,55 @@ double MFunction2D::Eval(double x, double y) const
   } 
 
   return 0.0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+int MFunction2D::FindBin(const vector<double>& Array, double Value) const
+{
+  // Does a simple binary search to find the correct bin:
+  
+  massert(Array.size() >= 2);
+
+  if (Value < Array.front()) return -1;
+  if (Value >= Array.back()) return Array.size(); 
+
+  // The following has been optimized for the icc compiler!
+
+  if (Array.size() < 32) {
+
+    // Simple search:
+    vector<double>::const_iterator Iter;
+    for (Iter = Array.begin(); Iter != Array.end(); ++Iter) {
+      if ((*Iter) > Value) {
+        return int(Iter - Array.begin()) - 1;
+        break;
+      } 
+    }
+    return -1; // Should never be reached...
+
+  } else {
+
+    // Binary search:
+    unsigned int upper = Array.size();
+    unsigned int center = 1;
+    unsigned int lower = 0;
+
+    while (upper-lower > 1) {
+      center = (upper+lower) >> 1;
+      if (Value == Array[center]) {
+        return int(center);
+      }
+      if (Value < Array[center]) {
+        upper = center;
+      } else {
+        lower = center;
+      }
+    }
+    return int(lower);
+  }
 }
 
 
