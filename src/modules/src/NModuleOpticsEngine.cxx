@@ -188,7 +188,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
 
   RTPos[1] = Pos[0];
   RTPos[2] = Pos[1];
-  RTPos[3] = -m_ShellLength;
+  RTPos[3] = m_ShellLength;
 
   RTDir[1] =  Photon.GetDirection()[0];
   RTDir[2] =  Photon.GetDirection()[1];
@@ -203,7 +203,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
 	NOrientation FPorient = m_Satellite.GetOrientationFocalPlaneModule(Event.GetTime(), Event.GetTelescope());
     
 	iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); 
-	iPhoton.SetDirection(MVector(-RTDir[1], -RTDir[2], -RTDir[3]));
+	iPhoton.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
  
     Orientation.TransformIn(iPhoton);
 	FPorient.TransformOut(iPhoton);
@@ -218,7 +218,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     InPos[1] = 0.0;
     InPos[2] = 0.0;
     InPos[3] = 0.0; 
-    MovePhoton(InPos, RTDir, 10150.);
+    MovePhoton(InPos, RTDir, -10150.);
   }
   //*************
    
@@ -245,15 +245,15 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   //Due to the fact that the raytrace coordinate system is upside down as opposed to the optics coordinate system, and the module
   //is fed coordinates in optics coordinates, once the raytrace is done with them, they have to be put back into the optics coordinates. 
   //Z position coordinate has to be inverted, x/y direction coordinates have to be flipped.
-  Photon.SetPosition(MVector(RTPos[1], RTPos[2], -RTPos[3]));    
-  Photon.SetDirection(MVector(-RTDir[1], -RTDir[2], RTDir[3]));
+  Photon.SetPosition(MVector(RTPos[1], RTPos[2], RTPos[3]));    
+  Photon.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
   
   //************* Perfect Optic
   // Construct the new direction cosines as being the vector that connects the exit location of the ray, RTpos, to the 'ideal' spot on the FP, InPos.
   if (m_UseIdealOptics) {
-    MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - MVector(InPos[1], InPos[2], InPos[3]);   // Only focus at F
-    //MVector Pnew = MVector(RTPos[1], RTPos[2], RTPos[3]) - iPhoton.GetPosition();  // follow FP and focus on the top
-    Photon.SetDirection(MVector(-Pnew[0],-Pnew[1],Pnew[2]));
+    MVector Pnew = MVector(InPos[1], InPos[2], InPos[3]) - MVector(RTPos[1], RTPos[2], RTPos[3]);   // Only focus at F
+	//MVector Pnew = iPhoton.GetPosition() - MVector(RTPos[1], RTPos[2], RTPos[3]);  // follow FP and focus on the top
+    Photon.SetDirection(MVector(Pnew[0],Pnew[1],Pnew[2]));
   }
   //*************
 
@@ -322,7 +322,13 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   float r0;
 
   /**************** END OF VARIABLE DEFINITIONS *****************************/
-
+  k[1] = -k[1];
+  k[2] = -k[2];
+  k[3] = -k[3];
+  r[1] = -r[1];
+  r[2] = -r[2];
+  r[3] = -r[3];
+  
   r0 = sqrt(Square(r[1]) + Square(r[2]));
 
   // Use 0.0 if you don't want scattering
@@ -424,7 +430,15 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     //cout<<"Block 10"<<endl;
     return 0;
   } 
-
+  
+  k[1] = -k[1];
+  k[2] = -k[2];
+  k[3] = -k[3];
+  r[1] = -r[1];
+  r[2] = -r[2];
+  r[3] = -r[3];
+  
+  
   if (flag == 2) return 2;
   if (flag == 3) return 3;
   
