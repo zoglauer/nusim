@@ -47,15 +47,10 @@ class NAlignments
 
   //! Return true if the orientation is empty
   bool IsEmpty() const { return m_Empty; }
-
-  //! Parse the data form the default file format
-  bool Parse(TString Positions, TString Rotations);
-
-  //! Parse the calibration data form the default file format
-  bool ParseCalibrations(TString Positions, TString Rotations);
-
-  //! Parse the error data form the default file format
-  bool ParseErrors(TString Positions);
+  
+  //! Set from an interpolation between the two values
+  //! Fraction needs to be between ]0..1[
+  void SetInterpolated(const NAlignments& A, const NAlignments& B, double Fraction);
 
   //! Get the optic bench orientation at time t                      
   virtual NOrientation GetOrientationSpaceCraftRelInertial();

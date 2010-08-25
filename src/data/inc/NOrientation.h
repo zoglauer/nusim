@@ -80,6 +80,10 @@ class NOrientation
   //! Daughter is an orientation inside mother, mother is an orientation in grandmother
   //! This operation gets the orientation of daughter in the grandmother coordiante system
   NOrientation operator*(const NOrientation& O) const;
+  
+  //! Set from an interpolation between the two values
+  //! Fraction needs to be between ]0..1[
+  void SetInterpolated(const NOrientation& A, const NOrientation& B, double Fraction);
 
   //! Translate and rotate a photon into this coordinate system
   void TransformIn(NPhoton& Photon) const;

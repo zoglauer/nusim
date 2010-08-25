@@ -75,11 +75,61 @@ void NAlignments::Clear()
   m_MetrologyLaser2RelOB.Clear();
   m_StarTracker4RelOB.Clear();
 
+  m_FocalPlaneModule1Detector1RelFocalPlaneModule1.Clear();
+  m_FocalPlaneModule1Detector2RelFocalPlaneModule1.Clear();
+  m_FocalPlaneModule1Detector3RelFocalPlaneModule1.Clear();
+  m_FocalPlaneModule1Detector4RelFocalPlaneModule1.Clear();
+
+  m_FocalPlaneModule2Detector1RelFocalPlaneModule2.Clear();
+  m_FocalPlaneModule2Detector2RelFocalPlaneModule2.Clear();
+  m_FocalPlaneModule2Detector3RelFocalPlaneModule2.Clear();
+  m_FocalPlaneModule2Detector4RelFocalPlaneModule2.Clear();
+
   m_Time.Clear();
   
   m_Empty = true;
 }
+    
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NAlignments::SetInterpolated(const NAlignments& A, const NAlignments& B, double Fraction)
+{
+  //! Set from a linear interpolation between the two values
+  //! Fraction needs to be between ]0..1[  
   
+  
+  m_Time = A.m_Time + (B.m_Time - A.m_Time)*Fraction;
+
+  m_SpaceCraftRelInertial.SetInterpolated(A.m_SpaceCraftRelInertial, B.m_SpaceCraftRelInertial, Fraction);
+  m_FocalPlaneRelSC.SetInterpolated(A.m_FocalPlaneRelSC, B.m_FocalPlaneRelSC, Fraction);
+  m_FocalPlaneModule1.SetInterpolated(A.m_FocalPlaneModule1, B.m_FocalPlaneModule1, Fraction);
+  m_FocalPlaneModule2.SetInterpolated(A.m_FocalPlaneModule2, B.m_FocalPlaneModule2, Fraction);
+  m_MetrologyDetector1.SetInterpolated(A.m_MetrologyDetector1, B.m_MetrologyDetector1, Fraction);
+  m_MetrologyDetector2.SetInterpolated(A.m_MetrologyDetector2, B.m_MetrologyDetector2, Fraction);
+  m_Aperture1.SetInterpolated(A.m_Aperture1, B.m_Aperture1, Fraction);
+  m_Aperture2.SetInterpolated(A.m_Aperture2, B.m_Aperture2, Fraction);
+  m_OpticalBench.SetInterpolated(A.m_OpticalBench, B.m_OpticalBench, Fraction);
+  m_Optics1RelOB.SetInterpolated(A.m_Optics1RelOB, B.m_Optics1RelOB, Fraction);
+  m_Optics2RelOB.SetInterpolated(A.m_Optics2RelOB, B.m_Optics2RelOB, Fraction);
+  m_MetrologyLaser1RelOB.SetInterpolated(A.m_MetrologyLaser1RelOB, B.m_MetrologyLaser1RelOB, Fraction);
+  m_MetrologyLaser2RelOB.SetInterpolated(A.m_MetrologyLaser2RelOB, B.m_MetrologyLaser2RelOB, Fraction);
+  m_StarTracker4RelOB.SetInterpolated(A.m_StarTracker4RelOB, B.m_StarTracker4RelOB, Fraction);
+
+  m_FocalPlaneModule1Detector1RelFocalPlaneModule1.SetInterpolated(A.m_FocalPlaneModule1Detector1RelFocalPlaneModule1, B.m_FocalPlaneModule1Detector1RelFocalPlaneModule1, Fraction);
+  m_FocalPlaneModule1Detector2RelFocalPlaneModule1.SetInterpolated(A.m_FocalPlaneModule1Detector2RelFocalPlaneModule1, B.m_FocalPlaneModule1Detector2RelFocalPlaneModule1, Fraction);
+  m_FocalPlaneModule1Detector3RelFocalPlaneModule1.SetInterpolated(A.m_FocalPlaneModule1Detector3RelFocalPlaneModule1, B.m_FocalPlaneModule1Detector3RelFocalPlaneModule1, Fraction);
+  m_FocalPlaneModule1Detector4RelFocalPlaneModule1.SetInterpolated(A.m_FocalPlaneModule1Detector4RelFocalPlaneModule1, B.m_FocalPlaneModule1Detector4RelFocalPlaneModule1, Fraction);
+
+  m_FocalPlaneModule2Detector1RelFocalPlaneModule2.SetInterpolated(A.m_FocalPlaneModule2Detector1RelFocalPlaneModule2, B.m_FocalPlaneModule2Detector1RelFocalPlaneModule2, Fraction);
+  m_FocalPlaneModule2Detector2RelFocalPlaneModule2.SetInterpolated(A.m_FocalPlaneModule2Detector2RelFocalPlaneModule2, B.m_FocalPlaneModule2Detector2RelFocalPlaneModule2, Fraction);
+  m_FocalPlaneModule2Detector3RelFocalPlaneModule2.SetInterpolated(A.m_FocalPlaneModule2Detector3RelFocalPlaneModule2, B.m_FocalPlaneModule2Detector3RelFocalPlaneModule2, Fraction);
+  m_FocalPlaneModule2Detector4RelFocalPlaneModule2.SetInterpolated(A.m_FocalPlaneModule2Detector4RelFocalPlaneModule2, B.m_FocalPlaneModule2Detector4RelFocalPlaneModule2, Fraction);
+   
+  m_Empty = false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

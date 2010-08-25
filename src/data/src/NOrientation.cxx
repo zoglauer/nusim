@@ -273,9 +273,25 @@ NOrientation NOrientation::operator*(const NOrientation& O) const
   return Combined;
 }
 
+    
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+void NOrientation::SetInterpolated(const NOrientation& A, const NOrientation& B, double Fraction)
+{
+  //! Set from a linear interpolation between the two values
+  //! Fraction needs to be between ]0..1[
+
+  SetTranslation(A.m_Translation + Fraction*(B.m_Translation - A.m_Translation));
+  m_Q.SetInterpolated(A.m_Q, B.m_Q, Fraction);
+  SetRotation(m_Q);
+
+  // Set rest is set automatically by the called functions
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 
 void NOrientation::TransformIn(NPhoton& Photon) const
