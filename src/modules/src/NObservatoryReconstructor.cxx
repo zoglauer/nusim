@@ -102,7 +102,6 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   Rmdfb1.TransformOut(md1);  // Get the interesection of laser on the metrology detector in FB coords
   Rmdfb2.TransformOut(md2);
   
-  //NQuaternion Rstin = m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetMeasuredTransformation();
   NQuaternion Robst = m_CalibratedOrientationStarTrackerRelOpticalBench.GetRotationQuaternion();
   NOrientation Robin;
   Robin.SetRotation(Rstin*Robst);
@@ -154,7 +153,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
     //cout<<module<<pFin<<OAin<<endl;
   //cout<<module<<pF<<OA<<endl;
-    //cout<<"RA "<<atan(pF[1]/pF[0])<<" DEC "<<asin(pF[2])<<endl;
+      cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
     //cout<<"RA "<<atan(OA[1]/OA[0])<<" DEC "<<asin(OA[2])<<endl;
 
   // Point implementation
