@@ -178,10 +178,9 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   
   // New relative to FB
   
-  // Need the reverse direction, only reverse Z. Has to do with how it was defined in the raytrace module.
-  // Didn't Kristin want to fix the optics module????
+ // Need the reverse direction, to find out where the photon came from.  
   MVector SP = Photon.GetDirection();
-  SP[2]=-SP[2];
+  SP=-SP;
 
   // SP is alreday in focal bench corrdinates, thus we only have to apply the pointing rotation:
   NPointing P = m_Satellite.GetPointing(m_Time);

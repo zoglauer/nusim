@@ -134,7 +134,7 @@ bool NGlobal::Initialize()
   // Ignore ROOT messages up to kError
   gErrorIgnoreLevel = kError;
   // Abort on errors
-  // gErrorAbortLevel = kError;
+  gErrorAbortLevel = kError;
 
   // Set the revision:
   TString RevFile = "$(NUSIM)/config/revision.txt";

@@ -1025,12 +1025,14 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       Test.SetDirection(MVector(0.0, 0.0, 1.0));
       Test.SetPosition(MVector(0.0, 0.0, 0.0));
       
-      // Create an orientation from the pointing
-      NOrientation PhotonOriginOrientation;
+      // First determine what the inertial vector is by transforming 
+	  // a test vector (0,0,1) with the source RA, DEC. 
+	  NOrientation PhotonOriginOrientation;
       PhotonOriginOrientation.SetRotation(PhotonOrigin.GetQuaternion());
       PhotonOriginOrientation.TransformOut(Test);
       
-      // Into the FB systen
+	  // Now that we have the inertial vector of the Source, transfrom it 
+	  // into the FP system using the spacecraft pointing inertial Quarternion
       NOrientation FBSystem;
       FBSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
       FBSystem.TransformIn(Test);
@@ -1102,6 +1104,11 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 
       // Rotate and transform into the world frame = focal bench system
       m_Satellite.GetOrientationOpticalBench(m_NextEmission).TransformOut(Photon);
+	  
+	  // There is still a remaining error in the above. I have checked that this is the right form of the photon by
+	  // transforming the RA,DEC into FP coords. This photon is travelling downwards -z.
+	  MVector ideal = Photon.GetDirection();
+      Photon.SetDirection(MVector(-ideal[0],-ideal[1],ideal[2]));
       
       //cout<<"Dir WF: "<<Photon.GetDirection()<<endl;
     } 
