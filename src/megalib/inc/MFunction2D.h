@@ -119,6 +119,8 @@ class MFunction2D
 
   //! For random number generation store the maximum
   double m_Maximum;
+  //! For random number generation store the minimum
+  double m_Minimum;
 
   // For random number generation:
   //! The function as cumulative distribution:

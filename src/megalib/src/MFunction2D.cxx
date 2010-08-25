@@ -82,6 +82,7 @@ MFunction2D::MFunction2D(const MFunction2D& F)
   m_Y = F.m_Y;
   m_Z = F.m_Z;
   m_Maximum = F.m_Maximum;
+  m_Minimum = F.m_Minimum;
   m_Cumulative = F.m_Cumulative;
 }
 
@@ -108,6 +109,7 @@ const MFunction2D& MFunction2D::operator=(const MFunction2D& F)
   m_Y = F.m_Y;
   m_Z = F.m_Z;
   m_Maximum = F.m_Maximum;
+  m_Minimum = F.m_Minimum;
   m_Cumulative = F.m_Cumulative;
 
   return *this;
@@ -319,6 +321,7 @@ bool MFunction2D::Set(const TString FileName, const TString KeyWord,
 
   // Clean up:
   m_Maximum = g_DoubleNotDefined;
+  m_Minimum = g_DoubleNotDefined;
   m_Cumulative.clear();
 
   return true;
@@ -340,6 +343,7 @@ bool MFunction2D::Set(const vector<double>& X, const vector<double>& Y, const ve
 
   // Clean up:
   m_Maximum = g_DoubleNotDefined;
+  m_Minimum = g_DoubleNotDefined;
   m_Cumulative.clear();
 
   return true;
@@ -359,6 +363,7 @@ void MFunction2D::ScaleZ(double Scaler)
 
   // Clean up:
   m_Maximum = g_DoubleNotDefined;
+  m_Minimum = g_DoubleNotDefined;
   m_Cumulative.clear();
 }
 
@@ -376,6 +381,7 @@ void MFunction2D::ScaleX(double Scaler)
 
   // We clear the cumulative function:
   m_Maximum = g_DoubleNotDefined;
+  m_Minimum = g_DoubleNotDefined;
   m_Cumulative.clear();
 }
 
@@ -393,6 +399,7 @@ void MFunction2D::ScaleY(double Scaler)
 
   // We clear the cumulative function:
   m_Maximum = g_DoubleNotDefined;
+  m_Minimum = g_DoubleNotDefined;
   m_Cumulative.clear();
 }
 
@@ -495,7 +502,11 @@ void MFunction2D::GetRandom(double& x, double& y)
   // Return a random number distributed as the underlying function
   // The following is an accurate and safe version but rather slow...
 
-  if (GetZMin() < 0) {
+  if (m_Minimum == g_DoubleNotDefined) {
+    m_Minimum = GetZMin();
+  }
+
+  if (m_Minimum < 0) {
     merr<<"GetRandom() currently only works if all y-values are positive (or zero)."<<show;
     x = g_DoubleNotDefined;
     y = g_DoubleNotDefined;
