@@ -97,6 +97,11 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   //! Initial pointing DEC
   double m_InitialDec;
 
+  //! Store all RA values
+  vector<double> m_Ra;
+  //! Store all DEC value;
+  vector<double> m_Dec;
+  
   //! The energy range
   double m_EnergyWidth;
 
@@ -106,7 +111,26 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   //! The observation time
   NTime m_Time;
 
+  //! True if the window is fixed
+  bool m_FixedSize;
+  //! True if a resize is required
+  bool m_NeedsResize;
+  
+  //! lower limit on Ra
+  double m_MinRa;
+  //! upper limit on Ra;
+  double m_MaxRa;
+  //! The default bin size in Ra
+  double m_BinSizeRa;
+  //! lower limit on Dec
+  double m_MinDec;
+  //! upper limit on Dec
+  double m_MaxDec;
+  //! The default bin size in Dec
+  double m_BinSizeDec;
 
+  
+  
 #ifdef ___CINT___
  public:
   ClassDef(NGUIDiagnosticsBackprojector, 1) // basic class for dialog windows

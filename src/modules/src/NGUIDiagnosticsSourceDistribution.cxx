@@ -49,6 +49,7 @@ NGUIDiagnosticsSourceDistribution::NGUIDiagnosticsSourceDistribution() : NGUIDia
   m_Origin = new TH2D("Origin distribution", "Origin distribution", 200, -10, 10, 200, -10, 10);
   m_Origin->SetXTitle("RA - relative to initial pointing [arcmin]");
   m_Origin->SetYTitle("DEC - relative to initial pointing [arcmin]");
+  m_Origin->SetZTitle("counts");
 
   m_Energy = new TH1D("Spectrum", "Spectrum", 148, 6, 80);
   m_Energy->SetXTitle("keV");
