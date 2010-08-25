@@ -52,6 +52,9 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! Main data analysis routine, which updates the event to a new level 
   virtual bool AnalyzeEvent(NEvent& Event);
 
+  //! Finalize the module
+  virtual bool Finalize();
+
   //! Return a reference to the sources
   vector<NSource*>& GetSourcesRef() { return m_Sources; }
 
@@ -86,6 +89,15 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! The source which is next
   int m_NextComponent;
 
+  // Diagnostics
+  //! Minimum RA of all started photons
+  double m_RaMin;
+  //! Maximum RA of all started photons
+  double m_RaMax;
+  //! Minimum DEC of all started photons
+  double m_DecMin;
+  //! Maximum DEC of all started photons
+  double m_DecMax;
 
 #ifdef ___CINT___
  public:

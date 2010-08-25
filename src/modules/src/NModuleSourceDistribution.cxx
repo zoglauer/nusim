@@ -18,6 +18,8 @@
 #include "NModuleSourceDistribution.h"
 
 // Standard libs:
+#include <limits>
+using namespace std;
 
 // ROOT libs:
 #include "TGClient.h"
@@ -104,6 +106,11 @@ bool NModuleSourceDistribution::Initialize()
 
   DetermineNext();
 
+  m_RaMin = numeric_limits<double>::max();
+  m_RaMax = -numeric_limits<double>::max();
+  m_DecMin = numeric_limits<double>::max();
+  m_DecMax = -numeric_limits<double>::max();
+  
   return true;
 }
 
@@ -194,6 +201,12 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
 
   Event.SetOriginalPhotonRaDec(Ra, Dec);
   
+  // For diagnostisc:
+  if (Ra < m_RaMin) m_RaMin = Ra;
+  if (Ra > m_RaMax) m_RaMax = Ra;
+  if (Dec < m_DecMin) m_DecMin = Dec;
+  if (Dec > m_DecMax) m_DecMax = Dec;
+  
   
   // (d) Store all the data:
   Event.SetTelescope(Telescope);
@@ -218,6 +231,23 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleSourceDistribution::Finalize()
+{
+  // Initialize the module - since this is an entry module determine the time of the first event
+
+  cout<<endl;
+  cout<<"Source generator summary: "<<endl;
+  cout<<endl;
+  cout<<"Photons have been started from those directions: "<<endl;
+  cout<<"  DEC (min/max): "<<m_DecMin/60<<" to "<<m_DecMax/60<<endl;
+  cout<<"  RA (min/max):  "<<m_RaMin/60<<" to "<<m_RaMax/60<<endl;
+  
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
