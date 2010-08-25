@@ -121,38 +121,85 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   // Retrieve axes:
   char Dummy[30];
   fits_read_keyword(File, "CTYPE1", Dummy, NULL, &Status);
-  //cout<<"xAxisType: "<<Dummy<<endl;
   if (TString(Dummy) != "'RA---TAN'") {
-    mgui<<"We have an unhandled x-axis type in the fits file: "<<Dummy<<" (expected: 'RA---TAN')"<<show;
+    mgui<<"We have an unhandled x-axis type in the fits file: \""<<Dummy<<"\" (expected: 'RA---TAN')"<<show;
     return false;
   }
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CTYPE1 keyword..."<<show;
+    return false;
+  }
+  //cout<<"xAxisType: "<<Dummy<<endl;
+  
   fits_read_keyword(File, "CRVAL1", Dummy, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CRVAL1 keyword..."<<show;
+    return false;
+  }  
   double xCenterValue = atof(Dummy);
   //cout<<"xCenterValue: "<<xCenterValue<<endl;
+  
   fits_read_keyword(File, "CRPIX1", Dummy, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CRPIX1 keyword..."<<show;
+    return false;
+  }  
   double xCenterPixel = atof(Dummy);
   //cout<<"xCenterPixel: "<<xCenterPixel<<endl;
+  
   fits_read_keyword(File, "CDELT1", Dummy, NULL, &Status);
+  if (Status != 0) {
+    Status = 0;
+    fits_read_keyword(File, "CD1_1", Dummy, NULL, &Status);
+    if (Status != 0) {
+      mgui<<"Cannot retrieve CDELT1 keyword..."<<show;
+      return false;
+    }
+  }
   double xDelta = -fabs(atof(Dummy));
   //cout<<"xDelta: "<<xDelta<<endl;
-  
-  fits_read_keyword(File, "CTYPE2", Dummy, NULL, &Status);
-  //cout<<"yAxisType: "<<Dummy<<endl;
-  if (TString(Dummy) != "'DEC--TAN'") {
-    mgui<<"We have an unhandled y-axis type in the fits file: "<<Dummy<<" (expected: 'DEC--TAN')"<<show;
-    return false;
-  }
-  fits_read_keyword(File, "CRVAL2", Dummy, NULL, &Status);
-  double yCenterValue = atof(Dummy);
-  //cout<<"yCenterValue: "<<yCenterValue<<endl;
-  fits_read_keyword(File, "CRPIX2", Dummy, NULL, &Status);
-  double yCenterPixel = atof(Dummy);
-  //cout<<"yCenterPixel: "<<yCenterPixel<<endl;
-  fits_read_keyword(File, "CDELT2", Dummy, NULL, &Status);
-  double yDelta = -fabs(atof(Dummy));
-  //cout<<"yDelta: "<<yDelta<<endl;
 
   
+  fits_read_keyword(File, "CTYPE2", Dummy, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CTYPE2 keyword..."<<show;
+    return false;
+  }  
+  if (TString(Dummy) != "'DEC--TAN'") {
+    mgui<<"We have an unhandled y-axis type in the fits file: \""<<Dummy<<"\" (expected: 'DEC--TAN')"<<show;
+    return false;
+  }
+  //cout<<"yAxisType: "<<Dummy<<endl;
+  
+  fits_read_keyword(File, "CRVAL2", Dummy, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CRVAL2 keyword..."<<show;
+    return false;
+  }  
+  double yCenterValue = atof(Dummy);
+  //cout<<"yCenterValue: "<<yCenterValue<<endl;
+
+  fits_read_keyword(File, "CRPIX2", Dummy, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"Cannot retrieve CRPIX2 keyword..."<<show;
+    return false;
+  }  
+  double yCenterPixel = atof(Dummy);
+  //cout<<"yCenterPixel: "<<yCenterPixel<<endl;
+
+  
+  fits_read_keyword(File, "CDELT2", Dummy, NULL, &Status);
+  if (Status != 0) {
+    Status = 0;
+    fits_read_keyword(File, "CD2_2", Dummy, NULL, &Status);
+    if (Status != 0) {
+      mgui<<"Cannot retrieve CDELT2 keyword..."<<show;
+      return false;
+    }
+  }
+  double yDelta = -fabs(atof(Dummy));
+  //cout<<"yDelta: "<<yDelta<<endl;
+   
   // Approximate projection on spherical coordinates:
   xDelta /= cos(yCenterValue*c_Rad);
   
@@ -241,7 +288,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   
   // Set the image
   Image.Set(xAxis, yAxis, zAxis);
-  //Image.Plot();
+  Image.Plot();
   
   return true;
 }
