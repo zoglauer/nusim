@@ -50,11 +50,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
   
   m_MinDec = -10;
   m_MaxDec = 10;
-  m_BinSizeDec = 0.2/60.0;
+  m_BinSizeDec = 0.4/60.0;
   
   m_MinRa = -10;
   m_MaxRa = 10;
-  m_BinSizeRa = 0.2/60.0;
+  m_BinSizeRa = 0.4/60.0;
   
   // Add all histograms and canvases below
   m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 
@@ -111,23 +111,25 @@ void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec)
   m_MinDec = Dec - 8.0/60.0;
   m_MaxDec = Dec + 8.0/60.0;
 
+  double Scaler = 1.0/cos(Dec*c_Rad);
+  
   if (cos(Dec*c_Rad) == 0) { 
     m_MinRa = 0.0;
     m_MaxRa = 360.0;
   } else {
-    double Scaler = 1.0/cos(Dec*c_Rad);
+    Scaler = 1.0/cos(Dec*c_Rad);
     m_MinRa = Ra - Scaler*8.0/60.0;
     m_MaxRa = Ra + Scaler*8.0/60.0;
   }
 
-  cout<<"Initial Min/Max:"<<endl;
-  cout<<m_MinRa<<":"<<Ra<<":"<<m_MaxRa<<endl;
-  cout<<m_MinDec<<":"<<Dec<<":"<<m_MaxDec<<endl;
+  //cout<<"Initial Min/Max:"<<endl;
+  //cout<<m_MinRa<<":"<<Ra<<":"<<m_MaxRa<<endl;
+  //cout<<m_MinDec<<":"<<Dec<<":"<<m_MaxDec<<endl;
 
   int BinsDec = ceil((m_MaxDec - m_MinDec)/m_BinSizeDec);
-  int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec);
+  int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec/Scaler);
       
-  cout<<BinsDec<<":"<<BinsRa<<endl;
+  //cout<<BinsDec<<":"<<BinsRa<<endl;
   
   m_Backprojection->Reset();
   m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);
@@ -241,9 +243,9 @@ void NGUIDiagnosticsBackprojector::Update()
   if (m_BackprojectionCanvas != 0) {
     if (m_NeedsResize == true && m_FixedSize == false) {
       
-      cout<<"Before:"<<endl;
-      cout<<m_MinRa<<":"<<m_MaxRa<<endl;
-      cout<<m_MinDec<<":"<<m_MaxDec<<endl;
+      //cout<<"Before:"<<endl;
+      //cout<<m_MinRa<<":"<<m_MaxRa<<endl;
+      //cout<<m_MinDec<<":"<<m_MaxDec<<endl;
 
       
       // First make sure the dimensions are identical
@@ -259,8 +261,6 @@ void NGUIDiagnosticsBackprojector::Update()
         if (m_MaxRa > 360.0) m_MaxRa = 360.0;
       } else {
         // Increase DEC
-        cout<<"Increase DEC"<<endl;
-        cout<<"DD: "<<DimDec<<" DR:"<<DimRa<<" Diff:"<<DimDiff<<endl;
         m_MaxDec += 0.5*fabs(DimDiff/Scaler);
         m_MinDec -= 0.5*fabs(DimDiff/Scaler);
         if (m_MaxDec > 90) m_MaxDec = 90;
@@ -268,13 +268,13 @@ void NGUIDiagnosticsBackprojector::Update()
         Scaler = 1.0/cos(0.5*(m_MaxDec+m_MinDec)*c_Rad);
       }
       
-      cout<<"After:"<<endl;
-      cout<<m_MinRa<<":"<<m_MaxRa<<endl;
-      cout<<m_MinDec<<":"<<m_MaxDec<<endl;
+      //cout<<"After:"<<endl;
+      //cout<<m_MinRa<<":"<<m_MaxRa<<endl;
+      //cout<<m_MinDec<<":"<<m_MaxDec<<endl;
 
       
       int BinsDec = ceil((m_MaxDec - m_MinDec)/m_BinSizeDec);
-      int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec);
+      int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec/Scaler);
       
       m_Backprojection->Reset();
       m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);
