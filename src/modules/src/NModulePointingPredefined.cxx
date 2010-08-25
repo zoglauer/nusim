@@ -116,8 +116,8 @@ NPointing NModulePointingPredefined::GetPointing(NTime Time)
     double Move = 1.0/60/60/60; // Movement per sec -> 60 arcsec per hour
     double MoveTime = 1.0;
 
-    double Ra = m_RWPointing.GetRa(); // ~12:00 hrs
-    double Dec = m_RWPointing.GetDec(); // ~45.00 deg
+    double Ra = m_RWPointing.GetRa(); // 
+    double Dec = m_RWPointing.GetDec(); // 
     
     while (m_RWTime < Time) {
       if (Time - m_RWTime > MoveTime) { // larger than a sec
