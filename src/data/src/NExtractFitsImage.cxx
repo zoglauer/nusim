@@ -288,7 +288,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   
   // Set the image
   Image.Set(xAxis, yAxis, zAxis);
-  Image.Plot();
+  //Image.Plot();
   
   return true;
 }
