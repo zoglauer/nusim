@@ -53,12 +53,15 @@ class MTokenizer
   MTokenizer(const TString& Text, const char Separator = ' ', const bool AllowComposed = true);
   virtual ~MTokenizer();
 
-  //! Set the separator between the tokens (default: space)
+  //! Set the separator between the tokens (default: space) not allowed are "{", "[", "}". "]", "!", "#"
   void SetSeparator(const char Separator);
   //! When true, then elements with "." such as "Sphere.Source" 
   //! are split in the two tokens "Sphere" and "Source", otherwise it is one token 
   void AllowComposed(const bool Composed);
-
+  //! If true empty token are OK, e.g. if "," is a separator then ",," results in 3 empty tokens
+  //! This does not work if spaces are used as separators!
+  void AllowEmpty(const bool Empty) { m_AllowEmpty = Empty; }
+  
   //! Split the text into tokens
   bool Analyse(TString Text, const bool AllowMaths = true);
   //! Same as Analyse
@@ -76,6 +79,8 @@ class MTokenizer
 
   //! Return the token at i as string
   TString GetTokenAt(const int i) const;
+  //! Return true is the given token  is empty
+  bool IsTokenAtEmpty(const int i) const;
 
   //! Return the token at i as string --- return "" in case of error
   TString GetTokenAtAsString(const int i) const;
@@ -135,6 +140,8 @@ class MTokenizer
   TString m_Text;
   //! The original text split into tokens
   vector<TString> m_Tokens;
+  //! Indicating that the given token was empty
+  vector<bool> m_IsEmpty;
 
   //! The separator e.g. a space
   char m_Separator;
@@ -144,6 +151,8 @@ class MTokenizer
   bool m_AllowComposed;
   //! Return whether the first token was composed e.g. "Sphere.Source"
   bool m_Composited;
+  //! True, if empty token can be used
+  bool m_AllowEmpty;
 
 #ifdef ___CINT___
  public:

@@ -106,6 +106,7 @@ void MTokenizer::Init()
 
   m_Composited = false;
   m_AllowComposed = true;
+  m_AllowEmpty = false;
   m_Separator = ' ';
 }
 
@@ -138,6 +139,7 @@ void MTokenizer::Reset()
   // Action common to all constructors:
 
   m_Tokens.clear();
+  m_IsEmpty.clear();
   m_Composited = false;
 }
 
@@ -175,6 +177,28 @@ TString MTokenizer::GetTokenAt(const int i) const
     return m_Tokens[i];
   } else {
     mlog<<"TString MTokenizer::GetTokenAt(int i): "<<endl;
+    if (GetNTokens() > 0) {
+      mlog<<"Index ("<<i<<") out of bounds (min=0, max="<<GetNTokens()-1<<")\n";
+      mlog<<"The text line was: \""<<m_Text.Data()<<"\""<<endl;
+    } else {
+      mlog<<"The Tokenizer is empty!"<<endl;
+    }
+    return TString("");
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool MTokenizer::IsTokenAtEmpty(const int i) const
+{
+  // Return the token at position i
+
+  if (i >= 0 && i < GetNTokens()) {
+    return m_IsEmpty[i];
+  } else {
+    mlog<<"TString MTokenizer::IsTokenAtEmpty(int i): "<<endl;
     if (GetNTokens() > 0) {
       mlog<<"Index ("<<i<<") out of bounds (min=0, max="<<GetNTokens()-1<<")\n";
       mlog<<"The text line was: \""<<m_Text.Data()<<"\""<<endl;
@@ -601,7 +625,7 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
     }
 
     // Now we have to consider several cases:
-    // (a) The token is empty --> skip this token
+    // (a) The token is empty --> skip this token if m_AllowEmtpy == false
     // (b) The token starts with '//', then this AND all following tokens are comment
     // (c) The token starts with [, then it ends with ]
     // (d) the good ones
@@ -609,11 +633,15 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
     Token = Text(TokenStart, TokenLength);
     pToken = Token.Data();
 
-    //cout<<"|"<<Token<<"|"<<endl;
-
     if (TokenLength == 0) {
-      TokenStart = i+1;
-      continue;
+      if (m_AllowEmpty == true) {
+        m_Tokens.push_back("");
+        IsFirstToken = false;
+        m_IsEmpty.push_back(true);
+      } else {
+        TokenStart = i+1;
+        continue;
+      }
     } else if (TokenLength > 1 && (pToken[0] == '/' && pToken[1] == '/')) {
       // Standard comment
       break;
@@ -622,6 +650,7 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
       break;
     } else if (TokenLength > 0 && pToken[0] == '[' && pToken[TokenLength-1] == ']') {
       m_Tokens.push_back(Token);
+      m_IsEmpty.push_back(false);
       IsFirstToken = false;
     } else if (TokenLength > 0 && pToken[0] == '{' && pToken[TokenLength-1] == '}') {
       if (AllowMaths == true) {
@@ -631,6 +660,7 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
         }
       }
       m_Tokens.push_back(Token);
+      m_IsEmpty.push_back(false);
       IsFirstToken = false;
     } else {
       // Now we have a good token.
@@ -642,16 +672,20 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
         if (Token.Contains('.') == true) {
           // Add the token before the dot ...
           m_Tokens.push_back(Token(0, Token.First('.')));
+          m_IsEmpty.push_back(false);
           // after the dot ...
           m_Tokens.push_back(Token(Token.First('.')+1, Token.Length()));
+          m_IsEmpty.push_back(false);
           // This was a composited first token
           m_Composited = false;
         } else {
           m_Tokens.push_back(Token);
+          m_IsEmpty.push_back(false);
           //mlog<<"Added: "<<Token<<endl;
         }
       } else {
         m_Tokens.push_back(Token);
+        m_IsEmpty.push_back(false);
         IsFirstToken = false;
       }
     }
@@ -662,6 +696,12 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
     TokenStart = i+1;
     TokenLength = 0;
   }
+
+  if (m_AllowEmpty == true && Length > 0 && pText[Length-1] == m_Separator) {
+    m_Tokens.push_back("");
+    m_IsEmpty.push_back(true);
+  }
+
 
   //cout<<ToString()<<endl;
 
@@ -726,7 +766,11 @@ TString MTokenizer::ToString()
     out<<"Tokenizer content ("<<GetNTokens()<<" Tokens):"<<endl;
     int i;
     for (i = 0; i < GetNTokens(); i++) {
-      out<<"Token "<<i<<": \""<<GetTokenAt(i)<<"\""<<endl;
+      if (m_IsEmpty[i] == true) {
+        out<<"["<<i<<"]: *empty token*"<<endl;        
+      } else {
+        out<<"["<<i<<"]: \""<<GetTokenAt(i)<<"\""<<endl;
+      }
     }
   } else {
     out<<"Tokenizer empty!"<<endl;
