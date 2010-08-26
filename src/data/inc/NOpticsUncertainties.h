@@ -47,7 +47,7 @@ class NOpticsUncertainties
   void SetInterpolated(const NOpticsUncertainties& A, const NOpticsUncertainties& B, double Fraction);
   
   //! The bore sight of an optics module 
-  MVector GetBoreSightOpticsModule(int ModuleID);
+  MVector GetBoreSightRelOM(int ModuleID);
 
     
   //! Get the time to which these orientations belong
@@ -91,9 +91,9 @@ class NOpticsUncertainties
   NTime m_Time;
 
   //! The bore sight of optics module 1
-  MVector m_BoreSightOptics1;
+  MVector m_BoreSight1RelOM;
   //! The bore sight of optics module 2
-  MVector m_BoreSightOptics2;
+  MVector m_BoreSight2RelOM;
 
 
 

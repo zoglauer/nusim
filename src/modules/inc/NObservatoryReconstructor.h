@@ -76,10 +76,10 @@ class NObservatoryReconstructor: public NModuleInterfacePhotonPropagation
     m_CalibratedOrientationOpticsRelOpticalBench2 = O2; 
   }
 
-  //! Set the calibrated pointing of optical axis 1 and 2 relative to the optics module
-  void SetCalibratedPointingOpticalAxisRelOM(const MVector& P1, const MVector& P2) {
-    m_CalibratedPointingOpticalAxisRelOM1 = P1;
-    m_CalibratedPointingOpticalAxisRelOM2 = P2;
+  //! Set the calibrated bore sight 1 and 2 relative to the optics module
+  void SetCalibratedBoreSightRelOM(const MVector& P1, const MVector& P2) {
+    m_CalibratedBoreSightRelOM1 = P1;
+    m_CalibratedBoreSightRelOM2 = P2;
   }
 
   //! Set the calibrated orientation of metrology laser 1 and 2 relative to the optical bench
@@ -164,10 +164,10 @@ class NObservatoryReconstructor: public NModuleInterfacePhotonPropagation
   //! The calibrated orientation of the optics 2 relative to the optical bench 
   NOrientation m_CalibratedOrientationOpticsRelOpticalBench2;
   
-  //! The calibrated pointing of optical axis 1 relative to the optics module
-  MVector m_CalibratedPointingOpticalAxisRelOM1;
-  //! The calibrated pointing of optical axis 2 relative to the optics module
-  MVector m_CalibratedPointingOpticalAxisRelOM2;
+  //! The calibrated bore sight 1 relative to the optics module
+  MVector m_CalibratedBoreSightRelOM1;
+  //! The calibrated bore sight 2 relative to the optics module
+  MVector m_CalibratedBoreSightRelOM2;
  
   //! The calibrated orientation of metrology laser 1 relative to the optical bench
   NOrientation m_CalibratedOrientationMetrologyLaserRelOpticalBench1;

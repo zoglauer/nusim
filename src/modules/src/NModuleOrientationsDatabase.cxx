@@ -85,39 +85,70 @@ bool NModuleOrientationsDatabase::Initialize()
 {
   // Initialize the module 
   
-  mimp<<"Optice bore sight nameing has to indicate to which this it is relative"<<endl;
-  
   //! Reset all arrays:
-  m_MetrologyUncertainties.clear();
-  m_OpticsUncertainties.clear();
-  m_CalibratedAlignments.Clear();
+  //m_CalibratedMetrologyUncertainties.clear();
+  m_PerturbedMetrologyUncertainties.clear();
+  //m_CalibratedOpticsUncertainties.clear();
+  m_PerturbedOpticsUncertainties.clear();
+  //m_CalibratedAlignments.Clear();
   m_PerturbedAlignments.clear();
   
 
   m_StartIndexPerturbedAlignments = 0;
   m_TimeWrapPerturbedAlignments = 0.0;
   
-  m_StartIndexMetrologyUncertainties = 0;
-  m_TimeWrapMetrologyUncertainties = 0.0;
+  m_StartIndexPerturbedMetrologyUncertainties = 0;
+  m_TimeWrapPerturbedMetrologyUncertainties = 0.0;
   
-  m_StartIndexOpticsUncertainties = 0;
-  m_TimeWrapOpticsUncertainties = 0.0;
+  m_StartIndexPerturbedOpticsUncertainties = 0;
+  m_TimeWrapPerturbedOpticsUncertainties = 0.0;
 
   
   // Load the data bases
-  if (ReadMetrologyDB(m_MetrologyDBFileName) == false) return false;
-  //for (unsigned int i = 0; i < m_MetrologyUncertainties.size(); ++i) {
-  //  cout<<m_MetrologyUncertainties[i].ToString()<<endl;
+  if (MFile::Exists(m_CalibratedMetrologyDBFileName) == false) {
+    mgui<<"Calibrated metrology DB does not exist!"<<error;
+    return false;
+  }
+  if (ReadCalibratedMetrologyDB(m_CalibratedMetrologyDBFileName) == false) return false;
+  //cout<<m_CalibratedMetrologyUncertainties.ToString()<<endl;
+
+  
+  if (MFile::Exists(m_PerturbedMetrologyDBFileName) == false) {
+    mgui<<"Perturbed metrology DB does not exist!"<<error;
+    return false;
+  }
+  if (ReadPerturbedMetrologyDB(m_PerturbedMetrologyDBFileName) == false) return false;
+  //for (unsigned int i = 0; i < m_PerturbedMetrologyUncertainties.size(); ++i) {
+  //  cout<<m_PerturbedMetrologyUncertainties[i].ToString()<<endl;
   //}
 
-  if (ReadOpticsDB(m_OpticsDBFileName) == false) return false;
-  //for (unsigned int i = 0; i < m_OpticsUncertainties.size(); ++i) {
-  //  cout<<m_OpticsUncertainties[i].ToString()<<endl;
-  //}
+  if (MFile::Exists(m_CalibratedOpticsDBFileName) == false) {
+    mgui<<"Calibrated optics DB does not exist!"<<error;
+    return false;
+  }
+  if (ReadCalibratedOpticsDB(m_CalibratedOpticsDBFileName) == false) return false;
+  //cout<<m_CalibratedOpticsUncertainties.ToString()<<endl;
 
+  if (MFile::Exists(m_PerturbedOpticsDBFileName) == false) {
+    mgui<<"Perturbed optics DB does not exist!"<<error;
+    return false;
+  }
+  if (ReadPerturbedOpticsDB(m_PerturbedOpticsDBFileName) == false) return false;
+  //for (unsigned int i = 0; i < m_PerturbedOpticsUncertainties.size(); ++i) {
+  //  cout<<m_PerturbedOpticsUncertainties[i].ToString()<<endl;
+  //}
+  
+  if (MFile::Exists(m_CalibratedAlignmentsDBFileName) == false) {
+    mgui<<"Calibrated alignments DB does not exist!"<<error;
+    return false;
+  }
   if (ReadCalibratedAlignmentsDB(m_CalibratedAlignmentsDBFileName) == false) return false;
   //cout<<m_CalibratedAlignments.ToString()<<endl;
 
+  if (MFile::Exists(m_PerturbedAlignmentsDBFileName) == false) {
+    mgui<<"Perturbed alignments DB does not exist!"<<error;
+    return false;
+  }
   if (ReadPerturbedAlignmentsDB(m_PerturbedAlignmentsDBFileName) == false) return false;
   //for (unsigned int i = 0; i < m_PerturbedAlignments.size(); ++i) {
   //  cout<<m_PerturbedAlignments[i].ToString()<<endl;
@@ -131,7 +162,45 @@ bool NModuleOrientationsDatabase::Initialize()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleOrientationsDatabase::ReadMetrologyDB(TString FileName)
+bool NModuleOrientationsDatabase::ReadCalibratedMetrologyDB(TString FileName)
+{
+  //! Read the data from file
+
+  // Load from file
+  ifstream in;
+  in.open(FileName);
+  if (in.is_open() == false) {
+    cerr<<"Unable to open file: \""<<FileName<<"\""<<endl;
+    return false;
+  }
+
+  // Read the header
+  TString Line;
+
+  Line.ReadLine(in); // version
+  Line.ReadLine(in); // type
+  Line.ReadLine(in); // description
+  Line.ReadLine(in); // column title 1
+  Line.ReadLine(in); // column title 2
+  
+  // Read the data
+  Line.ReadLine(in);
+  if (m_CalibratedMetrologyUncertainties.ParseDB(Line) == false) {
+    mgui<<"Parsing failed: Something is wrong with your calibrated metrology data base"<<show;
+    in.close();
+    return false;            
+  }
+      
+  in.close();
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
 {
   //! Read the data from file
 
@@ -162,11 +231,11 @@ bool NModuleOrientationsDatabase::ReadMetrologyDB(TString FileName)
       
       NMetrologyUncertainties M;
       if (M.ParseDB(Line) == false) {
-        mgui<<"Parsing failed: Something is wrong with your metrology data base"<<show;
+        mgui<<"Parsing failed: Something is wrong with your perturbed metrology data base"<<show;
         in.close();
         return false;            
       }
-      m_MetrologyUncertainties.push_back(M);
+      m_PerturbedMetrologyUncertainties.push_back(M);
     }
   } 
   in.close();
@@ -178,7 +247,45 @@ bool NModuleOrientationsDatabase::ReadMetrologyDB(TString FileName)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleOrientationsDatabase::ReadOpticsDB(TString FileName)
+bool NModuleOrientationsDatabase::ReadCalibratedOpticsDB(TString FileName)
+{
+  //! Read the data from file
+
+  // Load from file
+  ifstream in;
+  in.open(FileName);
+  if (in.is_open() == false) {
+    cerr<<"Unable to open file: \""<<FileName<<"\""<<endl;
+    return false;
+  }
+
+  // Read the header
+  TString Line;
+
+  Line.ReadLine(in); // version
+  Line.ReadLine(in); // type
+  Line.ReadLine(in); // description
+  Line.ReadLine(in); // column title 1
+  Line.ReadLine(in); // column title 2
+  
+  // Read the data
+  Line.ReadLine(in);
+  if (m_CalibratedOpticsUncertainties.ParseDB(Line) == false) {
+    mgui<<"Parsing failed: Something is wrong with your calibrated optics data base!"<<show;
+    in.close();
+    return false;            
+  }
+
+  in.close();
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
 {
   //! Read the data from file
 
@@ -208,11 +315,11 @@ bool NModuleOrientationsDatabase::ReadOpticsDB(TString FileName)
 
       NOpticsUncertainties O;
       if (O.ParseDB(Line) == false) {
-        mgui<<"Parsing failed: Something is wrong with your optics data base!"<<show;
+        mgui<<"Parsing failed: Something is wrong with your perturbed optics data base!"<<show;
         in.close();
         return false;            
       }
-      m_OpticsUncertainties.push_back(O);
+      m_PerturbedOpticsUncertainties.push_back(O);
     }
   } 
   in.close();
@@ -396,52 +503,52 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
 
 
   // Retrieve latest metrology uncertainties
-  if (t.GetSeconds() >= 0 && m_MetrologyUncertainties.size() > 1) {
-    if (m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties].GetTime() + m_TimeWrapMetrologyUncertainties > t) {
-      m_StartIndexMetrologyUncertainties = 0;
-      while (m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties].GetTime() + m_TimeWrapMetrologyUncertainties > t) {
-        m_TimeWrapMetrologyUncertainties -= m_MetrologyUncertainties.back().GetTime();
+  if (t.GetSeconds() >= 0 && m_PerturbedMetrologyUncertainties.size() > 1) {
+    if (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime() + m_TimeWrapPerturbedMetrologyUncertainties > t) {
+      m_StartIndexPerturbedMetrologyUncertainties = 0;
+      while (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime() + m_TimeWrapPerturbedMetrologyUncertainties > t) {
+        m_TimeWrapPerturbedMetrologyUncertainties -= m_PerturbedMetrologyUncertainties.back().GetTime();
       }
     }
 
     unsigned int NextIndex = 0;
     do {
-      NextIndex = m_StartIndexMetrologyUncertainties + 1;
+      NextIndex = m_StartIndexPerturbedMetrologyUncertainties + 1;
       // If we reached the end of the array, rewind
-      if (NextIndex >= m_MetrologyUncertainties.size()) {
+      if (NextIndex >= m_PerturbedMetrologyUncertainties.size()) {
         NextIndex = 0;
-        m_TimeWrapMetrologyUncertainties += m_MetrologyUncertainties.back().GetTime();
+        m_TimeWrapPerturbedMetrologyUncertainties += m_PerturbedMetrologyUncertainties.back().GetTime();
       }
-      if (m_MetrologyUncertainties[NextIndex].GetTime() + m_TimeWrapMetrologyUncertainties > t) {
+      if (m_PerturbedMetrologyUncertainties[NextIndex].GetTime() + m_TimeWrapPerturbedMetrologyUncertainties > t) {
         break;
       } else {
-        m_StartIndexMetrologyUncertainties = NextIndex;      
+        m_StartIndexPerturbedMetrologyUncertainties = NextIndex;      
       }
     } while (true);
     // Start index is always smaller the the last one, except when they are identical, then rewind:
-    if (m_StartIndexMetrologyUncertainties == m_MetrologyUncertainties.size() - 1) m_StartIndexMetrologyUncertainties = 0; 
+    if (m_StartIndexPerturbedMetrologyUncertainties == m_PerturbedMetrologyUncertainties.size() - 1) m_StartIndexPerturbedMetrologyUncertainties = 0; 
   } else {
     // If the time is lower than 0 we alwasy start with the first index, in order to have smooth start:
-    m_StartIndexMetrologyUncertainties = 0;
+    m_StartIndexPerturbedMetrologyUncertainties = 0;
   }
 
-  if (m_MetrologyUncertainties.size() == 1) {
-    m_LatestMetrologyUncertainties = m_MetrologyUncertainties[0];
+  if (m_PerturbedMetrologyUncertainties.size() == 1) {
+    m_LatestMetrologyUncertainties = m_PerturbedMetrologyUncertainties[0];
   } else {
     // We should do interpolations here...
     if (Interpolate == true) {
-      double Fraction = (t.GetSeconds() - m_TimeWrapMetrologyUncertainties.GetSeconds() - m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties].GetTime().GetSeconds())/
-        (m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties+1].GetTime().GetSeconds() - m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties].GetTime().GetSeconds());
+      double Fraction = (t.GetSeconds() - m_TimeWrapPerturbedMetrologyUncertainties.GetSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetSeconds())/
+        (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties+1].GetTime().GetSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetSeconds());
         
       if (Fraction > 1) {
         merr<<"Time fraction for data base interpolation larger than 1!"<<show;
         Fraction = 1;
       }
         
-      m_LatestMetrologyUncertainties.SetInterpolated(m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties], 
-                                                     m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties+1], Fraction);
+      m_LatestMetrologyUncertainties.SetInterpolated(m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties], 
+                                                     m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties+1], Fraction);
     } else {
-      m_LatestMetrologyUncertainties = m_MetrologyUncertainties[m_StartIndexMetrologyUncertainties];
+      m_LatestMetrologyUncertainties = m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties];
     }
   }
 
@@ -449,52 +556,52 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
 
 
   // Retrieve latest perturbed alignments
-  if (t.GetSeconds() >= 0 && m_OpticsUncertainties.size() > 1) {
-    if (m_OpticsUncertainties[m_StartIndexOpticsUncertainties].GetTime() + m_TimeWrapOpticsUncertainties > t) {
-      m_StartIndexOpticsUncertainties = 0;
-      while (m_OpticsUncertainties[m_StartIndexOpticsUncertainties].GetTime() + m_TimeWrapOpticsUncertainties > t) {
-        m_TimeWrapOpticsUncertainties -= m_OpticsUncertainties.back().GetTime();
+  if (t.GetSeconds() >= 0 && m_PerturbedOpticsUncertainties.size() > 1) {
+    if (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime() + m_TimeWrapPerturbedOpticsUncertainties > t) {
+      m_StartIndexPerturbedOpticsUncertainties = 0;
+      while (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime() + m_TimeWrapPerturbedOpticsUncertainties > t) {
+        m_TimeWrapPerturbedOpticsUncertainties -= m_PerturbedOpticsUncertainties.back().GetTime();
       }
     }
 
     unsigned int NextIndex = 0;
     do {
-      NextIndex = m_StartIndexOpticsUncertainties + 1;
+      NextIndex = m_StartIndexPerturbedOpticsUncertainties + 1;
       // If we reached the end of the array, rewind
-      if (NextIndex >= m_OpticsUncertainties.size()) {
+      if (NextIndex >= m_PerturbedOpticsUncertainties.size()) {
         NextIndex = 0;
-        m_TimeWrapOpticsUncertainties += m_OpticsUncertainties.back().GetTime();
+        m_TimeWrapPerturbedOpticsUncertainties += m_PerturbedOpticsUncertainties.back().GetTime();
       }
-      if (m_OpticsUncertainties[NextIndex].GetTime() + m_TimeWrapOpticsUncertainties > t) {
+      if (m_PerturbedOpticsUncertainties[NextIndex].GetTime() + m_TimeWrapPerturbedOpticsUncertainties > t) {
         break;
       } else {
-        m_StartIndexOpticsUncertainties = NextIndex;      
+        m_StartIndexPerturbedOpticsUncertainties = NextIndex;      
       }
     } while (true);
     // Start index is always smaller the the last one, except when they are identical, then rewind:
-    if (m_StartIndexOpticsUncertainties == m_OpticsUncertainties.size() - 1) m_StartIndexOpticsUncertainties = 0; 
+    if (m_StartIndexPerturbedOpticsUncertainties == m_PerturbedOpticsUncertainties.size() - 1) m_StartIndexPerturbedOpticsUncertainties = 0; 
   } else {
     // If the time is lower than 0 we alwasy start with the first index, in order to have smooth start:
-    m_StartIndexOpticsUncertainties = 0;
+    m_StartIndexPerturbedOpticsUncertainties = 0;
   }
 
-  if (m_OpticsUncertainties.size() == 1) {
-    m_LatestOpticsUncertainties = m_OpticsUncertainties[0];
+  if (m_PerturbedOpticsUncertainties.size() == 1) {
+    m_LatestOpticsUncertainties = m_PerturbedOpticsUncertainties[0];
   } else {
     // We should do interpolations here...
     if (Interpolate == true) {
-      double Fraction = (t.GetSeconds() - m_TimeWrapOpticsUncertainties.GetSeconds() - m_OpticsUncertainties[m_StartIndexOpticsUncertainties].GetTime().GetSeconds())/
-        (m_OpticsUncertainties[m_StartIndexOpticsUncertainties+1].GetTime().GetSeconds() - m_OpticsUncertainties[m_StartIndexOpticsUncertainties].GetTime().GetSeconds());
+      double Fraction = (t.GetSeconds() - m_TimeWrapPerturbedOpticsUncertainties.GetSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetSeconds())/
+        (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties+1].GetTime().GetSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetSeconds());
         
       if (Fraction > 1) {
         merr<<"Time fraction for data base interpolation larger than 1!"<<show;
         Fraction = 1;
       }
         
-      m_LatestOpticsUncertainties.SetInterpolated(m_OpticsUncertainties[m_StartIndexOpticsUncertainties], 
-                                                  m_OpticsUncertainties[m_StartIndexOpticsUncertainties+1], Fraction);
+      m_LatestOpticsUncertainties.SetInterpolated(m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties], 
+                                                  m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties+1], Fraction);
     } else {
-      m_LatestOpticsUncertainties = m_OpticsUncertainties[m_StartIndexOpticsUncertainties];
+      m_LatestOpticsUncertainties = m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties];
     }
   }
 
@@ -528,13 +635,21 @@ bool NModuleOrientationsDatabase::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  MXmlNode* MetrologyDBFileNameNode = Node->GetNode("MetrologyDBFileName");
-  if (MetrologyDBFileNameNode != 0) {
-    m_MetrologyDBFileName = MetrologyDBFileNameNode->GetValue();
+  MXmlNode* CalibratedMetrologyDBFileNameNode = Node->GetNode("CalibratedMetrologyDBFileName");
+  if (CalibratedMetrologyDBFileNameNode != 0) {
+    m_CalibratedMetrologyDBFileName = CalibratedMetrologyDBFileNameNode->GetValue();
   }
-  MXmlNode* OpticsDBFileNameNode = Node->GetNode("OpticsDBFileName");
-  if (OpticsDBFileNameNode != 0) {
-    m_OpticsDBFileName = OpticsDBFileNameNode->GetValue();
+  MXmlNode* PerturbedMetrologyDBFileNameNode = Node->GetNode("PerturbedMetrologyDBFileName");
+  if (PerturbedMetrologyDBFileNameNode != 0) {
+    m_PerturbedMetrologyDBFileName = PerturbedMetrologyDBFileNameNode->GetValue();
+  }
+  MXmlNode* CalibratedOpticsDBFileNameNode = Node->GetNode("CalibratedOpticsDBFileName");
+  if (CalibratedOpticsDBFileNameNode != 0) {
+    m_CalibratedOpticsDBFileName = CalibratedOpticsDBFileNameNode->GetValue();
+  }
+  MXmlNode* PerturbedOpticsDBFileNameNode = Node->GetNode("PerturbedOpticsDBFileName");
+  if (PerturbedOpticsDBFileNameNode != 0) {
+    m_PerturbedOpticsDBFileName = PerturbedOpticsDBFileNameNode->GetValue();
   }
   MXmlNode* CalibratedAlignmentsDBFileNameNode = Node->GetNode("CalibratedAlignmentsDBFileName");
   if (CalibratedAlignmentsDBFileNameNode != 0) {
@@ -558,8 +673,10 @@ MXmlNode* NModuleOrientationsDatabase::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  new MXmlNode(Node, "MetrologyDBFileName", m_MetrologyDBFileName);
-  new MXmlNode(Node, "OpticsDBFileName", m_OpticsDBFileName);
+  new MXmlNode(Node, "CalibratedMetrologyDBFileName", m_CalibratedMetrologyDBFileName);
+  new MXmlNode(Node, "PerturbedMetrologyDBFileName", m_PerturbedMetrologyDBFileName);
+  new MXmlNode(Node, "CalibratedOpticsDBFileName", m_CalibratedOpticsDBFileName);
+  new MXmlNode(Node, "PerturbedOpticsDBFileName", m_PerturbedOpticsDBFileName);
   new MXmlNode(Node, "CalibratedAlignmentsDBFileName", m_CalibratedAlignmentsDBFileName);
   new MXmlNode(Node, "PerturbedAlignmentsDBFileName", m_PerturbedAlignmentsDBFileName);
 

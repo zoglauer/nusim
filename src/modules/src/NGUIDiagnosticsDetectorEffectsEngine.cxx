@@ -106,6 +106,8 @@ void NGUIDiagnosticsDetectorEffectsEngine::SetDetectorParameters(const MVector& 
 {
   //! Set the detector parameters for improved display
   
+  cout<<Center<<":"<<Size<<":"<<NPixelsX<<":"<<NPixelsY<<endl;
+  
   double xCenter = fabs(Center.X());
   double xPixelSize = Size.X()/(0.5*NPixelsX);
   vector<double> xAxis;

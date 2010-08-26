@@ -314,10 +314,10 @@ MVector NObservatoryReconstructor::FindOpticalAxisInSky(NOrientation Robin, cons
   NOrientation OMP;
 
   if (module == 1) { 
-    OA = m_CalibratedPointingOpticalAxisRelOM1;
+    OA = m_CalibratedBoreSightRelOM1;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench1;
   } else if (module == 2) {
-    OA = m_CalibratedPointingOpticalAxisRelOM2;
+    OA = m_CalibratedBoreSightRelOM2;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench2;
   } else {
     cout<<"Error in FindOpticalAxisInSky: unknown module "<<module<<endl;
@@ -344,10 +344,10 @@ MVector NObservatoryReconstructor::FindOpticalAxisAtDet(NOrientation Rfbob, NOri
   MVector DetPlaneNormal(0.0, 0.0, 1.0);
 
   if (module == 1) { 
-    OA = m_CalibratedPointingOpticalAxisRelOM1;
+    OA = m_CalibratedBoreSightRelOM1;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench1;
   } else if (module == 2) {
-    OA = m_CalibratedPointingOpticalAxisRelOM2;
+    OA = m_CalibratedBoreSightRelOM2;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench2;
   } else {
     cout<<"Error in FindOpticalAxisInSky: unknown module "<<module<<endl;

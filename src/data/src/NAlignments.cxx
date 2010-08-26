@@ -26,6 +26,8 @@ using namespace std;
 // ROOT libs:
 
 // MEGAlib libs:
+#include "MStreams.h"
+#include "MTokenizer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -463,131 +465,60 @@ bool NAlignments::Parse(TString& Line)
 
 bool NAlignments::ParseDB(TString Positions, TString Rotations)
 {
-  // Parse some input from file
-  double Time;
-  double xSC = 0, ySC = 0, zSC = 0, tSC = 0;
-  double xFP = 0, yFP = 0, zFP = 0, tFP = 0;
-  double xFPM1 = 0, yFPM1 = 0, zFPM1 = 0, tFPM1 = 0;
-  double xFPM2 = 0, yFPM2 = 0, zFPM2 = 0, tFPM2 = 0;
-  double xMD1 = 0, yMD1 = 0, zMD1 = 0, tMD1 = 0;
-  double xMD2 = 0, yMD2 = 0, zMD2 = 0, tMD2 = 0;
-  double xA1 = 0, yA1 = 0, zA1 = 0, tA1 = 0;
-  double xA2 = 0, yA2 = 0, zA2 = 0, tA2 = 0;
-  double xOB = 0, yOB = 0, zOB = 0, tOB = 0;
-  double xO1 = 0, yO1 = 0, zO1 = 0, tO1 = 0;
-  double xO2 = 0, yO2 = 0, zO2 = 0, tO2 = 0;
-  double xML1 = 0, yML1 = 0, zML1 = 0, tML1 = 0;
-  double xML2 = 0, yML2 = 0, zML2 = 0, tML2 = 0;
-  double xST4 = 0, yST4 = 0, zST4 = 0, tST4 = 0;
- 
-  int E = sscanf(Positions.Data(), "%lf,v,"
-                 "%lf,%lf,%lf,," // m_SpaceCraftRelInertial
-                 "%lf,%lf,%lf,," // m_FocalPlaneRelSC
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule1
-                 "%lf,%lf,%lf,," // m_FocalPlaneModule2
-                 "%lf,%lf,%lf,," // m_MetrologyDetector1
-                 "%lf,%lf,%lf,," // m_MetrologyDetector2
-                 "%lf,%lf,%lf,," // m_Aperture1
-                 "%lf,%lf,%lf,," // m_Aperture2
-                 "%lf,%lf,%lf,," // m_OpticalBench
-                 "%lf,%lf,%lf,," // m_Optics1RelOB
-                 "%lf,%lf,%lf,," // m_Optics2RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser1RelOB
-                 "%lf,%lf,%lf,," // m_MetrologyLaser2RelOB
-                 "%lf,%lf,%lf,"  // m_StarTracker4RelOB
-                 ,
-                 &Time, 
-								 &xSC, &ySC, &zSC,
-								 &xFP, &yFP, &zFP,
-                 &xFPM1, &yFPM1, &zFPM1,
-                 &xFPM2, &yFPM2, &zFPM2,
-                 &xMD1, &yMD1, &zMD1, 
-                 &xMD2, &yMD2, &zMD2, 
-                 &xA1, &yA1, &zA1, 
-                 &xA2, &yA2, &zA2, 
-                 &xOB, &yOB, &zOB, 
-                 &xO1, &yO1, &zO1, 
-                 &xO2, &yO2, &zO2, 
-                 &xML1, &yML1, &zML1, 
-                 &xML2, &yML2, &zML2, 
-                 &xST4, &yST4, &zST4);
-  if (E != 43) {
-    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 43"<<endl;
-    cerr<<Positions.Data()<<endl;
-    //return false;
+  
+  MTokenizer T;
+  T.AllowComposed(false);
+  T.AllowEmpty(true);
+  T.SetSeparator(',');
+  T.Analyze(Positions, false);
+        
+  if (T.GetNTokens() != 58) {
+    mgui<<"Not enough tokens in string for alignments DB entry ("<<T.GetNTokens()<<" vs. "<<58<<")"<<show;
+    return false;
+  }
+
+  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  
+  m_SpaceCraftRelInertial.SetTranslation(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4));
+  m_FocalPlaneRelSC.SetTranslation(T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7), T.GetTokenAtAsDouble(8));
+  m_FocalPlaneModule1.SetTranslation(T.GetTokenAtAsDouble(10), T.GetTokenAtAsDouble(11), T.GetTokenAtAsDouble(12));
+  m_FocalPlaneModule2.SetTranslation(T.GetTokenAtAsDouble(14), T.GetTokenAtAsDouble(15), T.GetTokenAtAsDouble(16));
+  m_MetrologyDetector1.SetTranslation(T.GetTokenAtAsDouble(18), T.GetTokenAtAsDouble(19), T.GetTokenAtAsDouble(20));
+  m_MetrologyDetector2.SetTranslation(T.GetTokenAtAsDouble(22), T.GetTokenAtAsDouble(23), T.GetTokenAtAsDouble(24));
+  m_Aperture1.SetTranslation(T.GetTokenAtAsDouble(26), T.GetTokenAtAsDouble(27), T.GetTokenAtAsDouble(28));
+  m_Aperture2.SetTranslation(T.GetTokenAtAsDouble(30), T.GetTokenAtAsDouble(31), T.GetTokenAtAsDouble(32));
+  m_OpticalBench.SetTranslation(T.GetTokenAtAsDouble(34), T.GetTokenAtAsDouble(35), T.GetTokenAtAsDouble(36));
+  m_Optics1RelOB.SetTranslation(T.GetTokenAtAsDouble(38), T.GetTokenAtAsDouble(39), T.GetTokenAtAsDouble(40));
+  m_Optics2RelOB.SetTranslation(T.GetTokenAtAsDouble(42), T.GetTokenAtAsDouble(43), T.GetTokenAtAsDouble(44));
+  m_MetrologyLaser1RelOB.SetTranslation(T.GetTokenAtAsDouble(46), T.GetTokenAtAsDouble(47), T.GetTokenAtAsDouble(48));
+  m_MetrologyLaser2RelOB.SetTranslation(T.GetTokenAtAsDouble(50), T.GetTokenAtAsDouble(51), T.GetTokenAtAsDouble(52));
+  m_StarTracker4RelOB.SetTranslation(T.GetTokenAtAsDouble(54), T.GetTokenAtAsDouble(55), T.GetTokenAtAsDouble(56));
+
+  
+  T.Analyze(Rotations, false);
+  
+  if (T.GetNTokens() != 58) {
+    mgui<<"Not enough tokens in string for alignments DB entry ("<<T.GetNTokens()<<" vs. "<<58<<")"<<show;
+    return false;
   }
   
-  m_SpaceCraftRelInertial.SetTranslation(xSC, ySC, zSC);
-  m_FocalPlaneRelSC.SetTranslation(xFP, yFP, zFP);
-  m_FocalPlaneModule1.SetTranslation(xFPM1, yFPM1, zFPM1);
-  m_FocalPlaneModule2.SetTranslation(xFPM2, yFPM2, zFPM2);
-  m_MetrologyDetector1.SetTranslation(xMD1, yMD1, zMD1);
-  m_MetrologyDetector2.SetTranslation(xMD2, yMD2, zMD2);
-  m_Aperture1.SetTranslation(xA1, yA1, zA1);
-  m_Aperture2.SetTranslation(xA2, yA2, zA2);
-  m_OpticalBench.SetTranslation(xOB, yOB, zOB);
-  m_Optics1RelOB.SetTranslation(xO1, yO1, zO1);
-  m_Optics2RelOB.SetTranslation(xO2, yO2, zO2);
-  m_MetrologyLaser1RelOB.SetTranslation(xML1, yML1, zML1);
-  m_MetrologyLaser2RelOB.SetTranslation(xML2, yML2, zML2);
-  m_StarTracker4RelOB.SetTranslation(xST4, yST4, zST4);
+  m_SpaceCraftRelInertial.SetRotation(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4), T.GetTokenAtAsDouble(5));
+  m_FocalPlaneRelSC.SetRotation(T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7), T.GetTokenAtAsDouble(8), T.GetTokenAtAsDouble(9));
+  m_FocalPlaneModule1.SetRotation(T.GetTokenAtAsDouble(10), T.GetTokenAtAsDouble(11), T.GetTokenAtAsDouble(12), T.GetTokenAtAsDouble(13));
+  m_FocalPlaneModule2.SetRotation(T.GetTokenAtAsDouble(14), T.GetTokenAtAsDouble(15), T.GetTokenAtAsDouble(16), T.GetTokenAtAsDouble(17));
+  m_MetrologyDetector1.SetRotation(T.GetTokenAtAsDouble(18), T.GetTokenAtAsDouble(19), T.GetTokenAtAsDouble(20), T.GetTokenAtAsDouble(21));
+  m_MetrologyDetector2.SetRotation(T.GetTokenAtAsDouble(22), T.GetTokenAtAsDouble(23), T.GetTokenAtAsDouble(24), T.GetTokenAtAsDouble(25));
+  m_Aperture1.SetRotation(T.GetTokenAtAsDouble(26), T.GetTokenAtAsDouble(27), T.GetTokenAtAsDouble(28), T.GetTokenAtAsDouble(29));
+  m_Aperture2.SetRotation(T.GetTokenAtAsDouble(30), T.GetTokenAtAsDouble(31), T.GetTokenAtAsDouble(32), T.GetTokenAtAsDouble(33));
+  m_OpticalBench.SetRotation(T.GetTokenAtAsDouble(34), T.GetTokenAtAsDouble(35), T.GetTokenAtAsDouble(36), T.GetTokenAtAsDouble(37));
+  m_Optics1RelOB.SetRotation(T.GetTokenAtAsDouble(38), T.GetTokenAtAsDouble(39), T.GetTokenAtAsDouble(40), T.GetTokenAtAsDouble(41));
+  m_Optics2RelOB.SetRotation(T.GetTokenAtAsDouble(42), T.GetTokenAtAsDouble(43), T.GetTokenAtAsDouble(44), T.GetTokenAtAsDouble(45));
+  m_MetrologyLaser1RelOB.SetRotation(T.GetTokenAtAsDouble(46), T.GetTokenAtAsDouble(47), T.GetTokenAtAsDouble(48), T.GetTokenAtAsDouble(49));
+  m_MetrologyLaser2RelOB.SetRotation(T.GetTokenAtAsDouble(50), T.GetTokenAtAsDouble(51), T.GetTokenAtAsDouble(52), T.GetTokenAtAsDouble(53));
+  m_StarTracker4RelOB.SetRotation(T.GetTokenAtAsDouble(54), T.GetTokenAtAsDouble(55), T.GetTokenAtAsDouble(56), T.GetTokenAtAsDouble(57));
 
-
-  E = sscanf(Rotations.Data(), "%lf,q,"
-             "%lf,%lf,%lf,%lf," // m_SpaceCraftRelInertial
-             "%lf,%lf,%lf,%lf," // m_FocalPlaneRelSC
-             "%lf,%lf,%lf,%lf," // m_FocalPlaneModule1
-             "%lf,%lf,%lf,%lf," // m_FocalPlaneModule2
-             "%lf,%lf,%lf,%lf," // m_MetrologyDetector1
-             "%lf,%lf,%lf,%lf," // m_MetrologyDetector2
-             "%lf,%lf,%lf,%lf," // m_Aperture1
-             "%lf,%lf,%lf,%lf," // m_Aperture2
-             "%lf,%lf,%lf,%lf," // m_OpticalBench
-             "%lf,%lf,%lf,%lf," // m_Optics1RelOB
-             "%lf,%lf,%lf,%lf," // m_Optics2RelOB
-             "%lf,%lf,%lf,%lf," // m_MetrologyLaser1RelOB
-             "%lf,%lf,%lf,%lf," // m_MetrologyLaser2RelOB
-             "%lf,%lf,%lf,%lf"  // m_StarTracker4RelOB
-             , 
-             &Time,
-						 &xSC, &ySC, &zSC, &tSC,
-						 &xFP, &yFP, &zFP, & tFP,
-             &xFPM1, &yFPM1, &zFPM1, &tFPM1,
-             &xFPM2, &yFPM2, &zFPM2, &tFPM2,
-             &xMD1, &yMD1, &zMD1, &tMD1, 
-             &xMD2, &yMD2, &zMD2, &tMD2,  
-             &xA1, &yA1, &zA1, &tA1, 
-             &xA2, &yA2, &zA2, &tA2,
-             &xOB, &yOB, &zOB, &tOB, 
-             &xO1, &yO1, &zO1, &tO1, 
-             &xO2, &yO2, &zO2, &tO2, 
-             &xML1, &yML1, &zML1, &tML1, 
-             &xML2, &yML2, &zML2, &tML2, 
-             &xST4, &yST4, &zST4, &tST4);
-  if (E != 57) {
-    cerr<<"Unable to scan orientation position. Scanned entries "<<E<<" != 57"<<endl;
-    cerr<<Positions.Data()<<endl;
-    //return false;
-  }
-           
-  m_SpaceCraftRelInertial.SetRotation(xSC, ySC, zSC, tSC);
-  m_FocalPlaneRelSC.SetRotation(xFP, yFP, zFP, tFP);
-  m_FocalPlaneModule1.SetRotation(xFPM1, yFPM1, zFPM1, tFPM1);
-  m_FocalPlaneModule2.SetRotation(xFPM2, yFPM2, zFPM2, tFPM2);
-  m_MetrologyDetector1.SetRotation(xMD1, yMD1, zMD1, tMD1);
-  m_MetrologyDetector2.SetRotation(xMD2, yMD2, zMD2, tMD2);
-  m_Aperture1.SetRotation(xA1, yA1, zA1, tA1);
-  m_Aperture2.SetRotation(xA2, yA2, zA2, tA2);
-  m_OpticalBench.SetRotation(xOB, yOB, zOB, tOB);
-  m_Optics1RelOB.SetRotation(xO1, yO1, zO1, tO1);
-  m_Optics2RelOB.SetRotation(xO2, yO2, zO2, tO2);
-  m_MetrologyLaser1RelOB.SetRotation(xML1, yML1, zML1, tML1);
-  m_MetrologyLaser2RelOB.SetRotation(xML2, yML2, zML2, tML2);
-  m_StarTracker4RelOB.SetRotation(xST4, yST4, zST4, tST4);
-
-  m_Time.SetSeconds(Time);
   
-  //! Those are currently !NOT! in the alignments DB  
+  //! Those are missing in the DB:
   m_FocalPlaneModule1Detector1RelFocalPlaneModule1.SetTranslation(-10.25, -10.25, 0.0);
   m_FocalPlaneModule1Detector1RelFocalPlaneModule1.SetRotation(0.0, 0.0, 90.0*c_Rad);
   m_FocalPlaneModule1Detector2RelFocalPlaneModule1.SetTranslation(-10.25, +10.25, 0.0);

@@ -236,34 +236,33 @@ bool NMetrologyUncertainties::ParseDB(TString Line)
 {
   // Parse some input from file - fast!
 
-  double Time;
- 
-  int E = sscanf(Line.Data(), 
-                 "%lf,," // m_Time
-                 "%lf,,,," // m_PointingErrorStarTracker4
-                 "%lf,%lf,%lf," // m_PointingMetrologyLaser1RelML1
-                 "%lf," // m_CentroidingErrorMetrologyDetector1
-                 "%lf,%lf,%lf," // m_PointingMetrologyLaser1RelML2
-                 "%lf" // m_CentroidingErrorMetrologyDetector2
-                 ,
-                 &Time, 
-                 &m_PointingErrorStarTracker4, 
-                 &m_PointingMetrologyLaser1RelML1[0], &m_PointingMetrologyLaser1RelML1[1], &m_PointingMetrologyLaser1RelML1[2],
-                 &m_CentroidingErrorMetrologyDetector1,
-                 &m_PointingMetrologyLaser2RelML2[0], &m_PointingMetrologyLaser2RelML2[1], &m_PointingMetrologyLaser2RelML2[2],
-                 &m_CentroidingErrorMetrologyDetector2);
-  if (E != 10) {
-    cerr<<"Unable to scan metrology uncertainties. Scanned entries "<<E<<" != 10"<<endl;
-    cerr<<"Content of line: "<<endl;
-    cerr<<Line.Data()<<endl;
-    Clear();
+  MTokenizer T;
+  T.AllowComposed(false);
+  T.AllowEmpty(true);
+  T.SetSeparator(',');
+  T.Analyze(Line, false);
+      
+  if (T.GetNTokens() != 14) {
+    mgui<<"Not enough tokens in string for metrology DB entry ("<<T.GetNTokens()<<" vs. "<<14<<")"<<show;
     return false;
   }
+
+  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
   
-  m_Time.SetSeconds(Time);
+  m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(2);
+  
+  m_PointingMetrologyLaser1RelML1[0] = T.GetTokenAtAsDouble(6);
+  m_PointingMetrologyLaser1RelML1[1] = T.GetTokenAtAsDouble(7);
+  m_PointingMetrologyLaser1RelML1[2] = T.GetTokenAtAsDouble(8);
+  m_CentroidingErrorMetrologyDetector1 = T.GetTokenAtAsDouble(9);
+  
+  m_PointingMetrologyLaser2RelML2[0] = T.GetTokenAtAsDouble(10);
+  m_PointingMetrologyLaser2RelML2[1] = T.GetTokenAtAsDouble(11);
+  m_PointingMetrologyLaser2RelML2[2] = T.GetTokenAtAsDouble(12);
+  m_CentroidingErrorMetrologyDetector2 = T.GetTokenAtAsDouble(13);
   
   m_Empty = false;
-
+  
   return true;
 }
 

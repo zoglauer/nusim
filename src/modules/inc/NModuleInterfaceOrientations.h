@@ -115,8 +115,11 @@ class NModuleInterfaceOrientations : public NAlignments
 
   // Optics:
 
-  //! The bore sight of an optics module 
-  MVector GetBoreSightOpticsModule(const NTime& t, int ModuleID) { AdvanceTime(t); return m_LatestOpticsUncertainties.GetBoreSightOpticsModule(ModuleID); }
+  //! Get the bore sight of an optics module 
+  MVector GetBoreSightRelOM(const NTime& t, int ModuleID) { AdvanceTime(t); return m_LatestOpticsUncertainties.GetBoreSightRelOM(ModuleID); }
+
+  //! Get the CALIBRATED bore sight of an optics module 
+  MVector GetCalibratedBoreSightRelOM(int ModuleID) { return m_CalibratedOpticsUncertainties.GetBoreSightRelOM(ModuleID); }
 
 
 
@@ -125,11 +128,14 @@ class NModuleInterfaceOrientations : public NAlignments
   //! Get the pointing error of the star tracker
   virtual double GetPointingErrorStarTracker(const NTime& t, int StarTrackerID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetPointingErrorStarTracker(StarTrackerID); }
  
-  //! Get the calibrated pointing direction of the metrology laser (independent of time)
+  //! Get the  pointing direction of the metrology laser (independent of time)
   virtual MVector GetPointingMetrologyLaserRelML(const NTime& t, int MetrologyID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetPointingMetrologyLaserRelML(MetrologyID); }
 
   //! Get the centroiding error of the metrology detector
   virtual double GetCentroidingErrorMetrologyDetector(const NTime& t, int MetrologyID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetCentroidingErrorMetrologyDetector(MetrologyID); }
+
+  //! Get the calibrated pointing direction of the metrology laser (independent of time)
+  virtual MVector GetCalibratedPointingMetrologyLaserRelML(int MetrologyID) { return m_CalibratedMetrologyUncertainties.GetPointingMetrologyLaserRelML(MetrologyID); }
   
 
 
@@ -154,6 +160,11 @@ class NModuleInterfaceOrientations : public NAlignments
   NMetrologyUncertainties m_LatestMetrologyUncertainties;
   //! The current (= last calculated) optics uncertainties
   NOpticsUncertainties m_LatestOpticsUncertainties;
+  
+  //! The current (= last calculated) metrology uncertainties
+  NMetrologyUncertainties m_CalibratedMetrologyUncertainties;
+  //! The current (= last calculated) optics uncertainties
+  NOpticsUncertainties m_CalibratedOpticsUncertainties;
   //! The ground calibrated alignments
   NAlignments m_CalibratedAlignments;
   

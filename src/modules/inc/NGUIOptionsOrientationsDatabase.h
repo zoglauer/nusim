@@ -62,8 +62,12 @@ class NGUIOptionsOrientationsDatabase : public NGUIOptions
 
   // protected members:
  protected:
-  MGUIEFileSelector* m_MetrologyDB;
-  MGUIEFileSelector* m_OpticsDB;
+  MGUIEFileSelector* m_CalibratedMetrologyDB;
+  MGUIEFileSelector* m_PerturbedMetrologyDB;
+
+  MGUIEFileSelector* m_CalibratedOpticsDB;
+  MGUIEFileSelector* m_PerturbedOpticsDB;
+  
   MGUIEFileSelector* m_CalibratedAlignmentsDB;
   MGUIEFileSelector* m_PerturbedAlignmentsDB;
 

@@ -44,15 +44,25 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Initialize the module
   virtual bool Initialize();
 
-  //! Get the file name of the metrology system error data base
-  TString GetMetrologyDBFileName() const { return m_MetrologyDBFileName; }
-  //! Set the file name of the metrology system error data base
-  void SetMetrologyDBFileName(const TString MetrologyDBFileName) { m_MetrologyDBFileName = MetrologyDBFileName; }
+  //! Get the file name of the calibrated metrology system data base
+  TString GetCalibratedMetrologyDBFileName() const { return m_CalibratedMetrologyDBFileName; }
+  //! Set the file name of the calibrated metrology system data base
+  void SetCalibratedMetrologyDBFileName(const TString CalibratedMetrologyDBFileName) { m_CalibratedMetrologyDBFileName = CalibratedMetrologyDBFileName; }
 
-  //! Get the file name of the optics system error data base
-  TString GetOpticsDBFileName() const { return m_OpticsDBFileName; }
-  //! Set the file name of the optics system error data base
-  void SetOpticsDBFileName(const TString OpticsDBFileName) { m_OpticsDBFileName = OpticsDBFileName; }
+  //! Get the file name of the perturbed metrology system data base
+  TString GetPerturbedMetrologyDBFileName() const { return m_PerturbedMetrologyDBFileName; }
+  //! Set the file name of the perturbed metrology system data base
+  void SetPerturbedMetrologyDBFileName(const TString PerturbedMetrologyDBFileName) { m_PerturbedMetrologyDBFileName = PerturbedMetrologyDBFileName; }
+
+  //! Get the file name of the calibrated optics system data base
+  TString GetCalibratedOpticsDBFileName() const { return m_CalibratedOpticsDBFileName; }
+  //! Set the file name of the calibrated optics system data base
+  void SetCalibratedOpticsDBFileName(const TString CalibratedOpticsDBFileName) { m_CalibratedOpticsDBFileName = CalibratedOpticsDBFileName; }
+
+  //! Get the file name of the perturbed optics system data base
+  TString GetPerturbedOpticsDBFileName() const { return m_PerturbedOpticsDBFileName; }
+  //! Set the file name of the perturbed optics system data base
+  void SetPerturbedOpticsDBFileName(const TString PerturbedOpticsDBFileName) { m_PerturbedOpticsDBFileName = PerturbedOpticsDBFileName; }
 
   //! Get the file name of the calibrated alignments data base
   TString GetCalibratedAlignmentsDBFileName() const { return m_CalibratedAlignmentsDBFileName; }
@@ -79,10 +89,14 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! This function needs to be derived and is empty!
   virtual void AdvanceTime(const NTime& t);
    
-  //! Read the metrology data base
-  bool ReadMetrologyDB(TString FileName);
-  //! Read the optics data base
-  bool ReadOpticsDB(TString FileName);
+  //! Read the calibrated metrology data base
+  bool ReadCalibratedMetrologyDB(TString FileName);
+  //! Read the perturbed metrology data base
+  bool ReadPerturbedMetrologyDB(TString FileName);
+  //! Read the calibrated optics data base
+  bool ReadCalibratedOpticsDB(TString FileName);
+  //! Read the perturbed optics data base
+  bool ReadPerturbedOpticsDB(TString FileName);
   //! Read the calibrated alignments data base
   bool ReadCalibratedAlignmentsDB(TString FileName);
   //! Read the calibrated alignments data base
@@ -99,9 +113,13 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
    // private members:
  private:
   //! File name of the metrology DB
-  TString m_MetrologyDBFileName;
+  TString m_CalibratedMetrologyDBFileName;
+  //! File name of the metrology DB
+  TString m_PerturbedMetrologyDBFileName;
   //! File name of the optics DB
-  TString m_OpticsDBFileName;
+  TString m_CalibratedOpticsDBFileName;
+  //! File name of the optics DB
+  TString m_PerturbedOpticsDBFileName;
   //! File name of the calibrations DB
   TString m_CalibratedAlignmentsDBFileName;
   //! File name of the pertubations DB
@@ -116,19 +134,19 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
 
 
   //! Start your search for the perturbed alignments at this index...
-  unsigned int m_StartIndexMetrologyUncertainties;
+  unsigned int m_StartIndexPerturbedMetrologyUncertainties;
   //! Time wrap for the perturbed alignments time index
-  NTime m_TimeWrapMetrologyUncertainties;   
+  NTime m_TimeWrapPerturbedMetrologyUncertainties;   
   //! The metrology uncertainties as a function of time
-  vector<NMetrologyUncertainties> m_MetrologyUncertainties;
+  vector<NMetrologyUncertainties> m_PerturbedMetrologyUncertainties;
 
   
   //! Start your search for the perturbed alignments at this index...
-  unsigned int m_StartIndexOpticsUncertainties;
+  unsigned int m_StartIndexPerturbedOpticsUncertainties;
   //! Time wrap for the perturbed alignments time index
-  NTime m_TimeWrapOpticsUncertainties;    
+  NTime m_TimeWrapPerturbedOpticsUncertainties;    
   //! The optics uncertainties as a function of time
-  vector<NOpticsUncertainties> m_OpticsUncertainties;
+  vector<NOpticsUncertainties> m_PerturbedOpticsUncertainties;
 
   
   

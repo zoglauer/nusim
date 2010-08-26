@@ -98,8 +98,8 @@ bool NModuleObservatoryReconstructor::Initialize()
   m_ObservatoryReconstructor.SetCalibratedOrientationMetrologyLaserRelOpticalBench(m_Satellite.GetCalibratedOrientationMetrologyLaserRelOpticalBench(1), m_Satellite.GetCalibratedOrientationMetrologyLaserRelOpticalBench(2));
   m_ObservatoryReconstructor.SetCalibratedOrientationMetrologyDetectors(m_Satellite.GetCalibratedOrientationMetrologyDetector(1), m_Satellite.GetCalibratedOrientationMetrologyDetector(2));
   m_ObservatoryReconstructor.SetCalibratedOrientationFocalPlaneModules(m_Satellite.GetCalibratedOrientationFocalPlaneModule(1), m_Satellite.GetCalibratedOrientationFocalPlaneModule(2));
-  //m_ObservatoryReconstructor.SetCalibratedPointingOpticalAxisRelOM(m_Satellite.GetCalibratedPointingOpticalAxisRelOM(1), m_Satellite.GetCalibratedPointingOpticalAxisRelOM(2));
-  //m_ObservatoryReconstructor.SetCalibratedPointingMetrologyLaserRelML(m_Satellite.GetCalibratedPointingMetrologyLaserRelML(1), m_Satellite.GetCalibratedPointingMetrologyLaserRelML(2));
+  m_ObservatoryReconstructor.SetCalibratedBoreSightRelOM(m_Satellite.GetCalibratedBoreSightRelOM(1), m_Satellite.GetCalibratedBoreSightRelOM(2));
+  m_ObservatoryReconstructor.SetCalibratedPointingMetrologyLaserRelML(m_Satellite.GetCalibratedPointingMetrologyLaserRelML(1), m_Satellite.GetCalibratedPointingMetrologyLaserRelML(2));
 
   return true;
 }
@@ -220,11 +220,6 @@ bool NModuleObservatoryReconstructor::AnalyzeEvent(NEvent& Event)
   }
   // We have to do the same for the star tracker data...
 
-  //cout<<"Kristin: ObservatoryReconstructor: We don't have a calibrated pointing of the optical axis and the metrtology system any more..."<<endl;
-  //cout<<"Is this correct or do we need also a data base with the calibrated values of those????"<<endl;
-  //cout<<"And it is not socumented to what this is relative, still to OM..."<<endl;
-  m_ObservatoryReconstructor.SetCalibratedPointingOpticalAxisRelOM(m_Satellite.GetBoreSightOpticsModule(Time, 1), m_Satellite.GetBoreSightOpticsModule(Time, 2));
-  m_ObservatoryReconstructor.SetCalibratedPointingMetrologyLaserRelML(m_Satellite.GetPointingMetrologyLaserRelML(Time, 1), m_Satellite.GetPointingMetrologyLaserRelML(Time, 2));
 
   // Now do the same with the observatory reconstructor
   m_ObservatoryReconstructor.SetTime(Time);
