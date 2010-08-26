@@ -251,17 +251,17 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P7, Default);
     m_Flux->SetLabel("Flux [ph/s]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
-    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60);
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
-    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60.0, true, 0.0, 360.0);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_Flux->SetLabel("Flux [ph/s/mm2]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
-    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60);
+    m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
-    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60);
+    m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60.0, true, 0.0, 360.0);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
-    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [deg]: ", false, m_Source->GetPositionParameter3()/60);
+    m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [deg]: ", false, m_Source->GetPositionParameter3()/60.0, true, 0.00000001, 180.0);
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
     m_Flux->SetLabel("Flux [ph/s/mm2]:");
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
