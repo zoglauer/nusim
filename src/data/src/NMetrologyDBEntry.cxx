@@ -1,5 +1,5 @@
 /*
- * NMetrologyUncertainties.cxx
+ * NMetrologyDBEntry.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NMetrologyUncertainties
+// NMetrologyDBEntry
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NMetrologyUncertainties.h"
+#include "NMetrologyDBEntry.h"
 
 // Standard libs:
 
@@ -31,16 +31,16 @@
 
 
 #ifdef ___CINT___
-ClassImp(NMetrologyUncertainties)
+ClassImp(NMetrologyDBEntry)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NMetrologyUncertainties::NMetrologyUncertainties()
+NMetrologyDBEntry::NMetrologyDBEntry()
 {
-  // Construct an instance of NMetrologyUncertainties
+  // Construct an instance of NMetrologyDBEntry
 
   Clear();
 }
@@ -49,16 +49,16 @@ NMetrologyUncertainties::NMetrologyUncertainties()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NMetrologyUncertainties::~NMetrologyUncertainties()
+NMetrologyDBEntry::~NMetrologyDBEntry()
 {
-  // Delete this instance of NMetrologyUncertainties
+  // Delete this instance of NMetrologyDBEntry
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NMetrologyUncertainties::Clear()
+void NMetrologyDBEntry::Clear()
 {
   //! Resets all data to default values
  
@@ -79,7 +79,7 @@ void NMetrologyUncertainties::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NMetrologyUncertainties::SetInterpolated(const NMetrologyUncertainties& A, const NMetrologyUncertainties& B, double Fraction)
+void NMetrologyDBEntry::SetInterpolated(const NMetrologyDBEntry& A, const NMetrologyDBEntry& B, double Fraction)
 {
   //! Set from a linear interpolation between the two values
   //! Fraction needs to be between ]0..1[
@@ -100,7 +100,7 @@ void NMetrologyUncertainties::SetInterpolated(const NMetrologyUncertainties& A, 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-MVector NMetrologyUncertainties::GetPointingMetrologyLaserRelML(int MetrologyID)
+MVector NMetrologyDBEntry::GetPointingMetrologyLaserRelML(int MetrologyID)
 {
   //! Get the pointing direction of the metrology laser
 
@@ -119,7 +119,7 @@ MVector NMetrologyUncertainties::GetPointingMetrologyLaserRelML(int MetrologyID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-double NMetrologyUncertainties::GetCentroidingErrorMetrologyDetector(int MetrologyID)
+double NMetrologyDBEntry::GetCentroidingErrorMetrologyDetector(int MetrologyID)
 {
   //! Get the pointing error of the star tracker
 
@@ -138,7 +138,7 @@ double NMetrologyUncertainties::GetCentroidingErrorMetrologyDetector(int Metrolo
 ////////////////////////////////////////////////////////////////////////////////
 
 
-double NMetrologyUncertainties::GetPointingErrorStarTracker(int StarTrackerID)
+double NMetrologyDBEntry::GetPointingErrorStarTracker(int StarTrackerID)
 {
   //! Get the pointing error of the star tracker
 
@@ -155,7 +155,7 @@ double NMetrologyUncertainties::GetPointingErrorStarTracker(int StarTrackerID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMetrologyUncertainties::Stream(ofstream& S)
+bool NMetrologyDBEntry::Stream(ofstream& S)
 {
   //! Stream the content to an ASCII file 
 
@@ -180,7 +180,7 @@ bool NMetrologyUncertainties::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-TString NMetrologyUncertainties::ToString() const
+TString NMetrologyDBEntry::ToString() const
 {
  //! Return the content as text
  
@@ -205,7 +205,7 @@ TString NMetrologyUncertainties::ToString() const
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NMetrologyUncertainties::Parse(TString& Line)
+bool NMetrologyDBEntry::Parse(TString& Line)
 {
   //! Stream the content from a line of an ASCII file  
   
@@ -232,7 +232,7 @@ bool NMetrologyUncertainties::Parse(TString& Line)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NMetrologyUncertainties::ParseDB(TString Line)
+bool NMetrologyDBEntry::ParseDB(TString Line)
 {
   // Parse some input from file - fast!
 
@@ -267,5 +267,5 @@ bool NMetrologyUncertainties::ParseDB(TString Line)
 }
 
 
-// NMetrologyUncertainties.cxx: the end...
+// NMetrologyDBEntry.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

@@ -229,7 +229,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
     ++LineCounter;
     if (Line.Length() > 0) {
       
-      NMetrologyUncertainties M;
+      NMetrologyDBEntry M;
       if (M.ParseDB(Line) == false) {
         mgui<<"Parsing failed: Something is wrong with your perturbed metrology data base"<<show;
         in.close();
@@ -313,7 +313,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
     if (Line.Length() > 0) {
       if (Line[0] == ',') continue;
 
-      NOpticsUncertainties O;
+      NOpticsDBEntry O;
       if (O.ParseDB(Line) == false) {
         mgui<<"Parsing failed: Something is wrong with your perturbed optics data base!"<<show;
         in.close();
@@ -361,7 +361,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedAlignmentsDB(TString FileName)
   Line.ReadLine(in);
   TString Rotations = Line;
 
-  NAlignments O;
+  NAlignmentsDBEntry O;
   if (O.ParseDB(Positions, Rotations) == false) {
     mgui<<"Parsing failed: Something is wrong with your calibrated alignments data base!"<<show;
     in.close();
@@ -420,7 +420,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
         }
         Rotations = Line;
 
-        NAlignments O;
+        NAlignmentsDBEntry O;
         if (O.ParseDB(Positions, Rotations) == false) {
           mgui<<"Parsing failed: Something is wrong with your calibrated alignments data base!"<<show;
           in.close();

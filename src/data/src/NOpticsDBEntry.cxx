@@ -1,5 +1,5 @@
 /*
- * NOpticsUncertainties.cxx
+ * NOpticsDBEntry.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NOpticsUncertainties
+// NOpticsDBEntry
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NOpticsUncertainties.h"
+#include "NOpticsDBEntry.h"
 
 // Standard libs:
 
@@ -31,16 +31,16 @@
 
 
 #ifdef ___CINT___
-ClassImp(NOpticsUncertainties)
+ClassImp(NOpticsDBEntry)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOpticsUncertainties::NOpticsUncertainties()
+NOpticsDBEntry::NOpticsDBEntry()
 {
-  // Construct an instance of NOpticsUncertainties
+  // Construct an instance of NOpticsDBEntry
 
   Clear();
 }
@@ -49,16 +49,16 @@ NOpticsUncertainties::NOpticsUncertainties()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOpticsUncertainties::~NOpticsUncertainties()
+NOpticsDBEntry::~NOpticsDBEntry()
 {
-  // Delete this instance of NOpticsUncertainties
+  // Delete this instance of NOpticsDBEntry
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOpticsUncertainties::Clear()
+void NOpticsDBEntry::Clear()
 {
   //! Resets all data to default values
  
@@ -74,7 +74,7 @@ void NOpticsUncertainties::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NOpticsUncertainties::SetInterpolated(const NOpticsUncertainties& A, const NOpticsUncertainties& B, double Fraction)
+void NOpticsDBEntry::SetInterpolated(const NOpticsDBEntry& A, const NOpticsDBEntry& B, double Fraction)
 {
   //! Set from a linear interpolation between the two values
   //! Fraction needs to be between ]0..1[
@@ -91,7 +91,7 @@ void NOpticsUncertainties::SetInterpolated(const NOpticsUncertainties& A, const 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-MVector NOpticsUncertainties::GetBoreSightRelOM(int OpticsID)
+MVector NOpticsDBEntry::GetBoreSightRelOM(int OpticsID)
 {
   //! Get the pointing error of the star tracker
 
@@ -110,7 +110,7 @@ MVector NOpticsUncertainties::GetBoreSightRelOM(int OpticsID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NOpticsUncertainties::Stream(ofstream& S)
+bool NOpticsDBEntry::Stream(ofstream& S)
 {
   //! Stream the content to an ASCII file 
 
@@ -132,7 +132,7 @@ bool NOpticsUncertainties::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-TString NOpticsUncertainties::ToString() const
+TString NOpticsDBEntry::ToString() const
 {
  //! Return the content as text
  
@@ -151,7 +151,7 @@ TString NOpticsUncertainties::ToString() const
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NOpticsUncertainties::Parse(TString& Line)
+bool NOpticsDBEntry::Parse(TString& Line)
 {
   //! Stream the content from a line of an ASCII file  
   
@@ -175,7 +175,7 @@ bool NOpticsUncertainties::Parse(TString& Line)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NOpticsUncertainties::ParseDB(TString Line)
+bool NOpticsDBEntry::ParseDB(TString Line)
 {
   // Parse some input from file - fast!
 
@@ -207,5 +207,5 @@ bool NOpticsUncertainties::ParseDB(TString Line)
 }
 
 
-// NOpticsUncertainties.cxx: the end...
+// NOpticsDBEntry.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

@@ -130,7 +130,7 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Time wrap for the perturbed alignments time index
   NTime m_TimeWrapPerturbedAlignments;
   //! The pertubed alignments in space as a function of time...
-  vector<NAlignments> m_PerturbedAlignments;   
+  vector<NAlignmentsDBEntry> m_PerturbedAlignments;   
 
 
   //! Start your search for the perturbed alignments at this index...
@@ -138,7 +138,7 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Time wrap for the perturbed alignments time index
   NTime m_TimeWrapPerturbedMetrologyUncertainties;   
   //! The metrology uncertainties as a function of time
-  vector<NMetrologyUncertainties> m_PerturbedMetrologyUncertainties;
+  vector<NMetrologyDBEntry> m_PerturbedMetrologyUncertainties;
 
   
   //! Start your search for the perturbed alignments at this index...
@@ -146,7 +146,7 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Time wrap for the perturbed alignments time index
   NTime m_TimeWrapPerturbedOpticsUncertainties;    
   //! The optics uncertainties as a function of time
-  vector<NOpticsUncertainties> m_PerturbedOpticsUncertainties;
+  vector<NOpticsDBEntry> m_PerturbedOpticsUncertainties;
 
   
   

@@ -1,5 +1,5 @@
 /*
- * NAlignments.cxx
+ * NAlignmentsDBEntry.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NAlignments
+// NAlignmentsDBEntry
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NAlignments.h"
+#include "NAlignmentsDBEntry.h"
 
 // Standard libs:
 #include <cstdlib>
@@ -33,32 +33,32 @@ using namespace std;
 
 
 #ifdef ___CINT___
-ClassImp(NAlignments)
+ClassImp(NAlignmentsDBEntry)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NAlignments::NAlignments() : m_Empty(true)
+NAlignmentsDBEntry::NAlignmentsDBEntry() : m_Empty(true)
 {
-  // Construct an instance of NAlignments
+  // Construct an instance of NAlignmentsDBEntry
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NAlignments::~NAlignments()
+NAlignmentsDBEntry::~NAlignmentsDBEntry()
 {
-  // Delete this instance of NAlignments
+  // Delete this instance of NAlignmentsDBEntry
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NAlignments::Clear()
+void NAlignmentsDBEntry::Clear()
 {
   //! Resets all data to default values
  
@@ -96,7 +96,7 @@ void NAlignments::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NAlignments::SetInterpolated(const NAlignments& A, const NAlignments& B, double Fraction)
+void NAlignmentsDBEntry::SetInterpolated(const NAlignmentsDBEntry& A, const NAlignmentsDBEntry& B, double Fraction)
 {
   //! Set from a linear interpolation between the two values
   //! Fraction needs to be between ]0..1[  
@@ -136,7 +136,7 @@ void NAlignments::SetInterpolated(const NAlignments& A, const NAlignments& B, do
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationSpaceCraftRelInertial() 
+NOrientation NAlignmentsDBEntry::GetOrientationSpaceCraftRelInertial() 
 { 
   //! Get the space craft orientation relativ eto the inertial system
 
@@ -147,7 +147,7 @@ NOrientation NAlignments::GetOrientationSpaceCraftRelInertial()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationFocalPlaneRelSC() 
+NOrientation NAlignmentsDBEntry::GetOrientationFocalPlaneRelSC() 
 { 
   //! Get the focal plane orientation relative to the space craft
 
@@ -157,7 +157,7 @@ NOrientation NAlignments::GetOrientationFocalPlaneRelSC()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationOpticalBench() 
+NOrientation NAlignmentsDBEntry::GetOrientationOpticalBench() 
 { 
   // Get the optic bench orientation at time t                      
 
@@ -168,7 +168,7 @@ NOrientation NAlignments::GetOrientationOpticalBench()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationOptics(int OpticsID) 
+NOrientation NAlignmentsDBEntry::GetOrientationOptics(int OpticsID) 
 {
   // Get the optics 1 orientation at time t                      
    
@@ -187,7 +187,7 @@ NOrientation NAlignments::GetOrientationOptics(int OpticsID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationOpticsRelOpticalBench(int OpticsID) 
+NOrientation NAlignmentsDBEntry::GetOrientationOpticsRelOpticalBench(int OpticsID) 
 { 
   // Get the optics orientation realtive to the optical bench at time t                      
   
@@ -206,7 +206,7 @@ NOrientation NAlignments::GetOrientationOpticsRelOpticalBench(int OpticsID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationAperture(int ApertureID) 
+NOrientation NAlignmentsDBEntry::GetOrientationAperture(int ApertureID) 
 { 
   // Get the aperture orientation at time t
 
@@ -225,7 +225,7 @@ NOrientation NAlignments::GetOrientationAperture(int ApertureID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationMetrologyLaser(int MetrologyID) 
+NOrientation NAlignmentsDBEntry::GetOrientationMetrologyLaser(int MetrologyID) 
 { 
   // Get the metrology orientation at time t
 
@@ -246,7 +246,7 @@ NOrientation NAlignments::GetOrientationMetrologyLaser(int MetrologyID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationMetrologyLaserRelOpticalBench(int MetrologyID) 
+NOrientation NAlignmentsDBEntry::GetOrientationMetrologyLaserRelOpticalBench(int MetrologyID) 
 { 
   // Get the metrology orientation realtive to the optical bench at time t
 
@@ -267,7 +267,7 @@ NOrientation NAlignments::GetOrientationMetrologyLaserRelOpticalBench(int Metrol
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationMetrologyDetector(int MetrologyID) 
+NOrientation NAlignmentsDBEntry::GetOrientationMetrologyDetector(int MetrologyID) 
 { 
   // Get the metrology orientation at time t
 
@@ -288,7 +288,7 @@ NOrientation NAlignments::GetOrientationMetrologyDetector(int MetrologyID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationStarTracker(int StarTrackerID) 
+NOrientation NAlignmentsDBEntry::GetOrientationStarTracker(int StarTrackerID) 
 { 
   //! Get the star tracker orientation at time t
 
@@ -305,7 +305,7 @@ NOrientation NAlignments::GetOrientationStarTracker(int StarTrackerID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationStarTrackerRelOpticalBench(int StarTrackerID) 
+NOrientation NAlignmentsDBEntry::GetOrientationStarTrackerRelOpticalBench(int StarTrackerID) 
 { 
   //! Get the star tracker orientation realtive to the optical bench at time t
 
@@ -322,7 +322,7 @@ NOrientation NAlignments::GetOrientationStarTrackerRelOpticalBench(int StarTrack
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationFocalPlaneModule(int ModuleID) 
+NOrientation NAlignmentsDBEntry::GetOrientationFocalPlaneModule(int ModuleID) 
 { 
   //! Get the focal plane detector module  orientation at time t
 
@@ -342,7 +342,7 @@ NOrientation NAlignments::GetOrientationFocalPlaneModule(int ModuleID)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NOrientation NAlignments::GetOrientationDetectorRelFocalPlaneModule(int ModuleID, int DetectorID) 
+NOrientation NAlignmentsDBEntry::GetOrientationDetectorRelFocalPlaneModule(int ModuleID, int DetectorID) 
 { 
   //! Get the focal plane detector module - detector orientation at time t
 
@@ -386,7 +386,7 @@ NOrientation NAlignments::GetOrientationDetectorRelFocalPlaneModule(int ModuleID
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NAlignments::Stream(ofstream& S)
+bool NAlignmentsDBEntry::Stream(ofstream& S)
 {
   //! Stream the content to an ASCII file 
 
@@ -420,7 +420,7 @@ bool NAlignments::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NAlignments::Parse(TString& Line)
+bool NAlignmentsDBEntry::Parse(TString& Line)
 {
   //! Stream the content from a line of an ASCII file  
   
@@ -463,7 +463,7 @@ bool NAlignments::Parse(TString& Line)
   
 
 
-bool NAlignments::ParseDB(TString Positions, TString Rotations)
+bool NAlignmentsDBEntry::ParseDB(TString Positions, TString Rotations)
 {
   
   MTokenizer T;
@@ -546,7 +546,7 @@ bool NAlignments::ParseDB(TString Positions, TString Rotations)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-TString NAlignments::ToString() const
+TString NAlignmentsDBEntry::ToString() const
 {
   //! Return the content as text
   
@@ -581,5 +581,5 @@ TString NAlignments::ToString() const
   return out.str().c_str();
 }
 
-// NAlignments.cxx: the end...
+// NAlignmentsDBEntry.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

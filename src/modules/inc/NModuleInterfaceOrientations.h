@@ -24,9 +24,9 @@
 // NuSTAR libs:
 #include "NTime.h"
 #include "NOrientation.h"
-#include "NAlignments.h"
-#include "NMetrologyUncertainties.h"
-#include "NOpticsUncertainties.h"
+#include "NAlignmentsDBEntry.h"
+#include "NMetrologyDBEntry.h"
+#include "NOpticsDBEntry.h"
 
 // Forward declarations:
 
@@ -37,7 +37,7 @@
 //! \brief This interface provides the base functionality for retrieving orientation data for the satellite modules
 //! This is a special decorator for satellite modules. It provides function to retrieve orientation data.
 
-class NModuleInterfaceOrientations : public NAlignments
+class NModuleInterfaceOrientations : public NAlignmentsDBEntry
 {
   // public interface:
  public:
@@ -50,7 +50,7 @@ class NModuleInterfaceOrientations : public NAlignments
   // Pertubed 
   
   //! Get all orientations at time t
-  virtual NAlignments GetAllAlignments(const NTime& t) { AdvanceTime(t); return *dynamic_cast<NAlignments*>(this); }
+  virtual NAlignmentsDBEntry GetAllAlignments(const NTime& t) { AdvanceTime(t); return *dynamic_cast<NAlignmentsDBEntry*>(this); }
   
   //! Get the optic bench orientation at time t                      
   virtual NOrientation GetOrientationSpaceCraftRelInertial(const NTime& t) { AdvanceTime(t); return m_LatestPerturbedAlignments.GetOrientationSpaceCraftRelInertial(); }
@@ -155,18 +155,18 @@ class NModuleInterfaceOrientations : public NAlignments
   // protected members:
  protected:
   //! The current (= last calculated) pertubed aligments
-  NAlignments m_LatestPerturbedAlignments;
+  NAlignmentsDBEntry m_LatestPerturbedAlignments;
   //! The current (= last calculated) metrology uncertainties
-  NMetrologyUncertainties m_LatestMetrologyUncertainties;
+  NMetrologyDBEntry m_LatestMetrologyUncertainties;
   //! The current (= last calculated) optics uncertainties
-  NOpticsUncertainties m_LatestOpticsUncertainties;
+  NOpticsDBEntry m_LatestOpticsUncertainties;
   
   //! The current (= last calculated) metrology uncertainties
-  NMetrologyUncertainties m_CalibratedMetrologyUncertainties;
+  NMetrologyDBEntry m_CalibratedMetrologyUncertainties;
   //! The current (= last calculated) optics uncertainties
-  NOpticsUncertainties m_CalibratedOpticsUncertainties;
+  NOpticsDBEntry m_CalibratedOpticsUncertainties;
   //! The ground calibrated alignments
-  NAlignments m_CalibratedAlignments;
+  NAlignmentsDBEntry m_CalibratedAlignments;
   
   // private members:
  private:

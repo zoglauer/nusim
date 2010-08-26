@@ -1,5 +1,5 @@
 /*
- * NAlignments.h
+ * NAlignmentsDBEntry.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NAlignments__
-#define __NAlignments__
+#ifndef __NAlignmentsDBEntry__
+#define __NAlignmentsDBEntry__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,14 +33,14 @@
 
 //! \brief This class contains all available orientations in NuSIM
 
-class NAlignments
+class NAlignmentsDBEntry
 {
   // public interface:
  public:
   //! Default constructor
-  NAlignments();
+  NAlignmentsDBEntry();
   //! Default destructor
-  virtual ~NAlignments();
+  virtual ~NAlignmentsDBEntry();
 
   //! Resets all data to default values
   virtual void Clear();
@@ -50,7 +50,7 @@ class NAlignments
   
   //! Set from an interpolation between the two values
   //! Fraction needs to be between ]0..1[
-  void SetInterpolated(const NAlignments& A, const NAlignments& B, double Fraction);
+  void SetInterpolated(const NAlignmentsDBEntry& A, const NAlignmentsDBEntry& B, double Fraction);
 
   //! Get the optic bench orientation at time t                      
   virtual NOrientation GetOrientationSpaceCraftRelInertial();
@@ -194,7 +194,7 @@ class NAlignments
 
 #ifdef ___CINT___
  public:
-  ClassDef(NAlignments, 0) // no description
+  ClassDef(NAlignmentsDBEntry, 0) // no description
 #endif
 
 };

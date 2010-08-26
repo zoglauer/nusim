@@ -18,7 +18,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NHit.o \
 	$(LB)/NInteraction.o \
 	$(LB)/NOrientation.o \
-	$(LB)/NAlignments.o \
+	$(LB)/NAlignmentsDBEntry.o \
 	$(LB)/NOrbit.o \
 	$(LB)/NPhoton.o \
 	$(LB)/NPixelHit.o \
@@ -31,8 +31,8 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NStarTrackerData.o \
 	$(LB)/NMetrologyDataSet.o \
 	$(LB)/NMetrologyData.o \
-	$(LB)/NMetrologyUncertainties.o \
-	$(LB)/NOpticsUncertainties.o \
+	$(LB)/NMetrologyDBEntry.o \
+	$(LB)/NOpticsDBEntry.o \
 	$(LB)/NObservatoryData.o \
 	$(LB)/NExtractFitsImage.o \
 
