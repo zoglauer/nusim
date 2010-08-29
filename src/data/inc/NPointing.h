@@ -21,10 +21,12 @@ using namespace std;
 // ROOT libs:
 
 // MEGAlib libs:
-#include "NGlobal.h"
 #include "MStreams.h"
+#include "MXmlNode.h"
 
 // NuSTAR libs:
+#include "NGlobal.h"
+#include "NTime.h"
 
 // Forward declarations:
 
@@ -51,13 +53,17 @@ class NPointing
   void SetRaDec(double Ra, double Dec) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; RaDecToQuaternion(); }
   //! Set quaternion (do automatic conversion to quaternion)
   void SetQuaternion(const NQuaternion& Q) { m_Empty = false; m_Q = Q; QuaternionToRaDec(); }
+  //! Set the time spent in this pointing
+  void SetTime(const NTime& Time) { m_Time = Time; }
 
   //! Get the right ascension
   double GetRa() const { return m_Ra; }
   //! Get the declination
   double GetDec() const { return m_Dec; }
+  //! Get the time to be spent at this pointing
+  NTime GetTime() const { return m_Time; }
   
-  //! Get the quaternoin representation
+  //! Get the quaternion representation
   NQuaternion GetQuaternion() const { return m_Q; }
 
   //! Return true if the object is empty
@@ -69,6 +75,14 @@ class NPointing
 
   //! Stream the content from a line of an ASCII file  
   bool Parse(TString& Line);
+
+  //! Dump content to a string
+  TString ToString() const;
+  
+  //! Read the configuration data from an XML node
+  virtual bool ReadXmlConfiguration(MXmlNode* Node);
+  //! Create an XML node tree from the configuration
+  virtual MXmlNode* CreateXmlConfiguration();
 
 
   // protected methods:
@@ -98,7 +112,10 @@ class NPointing
   double m_Dec;
   //! Representaion of the pointing as a quaternion
   NQuaternion m_Q;
-
+  //! The time to be spent at this pointing
+  NTime m_Time;
+  
+  
   //! True if this event is still empty, which is set during Clear()
   bool m_Empty;
 
