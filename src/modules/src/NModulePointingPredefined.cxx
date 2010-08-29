@@ -322,7 +322,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
       // Apply:
       //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()<<":"<<LatestPointingJitters.GetQuaternion()<<endl;
-      m_Pointing.SetQuaternion(m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()); //*LatestPointingJitters.GetQuaternion());
+      m_Pointing.SetQuaternion(m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()*LatestPointingJitters.GetQuaternion());
       //m_Pointing.SetQuaternion(LatestPointingJitters.GetQuaternion()*m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion());
     
     } // jitter end
