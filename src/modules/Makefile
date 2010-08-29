@@ -25,6 +25,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfacePhotonPropagation.o \
 	$(LB)/NModuleInterfaceTime.o \
 	$(LB)/NModuleInterfaceIO.o \
+	$(LB)/NModuleInterfaceStopCriterion.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
 	$(LB)/NModuleTemplate.o \
 	$(LB)/NGUIOptionsSource.o \
@@ -87,6 +88,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleObservatoryLoader.o \
 	$(LB)/NModuleObservatorySaver.o \
 	$(LB)/NModuleOrbitStationary.o \
+	$(LB)/NGUIOptionsSinglePointing.o \
 	$(LB)/NGUIOptionsPointingPredefined.o \
 	$(LB)/NModulePointingPredefined.o \
 	$(LB)/NModulePointingDatabase.o \

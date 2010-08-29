@@ -777,7 +777,7 @@ MVector NQuaternion::Rotation(const MVector& V) const
 
 std::ostream& operator<<(std::ostream& os, const NQuaternion& Q)
 {
-  os<<"("<<Q.m_V.X()<<", "<<Q.m_V.Y()<<", "<<Q.m_V.Z()<<", "<<Q.m_R<<")";
+  os<<"(x="<<Q.m_V.X()<<", y="<<Q.m_V.Y()<<", z="<<Q.m_V.Z()<<", r="<<Q.m_R<<")";
   return os;
 }
 

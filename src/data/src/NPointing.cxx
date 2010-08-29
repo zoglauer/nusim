@@ -89,7 +89,7 @@ void NPointing::RaDecToQuaternion()
 {
    // Ra, Dec are in radians. Euler angles.
 
-   cout<<"RA/DEC sanity check before: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
+   //cout<<"RA/DEC sanity check before: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
 
    double cr = cos(m_Ra/60*c_Rad/2.);
    double cd = cos((c_Pi/2.-m_Dec/60*c_Rad)/2.);
@@ -101,9 +101,9 @@ void NPointing::RaDecToQuaternion()
    m_Q.m_V[1] = cr*sd; 
    m_Q.m_V[2] = sr*cd;
    
-   QuaternionToRaDec();
+   //QuaternionToRaDec();
    
-   cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
+   //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
 }
 
 

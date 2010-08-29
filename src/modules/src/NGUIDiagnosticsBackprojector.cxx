@@ -276,6 +276,10 @@ void NGUIDiagnosticsBackprojector::Update()
       int BinsDec = ceil((m_MaxDec - m_MinDec)/m_BinSizeDec);
       int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec/Scaler);
       
+      // Limit the number of bins, or we spend for ever updating the histogram...
+      if (BinsDec > 200) BinsDec = 200;
+      if (BinsRa > 200) BinsRa = 200;
+      
       m_Backprojection->Reset();
       m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);
       

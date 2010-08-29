@@ -268,7 +268,8 @@ void NSupervisor::Clear()
   m_MetrologyModules.clear();
   m_ObservatoryModules.clear();
   m_MergerModules.clear();
-
+  m_StopCriterionModules.clear();
+  
   m_Interrupt = false;
 
   m_DiagnosticsGUI = 0;
@@ -285,7 +286,6 @@ bool NSupervisor::Run()
 {
   // Analyze the data
 
-
   if (ValidateConsistency() == false) {
     return false;
   }
@@ -296,6 +296,14 @@ bool NSupervisor::Run()
   m_ToggleDiagnostics = false;
 
   // Initialize the satellite data
+
+  // Pointing modules need the observation time:
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfacePointing*>((*Iter).second) != 0) {
+      dynamic_cast<NModuleInterfacePointing*>((*Iter).second)->SetObservationTime(m_ObservationTime);
+    }
+  }
+
 
   // Initialize the satellite
   if (m_Satellite.Initialize() == false) {
@@ -401,6 +409,18 @@ bool NSupervisor::Run()
 
   while (m_Satellite.GetTimeIdeal() < m_ObservationTime) {
 
+    // Check if stop criteria are fullfilled:
+    bool StopCriterionFullFilled = false;
+    for (unsigned int m = 0; m < m_StopCriterionModules.size(); ++m) {
+      if (m_StopCriterionModules[m]->StopCriterionFullFilled() == true) {
+        mout<<"Supervisor: Module stop criterion fullfilled."<<endl;
+        StopCriterionFullFilled = true;
+        break;
+      }
+    }
+    if (StopCriterionFullFilled == true) break;
+    
+    
     if (EventID == 10000) {
       EventBasedUpdateInterval = 0.5 * EventID/Timer.GetElapsed(); // at least update supervisor each half second
     }
@@ -1298,6 +1318,13 @@ bool NSupervisor::GenerateAllLists()
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
     if (dynamic_cast<NModuleInterfaceEntry*>((*Iter).second) != 0) {
       m_PipelineEntryModules.push_back(dynamic_cast<NModuleInterfaceEntry*>((*Iter).second));
+    }
+  }
+
+  m_StopCriterionModules.clear();
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceStopCriterion*>((*Iter).second) != 0) {
+      m_StopCriterionModules.push_back(dynamic_cast<NModuleInterfaceStopCriterion*>((*Iter).second));
     }
   }
 

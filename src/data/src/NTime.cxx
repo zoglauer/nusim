@@ -180,9 +180,20 @@ NTime& NTime::operator-=(const double& T)
 
 bool NTime::operator==(const NTime& T) const
 {
-  // > operator
+  // == operator
 
   return (m_Seconds == T.m_Seconds);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NTime::operator!=(const NTime& T) const
+{
+  // != operator
+
+  return (m_Seconds != T.m_Seconds);
 }
 
 

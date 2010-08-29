@@ -90,6 +90,8 @@ class NTime
   
   //! The == operator
   bool operator==(const NTime& Time) const;
+  //! The != operator
+  bool operator!=(const NTime& Time) const;
   //! The > operator
   bool operator>(const NTime& Time) const;
   //! The < operator

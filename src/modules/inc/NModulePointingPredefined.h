@@ -24,6 +24,8 @@
 // NuSTAR:
 #include "NModule.h"
 #include "NModuleInterfacePointing.h"
+#include "NModuleInterfaceStopCriterion.h"
+#include "NPointingJitterDBEntry.h"
 
 // Forward declarations:
 
@@ -32,7 +34,7 @@
 
 
 // Choose one:
-class NModulePointingPredefined : public NModule, public NModuleInterfacePointing
+class NModulePointingPredefined : public NModule, public NModuleInterfacePointing, public NModuleInterfaceStopCriterion
 {
   // public interface:
  public:
@@ -47,21 +49,24 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   //! Return the pointing of the satellte at a given time
   virtual NPointing GetPointing(NTime Time);
 
-  //! Set the pointing center
-  void SetPointingCenter(const NPointing& P) { m_PointingCenter = P; }
-  //! Get the pointing center
-  NPointing GetPointingCenter() const { return m_PointingCenter; }
+  //! Check if stop criterion is fullfilled
+  virtual bool StopCriterionFullFilled();
 
-  //! Get the number of motion patterns available
-  int GetNMotionPatterns() { return c_MotionPatternMax - c_MotionPatternMin + 1; }
+  //! Return a reference to the initial pointings
+  vector<NPointing>& GetInitialPointingsByRef() { return m_InitialPointings; }
 
-  //! Get the name of a certain motion pattern
-  static TString GetMotionPatternName(int ID);
+  //! Get the file name of the pointing jitter data base
+  TString GetPointingJitterDBFileName() const { return m_PointingJitterDBFileName; }
+  //! Set the file name of the pointing jitter data base
+  void SetPointingJitterDBFileName(const TString PointingJitterDBFileName);
 
-  //! Get the current motion pattern
-  int GetMotionPattern() const { return m_MotionPattern; }
-  //! Set the motion pattern
-  void SetMotionPattern(int Pattern);
+  //! Return true if the pointing are absolute
+  bool GetAbsoluteTime() const { return m_AbsoluteTime; }
+  //! Set if the pointing are absolute
+  void SetAbsoluteTime(bool AbsoluteTime) { m_AbsoluteTime = AbsoluteTime; }
+
+  //! Import pointings
+  bool ImportPointings(TString FileName);
 
   //! Show the options GUI
   virtual void ShowOptionsGUI();
@@ -72,9 +77,11 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   virtual MXmlNode* CreateXmlConfiguration();
 
   //! Constant describing motion pattern 0 - fixed
-  static const int c_MotionPatternPredefined;
+  static const int c_MotionPatternNone;
   //! Constant describing motion pattern 1 - random walk within X arcmin
   static const int c_MotionPatternRandomWalk;
+  //! Constant describing motion pattern 2 - read from data base 
+  static const int c_MotionPatternDB;
   
   //! ID of the smallest motion pattern
   static const int c_MotionPatternMin;
@@ -83,6 +90,8 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
 
   // protected methods:
  protected:
+  //! Read the pointing jitters DB
+  bool ReadPointingJitterDB(TString FileName);
 
   // private methods:
  private:
@@ -95,15 +104,48 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
 
   // private members:
  private:
+  //! The list of initial pointings before any random walk, error quaternion was applied.
+  vector<NPointing> m_InitialPointings;
+
+  //! The list of initial pointings before any random walk, error quaternion was applied - with corrected time sequence!
+  vector<NPointing> m_SequencedInitialPointings;
+  //! Start your search for the pointing at this index...
+  unsigned int m_StartIndexSequencedInitialPointings;
+  //! Time wrap for the perturbed alignments time index
+  NTime m_TimeWrapSequencedInitialPointings;
+  
+  //! Time of the last calculated pointing
+  NTime m_Time;
+  
+  //! Flag indicating that the times given in the pointings are absolute or relative
+  bool m_AbsoluteTime;
+  
+  //! The pointing jitter DB file name
+  TString m_PointingJitterDBFileName;
+  
+  
   //! The motion pattern
   int m_MotionPattern;
-  //! The central ponting
-  NPointing m_PointingCenter;
+  
+  
+  //! Start your search for the pointing  at this index...
+  unsigned int m_StartIndexPointing;
+  //! Time wrap for the perturbed alignments time index
+  NTime m_TimeWrapPointing;
+   
+  
+  //! Start your search for the pointing jitter at this index...
+  unsigned int m_StartIndexPointingJitters;
+  //! Time wrap for the perturbed alignments time index
+  NTime m_TimeWrapPointingJitters;
+  //! The pertubed alignments in space as a function of time...
+  vector<NPointingJitterDBEntry> m_PointingJitters;   
 
+  
+  /*
   //! The last pointing call for the random walk
   NPointing m_RWPointing;
-  //! Time of the last pointing call for the random walk
-  NTime m_RWTime;
+  */
 
 
 #ifdef ___CINT___

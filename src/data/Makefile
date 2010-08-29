@@ -26,6 +26,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NShieldHit.o \
 	$(LB)/NPHEFitsData.o \
 	$(LB)/NPointing.o \
+	$(LB)/NPointingJitterDBEntry.o \
 	$(LB)/NSatellite.o \
 	$(LB)/NStarTrackerDataSet.o \
 	$(LB)/NStarTrackerData.o \

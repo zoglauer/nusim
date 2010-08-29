@@ -36,6 +36,7 @@ class NModuleInterfaceStarTracker;
 class NModuleInterfaceMetrology;
 class NModuleInterfaceObservatory;
 class NModuleInterfaceMerger;
+class NModuleInterfaceStopCriterion;
 class NGUIDiagnosticsMain;
 class NGUIMain;
 
@@ -202,6 +203,8 @@ class NSupervisor
   vector<NModuleInterfaceObservatory*> m_ObservatoryModules;
   //! Sequence of all used merging modules
   vector<NModuleInterfaceMerger*> m_MergerModules;
+  //! Sequence of all used stop criterion modules
+  vector<NModuleInterfaceStopCriterion*> m_StopCriterionModules;
 
   //! Sequence of currently used satellite modules
   vector<NModule*> m_SatelliteModules;

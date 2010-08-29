@@ -24,15 +24,18 @@
 #include <TString.h>
 #include <TGClient.h>
 #include <TGTab.h>
+#include <TGCanvas.h>
 
 // MEGAlib libs:
 #include "NGlobal.h"
 #include "MGUIEEntry.h"
+#include "MGUIEFileSelector.h"
 
 // NuSTAR libs
 #include "NModule.h"
 #include "NGUIOptions.h"
 #include "NGUIOptionsSource.h"
+#include "NGUIOptionsSinglePointing.h"
 
 // Forward declarations:
 
@@ -55,26 +58,40 @@ class NGUIOptionsPointingPredefined : public NGUIOptions
   //! The creation part which gets overwritten
   virtual void Create();
 
+  static const int c_Import;
+  static const int c_Absolute;
+
+  
   // protected methods:
  protected:
 
   //! Actions after the Apply or OK button has been pressed
 	virtual bool OnApply();
 
-  //! Create the tab
-  void CreateTab(NSource* Source);
+  //! Import a pointing list
+  bool OnImport();
+  
+  //! Update the poitning viewer
+  void UpdateViewer();
 
   // protected members:
  protected:
 
   // private members:
  private:
-  //! Right ascension GUI
-  MGUIEEntry* m_Ra;
-  //! Declination GUI
-  MGUIEEntry* m_Dec;
-  //! Selection motion pattern
-  TGComboBox* m_MotionPatterns;
+  //! The pointing viewer
+  TGCanvas* m_PointingViewer;
+   
+  //! The single pointing GUIs
+  vector<NGUIOptionsSinglePointing*> m_SinglePointings;
+
+  //! Are the times absolute or relative
+  TGCheckButton* m_AbsoluteTime;
+  
+  //! Pointing jitter DB selector
+  MGUIEFileSelector* m_PointingJitterDB;
+
+
 
 
 

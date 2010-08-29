@@ -41,7 +41,7 @@ NModuleInterfaceGeometryAndDetectorProperties::NModuleInterfaceGeometryAndDetect
 
   // Never forget: mm!
   m_HalfDimension = MVector(9.69, 9.69, 1.0);
-  m_PixelsX = 32; // That's intentionally not correct 
+  m_PixelsX = 32; 
   m_PixelsY = 32;
 
   m_SurroundingSphereRadius = 500.0;

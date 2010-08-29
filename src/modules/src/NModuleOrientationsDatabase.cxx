@@ -85,7 +85,7 @@ bool NModuleOrientationsDatabase::Initialize()
 {
   // Initialize the module 
   
-  //! Reset all arrays:
+  // Reset all arrays:
   //m_CalibratedMetrologyUncertainties.clear();
   m_PerturbedMetrologyUncertainties.clear();
   //m_CalibratedOpticsUncertainties.clear();

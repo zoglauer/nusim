@@ -32,7 +32,7 @@
 
 
 //! \brief This interface provides the base functionality for retrieving pointing data for the satellite modules
-//! This is a special decorator for satellite modules. It provides function to retrieve pointing data.
+//! This is a special decorator for satellite modules. It provides functions to retrieve pointing data.
 
 class NModuleInterfacePointing
 {
@@ -44,8 +44,10 @@ class NModuleInterfacePointing
   virtual ~NModuleInterfacePointing();
 
   //! Set the satellite pointing at time t
-  virtual NPointing GetPointing(NTime t) { return NPointing(); }
+  virtual NPointing GetPointing(NTime t) { return m_Pointing; }
 
+  //! Set the observation time
+  virtual void SetObservationTime(NTime O) { m_ObservationTime = O; }
 
   // protected methods:
  protected:
@@ -58,10 +60,14 @@ class NModuleInterfacePointing
 
   // protected members:
  protected:
+  //! The current pointing
+  NPointing m_Pointing;
 
+  //! The total observation time, required to scale the pointing time, if we have relative timing
+  NTime m_ObservationTime;
+  
   // private members:
  private:
-
 
 
 
