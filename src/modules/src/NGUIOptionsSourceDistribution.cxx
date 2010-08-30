@@ -86,7 +86,7 @@ void NGUIOptionsSourceDistribution::Create()
   AddButton->Associate(this);
   ButtonFrame->AddFrame(AddButton, AddButtonLayout);
 
-  TGTextButton* ListButton = new TGTextButton(ButtonFrame, "Add sources from list", c_List); 
+  TGTextButton* ListButton = new TGTextButton(ButtonFrame, "Import from file", c_List); 
   TGLayoutHints* ListButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 10, 10, 0, 0);
   ListButton->SetMargins(20, 20, 2, 2);
   ListButton->Associate(this);
