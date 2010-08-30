@@ -78,7 +78,7 @@ void NPointing::QuaternionToRaDec()
   // Euler angles in radians. Move in Ra first then Dec.
  
   m_Ra = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
-  m_Dec = 60 * c_Deg * atan(m_Q.m_V[1]/m_Q.m_R)*2.; 
+  m_Dec = 60 * c_Deg * (c_Pi/2.-atan(m_Q.m_V[1]/m_Q.m_R)*2.); 
  }
 
 
