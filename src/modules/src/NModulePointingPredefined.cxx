@@ -42,7 +42,7 @@ ClassImp(NModulePointingPredefined)
 
 
 // make sure thos eare in sequence!
-const int NModulePointingPredefined::c_MotionPatternNone  = 0;
+const int NModulePointingPredefined::c_MotionPatternNone        = 0;
 const int NModulePointingPredefined::c_MotionPatternRandomWalk  = 1;
 const int NModulePointingPredefined::c_MotionPatternDB          = 2;
 // Update those too!!
@@ -79,9 +79,8 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
 
   // Some default initilizations:
   NPointing N;
-  N.SetRaDec(180*60, 45*60);
-  N.SetTime(100);
-  m_InitialPointings.push_back(N);
+  N.SetRaDec(180*60, 0.0);
+  N.SetTime(10000);
   m_InitialPointings.push_back(N);
   
   m_MotionPattern = c_MotionPatternNone;
@@ -118,6 +117,12 @@ bool NModulePointingPredefined::Initialize()
     if (ReadPointingJitterDB(m_PointingJitterDBFileName) == false) return false;
     //cout<<m_PointingJitters[0].ToString()<<endl;
   }
+  
+  if (m_InitialPointings.size() == 0) {
+    mgui<<"You need to give at least one space craft pointing."<<error;
+    return false;
+  }
+  
   
   // Sequence the Pointings
   m_SequencedInitialPointings.clear();
@@ -442,6 +447,12 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
     m_AbsoluteTime = AbsoluteTimeNode->GetValueAsBoolean();
   }
 
+  if (m_InitialPointings.size() == 0) {
+    NPointing N;
+    N.SetRaDec(180.0*60, 0.0);
+    N.SetTime(10000);
+    m_InitialPointings.push_back(N);
+  }
 
   return true;
 }
