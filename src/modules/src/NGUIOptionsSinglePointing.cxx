@@ -134,10 +134,9 @@ void NGUIOptionsSinglePointing::Create()
 void NGUIOptionsSinglePointing::Update()
 {
   //! update the data
-  /*
+  
   m_Pointing->SetRaDec(m_Ra->GetAsDouble()*60, m_Dec->GetAsDouble()*60);
   m_Pointing->SetTime(NTime(m_Time->GetAsDouble()));
-  */
 }
   
 

@@ -75,9 +75,6 @@ void NGUIOptionsPointingPredefined::Create()
   
   TGLayoutHints* BasicLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX, 20, 20, 10, 0);
 
-  
-  TGLabel* PointingLabel = new TGLabel(this, "Attention: On some systems a ROOT/X11 bug causes crashes after entering text below. In those cases, please edit the configuration file by hand!");
-  AddFrame(PointingLabel, BasicLayout);
 
   m_AbsoluteTime = 
     new TGCheckButton(this, "Pointing times are absolute. Otherwise they are relative to the observation time set in the supervisor (they do not need to add up to anything).", c_Absolute);
@@ -92,6 +89,7 @@ void NGUIOptionsPointingPredefined::Create()
  
   m_PointingViewer = new TGCanvas(this, 840, 160);
   m_PointingViewer->SetContainer(new TGCompositeFrame(m_PointingViewer->GetViewPort(), 50, 50));
+  m_PointingViewer->GetViewPort()->SetCleanup(kDeepCleanup);
   AddFrame(m_PointingViewer, BasicLayout);
   
   UpdateViewer();
