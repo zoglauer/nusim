@@ -93,12 +93,12 @@ void NGUIOptionsSinglePointing::Create()
   
   TString Label("(");
   Label += m_ID;
-  Label += "):  RA [deg]:";
-  m_Ra = new MGUIEEntry(HFrame, Label, false, m_Pointing->GetRa()/60.0, true, 0.0, 360.0);
-  HFrame->AddFrame(m_Ra, LabelLayout);
-  
-  m_Dec = new MGUIEEntry(HFrame, "DEC [deg]:", false, m_Pointing->GetDec()/60.0, true, -90.0, 90.0);
+  Label += "):  DEC [deg]:";
+  m_Dec = new MGUIEEntry(HFrame, Label, false, m_Pointing->GetDec()/60.0, true, -90.0, 90.0);
   HFrame->AddFrame(m_Dec, LabelLayout);
+  
+  m_Ra = new MGUIEEntry(HFrame, "RA [deg]:", false, m_Pointing->GetRa()/60.0, true, 0.0, 360.0);
+  HFrame->AddFrame(m_Ra, LabelLayout);
   
   m_Time = new MGUIEEntry(HFrame, "Time [sec or u.a.]:", false, m_Pointing->GetTime().GetSeconds(), true, 0.0);
   HFrame->AddFrame(m_Time, LabelLayout);
