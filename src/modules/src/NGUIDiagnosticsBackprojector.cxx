@@ -140,6 +140,13 @@ void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec)
   if (BinsDec > 200) BinsDec = 200;
   if (BinsRa > 200) BinsRa = 200;
 
+  if (m_MinRa >= m_MaxRa) {
+    merr<<"Ra-axis problem: Min (="<<m_MinRa<<") >= Max (="<<m_MaxRa<<")"<<show;
+  }
+  if (m_MinRa >= m_MaxRa) {
+    merr<<"Dec-axis problem: Min (="<<m_MinDec<<") >= Max (="<<m_MaxDec<<")"<<show;
+  }
+
   m_Backprojection->Reset();
   m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);
 

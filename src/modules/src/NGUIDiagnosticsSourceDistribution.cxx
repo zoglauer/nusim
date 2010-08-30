@@ -82,11 +82,21 @@ void NGUIDiagnosticsSourceDistribution::SetInitialPointing(double Ra, double Dec
 { 
   //! Set the initial pointing 
 
-  if (cos(Dec*60*c_Rad) == 0) { 
-    m_Origin->GetXaxis()->SetLimits(-180*60, +180*60);
+  double xmin = 0.0;
+  double xmax = 0.0;
+  if (cos(Dec*60.0*c_Rad) == 0) { 
+    xmin = -180.0*60.0;
+    xmax = +180.0*60.0;
   } else {
-    m_Origin->GetXaxis()->SetLimits(-fabs(10/cos(Dec/60*c_Rad)), +fabs(10/cos(Dec/60*c_Rad)));
+    xmin = -fabs(10.0/cos(Dec/60.0*c_Rad));
+    xmax = +fabs(10.0/cos(Dec/60.0*c_Rad));
   }
+  if (xmin <= -180.0*60) xmin = -180.0*60;
+  if (xmax >= +180.0*60) xmax = +180.0*60;
+  if (xmin >= xmax) {
+    merr<<"xAxis problem: Min (="<<xmin<<") >= Max (="<<xmax<<")"<<endl;
+  }
+  m_Origin->GetXaxis()->SetLimits(xmin, xmax);
 
   m_InitialRa = Ra; m_InitialDec = Dec; 
 }
