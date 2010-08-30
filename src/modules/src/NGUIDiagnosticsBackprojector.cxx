@@ -291,6 +291,13 @@ void NGUIDiagnosticsBackprojector::Update()
       
       int BinsDec = ceil((m_MaxDec - m_MinDec)/m_BinSizeDec);
       int BinsRa = ceil((m_MaxRa - m_MinRa)/m_BinSizeDec/Scaler);
+  
+      if (m_MinRa >= m_MaxRa) {
+        merr<<"Ra-axis problem: Min (="<<m_MinRa<<") >= Max (="<<m_MaxRa<<")"<<show;
+      }
+      if (m_MinRa >= m_MaxRa) {
+        merr<<"Dec-axis problem: Min (="<<m_MinDec<<") >= Max (="<<m_MaxDec<<")"<<show;
+      }
       
       // Limit the number of bins, or we spend for ever updating the histogram...
       if (BinsDec > 200) BinsDec = 200;
