@@ -85,7 +85,7 @@ void NGUIDiagnosticsSourceDistribution::SetInitialPointing(double Ra, double Dec
   if (cos(Dec*60*c_Rad) == 0) { 
     m_Origin->GetXaxis()->SetLimits(-180*60, +180*60);
   } else {
-    m_Origin->GetXaxis()->SetLimits(-10/cos(Dec/60*c_Rad), +10/cos(Dec/60*c_Rad));
+    m_Origin->GetXaxis()->SetLimits(-fabs(10/cos(Dec/60*c_Rad)), +fabs(10/cos(Dec/60*c_Rad)));
   }
 
   m_InitialRa = Ra; m_InitialDec = Dec; 
