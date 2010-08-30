@@ -141,11 +141,14 @@ bool NModulePointingPredefined::Initialize()
     double Scaler = m_ObservationTime.GetSeconds()/T.GetSeconds();
     for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
       m_SequencedInitialPointings[p].SetTime(m_SequencedInitialPointings[p].GetTime()*Scaler);
-      //cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
     }
   }
   
-  
+  //for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
+  //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
+  //}
+
+
   return true;
 }
 
@@ -326,7 +329,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       }
     
       // Apply:
-      //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()<<":"<<LatestPointingJitters.GetQuaternion()<<endl;
+      //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].ToString()<<endl;
       m_Pointing.SetQuaternion(m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()*LatestPointingJitters.GetQuaternion());
       //m_Pointing.SetQuaternion(LatestPointingJitters.GetQuaternion()*m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion());
     
@@ -335,7 +338,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     m_Time = t;
   }
   
-  //cout<<t<<":"<<m_Pointing.ToString()<<":"<<m_Pointing.GetQuaternion()<<endl;
+  //cout<<t<<":"<<m_Pointing.ToString()<<endl;
 
   return m_Pointing;
 }
