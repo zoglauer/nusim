@@ -1,3 +1,4 @@
+
 #------------------------------------------------------------------------------
 #
 #  Makefile for NuSim
@@ -74,6 +75,9 @@ data: link megalib
 
 debug: all
 	@gdb $(BN)/nusim -x resource/gdb.ini
+
+profile: all  
+	@valgrind --tool=callgrind -v --dump-instr=yes $(BN)/nusim
 
 #------------------------------------------------------------------------------
 # Version check:
