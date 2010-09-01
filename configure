@@ -96,7 +96,7 @@ fi
 
 bash ${NUSIM}/config/configure_rootversiontest -s;
 RootVersionOK=$?;
-if ([ "$RootVersionOK" == "1" ]); then
+if [ "$RootVersionOK" = "1" ]; then
     exit 0;
 fi
 
