@@ -72,6 +72,8 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
 
   // protected methods:
  protected:
+  //! Generate an optimized pointing pattern
+  bool GeneratePointingPattern();
 
   // private methods:
  private:

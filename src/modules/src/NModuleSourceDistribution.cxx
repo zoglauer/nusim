@@ -110,7 +110,9 @@ bool NModuleSourceDistribution::Initialize()
   m_RaMax = -numeric_limits<double>::max();
   m_DecMin = numeric_limits<double>::max();
   m_DecMax = -numeric_limits<double>::max();
-  
+
+  //return GeneratePointingPattern();
+
   return true;
 }
 
@@ -247,6 +249,125 @@ bool NModuleSourceDistribution::Finalize()
   
   return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleSourceDistribution::GeneratePointingPattern()
+{
+  //! Generate an optimized pointing pattern
+
+  double RaMin = numeric_limits<double>::max();
+  double DecMin = numeric_limits<double>::max();
+  double RaMax = -numeric_limits<double>::max();
+  double DecMax = -numeric_limits<double>::max();
+
+  // Initial calculation of next event.
+  for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    m_Sources[s]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
+  }
+  DetermineNext();
+
+  // Initial calculation of next event.
+  NPhoton Photon;
+  double Ra, Dec;
+  
+  // Calculate some test events:
+  vector<MVector> Tests;
+  unsigned int s_max = 100000;
+  for (unsigned int s = 0; s < s_max; ++s) {
+    if (s % (s_max/10) == 0) {
+      cout<<"Simulated "<<s<<"/"<<s_max<<" events"<<endl;
+    }
+
+    m_Sources[m_NextComponent]->Generate(Photon, 1);
+
+    // Need the reverse direction, to find out where the photon came from.  
+    MVector SP = Photon.GetDirection();
+    SP=-SP;
+
+    // SP is alreday in focal bench corrdinates, thus we only have to apply the pointing rotation:
+    NPointing P = m_Satellite.GetPointing(m_Time);
+    SP = P.GetQuaternion().Rotation(SP);
+  
+    // Store RA and DEC of the original photon  
+    Ra = atan2(SP[1], SP[0])*60*c_Deg;
+    if (Ra < 0) Ra += 360*60;
+    Dec = asin(SP[2])*60*c_Deg;
+  
+    // For diagnostisc:
+    if (Ra < RaMin) RaMin = Ra;
+    if (Ra > RaMax) RaMax = Ra;
+    if (Dec < DecMin) DecMin = Dec;
+    if (Dec > DecMax) DecMax = Dec;
+
+    MVector TestDir;
+    TestDir.SetMagThetaPhi(1.0, c_Pi/2 - Dec/60*c_Rad, Ra/60*c_Rad);
+    Tests.push_back(TestDir);
+
+    m_Sources[m_NextComponent]->CalculateNextEmission(m_Time);
+    DetermineNext();
+  }
+
+  
+  double DecCenter = 0.5*(DecMax+DecMin);
+
+  // And set all of its initial parameters:
+  double PointingDistanceDec = 6; // arcmin
+  double PointingDistanceRa = PointingDistanceDec/cos(DecCenter/60*c_Rad); // arcmin
+  cout<<"Pointing dis: Ra: "<<PointingDistanceRa<<endl;
+
+  //! Increase to cover some area around the sources:
+  DecMin -= PointingDistanceDec;
+  DecMax += PointingDistanceDec;
+  RaMin -= PointingDistanceRa;
+  RaMax += PointingDistanceRa;
+
+  int RaPoints = int((RaMax-RaMin)/PointingDistanceRa) + 1;
+  int DecPoints = int((DecMax - DecMin)/PointingDistanceDec) + 1; 
+
+  vector<double> RAs;
+  vector<double> DECs;
+
+
+  ofstream out;
+  out.open("Pointings.dat");  
+
+  for (int d = 0; d <= DecPoints; ++d) {
+    for (int r = 0; r <= RaPoints; ++r) {
+      if (d % 2 == 0) {
+        Ra = RaMin + r*PointingDistanceRa;
+      } else {
+        Ra = RaMin + (r+0.5)*PointingDistanceRa;
+      }
+      Dec = DecMin + d*PointingDistanceDec;
+
+      // Now check if there is any source within PointingDistanceDec:
+      MVector TestDir;
+      TestDir.SetMagThetaPhi(1.0, c_Pi/2 - Dec/60*c_Rad, Ra/60*c_Rad);
+    
+      bool Found = false;
+      for (unsigned int t = 0; t < Tests.size(); ++t) {
+        if (Tests[t].Angle(TestDir) < PointingDistanceDec/60*c_Rad) {
+          Found = true;
+          break;
+        }
+      }
+      if (Found == true) { 
+        cout<<"Accepting: "<<Ra/60.0<<" "<<Dec/60.0<<endl;
+        out<<"RD "<<Ra/60.0<<" "<<Dec/60.0<<" "<<10.0<<endl;
+      } else {
+        cout<<"Skipping: "<<Ra/60.0<<" "<<Dec/60.0<<endl;
+      }
+    }
+  }
+  out.close();
+
+  // We always return false, since this is just for testing...
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
