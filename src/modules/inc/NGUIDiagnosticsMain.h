@@ -28,10 +28,13 @@ using namespace std;
 #include <TGTab.h>
 
 // MEGAlib libs
-#include "NGlobal.h"
 #include "MGUIDialog.h"
+#include "MTimer.h"
 
 // NuSTAR libs:
+#include "NGlobal.h"
+#include "NTime.h"
+#include "NSatellite.h"
 #include "NGUIDiagnostics.h"
 
 // Forward declarations:
@@ -45,7 +48,7 @@ class NGUIDiagnosticsMain : public MGUIDialog
   // Public members:
  public:
   //! Default constructor
-  NGUIDiagnosticsMain();
+  NGUIDiagnosticsMain(NSatellite& Satellite);
   //! Default destructor
   virtual ~NGUIDiagnosticsMain();
 
@@ -75,12 +78,19 @@ class NGUIDiagnosticsMain : public MGUIDialog
 
   // private members:
  private:
+  //! The satellite module
+  NSatellite& m_Satellite;
   //! All the diagnostics modules
   vector<NGUIDiagnostics*> m_DiagnosticTabs;
   //! The main tab...
   TGTab* m_MainTab;
   //! ... and its layout
   TGLayoutHints* m_MainTabLayout;
+  //! The observation time info:
+  TGLabel* m_ObservationTime;
+
+  //! The update timer
+  MTimer m_Timer;
 
 
 #ifdef ___CINT___

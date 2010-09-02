@@ -51,7 +51,7 @@ ClassImp(NModuleOpticsEngine)
   // Set all module relevant information
 
   // Set the module name --- has to be unique
-  m_Name = "NuSTAR default";
+  m_Name = "NuSTAR default optics";
 
   // Set the XML tag --- has to be unique --- no spaces allowed
   m_XmlTag = "XmlTagOpticsEngine";
@@ -117,6 +117,21 @@ bool NModuleOpticsEngine::Initialize()
     return false;
   }
 
+  // Two sanity checks to make sure the surrounding sphere is capable with what we have here
+  cout<<1.05*m_Rm1[m_NShells]<<endl;
+  if (m_Satellite.GetSurroundingSphereRadius() < 1.05*m_Rm1[m_NShells]) {
+    cerr<<"The radius of the surrounding sphere ("<<m_Satellite.GetSurroundingSphereRadius()
+      <<") is smaller than the outer shell with 5% safety ("<<1.1*m_Rm1[m_NShells]<<")"<<show;
+    return false;
+  }
+  if (fabs(m_Satellite.GetSurroundingSphereZOffsetInOpticsModuleCoordinates() - m_ShellLength) > 0.00001) {
+    cerr<<"The (half) shell length in the optics module ("<<m_ShellLength
+      <<") does not agree with the one in the geometry module ("
+      <<m_Satellite.GetSurroundingSphereZOffsetInOpticsModuleCoordinates()<<")!"<<show;
+    return false;
+  }
+
+
   m_ScatteredPhotons = 0;
   m_BlockedPhotonsPlaneNoReached = 0;
   m_BlockedPhotonsOpeningNotReached = 0;
@@ -167,7 +182,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   MVector Pos = Photon.GetPosition();
   double RadialDistance = sqrt(Pos.X()*Pos.X() + Pos.Y()*Pos.Y());
   
-  if (RadialDistance <= m_Rm2[1] || RadialDistance >= m_Rm1[133]) {
+  if (RadialDistance <= m_Rm2[1] || RadialDistance >= m_Rm1[m_NShells]) {
     // The plane is unreachable thus we quit here
     Orientation.TransformOut(Photon);
     Event.SetBlocked(true);
@@ -200,25 +215,26 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   NPhoton iPhoton;  // Ideal photon
   if (m_UseIdealOptics) {
     
-	NOrientation FPorient = m_Satellite.GetOrientationFocalPlaneModule(Event.GetTime(), Event.GetTelescope());
+	  NOrientation FPorient = m_Satellite.GetOrientationFocalPlaneModule(Event.GetTime(), Event.GetTelescope());
     
-	iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); 
-	iPhoton.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
+	  iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); 
+	  iPhoton.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
  
     Orientation.TransformIn(iPhoton);
-	FPorient.TransformOut(iPhoton);
+	  FPorient.TransformOut(iPhoton);
 	
-	MVector DetectorTop(0.0, 0.0, 0.0);
+	  MVector DetectorTop(0.0, 0.0, 0.0);
     MVector DetectorNormal(0.0, 0.0, 1.0);
-	PropagateToPlane(iPhoton, DetectorTop, DetectorNormal);
+	  PropagateToPlane(iPhoton, DetectorTop, DetectorNormal);
 		
-	FPorient.TransformIn(iPhoton);
-	Orientation.TransformOut(iPhoton);
+	  FPorient.TransformIn(iPhoton);
+	  Orientation.TransformOut(iPhoton);
 	
     InPos[1] = 0.0;
     InPos[2] = 0.0;
     InPos[3] = 0.0; 
     MovePhoton(InPos, RTDir, -10150.);
+    mimp<<"Kristin: Here is a magic distance number in your code: Could you please replace it? Thanks, Andreas"<<show;
   }
   //*************
    
@@ -275,24 +291,26 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
 
 bool NModuleOpticsEngine::Finalize()
 {  
+  cout<<endl;
+  cout<<"Optics engine summary:"<<endl;
+  double EffectiveArea =0.0;
+  double EffectiveAreaError = 0.0;
   if (m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics > 0) {
-    double EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
-    double EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
-    cout<<endl;
-    cout<<"Optics engine summary:"<<endl;
-    cout<<"  Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
-    cout<<endl;
-    cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
-    cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
-    cout<<endl;
-    cout<<"  Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
-    cout<<"  Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
-    cout<<"  Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
-    cout<<"    Optics plane not reached from above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
-    cout<<"    Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
-    cout<<"    Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
-    cout<<"    Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
+    EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+    EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
   }
+  cout<<"  Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
+  cout<<endl;
+  cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
+  cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
+  cout<<endl;
+  cout<<"  Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
+  cout<<"  Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
+  cout<<"  Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
+  cout<<"    Optics plane not reached from above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
+  cout<<"    Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
+  cout<<"    Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
+  cout<<"    Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
 
   return true;
 }

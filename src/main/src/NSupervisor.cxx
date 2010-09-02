@@ -329,7 +329,7 @@ bool NSupervisor::Run()
     }
   }
   if (NDiagnostics > 0 && gROOT->IsBatch() == false) {
-    m_DiagnosticsGUI = new NGUIDiagnosticsMain();
+    m_DiagnosticsGUI = new NGUIDiagnosticsMain(m_Satellite);
     for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
       if ((*Iter).second->HasDiagnosticsGUI() == true) {
         m_DiagnosticsGUI->AddDiagnostics((*Iter).second->GetDiagnosticsGUI());
@@ -656,6 +656,10 @@ bool NSupervisor::Run()
   }
 
   // Finalize the module data:
+  cout<<endl;
+  cout<<"  Summary"<<endl;
+  cout<<"==========="<<endl;
+  cout<<endl;
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
     if ((*Iter).second->Finalize() == false) {
       cout<<"Unable to finalize module: "<<(*Iter).second->GetFullName()<<" - but who cares..."<<endl;

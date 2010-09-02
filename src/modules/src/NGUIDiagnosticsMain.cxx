@@ -45,12 +45,14 @@ ClassImp(NGUIDiagnosticsMain)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NGUIDiagnosticsMain::NGUIDiagnosticsMain() : MGUIDialog(gClient->GetRoot(), gClient->GetRoot(), 900, 500)
+NGUIDiagnosticsMain::NGUIDiagnosticsMain(NSatellite& Satellite) : MGUIDialog(gClient->GetRoot(), gClient->GetRoot()), m_Satellite(Satellite)
 {
   gStyle->SetPalette(1, 0);
 
   // No deep clean-up allowed in this function!
   SetCleanup(kNoCleanup);
+
+  m_Timer.Pause();
 }
 
 
@@ -96,14 +98,20 @@ void NGUIDiagnosticsMain::Create()
     m_MainTab->AddTab(m_DiagnosticTabs[d]->GetTabTitle(), m_DiagnosticTabs[d]);
   }
 
+  m_ObservationTime = new TGLabel(this, "Passed observation time: 0 sec");
+  TGLayoutHints* ObservationTimeLayout =  
+    new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsCenterX, 10, 10, 20, 0);
+  AddFrame(m_ObservationTime, ObservationTimeLayout);
+
   // The buttons
   AddButtons(c_Ok | c_Apply, true);
+  
 
   m_ApplyButton->SetText("Update");
   m_OKButton->SetText("Close");
 
   // Give this element the default size of its content:
-  Resize(900, 550); 
+  Resize(900, 580); 
 
   MapSubwindows();
   MapWindow();  
@@ -156,9 +164,20 @@ void NGUIDiagnosticsMain::Update()
 {
   //! Update all tabs
 
+  ostringstream ObsText;
+  ObsText<<"Passed observation time: "<<m_Satellite.GetTimeIdeal();
+  double Elapsed = m_Timer.GetElapsed();
+  if (Elapsed < 3) {
+    ObsText<<"   (You are updating this window very fast (dT="<<Elapsed<<" sec) --- this is very CPU consuming...)";
+  }
+  m_ObservationTime->ChangeText(ObsText.str().c_str());
+
   for (unsigned int d = 0; d < m_DiagnosticTabs.size(); ++d) {
     m_DiagnosticTabs[d]->Update();
   }
+
+
+  m_Timer.Reset();
 }
 
 

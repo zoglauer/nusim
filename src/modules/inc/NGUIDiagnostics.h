@@ -25,10 +25,11 @@
 #include <TGClient.h>
 
 // MEGAlib libs:
-#include "NGlobal.h"
 #include "MGUIERBList.h"
+#include "MTimer.h"
 
 // NuSTAR lib:
+#include "NGlobal.h"
 
 // Forward declarations:
 class NModule;
@@ -70,7 +71,6 @@ class NGUIDiagnostics : public TGCompositeFrame
 
   // private members:
  private:
-
 
 #ifdef ___CINT___
  public:

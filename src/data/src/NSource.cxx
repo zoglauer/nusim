@@ -1026,13 +1026,13 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       Test.SetPosition(MVector(0.0, 0.0, 0.0));
       
       // First determine what the inertial vector is by transforming 
-	  // a test vector (0,0,1) with the source RA, DEC. 
-	  NOrientation PhotonOriginOrientation;
+      // a test vector (0,0,1) with the source RA, DEC. 
+      NOrientation PhotonOriginOrientation;
       PhotonOriginOrientation.SetRotation(PhotonOrigin.GetQuaternion());
       PhotonOriginOrientation.TransformOut(Test);
       
-	  // Now that we have the inertial vector of the Source, transfrom it 
-	  // into the FP system using the spacecraft pointing inertial Quarternion
+      // Now that we have the inertial vector of the Source, transfrom it 
+      // into the FP system using the spacecraft pointing inertial Quarternion
       NOrientation FBSystem;
       FBSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
       FBSystem.TransformIn(Test);
@@ -1051,6 +1051,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       // Into optics:
       m_Satellite.GetOrientationOpticsRelOpticalBench(m_NextEmission, Telescope).TransformIn(Test);
      
+
       // 
       Theta = Test.GetDirection().Theta();
       Phi = Test.GetDirection().Phi();
@@ -1083,6 +1084,9 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       Position[0] = (x*cos(Theta)+z*sin(Theta))*cos(Phi) - y*sin(Phi);
       Position[1] = (x*cos(Theta)+z*sin(Theta))*sin(Phi) + y*cos(Phi);
       Position[2] = -x*sin(Theta)+z*cos(Theta);
+
+      // Move to top of optics:
+      Position[2] += m_Satellite.GetSurroundingSphereZOffsetInOpticsModuleCoordinates();
 
       Photon.SetPosition(Position);      
       Photon.SetDirection(Direction);

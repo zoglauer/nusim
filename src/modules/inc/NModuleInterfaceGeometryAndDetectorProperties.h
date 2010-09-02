@@ -64,7 +64,7 @@ class NModuleInterfaceGeometryAndDetectorProperties
   virtual double GetSurroundingSphereRadius() { return m_SurroundingSphereRadius; }
 
   //! Get the z offset in optics module coordinates the top of the optics module
-  virtual double GetSurroundingSphereZOffsetInOpticsModuleCoordinates() { return m_SurroundingSphereRadius; }
+  virtual double GetSurroundingSphereZOffsetInOpticsModuleCoordinates() { return m_SurroundingSphereZOffsetInOpticsModuleCoordinates; }
 
   //! Load the cross sections (during initilize)
   bool LoadCrossSections();
