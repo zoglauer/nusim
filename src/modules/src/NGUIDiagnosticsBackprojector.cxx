@@ -48,6 +48,8 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
   m_FixedSize = false;
   m_NeedsResize = false;
   
+  m_MaxBins = 512;
+
   m_MinDec = -10;
   m_MaxDec = 10;
   m_BinSizeDec = 0.4/60.0;
@@ -137,8 +139,8 @@ void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec)
   if (m_MaxDec > 90) m_MaxDec = 90;
 
   // Limit the number of bins, or we spend for ever updating the histogram...
-  if (BinsDec > 200) BinsDec = 200;
-  if (BinsRa > 200) BinsRa = 200;
+  if (BinsDec > m_MaxBins) BinsDec = m_MaxBins;
+  if (BinsRa > m_MaxBins) BinsRa = m_MaxBins;
 
   if (m_MinRa >= m_MaxRa) {
     merr<<"Ra-axis problem: Min (="<<m_MinRa<<") >= Max (="<<m_MaxRa<<")"<<show;
@@ -300,8 +302,8 @@ void NGUIDiagnosticsBackprojector::Update()
       }
       
       // Limit the number of bins, or we spend for ever updating the histogram...
-      if (BinsDec > 200) BinsDec = 200;
-      if (BinsRa > 200) BinsRa = 200;
+      if (BinsDec > m_MaxBins) BinsDec = m_MaxBins;
+      if (BinsRa > m_MaxBins) BinsRa = m_MaxBins;
       
       m_Backprojection->Reset();
       m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);

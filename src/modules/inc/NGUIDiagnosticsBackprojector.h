@@ -129,7 +129,8 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   //! The default bin size in Dec
   double m_BinSizeDec;
 
-  
+  //! The maximum number of allowed bins per direction
+  double m_MaxBins;
   
 #ifdef ___CINT___
  public:
