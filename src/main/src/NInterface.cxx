@@ -72,11 +72,6 @@ NInterface::NInterface()
   m_UseGui = true;
 
   m_Supervisor = new NSupervisor();
-  if (MFile::Exists(gSystem->ConcatFileName(gSystem->HomeDirectory(), ".nusim.cfg")) == true) {
-    m_Supervisor->Load(gSystem->ConcatFileName(gSystem->HomeDirectory(), ".nusim.cfg"));
-  } else {
-    m_Supervisor->Load("resource/configurations/Ideal.cfg");
-  }
 
   m_Interrupt = false;
 }
@@ -141,16 +136,24 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   }
     
   // Now parse all low level options
+  bool ConfigurationLoaded = false;
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
     if (Option == "--configuration" || Option == "-c") {
-      m_Supervisor->Load(argv[++i]);
+      ConfigurationLoaded = m_Supervisor->Load(argv[++i]);
       cout<<"Command-line parser: Use configuration file "<<argv[i]<<endl;
     } else if (Option == "--seed" || Option == "-s") {
       gRandom->SetSeed(atoi(argv[++i]));
       cout<<"Command-line parser: Setting seed to "<<argv[i]<<endl;
     } else if (Option == "--auto" || Option == "-a") {
       // Parse later
+    }
+  }
+  if (ConfigurationLoaded == false) {
+    if (MFile::Exists(gSystem->ConcatFileName(gSystem->HomeDirectory(), ".nusim.cfg")) == true) {
+      m_Supervisor->Load(gSystem->ConcatFileName(gSystem->HomeDirectory(), ".nusim.cfg"));
+    } else {
+      m_Supervisor->Load("resource/configurations/Ideal.cfg");
     }
   }
 
