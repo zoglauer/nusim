@@ -49,8 +49,11 @@ class NMetrologyDBEntry
   //! Get the pointing error of the star tracker
   virtual double GetPointingErrorStarTracker(int StarTrackerID);
  
-  //! Get the calibrated pointing direction of the metrology laser (independent of time)
+  //! Get the pointing direction of the metrology laser (independent of time)
   virtual MVector GetPointingMetrologyLaserRelML(int MetrologyID);
+ 
+  //! Get the origin direction of the metrology laser (independent of time)
+  virtual MVector GetOriginMetrologyLaserRelML(int MetrologyID);
 
   //! Get the centroiding error of the metrology detector
   virtual double GetCentroidingErrorMetrologyDetector(int MetrologyID);
@@ -98,8 +101,12 @@ class NMetrologyDBEntry
   //! The pointing knowledge error of the star tracker
   double m_PointingErrorStarTracker4;
   
+  //! The origin of metrology laser 1
+  MVector m_OriginMetrologyLaser1RelML1;
   //! The pointing of metrology laser 1
   MVector m_PointingMetrologyLaser1RelML1;
+  //! The origin of metrology laser 2
+  MVector m_OriginMetrologyLaser2RelML2;
   //! The pointing of metrology laser 2
   MVector m_PointingMetrologyLaser2RelML2;
 

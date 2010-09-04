@@ -64,6 +64,8 @@ void NMetrologyDBEntry::Clear()
  
   m_PointingErrorStarTracker4 = g_DoubleNotDefined;
   
+  m_OriginMetrologyLaser1RelML1 = g_VectorNotDefined;
+  m_OriginMetrologyLaser2RelML2 = g_VectorNotDefined;
   m_PointingMetrologyLaser1RelML1 = g_VectorNotDefined;
   m_PointingMetrologyLaser2RelML2 = g_VectorNotDefined;
 
@@ -87,6 +89,9 @@ void NMetrologyDBEntry::SetInterpolated(const NMetrologyDBEntry& A, const NMetro
   m_Time = A.m_Time + (B.m_Time - A.m_Time)*Fraction;
   m_PointingErrorStarTracker4 = A.m_PointingErrorStarTracker4 + Fraction*(B.m_PointingErrorStarTracker4 - A.m_PointingErrorStarTracker4);
    
+  m_OriginMetrologyLaser1RelML1 = A.m_OriginMetrologyLaser1RelML1 + Fraction*(B.m_OriginMetrologyLaser1RelML1 - A.m_OriginMetrologyLaser1RelML1);
+  m_OriginMetrologyLaser2RelML2 = A.m_OriginMetrologyLaser2RelML2 + Fraction*(B.m_OriginMetrologyLaser2RelML2 - A.m_OriginMetrologyLaser2RelML2);
+   
   m_PointingMetrologyLaser1RelML1 = A.m_PointingMetrologyLaser1RelML1 + Fraction*(B.m_PointingMetrologyLaser1RelML1 - A.m_PointingMetrologyLaser1RelML1);
   m_PointingMetrologyLaser2RelML2 = A.m_PointingMetrologyLaser2RelML2 + Fraction*(B.m_PointingMetrologyLaser2RelML2 - A.m_PointingMetrologyLaser2RelML2);
   
@@ -94,6 +99,25 @@ void NMetrologyDBEntry::SetInterpolated(const NMetrologyDBEntry& A, const NMetro
   m_CentroidingErrorMetrologyDetector2 = A.m_CentroidingErrorMetrologyDetector2 + Fraction*(B.m_CentroidingErrorMetrologyDetector2 - A.m_CentroidingErrorMetrologyDetector2);
 
   m_Empty = false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+MVector NMetrologyDBEntry::GetOriginMetrologyLaserRelML(int MetrologyID)
+{
+  //! Get the origin of the metrology laser
+
+  if (MetrologyID == 1) {
+    return m_OriginMetrologyLaser1RelML1; 
+  } else if (MetrologyID == 2) {
+    return m_OriginMetrologyLaser2RelML2; 
+  } else {
+    cout<<"SEVERE ERROR: Metrology ID = "<<MetrologyID<<" not allowed. Must be 1 or 2."<<endl;
+    cout<<"The results for this event will be wrong!"<<endl;
+    return MVector();
+  }
 }
 
 
@@ -166,9 +190,11 @@ bool NMetrologyDBEntry::Stream(ofstream& S)
   S<<"MU ";
   S<<m_Time.GetSeconds()<<" ";
   S<<m_PointingErrorStarTracker4<<" ";
+  S<<m_OriginMetrologyLaser1RelML1[0]<<" "<<m_OriginMetrologyLaser1RelML1[1]<<" "<<m_OriginMetrologyLaser1RelML1[2]<<" ";
   S<<m_PointingMetrologyLaser1RelML1[0]<<" "<<m_PointingMetrologyLaser1RelML1[1]<<" "<<m_PointingMetrologyLaser1RelML1[2]<<" ";
-  S<<m_PointingMetrologyLaser2RelML2[0]<<" "<<m_PointingMetrologyLaser2RelML2[1]<<" "<<m_PointingMetrologyLaser2RelML2[2]<<" ";
   S<<m_CentroidingErrorMetrologyDetector1<<" ";
+  S<<m_OriginMetrologyLaser2RelML2[0]<<" "<<m_OriginMetrologyLaser2RelML2[1]<<" "<<m_OriginMetrologyLaser2RelML2[2]<<" ";
+  S<<m_PointingMetrologyLaser2RelML2[0]<<" "<<m_PointingMetrologyLaser2RelML2[1]<<" "<<m_PointingMetrologyLaser2RelML2[2]<<" ";
   S<<m_CentroidingErrorMetrologyDetector2<<" ";
   S<<endl;
 
@@ -190,10 +216,14 @@ TString NMetrologyDBEntry::ToString() const
  Text += m_Time.GetSeconds();
  Text += ", Pointing error: ";
  Text += m_PointingErrorStarTracker4;
+ Text += ", Origin ML1 REL ML1: ";
+ Text += m_OriginMetrologyLaser1RelML1.ToString();
  Text += ", Pointing ML1 REL ML1: ";
  Text += m_PointingMetrologyLaser1RelML1.ToString();
  Text += ", Centroiding error MD1: ";
  Text += m_CentroidingErrorMetrologyDetector1;
+ Text += ", Origin ML2 REL ML2: ";
+ Text += m_OriginMetrologyLaser2RelML2.ToString();
  Text += ", Pointing ML2 REL ML2: ";
  Text += m_PointingMetrologyLaser2RelML2.ToString();
  Text += ", Centroiding error MD2: ";
@@ -201,6 +231,7 @@ TString NMetrologyDBEntry::ToString() const
  
  return Text;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
   
@@ -212,16 +243,18 @@ bool NMetrologyDBEntry::Parse(TString& Line)
   MTokenizer T;
   T.Analyze(Line);
   
-  if (T.GetNTokens() != 11) {
+  if (T.GetNTokens() != 16) {
     merr<<"Not enough tokens in string for parsing!"<<show;
   }
   
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(1));
-  m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(2);
-  m_PointingMetrologyLaser1RelML1.SetXYZ(T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4), T.GetTokenAtAsDouble(5));
-  m_PointingMetrologyLaser2RelML2.SetXYZ(T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7), T.GetTokenAtAsDouble(8));
-  m_CentroidingErrorMetrologyDetector1 = T.GetTokenAtAsDouble(9);
-  m_CentroidingErrorMetrologyDetector2 = T.GetTokenAtAsDouble(10);
+  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(1);
+  m_OriginMetrologyLaser1RelML1.SetXYZ(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4));
+  m_PointingMetrologyLaser1RelML1.SetXYZ(T.GetTokenAtAsDouble(5), T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7));
+  m_CentroidingErrorMetrologyDetector1 = T.GetTokenAtAsDouble(8);
+  m_OriginMetrologyLaser2RelML2.SetXYZ(T.GetTokenAtAsDouble(9), T.GetTokenAtAsDouble(10), T.GetTokenAtAsDouble(11));
+  m_PointingMetrologyLaser2RelML2.SetXYZ(T.GetTokenAtAsDouble(12), T.GetTokenAtAsDouble(13), T.GetTokenAtAsDouble(14));
+  m_CentroidingErrorMetrologyDetector2 = T.GetTokenAtAsDouble(15);
 
   m_Empty = false;
   
@@ -242,7 +275,7 @@ bool NMetrologyDBEntry::ParseDB(TString Line)
   T.SetSeparator(',');
   T.Analyze(Line, false);
       
-  if (T.GetNTokens() != 14) {
+  if (T.GetNTokens() != 20) {
     mgui<<"Not enough tokens in string for metrology DB entry ("<<T.GetNTokens()<<" vs. "<<14<<")"<<show;
     return false;
   }
@@ -251,15 +284,21 @@ bool NMetrologyDBEntry::ParseDB(TString Line)
   
   m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(2);
   
-  m_PointingMetrologyLaser1RelML1[0] = T.GetTokenAtAsDouble(6);
-  m_PointingMetrologyLaser1RelML1[1] = T.GetTokenAtAsDouble(7);
-  m_PointingMetrologyLaser1RelML1[2] = T.GetTokenAtAsDouble(8);
-  m_CentroidingErrorMetrologyDetector1 = T.GetTokenAtAsDouble(9);
+  m_OriginMetrologyLaser1RelML1[0] = T.GetTokenAtAsDouble(6);
+  m_OriginMetrologyLaser1RelML1[1] = T.GetTokenAtAsDouble(7);
+  m_OriginMetrologyLaser1RelML1[2] = T.GetTokenAtAsDouble(8);
+  m_PointingMetrologyLaser1RelML1[0] = T.GetTokenAtAsDouble(9);
+  m_PointingMetrologyLaser1RelML1[1] = T.GetTokenAtAsDouble(10);
+  m_PointingMetrologyLaser1RelML1[2] = T.GetTokenAtAsDouble(11);
+  m_CentroidingErrorMetrologyDetector1 = T.GetTokenAtAsDouble(12);
   
-  m_PointingMetrologyLaser2RelML2[0] = T.GetTokenAtAsDouble(10);
-  m_PointingMetrologyLaser2RelML2[1] = T.GetTokenAtAsDouble(11);
-  m_PointingMetrologyLaser2RelML2[2] = T.GetTokenAtAsDouble(12);
-  m_CentroidingErrorMetrologyDetector2 = T.GetTokenAtAsDouble(13);
+  m_OriginMetrologyLaser2RelML2[0] = T.GetTokenAtAsDouble(13);
+  m_OriginMetrologyLaser2RelML2[1] = T.GetTokenAtAsDouble(14);
+  m_OriginMetrologyLaser2RelML2[2] = T.GetTokenAtAsDouble(15);
+  m_PointingMetrologyLaser2RelML2[0] = T.GetTokenAtAsDouble(16);
+  m_PointingMetrologyLaser2RelML2[1] = T.GetTokenAtAsDouble(17);
+  m_PointingMetrologyLaser2RelML2[2] = T.GetTokenAtAsDouble(18);
+  m_CentroidingErrorMetrologyDetector2 = T.GetTokenAtAsDouble(19);
   
   m_Empty = false;
   

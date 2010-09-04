@@ -170,6 +170,12 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   //! Get the centroiding error of the metrology detector
   virtual double GetCentroidingErrorMetrologyDetector(const NTime& t, int MetrologyID) { return m_Orientations->GetCentroidingErrorMetrologyDetector(t, MetrologyID); }
  
+  //! Get the origin position of the metrology laser (independent of time)
+  virtual MVector GetOriginMetrologyLaserRelML(const NTime& t, int MetrologyID) { return m_Orientations->GetOriginMetrologyLaserRelML(t, MetrologyID); }
+ 
+  //! Get the calibrated origin position of the metrology laser (independent of time)
+  virtual MVector GetCalibratedOriginMetrologyLaserRelML(int MetrologyID) { return m_Orientations->GetCalibratedOriginMetrologyLaserRelML(MetrologyID); }
+ 
   //! Get the pointing direction of the metrology laser (independent of time)
   virtual MVector GetPointingMetrologyLaserRelML(const NTime& t, int MetrologyID) { return m_Orientations->GetPointingMetrologyLaserRelML(t, MetrologyID); }
  

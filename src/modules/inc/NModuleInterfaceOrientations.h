@@ -128,11 +128,17 @@ class NModuleInterfaceOrientations : public NAlignmentsDBEntry
   //! Get the pointing error of the star tracker
   virtual double GetPointingErrorStarTracker(const NTime& t, int StarTrackerID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetPointingErrorStarTracker(StarTrackerID); }
  
-  //! Get the  pointing direction of the metrology laser (independent of time)
+  //! Get the origin of the metrology laser (independent of time)
+  virtual MVector GetOriginMetrologyLaserRelML(const NTime& t, int MetrologyID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetOriginMetrologyLaserRelML(MetrologyID); }
+ 
+  //! Get the pointing direction of the metrology laser (independent of time)
   virtual MVector GetPointingMetrologyLaserRelML(const NTime& t, int MetrologyID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetPointingMetrologyLaserRelML(MetrologyID); }
 
   //! Get the centroiding error of the metrology detector
   virtual double GetCentroidingErrorMetrologyDetector(const NTime& t, int MetrologyID) { AdvanceTime(t); return m_LatestMetrologyUncertainties.GetCentroidingErrorMetrologyDetector(MetrologyID); }
+
+  //! Get the calibrated origin of the metrology laser (independent of time)
+  virtual MVector GetCalibratedOriginMetrologyLaserRelML(int MetrologyID) { return m_CalibratedMetrologyUncertainties.GetOriginMetrologyLaserRelML(MetrologyID); }
 
   //! Get the calibrated pointing direction of the metrology laser (independent of time)
   virtual MVector GetCalibratedPointingMetrologyLaserRelML(int MetrologyID) { return m_CalibratedMetrologyUncertainties.GetPointingMetrologyLaserRelML(MetrologyID); }
