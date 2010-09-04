@@ -243,6 +243,7 @@ bool NModuleSourceDistribution::Finalize()
 
   cout<<endl;
   cout<<"Source generator summary: "<<endl;
+  cout<<"  Number of different sources: "<<m_Sources.size()<<endl;
   cout<<"  Photon emission directions: "<<endl;
   cout<<"    DEC (min/max): "<<m_DecMin/60<<" to "<<m_DecMax/60<<endl;
   cout<<"    RA (min/max):  "<<m_RaMin/60<<" to "<<m_RaMax/60<<endl;
