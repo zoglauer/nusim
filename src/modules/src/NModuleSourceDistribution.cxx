@@ -276,7 +276,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   
   // Calculate some test events:
   vector<MVector> Tests;
-  unsigned int s_max = 100000;
+  unsigned int s_max = 2000000;
   for (unsigned int s = 0; s < s_max; ++s) {
     if (s % (s_max/10) == 0) {
       cout<<"Simulated "<<s<<"/"<<s_max<<" events"<<endl;
@@ -328,14 +328,13 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   int RaPoints = int((RaMax-RaMin)/PointingDistanceRa) + 1;
   int DecPoints = int((DecMax - DecMin)/PointingDistanceDec) + 1; 
 
-  vector<double> RAs;
-  vector<double> DECs;
-
-
-  ofstream out;
-  out.open("Pointings.dat");  
-
+  vector<vector<double> > RaPointings;
+  vector<vector<double> > DecPointings;
+  vector<vector<bool> > AcceptedPointings;
   for (int d = 0; d <= DecPoints; ++d) {
+    vector<double> Ras;
+    vector<double> Decs;
+    vector<bool> Accepted;
     for (int r = 0; r <= RaPoints; ++r) {
       if (d % 2 == 0) {
         Ra = RaMin + r*PointingDistanceRa;
@@ -343,6 +342,9 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
         Ra = RaMin + (r+0.5)*PointingDistanceRa;
       }
       Dec = DecMin + d*PointingDistanceDec;
+      
+      Ras.push_back(Ra);
+      Decs.push_back(Dec);
 
       // Now check if there is any source within PointingDistanceDec:
       MVector TestDir;
@@ -357,12 +359,52 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
       }
       if (Found == true) { 
         cout<<"Accepting: "<<Ra/60.0<<" "<<Dec/60.0<<endl;
-        out<<"RD "<<Ra/60.0<<" "<<Dec/60.0<<" "<<10.0<<endl;
+        Accepted.push_back(true);
       } else {
+        Accepted.push_back(false);
         cout<<"Skipping: "<<Ra/60.0<<" "<<Dec/60.0<<endl;
       }
     }
+    AcceptedPointings.push_back(Accepted);
+    RaPointings.push_back(Ras);
+    DecPointings.push_back(Decs);
   }
+
+  // Clean accepted vectors
+  for (int d = 0; d <= DecPoints; ++d) {
+    int Started = -1;
+    for (int r = 0; r <= RaPoints; ++r) {
+      if (AcceptedPointings[d][r] == true) { 
+        Started = r;
+        break;        
+      }
+    }
+    int Ended = -1;
+    for (int r = RaPoints; r >= 0; --r) {
+      if (AcceptedPointings[d][r] == true) { 
+        Ended = r;
+        break;        
+      }
+    }
+    // Make sure everything in between is filled
+    for (int r = 0; r <= RaPoints; ++r) {
+      if (r >= Started && r <= Ended) {
+        AcceptedPointings[d][r] = true;
+      }
+    }
+  }
+
+  // Dump to file
+  ofstream out;
+  out.open("Pointings.dat");  
+  for (int d = 0; d <= DecPoints; ++d) {
+    for (int r = 0; r <= RaPoints; ++r) {
+      if (AcceptedPointings[d][r] == true) { 
+        out<<"RD "<<RaPointings[d][r]/60.0<<" "<<DecPointings[d][r]/60.0<<" "<<10.0<<endl;
+      }
+    }
+  }
+
   out.close();
 
   // We always return false, since this is just for testing...
