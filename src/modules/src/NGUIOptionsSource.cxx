@@ -303,7 +303,7 @@ void NGUIOptionsSource::UpdateOptions()
     m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
     m_E2 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy max [keV]: ", false, m_Source->GetEnergyParameter2(), true, 0.0);
     m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
-    m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index: ", false, m_Source->GetEnergyParameter3(), true, 0.0);
+    m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index: ", false, m_Source->GetEnergyParameter3());
     m_SpectralOptionsSubFrame->AddFrame(m_E3, Default);
   } else if (m_SpectralTypes->GetSelected() == NSource::c_BrokenPowerLaw) {
     m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy min [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
@@ -312,9 +312,9 @@ void NGUIOptionsSource::UpdateOptions()
     m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
     m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy break [keV]: ", false, m_Source->GetEnergyParameter3(), true, 0.0);
     m_SpectralOptionsSubFrame->AddFrame(m_E3, Default);
-    m_E4 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index min: ", false, m_Source->GetEnergyParameter4(), true, 0.0);
+    m_E4 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index min: ", false, m_Source->GetEnergyParameter4());
     m_SpectralOptionsSubFrame->AddFrame(m_E4, Default);
-    m_E5 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index max: ", false, m_Source->GetEnergyParameter5(), true, 0.0);
+    m_E5 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Photon index max: ", false, m_Source->GetEnergyParameter5());
     m_SpectralOptionsSubFrame->AddFrame(m_E5, Default);
   } else if (m_SpectralTypes->GetSelected() == NSource::c_FileDifferentialFlux) {
     m_EF = new MGUIEFileSelector(m_SpectralOptionsSubFrame, "Choose a file containing the spectrum:", 

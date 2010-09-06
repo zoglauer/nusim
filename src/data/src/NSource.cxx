@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * NSource.cc                                                                *
+ * NSource.cc                                                                 *
  *                                                                            *
  * Copyright (C) 2001-2009 by Andreas Zoglauer for the MEGA team.             *
  * All rights reserved.                                                       *
@@ -168,6 +168,7 @@ bool NSource::SetSpectralType(const int& SpectralType)
     m_SpectralType = SpectralType;
     return true;
   default:
+    mout<<m_Name<<": Unknown spectral type"<<show;
     return false;
   }
 
@@ -769,10 +770,9 @@ bool NSource::SetEnergy(TString FileName)
       mout<<m_Name<<": At least two entries in the file are required!"<<endl;
       return false;
     }
-    return true;
-  } else {
-    return false;
   }
+  
+  return true;
 }
 
 
@@ -783,10 +783,11 @@ bool NSource::SetFlux(const double& Flux)
 { 
   if (Flux > 0) {
     m_InputFlux = Flux;
-
     return UpgradeFlux();
-  }
-
+  } 
+  
+  merr<<m_Name<<": Flux is negative: "<<Flux<<show;
+  
   return false;
 }
 
@@ -796,6 +797,12 @@ bool NSource::SetFlux(const double& Flux)
  */
 bool NSource::UpgradeFlux() 
 { 
+  if (m_InputFlux <= 0) {
+    merr<<m_Name<<": UpgradeFlux: Input flux is negative: "<<m_InputFlux<<show;
+    return false;
+  }
+    
+  
   m_Flux = m_InputFlux;
 
   if (m_CoordinateSystem == c_FarField) {
@@ -818,6 +825,13 @@ bool NSource::UpgradeFlux()
 //     return false;
 //   }
 
+  if (m_Flux <= 0) {
+    merr<<m_Name<<": UpgardeFlux: Source doesn't have a positive flux: "<<m_Flux<<show;
+    return false;
+  } 
+  
+  //mout<<m_Name<<": New flux: "<<m_Flux<<show;
+
   return true;
 }
 
@@ -831,7 +845,10 @@ bool NSource::CalculateNextEmission(NTime Time)
   double NextEmission = 0;
 
   // This is the main time loop:
-  massert(m_Flux > 0);
+  if (m_Flux <= 0) {
+    merr<<m_Name<<": CalculateNextEmission: Source doesn't have a positive flux: "<<m_Flux<<":"<<m_InputFlux<<endl;
+    return false;
+  }
   
   // A random exponential can be used to simulate
   // random arrival times of the photons (Poisson Arrival Model)
@@ -839,6 +856,11 @@ bool NSource::CalculateNextEmission(NTime Time)
   
   m_NextEmission.SetSeconds(NextEmission);
   m_NextEmission += Time;
+  
+  if (m_NextEmission.GetSeconds() < 0) {
+    merr<<m_Name<<": CalculateNextEmission: Next emission time is in the past: "<<m_NextEmission<<endl;
+    return false;
+  }
 
   return true;
 }
@@ -1446,16 +1468,16 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   }
 
   // Do an official "set" to initialize all the other variables:
-  SetSpectralType(m_SpectralType);
-  SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5);
-  SetBeamType(m_BeamType);
-  SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
+  if (SetSpectralType(m_SpectralType) == false) return false;
+  if (SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5) == false) return false; 
+  if (SetBeamType(m_BeamType) == false) return false;
+  if (SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
               m_PositionParam4, m_PositionParam5, m_PositionParam6, 
               m_PositionParam7, m_PositionParam8, m_PositionParam9, 
-              m_PositionParam10, m_PositionParam11);
-  SetPosition(m_PositionFileName);
-  SetEnergy(m_EnergyFileName);
-  SetFlux(m_InputFlux);
+              m_PositionParam10, m_PositionParam11) == false) return false;
+  if (SetPosition(m_PositionFileName) == false) return false;
+  if (SetEnergy(m_EnergyFileName) == false) return false;
+  if (SetFlux(m_InputFlux) == false) return false;
 
   return true;
 }

@@ -215,10 +215,13 @@ bool NGUIOptionsSourceDistribution::OnList()
   }
   in.close();
 
+  /*
   m_Tab->Layout();
   m_Tab->MapSubwindows();
   m_Tab->MapWindow();
-
+  */
+  OnOk();
+  
   return true;
 }
 

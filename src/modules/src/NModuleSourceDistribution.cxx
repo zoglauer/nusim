@@ -126,6 +126,9 @@ void NModuleSourceDistribution::DetermineNext()
   m_NextComponent = 0;
   m_Time = numeric_limits<double>::max();
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    if (m_Sources[s]->GetNextEmission().GetSeconds() < 0.0) {
+      cerr<<"Source has negative time: "<<m_Sources[s]->GetName()<<endl;
+    }
     if (m_Sources[s]->GetNextEmission() < m_Time) {
       m_Time = m_Sources[s]->GetNextEmission();
       m_NextComponent = s;
@@ -439,8 +442,11 @@ bool NModuleSourceDistribution::ReadXmlConfiguration(MXmlNode* Node)
     for (unsigned int s = 0; s < SourcesNode->GetNNodes(); ++s) {
       if (SourcesNode->GetNode(s)->GetName() == "Source") {
         NSource* S = new NSource(m_Satellite);;
-        S->ReadXmlConfiguration(SourcesNode->GetNode(s));
-        m_Sources.push_back(S);
+        if (S->ReadXmlConfiguration(SourcesNode->GetNode(s)) == false) {
+          merr<<"Error reading Xml entry for a source "<<S->GetName()<<show;    
+        } else {
+          m_Sources.push_back(S);
+        }
       }
     }
   }
