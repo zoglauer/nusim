@@ -60,7 +60,10 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
 
   //! Determine which emission is next
   void DetermineNext();
-
+  
+  //! Generate an optimized pointing pattern
+  bool GeneratePointingPattern();
+  
   //! Show the options GUI
   virtual void ShowOptionsGUI();
 
@@ -72,8 +75,7 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
 
   // protected methods:
  protected:
-  //! Generate an optimized pointing pattern
-  bool GeneratePointingPattern();
+
 
   // private methods:
  private:

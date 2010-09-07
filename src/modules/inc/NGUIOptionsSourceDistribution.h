@@ -52,6 +52,9 @@ class NGUIOptionsSourceDistribution : public NGUIOptions
   //! Process all button, etc. messages
   virtual bool ProcessMessage(long Message, long Parameter1, long Parameter2);
 
+  //! Handle some keys
+  virtual bool HandleKey(Event_t* Event);
+
   //! The creation part which gets overwritten
   virtual void Create();
 

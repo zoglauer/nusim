@@ -16,12 +16,14 @@
 using namespace std;
 
 // ROOT libs:
+#include <KeySymbols.h>
 #include <TSystem.h>
 #include <TString.h>
 #include <TGLabel.h>
 #include <TFormula.h>
 #include <TGResourcePool.h>
 #include <TGFileDialog.h>
+#include <TGMsgBox.h>
 
 // MEGAlib libs:
 #include "MStreams.h"
@@ -47,6 +49,8 @@ NGUIOptionsSourceDistribution::NGUIOptionsSourceDistribution(NModule* Module)
   : NGUIOptions(Module)
 {
   // standard constructor
+  
+  BindKey(this, gVirtualX->KeysymToKeycode(kKey_P), kAnyModifier);
 }
 
 
@@ -145,6 +149,39 @@ bool NGUIOptionsSourceDistribution::ProcessMessage(long Message, long Parameter1
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NGUIOptionsSourceDistribution::HandleKey(Event_t* Event)
+{
+  // Here we handle all keys...
+
+  char   tmp[10];
+  unsigned int keysym;
+
+  // Test if we have a key release:
+  if (Event->fType != kKeyRelease) return false;
+
+  // First we get the key...
+  gVirtualX->LookupString(Event, tmp, sizeof(tmp), keysym);
+  
+  // ... and than we do what we need to do...
+  
+  // The following keys need an initialized hardware
+  if ((EKeySym) keysym ==  kKey_p || (EKeySym) keysym ==  kKey_P) {
+    int Return = 0;
+    new TGMsgBox(GetParent(), GetParent(), 
+                 "Pointing pattern generator",
+                 "Do you want to generate a standard pointing pattern?",
+                 kMBIconExclamation, kMBYes | kMBNo, &Return);
+    if (Return == kMBYes) {
+      dynamic_cast<NModuleSourceDistribution*>(m_Module)->GeneratePointingPattern();
+    }
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NGUIOptionsSourceDistribution::CreateTab(NSource* Source)
 {
   m_TabFrames.push_back(m_Tab->AddTab(Source->GetName()));
@@ -196,7 +233,7 @@ bool NGUIOptionsSourceDistribution::OnList()
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
-    mgui<<"Unable to opne file: "<<FileName<<show;
+    mgui<<"Unable to open file: "<<FileName<<show;
     return false;
   }
 
