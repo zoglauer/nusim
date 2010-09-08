@@ -89,7 +89,8 @@ NModuleOpticsEngine::~NModuleOpticsEngine()
 bool NModuleOpticsEngine::Initialize()
 {
   // Initialize the module 
-   
+
+  m_FocalLength = 10150.0; //mm   
   m_ShellLength = 227; // mm
   m_Gap	= 2; // mm
   m_SubstrateThickness = .21; // mm
@@ -98,6 +99,7 @@ bool NModuleOpticsEngine::Initialize()
 
   m_NShells = 133;
   m_NGroups = 10; 
+
 
   // Determine the angles (shell range)
   if (LoadAngles() == false) {
@@ -233,8 +235,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     InPos[1] = 0.0;
     InPos[2] = 0.0;
     InPos[3] = 0.0; 
-    MovePhoton(InPos, RTDir, -10150.);
-    mimp<<"Kristin: Here is a magic distance number in your code: Could you please replace it? Thanks, Andreas"<<show;
+    MovePhoton(InPos, RTDir, -m_FocalLength);
   }
   //*************
    
@@ -251,6 +252,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   if (m_UseGhostRays) ++m_ScatteredPhotons;
   else {
     if (Code == 1) ++m_ScatteredPhotons;
+	else Event.SetBlocked(true);
   }
   //cout<<"Passed ray trace"<<endl;
 

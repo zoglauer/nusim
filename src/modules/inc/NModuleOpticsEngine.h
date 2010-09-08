@@ -135,9 +135,11 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
 
   // Special geometry variables
 
+  //! Focal length of the optics
+  float m_FocalLength;
   //! Length of the shells
   float m_ShellLength;
-  //! Gap between ???
+  //! Gap between upper and lower mirror sections
   float m_Gap;  
   //! The substrate thickness
   float m_SubstrateThickness;
