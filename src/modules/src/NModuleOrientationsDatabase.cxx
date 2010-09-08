@@ -192,7 +192,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedMetrologyDB(TString FileName)
   }
       
   in.close();
-
+  
   return true;
 }
 
@@ -223,6 +223,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
   
   // Read the data
   int LineCounter = 0;
+  bool Found = false;
   while (!in.eof()) {
     Line.ReadLine(in);
     
@@ -236,10 +237,16 @@ bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
         return false;            
       }
       m_PerturbedMetrologyUncertainties.push_back(M);
+      Found = true;
     }
   } 
   in.close();
 
+  if (Found == false) {
+    mgui<<"No entries found in your perturbed metrology data base"<<show;
+    return false;
+  }
+  
   return true;
 }
 
@@ -307,6 +314,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
   Line.ReadLine(in); // column title 2
   
   // Read the data
+  bool Found = false;
   while (!in.eof()) {
     Line.ReadLine(in);
     
@@ -320,9 +328,15 @@ bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
         return false;            
       }
       m_PerturbedOpticsUncertainties.push_back(O);
+      Found = true;
     }
   } 
   in.close();
+
+  if (Found == false) {
+    mgui<<"No entries found in your perturbed optics data base"<<show;
+    return false;
+  }
 
   return true;
 }
@@ -401,6 +415,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
   
   // Read the data
   TString Positions, Rotations;
+  bool Found = false;
   while (!in.eof()) {
     Line.ReadLine(in);
     
@@ -427,10 +442,16 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
           return false;            
         }
         m_PerturbedAlignments.push_back(O);
+        Found = true;
       }
     }
   } 
   in.close();
+
+  if (Found == false) {
+    mgui<<"No entries found in your perturbed alignments data base"<<show;
+    return false;
+  }
 
   return true;
 }

@@ -58,6 +58,22 @@ NPointingJitterDBEntry::~NPointingJitterDBEntry()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+const NPointingJitterDBEntry& NPointingJitterDBEntry::operator=(const NPointingJitterDBEntry& P)
+{
+  //! Assignment operator
+
+  m_Empty = P.m_Empty;
+
+  m_Time = P.m_Time;
+
+  m_Quaternion = P.m_Quaternion;
+
+  return (*this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NPointingJitterDBEntry::Clear()
 {
   //! Resets all data to default values

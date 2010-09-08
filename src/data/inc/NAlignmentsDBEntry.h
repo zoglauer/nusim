@@ -39,8 +39,13 @@ class NAlignmentsDBEntry
  public:
   //! Default constructor
   NAlignmentsDBEntry();
+  //! Copy constructor
+  NAlignmentsDBEntry(const NAlignmentsDBEntry& AlignmentsDBEntry) { (*this) = AlignmentsDBEntry; }
   //! Default destructor
   virtual ~NAlignmentsDBEntry();
+
+  //! Assignment operator
+  const NAlignmentsDBEntry& operator=(const NAlignmentsDBEntry& AlignmentsDBEntry);
 
   //! Resets all data to default values
   virtual void Clear();

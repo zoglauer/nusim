@@ -58,6 +58,58 @@ NAlignmentsDBEntry::~NAlignmentsDBEntry()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+const NAlignmentsDBEntry& NAlignmentsDBEntry::operator=(const NAlignmentsDBEntry& A)
+{
+  //! Assignment operator
+
+  m_Empty = A.m_Empty;
+
+  m_Time = A.m_Time;
+
+  m_OpticalBench = A.m_OpticalBench;
+
+  m_SpaceCraftRelInertial = A.m_SpaceCraftRelInertial;
+
+  m_FocalPlaneRelSC = A.m_FocalPlaneRelSC;
+
+  m_Optics1RelOB = A.m_Optics1RelOB;
+  m_Optics2RelOB = A.m_Optics2RelOB;
+
+  m_Aperture1 = A.m_Aperture1;
+  m_Aperture2 = A.m_Aperture2;
+
+  m_MetrologyLaser1RelOB = A.m_MetrologyLaser1RelOB;
+  m_MetrologyDetector1 = A.m_MetrologyDetector1;
+
+  m_MetrologyLaser2RelOB = A.m_MetrologyLaser2RelOB;
+  m_MetrologyDetector2 = A.m_MetrologyDetector2;
+
+  m_MetrologyLaser3RelOB = A.m_MetrologyLaser3RelOB;
+  m_MetrologyDetector3 = A.m_MetrologyDetector3;
+
+  m_StarTracker4RelOB = A.m_StarTracker4RelOB;
+
+  m_FocalPlaneModule1 = A.m_FocalPlaneModule1;
+  m_FocalPlaneModule2 = A.m_FocalPlaneModule2;
+
+  m_FocalPlaneModule1Detector1RelFocalPlaneModule1 = A.m_FocalPlaneModule1Detector1RelFocalPlaneModule1;
+  m_FocalPlaneModule1Detector2RelFocalPlaneModule1 = A.m_FocalPlaneModule1Detector2RelFocalPlaneModule1;
+  m_FocalPlaneModule1Detector3RelFocalPlaneModule1 = A.m_FocalPlaneModule1Detector3RelFocalPlaneModule1;
+  m_FocalPlaneModule1Detector4RelFocalPlaneModule1 = A.m_FocalPlaneModule1Detector4RelFocalPlaneModule1;
+
+  m_FocalPlaneModule2Detector1RelFocalPlaneModule2 = A.m_FocalPlaneModule2Detector1RelFocalPlaneModule2;
+  m_FocalPlaneModule2Detector2RelFocalPlaneModule2 = A.m_FocalPlaneModule2Detector2RelFocalPlaneModule2;
+  m_FocalPlaneModule2Detector3RelFocalPlaneModule2 = A.m_FocalPlaneModule2Detector3RelFocalPlaneModule2;
+
+  m_FocalPlaneModule2Detector4RelFocalPlaneModule2 = A.m_FocalPlaneModule2Detector4RelFocalPlaneModule2;
+
+  return (*this);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NAlignmentsDBEntry::Clear()
 {
   //! Resets all data to default values

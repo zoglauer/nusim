@@ -36,8 +36,13 @@ class NPointingJitterDBEntry
  public:
   //! Standard constructor
   NPointingJitterDBEntry();
+  //! Copy constructor
+  NPointingJitterDBEntry(const NPointingJitterDBEntry& PointingJitterDBEntry) { (*this) = PointingJitterDBEntry; }
   //! Default destructor
   virtual ~NPointingJitterDBEntry();
+
+  //! Assignment operator
+  const NPointingJitterDBEntry& operator=(const NPointingJitterDBEntry& PointingJitterDBEntry);
 
   //! Resets all data to default values
   virtual void Clear();

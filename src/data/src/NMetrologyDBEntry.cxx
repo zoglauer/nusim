@@ -58,6 +58,31 @@ NMetrologyDBEntry::~NMetrologyDBEntry()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+const NMetrologyDBEntry& NMetrologyDBEntry::operator=(const NMetrologyDBEntry& M)
+{
+  //! Assignment operator
+
+  m_Empty = M.m_Empty;
+
+  m_Time = M.m_Time;
+
+  m_PointingErrorStarTracker4 = M.m_PointingErrorStarTracker4;
+  
+  m_OriginMetrologyLaser1RelML1 = M.m_OriginMetrologyLaser1RelML1;
+  m_PointingMetrologyLaser1RelML1 = M.m_PointingMetrologyLaser1RelML1;
+  m_OriginMetrologyLaser2RelML2 = M.m_OriginMetrologyLaser2RelML2;
+  m_PointingMetrologyLaser2RelML2 = M.m_PointingMetrologyLaser2RelML2;
+
+  m_CentroidingErrorMetrologyDetector1 = M.m_CentroidingErrorMetrologyDetector1;
+  m_CentroidingErrorMetrologyDetector2 = M.m_CentroidingErrorMetrologyDetector2;
+  
+  return (*this);
+}
+  
+  
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NMetrologyDBEntry::Clear()
 {
   //! Resets all data to default values

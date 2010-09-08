@@ -36,8 +36,13 @@ class NMetrologyDBEntry
  public:
   //! Standard constructor
   NMetrologyDBEntry();
+  //! Copy constructor
+  NMetrologyDBEntry(const NMetrologyDBEntry& MetrologyDBEntry) { (*this) = MetrologyDBEntry; }
   //! Default destructor
   virtual ~NMetrologyDBEntry();
+
+  //! Assignment operator
+  const NMetrologyDBEntry& operator=(const NMetrologyDBEntry& MetrologyDBEntry);
 
   //! Resets all data to default values
   virtual void Clear();
