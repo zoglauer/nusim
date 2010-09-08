@@ -108,7 +108,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   NQuaternion Qobin = Rstin*Robst;
   NOrientation Rfbob = AspectSolve(md1, md2);
     
-  MVector testphoton(1,0,0); 
+  //MVector testphoton(1,0,0); 
   //cout<<"Q testphoton="<<Rstin.Rotation(testphoton)<<endl;
   //cout<<Robst.Rotation(testphoton)<<endl;
   //cout<<"Robst"<<Robst<<endl;
@@ -153,7 +153,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
     //cout<<module<<pFin<<OAin<<endl;
   //cout<<module<<pF<<OA<<endl;
-     // cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
+     cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
     //cout<<"RA "<<atan(OA[1]/OA[0])<<" DEC "<<asin(OA[2])<<endl;
 
   // Point implementation
@@ -202,9 +202,11 @@ NOrientation NObservatoryReconstructor::AspectSolve(const MVector& d1f, const MV
   //cout<<"MLob2"<<MLob2.ToString()<<endl;
   
   NPhoton Laser1, Laser2;
-  Laser1.SetPosition(MVector(0.0, 0.0, 0.0)); // place holders - this should not be hardcoded
+  //Laser1.SetPosition(MVector(0.0, 0.0, 0.0)); // place holders - this should not be hardcoded
+  Laser1.SetPosition(m_CalibratedOriginMetrologyLaserRelML1); 
   Laser1.SetDirection(m_CalibratedPointingMetrologyLaserRelML1);   
-  Laser2.SetPosition(MVector(0.0, 0.0, 0.0)); // place holders - this should not be hardcoded
+  //Laser2.SetPosition(MVector(0.0, 0.0, 0.0)); // place holders - this should not be hardcoded
+  Laser2.SetPosition(m_CalibratedOriginMetrologyLaserRelML2);
   Laser2.SetDirection(m_CalibratedPointingMetrologyLaserRelML2);
 
   MLob1.TransformOut(Laser1);// Laser coordinates are now in OpticalBench units

@@ -94,6 +94,12 @@ class NObservatoryReconstructor: public NModuleInterfacePhotonPropagation
     m_CalibratedPointingMetrologyLaserRelML2 = ML2;
   }
 
+  //! Set the calibrated origin of metrology laser 1 and 2 relative to the metrology laser reference system
+  void SetCalibratedOriginMetrologyLaserRelML(const MVector& ML1, const MVector& ML2) {
+    m_CalibratedOriginMetrologyLaserRelML1 = ML1;
+    m_CalibratedOriginMetrologyLaserRelML2 = ML2;
+  }
+
   //! Set the calibrated orientation of metrology detector 1 and 2 relative to the master frame (focal plane)
   void SetCalibratedOrientationMetrologyDetectors(const NOrientation& MD1, const NOrientation& MD2) {
     m_CalibratedOrientationMetrologyDetector1 = MD1;
@@ -178,6 +184,11 @@ class NObservatoryReconstructor: public NModuleInterfacePhotonPropagation
   MVector m_CalibratedPointingMetrologyLaserRelML1;
   //! The calibrated pointing of metrology laser 2 relative to the metrology laser reference system
   MVector m_CalibratedPointingMetrologyLaserRelML2;
+
+  //! The calibrated origin of metrology laser 1 relative to the metrology laser reference system
+  MVector m_CalibratedOriginMetrologyLaserRelML1;
+  //! The calibrated origin of metrology laser 2 relative to the metrology laser reference system
+  MVector m_CalibratedOriginMetrologyLaserRelML2;
 
   //! The calibrated orientation of the metrology detector 1 relative to the master frame (focal plane)
   NOrientation m_CalibratedOrientationMetrologyDetector1;

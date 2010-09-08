@@ -125,8 +125,8 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   MVector MDplaneNormal(0.0, 0.0, 1.0);
     
   NMetrologyDataSet Set1;
-  Laser.SetPosition(MVector(0.0, 0.0, 0.0)); // need to get right displacement (this will have thermal motion)
-  Laser.SetDirection(MVector(0.0, 0.0, -1.0)); // always points down -z (this will have thermal motion)
+  Laser.SetPosition(m_Satellite.GetOriginMetrologyLaserRelML(m_Time,1));
+  Laser.SetDirection(m_Satellite.GetPointingMetrologyLaserRelML(m_Time,1)); 
   OML1.TransformOut(Laser); // Transforms into global system
   //cout<<"1 "<<Laser.GetPosition()<<Laser.GetDirection()<<endl;
   OMD1.TransformIn(Laser); // Transforms from global to MD system
@@ -143,8 +143,8 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   Set1.SetCalibratedLaserHit(P1); 
   
   NMetrologyDataSet Set2;
-  Laser.SetPosition(MVector(0.0, 0.0, 0.0));
-  Laser.SetDirection(MVector(0.0, 0.0, -1.0));
+  Laser.SetPosition(m_Satellite.GetOriginMetrologyLaserRelML(m_Time,2));
+  Laser.SetDirection(m_Satellite.GetPointingMetrologyLaserRelML(m_Time,2));
   OML2.TransformOut(Laser);
   OMD2.TransformIn(Laser);
   PropagateToPlane(Laser, MDplane, MDplaneNormal);

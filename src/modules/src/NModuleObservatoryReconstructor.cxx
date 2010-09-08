@@ -100,6 +100,7 @@ bool NModuleObservatoryReconstructor::Initialize()
   m_ObservatoryReconstructor.SetCalibratedOrientationFocalPlaneModules(m_Satellite.GetCalibratedOrientationFocalPlaneModule(1), m_Satellite.GetCalibratedOrientationFocalPlaneModule(2));
   m_ObservatoryReconstructor.SetCalibratedBoreSightRelOM(m_Satellite.GetCalibratedBoreSightRelOM(1), m_Satellite.GetCalibratedBoreSightRelOM(2));
   m_ObservatoryReconstructor.SetCalibratedPointingMetrologyLaserRelML(m_Satellite.GetCalibratedPointingMetrologyLaserRelML(1), m_Satellite.GetCalibratedPointingMetrologyLaserRelML(2));
+  m_ObservatoryReconstructor.SetCalibratedOriginMetrologyLaserRelML(m_Satellite.GetCalibratedOriginMetrologyLaserRelML(1), m_Satellite.GetCalibratedOriginMetrologyLaserRelML(2));
 
   return true;
 }
