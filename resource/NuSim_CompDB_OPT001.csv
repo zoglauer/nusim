@@ -1,0 +1,8 @@
+version,001,,,,,,
+type,Component,,,,,,
+description,Database for applied optics system errors,,,,,,
+step size,,OPTIC 0,,,OPTIC 1,,
+step,,boresight,,,boresight,,
+0,,0,0,-1,0,0,-1
+1,,0,0,-1,0,0,-1
+2,,0,0,-1,0,0,-1
