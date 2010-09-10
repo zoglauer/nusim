@@ -1,0 +1,9 @@
+version,001,,,,,,
+type,Component,,,,,,
+description," These are the ideal values as measured on-ground, for those error sources (alignments) which can be measured",,,,,,
+step size,,OPTIC 0,,,OPTIC 1,,
+step,,boresight,,,boresight,,
+0,,0,0,-1,0,0,-1
+,,,,,,,
+,,,,,,,
+,,,,,,,
