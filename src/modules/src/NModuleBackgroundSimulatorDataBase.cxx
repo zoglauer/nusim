@@ -368,16 +368,34 @@ void NModuleBackgroundSimulatorDataBase::Mixer()
   double ScalerX = m_Satellite.GetDetectorHalfDimension().X()/HalfDetectorSizeSimulation;
   double ScalerY = m_Satellite.GetDetectorHalfDimension().Y()/HalfDetectorSizeSimulation;
 
+  // Switch detectors:
+  int DetectorOffset = gRandom->Integer(4);
+  
+  // Mix: Rotate in detector
+  int XChanger = 1;
+  int YChanger = 1; 
+  if (gRandom->Rndm() > 0.5) {
+    XChanger = +1;
+  } else {
+    XChanger = -1;
+  }
+  if (gRandom->Rndm() > 0.5) {
+    YChanger = +1;
+  } else {
+    YChanger = -1;
+  }
+  
   MVector Pos;
   for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
     if (m_Interactions[i].IsDetector() == true) {
+      m_Interactions[i].SetDetector(((m_Interactions[i].GetDetector()-1 + DetectorOffset) % 4) + 1);
       int Counter = 10;
       do {
         Pos = m_Interactions[i].GetPosition();
-        Pos.SetX(ScalerX * (Pos.X() + 2.0*(gRandom->Rndm()-0.5)*HalfPixelSizeSimulation));
-        Pos.SetY(ScalerY * (Pos.Y() + 2.0*(gRandom->Rndm()-0.5)*HalfPixelSizeSimulation));
-      } while ((fabs(Pos.X() >= m_Satellite.GetDetectorHalfDimension().X()) || 
-                fabs(Pos.Y() >= m_Satellite.GetDetectorHalfDimension().Y())) &&
+        Pos.SetX(XChanger*(ScalerX * (Pos.X() + 2.0*(gRandom->Rndm()-0.5)*HalfPixelSizeSimulation)));
+        Pos.SetY(YChanger*(ScalerY * (Pos.Y() + 2.0*(gRandom->Rndm()-0.5)*HalfPixelSizeSimulation)));
+      } while ((fabs(Pos.X() + 0.0000001 >= m_Satellite.GetDetectorHalfDimension().X()) || 
+                fabs(Pos.Y() + 0.0000001 >= m_Satellite.GetDetectorHalfDimension().Y())) &&
                --Counter > 0); // This can happen due to not enough digits in the sim data
 
       if (Counter == 0) {
@@ -387,6 +405,38 @@ void NModuleBackgroundSimulatorDataBase::Mixer()
       m_Interactions[i].SetPosition(Pos);
     }
   }
+  
+  /*
+  // Mix: Randomly switch detectors:
+  for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
+    if (m_Interactions[i].IsDetector() == true) {
+      m_Interactions[i].SetDetector(gRandom->Integer(4) + 1);
+    }
+  }
+  
+  // Mix: Rotate in detector
+  int XChanger = 1;
+  int YChanger = 1; 
+  if (gRandom->Rndm() > 0.5) {
+    XChanger = +1;
+  } else {
+    XChanger = -1;
+  }
+  if (gRandom->Rndm() > 0.5) {
+    YChanger = +1;
+  } else {
+    YChanger = -1;
+  }
+  
+  for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
+    if (m_Interactions[i].IsDetector() == true) {
+      Pos = m_Interactions[i].GetPosition();
+      Pos[0] *= XChanger;
+      Pos[1] *= YChanger;
+      m_Interactions[i].SetPosition(Pos);
+    }
+  }
+  */
 }
 
 
