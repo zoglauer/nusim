@@ -405,38 +405,7 @@ void NModuleBackgroundSimulatorDataBase::Mixer()
       m_Interactions[i].SetPosition(Pos);
     }
   }
-  
-  /*
-  // Mix: Randomly switch detectors:
-  for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
-    if (m_Interactions[i].IsDetector() == true) {
-      m_Interactions[i].SetDetector(gRandom->Integer(4) + 1);
-    }
-  }
-  
-  // Mix: Rotate in detector
-  int XChanger = 1;
-  int YChanger = 1; 
-  if (gRandom->Rndm() > 0.5) {
-    XChanger = +1;
-  } else {
-    XChanger = -1;
-  }
-  if (gRandom->Rndm() > 0.5) {
-    YChanger = +1;
-  } else {
-    YChanger = -1;
-  }
-  
-  for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
-    if (m_Interactions[i].IsDetector() == true) {
-      Pos = m_Interactions[i].GetPosition();
-      Pos[0] *= XChanger;
-      Pos[1] *= YChanger;
-      m_Interactions[i].SetPosition(Pos);
-    }
-  }
-  */
+
 }
 
 
