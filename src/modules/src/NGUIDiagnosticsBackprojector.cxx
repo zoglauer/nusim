@@ -38,7 +38,7 @@ ClassImp(NGUIDiagnosticsBackprojector)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
+NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : NGUIDiagnostics()
 {
   // standard constructor
 
@@ -52,11 +52,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector() : NGUIDiagnostics()
 
   m_MinDec = -10;
   m_MaxDec = 10;
-  m_BinSizeDec = 0.4/60.0;
+  m_BinSizeDec = PixelSize/60;
   
   m_MinRa = -10;
   m_MaxRa = 10;
-  m_BinSizeRa = 0.4/60.0;
+  m_BinSizeRa = PixelSize/60;
   
   // Add all histograms and canvases below
   m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 
@@ -175,6 +175,15 @@ void NGUIDiagnosticsBackprojector::SetDetectorParameters(const MVector& Center, 
 void NGUIDiagnosticsBackprojector::AddBackprojection(double Ra, double Dec)
 {
   //! Add data to the backprojection histogram
+
+  // If this is the first event, and the initial pointing is more than 0.5 deg off
+  // then we use the parameters of the first hit as initial pointing
+  if (m_Ra.size() == 0) {
+    if (fabs(m_InitialDec - Dec) > 0.5*60 || (cos(Dec*c_Rad) != 0 && fabs(m_InitialRa - Ra)/cos(Dec*c_Rad) > 0.5*60)) {
+      SetInitialPointing(Ra, Dec);
+    }
+  }
+
 
   Ra /= 60;
   Dec /= 60;

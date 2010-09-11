@@ -24,6 +24,7 @@ using namespace std;
 #include "NGlobal.h"
 #include "NModule.h"
 #include "NModuleInterfaceEvent.h"
+#include "NModuleInterfaceEventSaverAscii.h"
 #include "NModuleInterfaceExit.h"
 #include "NModuleInterfaceIO.h"
 
@@ -33,7 +34,8 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NModuleEventSaver : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceExit, public NModuleInterfaceIO
+class NModuleEventSaver : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceExit, 
+  public NModuleInterfaceIO, public NModuleInterfaceEventSaverAscii
 {
   // public interface:
  public:
@@ -74,8 +76,7 @@ class NModuleEventSaver : public NModule, public NModuleInterfaceEvent, public N
 
   // private members:
  private:
-  //! The output stream
-  ofstream m_Out;
+
 
 
 

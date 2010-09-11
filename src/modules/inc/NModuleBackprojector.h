@@ -38,6 +38,11 @@ class NModuleBackprojector : public NModule, public NModuleInterfaceEvent
   //! Default destructor
   virtual ~NModuleBackprojector();
 
+  //! Return the image pixel size
+  double GetPixelSize() const { return m_PixelSize; }
+  //! Set the image pixel size
+  void SetPixelSize(const double PixelSize) { m_PixelSize = PixelSize; } 
+  
   //! Initialize the module
   virtual bool Initialize();
 
@@ -70,7 +75,8 @@ class NModuleBackprojector : public NModule, public NModuleInterfaceEvent
 
   // private members:
  private:
-
+  double m_PixelSize;
+   
 
 #ifdef ___CINT___
  public:

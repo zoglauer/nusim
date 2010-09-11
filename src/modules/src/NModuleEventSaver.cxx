@@ -40,7 +40,7 @@ ClassImp(NModuleEventSaver)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-  NModuleEventSaver::NModuleEventSaver(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceExit(), NModuleInterfaceIO()
+NModuleEventSaver::NModuleEventSaver(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceExit(), NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii()
 {
   // Construct an instance of NModuleEventSaver
 
@@ -94,24 +94,7 @@ bool NModuleEventSaver::Initialize()
 {
   // Initialize the module 
 
-  MFile::ExpandFileName(m_FileName);
-  m_Out.open(m_FileName);
-  if (m_Out.is_open() == false) {
-    mgui<<"Unable to open file: "<<m_FileName<<error;
-    return false;
-  }
-
-  m_Out<<"# NuSIM event file"<<endl;
-  m_Out<<endl;
-  m_Out<<"# NuSTAR revision:"<<endl;
-  m_Out<<"RV "<<g_SVNRevision<<endl;
-  m_Out<<endl;
-  m_Out<<"# Stored after the following module type: "<<endl;
-  m_Out<<"CM "<<m_ChosenType<<endl;
-  m_Out<<endl;
-  m_Out<<"# Start data..."<<endl;
-
-  return true;
+  return OpenAsciiFile(m_FileName, m_ChosenType);
 }
 
 
@@ -122,9 +105,7 @@ bool NModuleEventSaver::AnalyzeEvent(NEvent& Event)
 {
   // Main data analysis routine, which updates the event to a new level 
 
-  Event.Stream(m_Out);
-
-  return true;
+  return SaveEventAscii(Event);
 }
 
 
@@ -135,12 +116,7 @@ bool NModuleEventSaver::Finalize()
 {
   // Initialize the module 
 
-  if (m_Out.is_open() == true) {
-    m_Out<<"EN"<<endl;
-    m_Out.close();
-  }
-
-  return true;
+  return CloseAsciiFile();
 }
 
 

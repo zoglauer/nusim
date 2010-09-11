@@ -155,20 +155,24 @@ bool NObservatoryData::Parse(TString& Line, bool Compact)
     return true;
   }
 
-  double xO, yO, zO, xE, yE, zE, xF, yF, zF, rF, sF, tF, uF, xI, yI, zI, rI, sI, tI, uI;
+  double t, xO, yO, zO, xE, yE, zE, xF, yF, zF, rF, sF, tF, uF, xI, yI, zI, rI, sI, tI, uI;
   if (Compact == false) {
     if (sscanf(Line.Data(), 
-               "OD %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-               &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 20) {
+               "OD %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 21) {
+      merr<<"Unable to parse observatory data"<<show;
       return false;
     }
   } else {
     if (sscanf(Line.Data(), 
-               "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-               &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 20) {
+               "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 21) {
+      merr<<"Unable to parse observatory data"<<show;
       return false;
     }    
   }
+  
+  m_Time.SetSeconds(t);
   m_DirectionOpticalAxisInIS.SetXYZ(xO, yO, zO);
   m_DirectionEventInIS.SetXYZ(xE, yE, zE);
   m_OrientationFocalPlaneToOB.SetTranslation(xF, yF, zF);

@@ -141,7 +141,7 @@ void NEvent::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NEvent::Stream(ofstream& S)
+bool NEvent::Stream(ofstream& S, int WhatToStream)
 {
   //! Stream the content to an ASCII file 
 
@@ -149,22 +149,24 @@ bool NEvent::Stream(ofstream& S)
   S<<"TI "<<m_Time.GetSeconds()<<endl;  // <-- TI MUST be the second one, since the supervisor must know the next evevnt time!
   S<<"ID "<<m_ID<<endl;
   S<<"TE "<<m_Telescope<<endl;
-  S<<"RD "<<m_Ra<<" "<<m_Dec<<endl;
-  if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S);
-  if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, "OP");
-  if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, "CP");
-  for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
-    m_Interactions[i].Stream(S);
-  }
-  m_PHEData.Stream(S);
-  for (unsigned int i = 0; i < m_PixelHits.size(); ++i) {
-    m_PixelHits[i].Stream(S);
-  }
-  for (unsigned int i = 0; i < m_ShieldHits.size(); ++i) {
-    m_ShieldHits[i].Stream(S);
-  }
-  for (unsigned int i = 0; i < m_NinePixelHits.size(); ++i) {
-    m_NinePixelHits[i].Stream(S);
+  if (WhatToStream < 2) {
+    S<<"RD "<<m_Ra<<" "<<m_Dec<<endl;
+    if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S);
+    if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, "OP");
+    if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, "CP");
+    for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
+      m_Interactions[i].Stream(S);
+    }
+    m_PHEData.Stream(S);
+    for (unsigned int i = 0; i < m_PixelHits.size(); ++i) {
+      m_PixelHits[i].Stream(S);
+    }
+    for (unsigned int i = 0; i < m_ShieldHits.size(); ++i) {
+      m_ShieldHits[i].Stream(S);
+    }
+    for (unsigned int i = 0; i < m_NinePixelHits.size(); ++i) {
+      m_NinePixelHits[i].Stream(S);
+    }
   }
   for (unsigned int i = 0; i < m_Hits.size(); ++i) {
     m_Hits[i].Stream(S);

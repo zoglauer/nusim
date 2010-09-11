@@ -131,18 +131,32 @@ bool NHit::Parse(TString& Line)
     return true;
   }
 
+  /*
   double xP, yP, zP, xD, yD, zD;
   char Text[1024];
   if (sscanf(Line.Data(), "HT %d %d %lf %lf %lf %lf %lf %lf %lf %lf %s", 
              &m_Telescope, &m_Detector,
              &xP, &yP, &zP, &xD, &yD, &zD, 
              &m_Energy, &m_EnergyResolution, Text) != 11) {
+    merr<<"Unable to parse hit"<<show;
     return false;
   }
   m_Position.SetXYZ(xP, yP, zP);
   m_PositionResolution.SetXYZ(xD, yD, zD);
-
-  TString ObsString = Text;
+  */
+  char* p;
+  m_Telescope = strtol(Line.Data()+3, &p, 10);
+  m_Detector = strtol(p, &p, 10);
+  m_Position[0] = strtod(p, &p);
+  m_Position[1] = strtod(p, &p);
+  m_Position[2] = strtod(p, &p);
+  m_PositionResolution[0] = strtod(p, &p);
+  m_PositionResolution[1] = strtod(p, &p);
+  m_PositionResolution[2] = strtod(p, &p);
+  m_Energy = strtod(p, &p);
+  m_EnergyResolution = strtod(p, &p);
+  
+  TString ObsString = p;
   m_ObservatoryData.Parse(ObsString, true);
   
   m_Empty = false;

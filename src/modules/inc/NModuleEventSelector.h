@@ -22,6 +22,9 @@
 #include "NGlobal.h"
 #include "NModule.h"
 #include "NModuleInterfaceEvent.h"
+#include "NModuleInterfaceIO.h"
+#include "NModuleInterfaceEventSaverAscii.h"
+#include "NModuleInterfaceEventSaverLevel2Fits.h"
 
 // Forward declarations:
 
@@ -29,7 +32,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NModuleEventSelector : public NModule, public NModuleInterfaceEvent
+class NModuleEventSelector : public NModule, public NModuleInterfaceEvent, 
+  public NModuleInterfaceIO, public NModuleInterfaceEventSaverAscii, public NModuleInterfaceEventSaverLevel2Fits
 {
   // public interface:
  public:
@@ -52,6 +56,9 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent
 
   //! Main data analysis routine, which updates the event to a new level 
   virtual bool AnalyzeEvent(NEvent& Event);
+  
+  //! Finalize the module
+  virtual bool Finalize();
 
   //! Show the options GUI
   virtual void ShowOptionsGUI();
@@ -80,7 +87,8 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent
   double m_EnergyMin;
   //! The maximum energy
   double m_EnergyMax;
-
+  //! True if we should save as fits file
+  bool m_SaveAsFits;
 
 
 #ifdef ___CINT___

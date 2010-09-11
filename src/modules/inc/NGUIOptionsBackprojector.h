@@ -1,5 +1,5 @@
 /*
- * NGUIOptionsEventSelector.h
+ * NGUIOptionsBackprojector.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NGUIOptionsEventSelector__
-#define __NGUIOptionsEventSelector__
+#ifndef __NGUIOptionsBackprojector__
+#define __NGUIOptionsBackprojector__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 
 // MEGAlib libs:
 #include "NGlobal.h"
-#include "MGUIEMinMaxEntry.h"
+#include "MGUIEEntry.h"
 
 // NuSTAR libs
 #include "NModule.h"
@@ -40,14 +40,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NGUIOptionsEventSelector : public NGUIOptions
+class NGUIOptionsBackprojector : public NGUIOptions
 {
   // public Session:
  public:
   //! Default constructor
-  NGUIOptionsEventSelector(NModule* Module);
+  NGUIOptionsBackprojector(NModule* Module);
   //! Default destructor
-  virtual ~NGUIOptionsEventSelector();
+  virtual ~NGUIOptionsBackprojector();
 
   //! Process all button, etc. messages
   virtual bool ProcessMessage(long Message, long Parameter1, long Parameter2);
@@ -69,17 +69,14 @@ class NGUIOptionsEventSelector : public NGUIOptions
 
   // private members:
  private:
-  //! Choose a file to save the data to:
-  MGUIEFileSelector* m_FileName;
-
   //! Choose the energy window
-  MGUIEMinMaxEntry* m_Energies;
+  MGUIEEntry* m_PixelSize;
 
 
 
 #ifdef ___CINT___
  public:
-  ClassDef(NGUIOptionsEventSelector, 1) // basic class for dialog windows
+  ClassDef(NGUIOptionsBackprojector, 1) // basic class for dialog windows
 #endif
 
 };

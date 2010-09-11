@@ -39,7 +39,8 @@ ClassImp(NModuleEventSelector)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent()
+NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), 
+  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(), NModuleInterfaceEventSaverLevel2Fits()
 {
   // Construct an instance of NModuleEventSelector
 
@@ -63,6 +64,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   // and implement all your GUI options
   //m_Diagnostics = new NGUIDiagnosticsEventSelector();
   
+  m_SaveAsFits = false;
   m_EnergyMin = 5;
   m_EnergyMax = 80;
 }
@@ -84,6 +86,19 @@ bool NModuleEventSelector::Initialize()
 {
   // Initialize the module 
 
+  if (m_FileName != "") {
+    if (m_FileName.EndsWith(".fits") == true) {
+      m_SaveAsFits = true;
+    } else {
+      m_SaveAsFits = false;
+    }
+    if (m_SaveAsFits == true) {
+      if (OpenLevel2FitsFile(m_FileName) == false) return false;
+    } else {
+      if (OpenAsciiFile(m_FileName, m_ChosenType) == false) return false;
+    }
+  }
+  
   return true;
 }
 
@@ -94,6 +109,18 @@ bool NModuleEventSelector::Initialize()
 bool NModuleEventSelector::AnalyzeEvent(NEvent& Event) 
 {
   // Main data analysis routine, which updates the event to a new level 
+
+  // The first thing we do is safe the event
+  if (m_SaveAsFits == true) {
+    if (IsLevel2FitsFileOpen() == true) {
+      if (SaveEventLevel2Fits(Event) == false) return false;
+    } 
+  } else {
+    if (IsAsciiFileOpen() == true) {
+      if (SaveEventAscii(Event, 2) == false) return false;
+    }
+  }
+
 
   // Check if multiple hits in same module in CZT are adjacent
   bool PatternRejection = false;
@@ -137,6 +164,27 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NModuleEventSelector::Finalize()
+{
+  // Initialize the module 
+
+  if (m_SaveAsFits == true) {
+    if (IsLevel2FitsFileOpen() == true) {
+      if (CloseLevel2FitsFile() == false) return false;
+    } 
+  } else {
+    if (IsAsciiFileOpen() == true) {
+      if (CloseAsciiFile() == false) return false;
+    }
+  }
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NModuleEventSelector::ShowOptionsGUI()
 {
   //! Show the options GUI --- has to be overwritten!
@@ -161,7 +209,10 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
+  MXmlNode* FileNameNode = Node->GetNode("FileName");
+  if (FileNameNode != 0) {
+    m_FileName = FileNameNode->GetValue();
+  }  MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
   if (EnergyMinNode != 0) {
     m_EnergyMin = EnergyMinNode->GetValueAsDouble();
   }
@@ -182,6 +233,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
+  new MXmlNode(Node, "FileName", m_FileName);
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
 

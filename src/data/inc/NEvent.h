@@ -16,6 +16,7 @@
 
 // Standard libs:
 #include <fstream>
+#include <iostream>
 using namespace std;
 
 // ROOT libs:
@@ -221,7 +222,8 @@ class NEvent
   
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S);
+  //! WhatToStream: 0: All, 1: Level 1 relevant, 2: Level 2 relevant
+  bool Stream(ofstream& S, int WhatToStream = 0);
 
   //! Stream the content from a line of an ASCII file  
   bool Parse(TString& Line);

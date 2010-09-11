@@ -26,7 +26,7 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
-#include "NGUIOptions.h"
+#include "NGUIOptionsBackprojector.h"
 #include "NGUIDiagnosticsBackprojector.h"
 
 
@@ -65,6 +65,9 @@ ClassImp(NModuleBackprojector)
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsBackprojector)
   // and implement all your GUI options
   m_Diagnostics = 0;
+  
+  
+  m_PixelSize = 0.2; // 12 arcsec
 }
 
 
@@ -87,7 +90,7 @@ bool NModuleBackprojector::Initialize()
   // Initialize the module 
 
   delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsBackprojector();
+  m_Diagnostics = new NGUIDiagnosticsBackprojector(m_PixelSize);
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
                                                                                     m_Satellite.GetDetectorHalfDimension(), 
                                                                                     m_Satellite.GetDetectorPixelsX(),
@@ -123,7 +126,7 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
     MVector D = Event.GetHit(i).GetObservatoryData().GetDirectionEventInIS();
     
     //cout<<endl;
-    //cout<<"RA/DEC hit:"<<Event.GetHit(i).GetObservatoryData().GetRA()*180/c_Pi<<":"<<Event.GetHit(i).GetObservatoryData().GetDEC()*180/c_Pi<<endl;
+    //cout<<"RA/DEC hit:"<<Event.GetHit(i).GetObservatoryData().GetRa()/60<<":"<<Event.GetHit(i).GetObservatoryData().GetDec()/60<<endl;
     //cout<<"RA/DEC ini:"<<m_InitialRa/60<<" : "<<m_InitialDec/60<<endl;
     /*
     cout<<"RA/DEC dif:"<<RA<<" : "<<DEC<<endl;
@@ -165,17 +168,7 @@ void NModuleBackprojector::ShowOptionsGUI()
 {
   // Show the options GUI 
 
-  // The default behaviour is to show the base class telling the user 
-  // that there are no options to select.
-  // If you want your own option dialog derive one from NGUIOptions
-  // (probably you might want to use the template) and replace the following line
-
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsBackprojector* Options = new NGUIOptionsBackprojector(this);
-
-  // this stays always the same:
+  NGUIOptionsBackprojector* Options = new NGUIOptionsBackprojector(this);
   Options->Create();
   gClient->WaitForUnmap(Options);
 }
@@ -188,12 +181,10 @@ bool NModuleBackprojector::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode.GetValue();
+  MXmlNode* PixelSizeNode = Node->GetNode("PixelSize");
+  if (PixelSizeNode != 0) {
+    m_PixelSize = PixelSizeNode->GetValueAsDouble();
   }
-  */
 
   return true;
 }
@@ -207,10 +198,7 @@ MXmlNode* NModuleBackprojector::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "PixelSize", m_PixelSize);
 
   return Node;
 }

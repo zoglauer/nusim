@@ -47,7 +47,7 @@ class NGUIDiagnosticsBackprojector : public NGUIDiagnostics
   // public Session:
  public:
   //! Default constructor
-  NGUIDiagnosticsBackprojector();
+  NGUIDiagnosticsBackprojector(double PixelSize);
   //! Default destructor
   virtual ~NGUIDiagnosticsBackprojector();
 

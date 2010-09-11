@@ -205,6 +205,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   Dec = asin(SP[2])*60*c_Deg;
 
   Event.SetOriginalPhotonRaDec(Ra, Dec);
+
   
   // For diagnostisc:
   if (Ra < m_RaMin) m_RaMin = Ra;
