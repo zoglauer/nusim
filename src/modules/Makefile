@@ -28,6 +28,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceEventSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverLevel2Fits.o \
 	$(LB)/NModuleInterfaceStopCriterion.o \
+	$(LB)/NModuleInterfaceDeadTime.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
 	$(LB)/NModuleTemplate.o \
 	$(LB)/NGUIOptionsSource.o \
@@ -50,6 +51,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleBackgroundSimulatorAperture.o \
 	$(LB)/NModuleBackgroundSimulatorShieldOnly.o \
 	$(LB)/NModuleBackgroundSimulatorDataBase.o \
+	$(LB)/NGUIOptionsTriggerEngine.o \
 	$(LB)/NModuleTriggerEngineIdeal.o \
 	$(LB)/NModuleTriggerEnginePHE.o \
 	$(LB)/NModuleTriggerEngineSciSim.o \

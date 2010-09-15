@@ -22,6 +22,7 @@
 #include "NGlobal.h"
 #include "NModule.h"
 #include "NModuleInterfaceEvent.h"
+#include "NModuleInterfaceDeadTime.h"
 
 // Forward declarations:
 
@@ -29,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent
+class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceDeadTime
 {
   // public interface:
  public:
@@ -43,6 +44,9 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent
 
   //! Main data analysis routine, which updates the event to a new level 
   virtual bool AnalyzeEvent(NEvent& Event);
+
+  //! Finalize the module
+  virtual bool Finalize();
 
   //! Show the options GUI
   virtual void ShowOptionsGUI();

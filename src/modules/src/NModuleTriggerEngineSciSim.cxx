@@ -25,7 +25,7 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
-#include "NGUIOptions.h"
+#include "NGUIOptionsTriggerEngine.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ ClassImp(NModuleTriggerEngineSciSim)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent()
+NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceDeadTime()
 {
   // Construct an instance of NModuleTriggerEngineSciSim
 
@@ -85,6 +85,7 @@ bool NModuleTriggerEngineSciSim::Initialize()
   m_HighTrigger = 5000;
   m_TriggerThreshold = 5;
 
+  NModuleInterfaceDeadTime::Initialize();
 
   return true;
 }
@@ -182,8 +183,58 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
 
   if (Event.GetVeto() == false && Event.GetNNinePixelHits() == 0) {
     Event.SetBlocked(true);
+    return true;
   }
+  
+  if (m_ApplyDeadTime == true) {
+    // First check is we are in dead time
+    if (IsLostInDeadTime(Event) == true) {
+      return true;
+    }
 
+    // Raise the dead time
+    SetDeadTimeDetectorHit(Event.GetTime(), Event.GetTelescope());
+  } else {
+    if (Event.GetTelescope() == 1) {
+      m_NEventsNotLostInDeadTime1++;
+    } else if (Event.GetTelescope() == 2) {
+      m_NEventsNotLostInDeadTime2++;      
+    }
+
+  }
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleTriggerEngineSciSim::Finalize()
+{
+  // Finalzie the module
+  
+  cout<<endl;
+  cout<<"Trigger engine (SciSim) summary:"<<endl;
+  cout<<"  Triggers - telesope 1:"<<endl;
+  cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime1<<endl;
+  if (m_ApplyDeadTime == true) {
+    cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime1<<endl;
+    cout<<"     Life time:                  "<<(m_Satellite.GetTimeIdeal() - m_DeadTimeCouter1*m_DetectorDeadTime.GetSeconds())/m_Satellite.GetTimeIdeal().GetSeconds()<<" per second"<<endl;
+    double Input = m_NEventsNotLostInDeadTime1/(1 - m_NEventsNotLostInDeadTime1*m_DetectorDeadTime.GetSeconds()/m_Satellite.GetTimeIdeal().GetSeconds());
+    cout<<"     Input hits as sanity check: "<<Input
+      <<" vs. "<<m_NEventsLostInDeadTime1+m_NEventsNotLostInDeadTime1<<endl;
+  }
+  cout<<"  Triggers - telesope 2:"<<endl;
+  cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime2<<endl;
+  if (m_ApplyDeadTime == true) {
+    cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime2<<endl;
+    cout<<"     Life time:                  "<<(m_Satellite.GetTimeIdeal() - m_DeadTimeCouter2*m_DetectorDeadTime.GetSeconds())/m_Satellite.GetTimeIdeal().GetSeconds()<<" per second"<<endl;
+    double Input = m_NEventsNotLostInDeadTime2/(1 - m_NEventsNotLostInDeadTime2*m_DetectorDeadTime.GetSeconds()/m_Satellite.GetTimeIdeal().GetSeconds());
+    cout<<"     Input hits as sanity check: "<<Input
+      <<" vs. "<<m_NEventsLostInDeadTime2+m_NEventsNotLostInDeadTime2<<endl;
+  }
+  
   return true;
 }
 
@@ -200,12 +251,7 @@ void NModuleTriggerEngineSciSim::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsTemplate* Options = new NGUIOptionsTemplate(this);
-
-  // this stays always the same:
+  NGUIOptionsTriggerEngine* Options = new NGUIOptionsTriggerEngine(this);
   Options->Create();
   gClient->WaitForUnmap(Options);
 }
@@ -218,12 +264,10 @@ bool NModuleTriggerEngineSciSim::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode.GetValue();
+  MXmlNode* ApplyDeadTimeNode = Node->GetNode("ApplyDeadTime");
+  if (ApplyDeadTimeNode != 0) {
+    m_ApplyDeadTime = ApplyDeadTimeNode->GetValueAsBoolean();
   }
-  */
 
   return true;
 }
@@ -238,9 +282,7 @@ MXmlNode* NModuleTriggerEngineSciSim::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "ApplyDeadTime", m_ApplyDeadTime);
 
   return Node;
 }

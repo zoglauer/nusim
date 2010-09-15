@@ -94,8 +94,13 @@ class NEvent
 
   //! Set the blocked flag - event got blocked by the optics, aperture, passive detector material, etc)
   void SetBlocked(bool Blocked = true) { m_Empty = false; m_Blocked = Blocked; }
-  //! Return the veto flag - event got blocked by the optics, aperture, passive detector material, etc)
+  //! Return the blocked flag - event got blocked by the optics, aperture, passive detector material, etc)
   bool GetBlocked() const { return m_Blocked; }
+
+  //! Set the lost in dead time flag 
+  void SetLostInDeadTime(bool LostInDeadTime = true) { m_Empty = false; m_LostInDeadTime = LostInDeadTime; }
+  //! Return the lost in dead time flag 
+  bool GetLostInDeadTime() const { return m_LostInDeadTime; }
 
   //! Return the veto flag
   bool GetVeto() const { return (m_VetoLow == true || m_VetoHigh == true); }
@@ -302,6 +307,9 @@ class NEvent
 
   //! Flag indicating that this event got blocked (e.g. by the optics, the aperture, passive detector material, etc.) 
   bool m_Blocked;
+
+  //! Flag indicating that this event got lost in dead time
+  bool m_LostInDeadTime;
 
   //! Low level veto flag of this event
   bool m_VetoLow;

@@ -19,6 +19,7 @@
 
 // Standard libs:
 #include <algorithm>
+#include <iomanip>
 using namespace std;
 
 // ROOT libs:
@@ -401,6 +402,7 @@ bool NSupervisor::Run()
 
   int EventID = -1;
   int NBlockedEvents = 0;
+  int NLostInDeadTimeEvents = 0;
   int NVetoedEvents = 0;
   int NCutEvents = 0;
   int NPassedEvents = 0;
@@ -566,6 +568,10 @@ bool NSupervisor::Run()
           NBlockedEvents++;
           break;
         }
+        if (Event.GetLostInDeadTime() == true) {
+          NLostInDeadTimeEvents++;
+          break;
+        }
         if (Event.GetVeto() == true) {
           NVetoedEvents++;
           break;
@@ -588,7 +594,7 @@ bool NSupervisor::Run()
         gSystem->ProcessEvents();
         
       }
-      if (Event.GetBlocked() == false && Event.GetVeto() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
+      if (Event.GetBlocked() == false && Event.GetLostInDeadTime() == false && Event.GetVeto() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
         NPassedEvents++;
       }
     }
@@ -674,14 +680,15 @@ bool NSupervisor::Run()
   cout<<endl;
   cout<<"Supervisor summary:"<<endl;
   cout<<endl;
-  cout<<"  CPU Timer:        "<<Timer.GetElapsed()<<" sec"<<endl;
-  cout<<"  Observation time: "<<m_Satellite.GetTimeIdeal().GetSeconds()<<" sec"<<endl;
+  cout<<"  CPU Timer:                  "<<Timer.GetElapsed()<<" sec"<<endl;
+  cout<<"  Observation time:           "<<m_Satellite.GetTimeIdeal().GetSeconds()<<" sec"<<endl;
   cout<<endl;
-  cout<<"  Started events:   "<<EventID+1<<endl;
-  cout<<"  Blocked events:   "<<NBlockedEvents<<endl;
-  cout<<"  Vetoed events:    "<<NVetoedEvents<<"\t"<<NVetoedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Cut events:       "<<NCutEvents<<"\t"<<NCutEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Passed events:    "<<NPassedEvents<<"\t"<<NPassedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Started events:             "<<setw(9)<<EventID+1<<endl;
+  cout<<"  Blocked events:             "<<setw(9)<<NBlockedEvents<<" "<<setw(9)<<NBlockedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Lost in dead time events:   "<<setw(9)<<NLostInDeadTimeEvents<<" "<<setw(9)<<NLostInDeadTimeEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Vetoed events:              "<<setw(9)<<NVetoedEvents<<" "<<setw(9)<<NVetoedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Cut events:                 "<<setw(9)<<NCutEvents<<" "<<setw(9)<<NCutEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Passed events:              "<<setw(9)<<NPassedEvents<<" "<<setw(9)<<NPassedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<endl;
 
   m_Running = false;
