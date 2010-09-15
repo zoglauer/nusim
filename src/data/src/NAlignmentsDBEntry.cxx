@@ -546,6 +546,8 @@ bool NAlignmentsDBEntry::ParseDB(TString Positions, TString Rotations)
   m_MetrologyLaser2RelOB.SetTranslation(T.GetTokenAtAsDouble(50), T.GetTokenAtAsDouble(51), T.GetTokenAtAsDouble(52));
   m_StarTracker4RelOB.SetTranslation(T.GetTokenAtAsDouble(54), T.GetTokenAtAsDouble(55), T.GetTokenAtAsDouble(56));
 
+  //cout<<"OB move hack"<<endl;
+  //m_OpticalBench.SetTranslation(m_OpticalBench.GetTranslation() + MVector(6, -1, 0));
   
   T.Analyze(Rotations, false);
   
