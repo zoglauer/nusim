@@ -301,7 +301,7 @@ bool NModuleOpticsEngine::Finalize()
     EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
   }
-  cout<<"  Effective Area (avg): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
+  cout<<"  Effective Area (average per module): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
   cout<<endl;
   cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
   cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
