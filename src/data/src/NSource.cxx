@@ -808,6 +808,8 @@ bool NSource::UpgradeFlux()
   if (m_CoordinateSystem == c_FarField) {
     double Radius = m_Satellite.GetSurroundingSphereRadius();
     m_Flux *= c_Pi*Radius*Radius;
+    // Since we have two telescopes, we have to multiply the flux by a a factor of 2 if we want to use only one source for two telescopes
+    m_Flux *= 2;
   } else {
 //     if (m_BeamType == c_NearFieldRestrictedPoint) {
 
