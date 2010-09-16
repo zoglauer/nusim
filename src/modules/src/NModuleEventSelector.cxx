@@ -89,7 +89,7 @@ bool NModuleEventSelector::Initialize()
   if (m_FileName != "") {
     if (m_FileName.EndsWith(".fits") == true) {
       m_SaveAsFits = true;
-    } else {
+	} else {
       m_SaveAsFits = false;
     }
     if (m_SaveAsFits == true) {
