@@ -65,7 +65,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 {  
   //! Load and initialize the file
 
-  cout<<"OpenFits"<<endl;
+  // cout<<"OpenFits"<<endl;
 
   MFile::ExpandFileName(FileName);
   
@@ -74,8 +74,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   int Status = 0;
   m_File = 0;
   
-  Reference_Ra = m_Satellite.GetPointing(0).GetRa();
-  Reference_Dec = m_Satellite.GetPointing(0).GetRa();
+  Reference_Ra = m_Satellite.GetPointing(0).GetRa()/60.0;
+  Reference_Dec = m_Satellite.GetPointing(0).GetDec()/60.0;
   Pixsize = 6.;
   
   fits_create_file(&m_File, FileName, &Status);
@@ -146,7 +146,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
 {
   //! Main data analysis routine, which updates the event to a new level 
 
-  cout<<"SaveFits"<<endl;
+  // cout<<"SaveFits"<<endl;
   
   int Status = 0;
   
@@ -184,7 +184,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 {
   //! Close the file    
 
-  cout<<"CloseFits"<<endl;
+  // cout<<"CloseFits"<<endl;
   
   int Status = 0;
    
