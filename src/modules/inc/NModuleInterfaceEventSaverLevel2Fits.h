@@ -28,6 +28,7 @@ using namespace std;
 
 // NuSTAR libs:
 #include "NEvent.h"
+#include "NSatellite.h"
 #include "NModuleInterfaceIO.h"
 #include "NModule.h"
 
@@ -46,7 +47,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   // public interface:
  public:
   //! Default constructor
-  NModuleInterfaceEventSaverLevel2Fits();
+  NModuleInterfaceEventSaverLevel2Fits(NSatellite& Satellite);
   //! Default destructor
   virtual ~NModuleInterfaceEventSaverLevel2Fits();
   
@@ -54,7 +55,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   virtual bool OpenLevel2FitsFile(TString FileName);
   
   //! Return true if the ASCII file is open
-  virtual bool IsLevel2FitsFileOpen() { return 1; }
+  virtual bool IsLevel2FitsFileOpen() { if (m_File != 0) return true; else return false; }
   
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
@@ -76,10 +77,13 @@ class NModuleInterfaceEventSaverLevel2Fits
   // protected members:
  protected:
   //! The output stream
-  fitsfile* File; 
+  fitsfile* m_File; 
 
   // private members:
  private:
+  //! Reference to the satellite module 
+  NSatellite& m_Satellite; 
+   
   long firstelem;
   long firstrow;
   //! fields for fits file. Saving in chunks of 1000 photons

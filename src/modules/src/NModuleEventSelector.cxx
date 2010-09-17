@@ -40,7 +40,7 @@ ClassImp(NModuleEventSelector)
 
 
 NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), 
-  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(), NModuleInterfaceEventSaverLevel2Fits()
+  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(), NModuleInterfaceEventSaverLevel2Fits(Satellite)
 {
   // Construct an instance of NModuleEventSelector
 
@@ -89,9 +89,10 @@ bool NModuleEventSelector::Initialize()
   if (m_FileName != "") {
     if (m_FileName.EndsWith(".fits") == true) {
       m_SaveAsFits = true;
-	} else {
+    } else {
       m_SaveAsFits = false;
     }
+    
     if (m_SaveAsFits == true) {
       if (OpenLevel2FitsFile(m_FileName) == false) return false;
     } else {
