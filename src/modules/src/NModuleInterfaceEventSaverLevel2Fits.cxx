@@ -88,15 +88,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
-  int tfield = 3;
+  int tfield = 4;
   long nrow = 0;
-  char *ttype[] = {"X", "Y", "PHA"};
-  char *tform[] = {"1E","1E","1E"};
-  char *tunit[] = {"pixel","pixel","keV"};
+  char *ttype[] = {"X","Y","PHA","Time"};
+  char *tform[] = {"1E","1E","1E","1E"};
+  char *tunit[] = {"pixel","pixel","keV","seconds"};
   
-  fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, 
-    ttype, tform, tunit, ExtensionName, &Status); 
-  cout<<Status<<endl;
+  fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
     
   //! Write WCS header keywords   
   char deg[10], tctyp1[10], tctyp2[10],radesys[10];
@@ -152,22 +150,28 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
   
-    double Ra = (Event.GetHit(i).GetObservatoryData().GetRa()-Reference_Ra*60.)*60./Pixsize;
-    double Dec = (Event.GetHit(i).GetObservatoryData().GetDec()-Reference_Dec*60.)*60/Pixsize;
-    double Energy = Event.GetHit(i).GetEnergy();
+
+   	double Ra = (Event.GetHit(i).GetObservatoryData().GetRa()-Reference_Ra*60.)*60./Pixsize;
+	double Dec = (Event.GetHit(i).GetObservatoryData().GetDec()-Reference_Dec*60.)*60/Pixsize;
+	double Energy = Event.GetHit(i).GetEnergy();
+    NTime Time = Event.GetTime();
 
     c1[counter]= Ra;
     c2[counter]= Dec;
     c3[counter]= Energy;
+    c4[counter]= float(Time.GetSeconds());
+    //! Save a chunk of 1000 events at a time
 
-    //! Save 1000 events at a time
     if (counter == 999) {
+
       fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, 1000, c1, &Status);
       fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, 1000, c2, &Status);
       fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, 1000, c3, &Status);
-      firstrow = firstrow + 999;
-      
-      counter = 0;
+	  fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, 1000, c4, &Status);
+
+	  firstrow = firstrow + 1000;
+
+	  counter = 0;
     } else {
       ++counter;
     }
@@ -190,20 +194,20 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
    
   //! save the remaining data before closing 
   if (counter != 0) {
-    float rc1[counter];
-    float rc2[counter]; 
-    float rc3[counter];
-    for (int i = 0; i < counter; ++i) {
-      rc1[i] = c1[i];
-      rc2[i] = c2[i];
-      rc3[i] = c3[i];
-    }
-    fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1,
-                   &Status);
-    fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, counter, rc2,
-                   &Status);
-    fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, counter, rc3,
-                   &Status);   
+	float rc1[counter];
+	float rc2[counter];
+	float rc3[counter];
+	float rc4[counter];
+	for (int i=0; i < counter; i++) {
+	  rc1[i] = c1[i];
+	  rc2[i] = c2[i];
+	  rc3[i] = c3[i];
+	  rc4[i] = c4[i];
+	}
+	fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1, &Status);
+    fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, counter, rc2, &Status);
+    fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, counter, rc3, &Status);
+	fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, counter, rc4, &Status);
   }
    
   fits_close_file(m_File, &Status);

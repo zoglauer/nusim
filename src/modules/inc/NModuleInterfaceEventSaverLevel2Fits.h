@@ -90,6 +90,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   float c1[1000]; 
   float c2[1000];
   float c3[1000];
+  float c4[1000];
   int counter;
   float Reference_Ra;
   float Reference_Dec;
