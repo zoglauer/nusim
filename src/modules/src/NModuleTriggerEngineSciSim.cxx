@@ -186,6 +186,11 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     return true;
   }
   
+  if (Event.GetVeto() == true) {
+   // No detector read-out triggered -- no detector dead time 
+    return true;
+  }
+  
   if (m_ApplyDeadTime == true) {
     // First check is we are in dead time
     if (IsLostInDeadTime(Event) == true) {
