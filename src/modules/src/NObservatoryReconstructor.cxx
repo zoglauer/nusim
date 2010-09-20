@@ -16,11 +16,11 @@
 
 // Include the header:
 #include "NObservatoryReconstructor.h"
-
 // Standard libs:
 using namespace std;
 
 // NuSTAR libs:
+#include "math.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,17 +152,21 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
     //cout<<module<<OA<<event<<endl; 
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
     //cout<<module<<pFin<<OAin<<endl;
-  //cout<<module<<pF<<OA<<endl;
-     //cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
-    //cout<<"RA "<<atan(OA[1]/OA[0])<<" DEC "<<asin(OA[2])<<endl;
+    //cout<<module<<pF<<OA<<endl;
+	//cout<<"RA "<<atan(pF[1]/pF[0])*c_Deg<<" DEC "<<asin(pF[2])*c_Deg<<endl;
+    //cout<<"RA "<<atan(OA[1]/OA[0])*c_Deg<<" DEC "<<asin(OA[2])*c_Deg<<endl;
 
   // Point implementation
   MVector OADet=FindOpticalAxisAtDet(Rfbob, FP, module);  // Find intersection of the optical axis on the detector and express in FB
   FP.TransformOut(OADet);
   Rfbob.TransformIn(OADet);
-  
-  //cout<<module<<event<<OADet<<endl; 
-  
+  //MVector Sky = event-OADet;
+  //Robin.TransformOut(Sky);
+  //double pls = 6./3600;
+  //double Psi = atan2(-Sky[1],Sky[0]);
+  //double Theta = atan((180./c_Pi)/sqrt(pow(Sky[0]*pls,2)+pow(Sky[1]*pls,2)));
+  //cout<<Psi*c_Deg<<" "<<Theta*c_Deg<<endl; 
+      
   // The necessary things to save are:
   // 1) OA  - direction in inertial space of the optical axis
   // 2) OADet  - The coordiate of the optical axis on the detector
@@ -316,17 +320,15 @@ MVector NObservatoryReconstructor::FindOpticalAxisInSky(NOrientation Robin, cons
   NOrientation OMP;
 
   if (module == 1) { 
-    OA = m_CalibratedBoreSightRelOM1;
+    OA = -m_CalibratedBoreSightRelOM1;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench1;
   } else if (module == 2) {
-    OA = m_CalibratedBoreSightRelOM2;
+    OA = -m_CalibratedBoreSightRelOM2;
     OMP = m_CalibratedOrientationOpticsRelOpticalBench2;
   } else {
     cout<<"Error in FindOpticalAxisInSky: unknown module "<<module<<endl;
   }
 
-  // ~1 arcmin offaxis
-  //OA = MVector(sin(0.00029088), 0.0, cos(0.00029088));
   NQuaternion Romob=OMP.GetRotationQuaternion();
   MVector OAob=Romob.Rotation(OA);
 
@@ -355,20 +357,15 @@ MVector NObservatoryReconstructor::FindOpticalAxisAtDet(NOrientation Rfbob, NOri
     cout<<"Error in FindOpticalAxisInSky: unknown module "<<module<<endl;
   }
 
-  // ~1 arcmin offaxis
-  //OA = MVector(sin(0.00029088), 0.0, cos(0.00029088));
-
   OpticalAxis.SetPosition(MVector(0.0, 0.0, 0.0)); // optical axis is at the center of the optic
-  OpticalAxis.SetDirection(-OA); // minus because it points down
+  OpticalAxis.SetDirection(OA); 
   
   OMP.TransformOut(OpticalAxis);
   Rfbob.TransformOut(OpticalAxis);
   FP.TransformIn(OpticalAxis);
-  
   PropagateToPlane(OpticalAxis, DetPlane, DetPlaneNormal); // where OA intersects Det plane
   MVector OADet = OpticalAxis.GetPosition(); // get new laser intersection in the MD coordinates
-
-
+  
   return OADet;
 }
 

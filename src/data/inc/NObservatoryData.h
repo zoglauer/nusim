@@ -69,10 +69,16 @@ class NObservatoryData
   //! Get the direction of the event in inertial space
   MVector GetDirectionEventInIS() { return m_DirectionEventInIS; }
 
-  //! Return the right ascension
+  //! Return the right ascension of event
   double GetRa();
-  //! Return the declination
-  double GetDec();
+  //! Return the right ascension of event
+  double GetRaScaled();
+  //! Return the declination of event
+  double GetDec(); 
+  //! Return the right ascension of Opical Axis (OA)
+  double GetRaOA();
+  //! Return the declination of Opical Axis (OA)
+  double GetDecOA();
 
   //! Set the direction of the focal plane in optic bench plane
   void SetOrientationFocalPlaneToOB(const NOrientation& O) { m_Empty = false; m_OrientationFocalPlaneToOB = O; }

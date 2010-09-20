@@ -89,6 +89,49 @@ double NObservatoryData::GetRa()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+double NObservatoryData::GetRaScaled()
+{
+  //! Return the right ascension with proper declination scaling
+  
+  double OARa = GetRaOA();
+  double Dec = GetDec();
+  
+  double Value = atan2(m_DirectionEventInIS[1], m_DirectionEventInIS[0])*c_Deg*60;
+  if (Value < 0.0) Value += 360*60;
+  Value = OARa + (Value-OARa)*cos(Dec/60./c_Deg);
+  return Value;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+double NObservatoryData::GetDecOA()
+{
+  //! Return the declination
+
+  double Value = m_DirectionOpticalAxisInIS[0]*m_DirectionOpticalAxisInIS[0] + m_DirectionOpticalAxisInIS[1]*m_DirectionOpticalAxisInIS[1] + m_DirectionOpticalAxisInIS[2]*m_DirectionOpticalAxisInIS[2];
+  if (Value <= 0) return 0.0;
+
+  return asin(m_DirectionOpticalAxisInIS[2]/sqrt(Value))*c_Deg*60;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+double NObservatoryData::GetRaOA()
+{
+  //! Return the right ascension
+  
+  double Value = atan2(m_DirectionOpticalAxisInIS[1], m_DirectionOpticalAxisInIS[0])*c_Deg*60;
+  if (Value < 0.0) Value += 360*60;
+  
+  return Value;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 double NObservatoryData::GetDec()
 {
@@ -102,7 +145,6 @@ double NObservatoryData::GetDec()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
 
 bool NObservatoryData::Stream(ofstream& S, bool Compact)
 {

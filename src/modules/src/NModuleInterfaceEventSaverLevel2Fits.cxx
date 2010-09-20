@@ -18,6 +18,7 @@
 #include "NModuleInterfaceEventSaverLevel2Fits.h"
 
 // Standard libs:
+#include "math.h"
 
 // HEAsoft
 #include "fitsio.h"
@@ -150,14 +151,15 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
   
-
-   	double Ra = (Event.GetHit(i).GetObservatoryData().GetRa()-Reference_Ra*60.)*60./Pixsize;
-	double Dec = (Event.GetHit(i).GetObservatoryData().GetDec()-Reference_Dec*60.)*60/Pixsize;
+	double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
+   	double Ra = Event.GetHit(i).GetObservatoryData().GetRaScaled();
+	double XPix = (Ra-Reference_Ra*60.)*60./Pixsize;
+	double YPix = (Dec-Reference_Dec*60.)*60/Pixsize;
 	double Energy = Event.GetHit(i).GetEnergy();
     NTime Time = Event.GetTime();
-
-    c1[counter]= Ra;
-    c2[counter]= Dec;
+   
+	c1[counter]= XPix;
+    c2[counter]= YPix;
     c3[counter]= Energy;
     c4[counter]= float(Time.GetSeconds());
     //! Save a chunk of 1000 events at a time
