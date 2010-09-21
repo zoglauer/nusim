@@ -107,6 +107,12 @@ bool NModuleOpticsEngine::Initialize()
     return false;
   }
 
+  // Load MLI 
+  if (LoadMLI() == false) {
+    cerr<<"NModuleOpticsEngine: Unable to load MLI"<<endl;
+    return false;
+  }
+
   // Determine the reflectivity matrix
   if (LoadReflectivity() == false) {
     cerr<<"NModuleOpticsEngine: Unable to load reflectivities"<<endl;
@@ -169,7 +175,14 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   
   // ATTENTION: ignore everything which is already below the top of the opening cylinder of the optics module
 
-
+  //! Check for MLI attenutation
+  //! This is a temporary installment
+  float MLIatt = InterpolateMLI(Photon.GetEnergy()); 
+  if (gRandom->Rndm() > MLIatt) {
+    Event.SetBlocked(true);
+    ++m_BlockedPhotonsMLI;
+  }
+  
   MVector TopCenterOutermostRing(0.0, 0.0, m_ShellLength);
   MVector NormalToOutermostRing(0.0, 0.0, 1.0);
   if (PropagateToPlane(Photon, TopCenterOutermostRing, NormalToOutermostRing) == false) {
@@ -222,11 +235,11 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
 	  iPhoton.SetPosition(MVector(0.0, 0.0, 0.0)); 
 	  iPhoton.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
  
-    Orientation.TransformIn(iPhoton);
+      Orientation.TransformIn(iPhoton);
 	  FPorient.TransformOut(iPhoton);
 	
 	  MVector DetectorTop(0.0, 0.0, 0.0);
-    MVector DetectorNormal(0.0, 0.0, 1.0);
+      MVector DetectorNormal(0.0, 0.0, 1.0);
 	  PropagateToPlane(iPhoton, DetectorTop, DetectorNormal);
 		
 	  FPorient.TransformIn(iPhoton);
@@ -493,6 +506,37 @@ bool NModuleOpticsEngine::LoadAngles()
   for (int i = 0; i <= NGroups; ++i) {
     if (fscanf(infile, "%f\n", &ShellRange) != 1) return false;
     m_ShellRange.push_back(ShellRange*1e-3); 
+  }
+  fclose(infile);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleOpticsEngine::LoadMLI()
+{ 
+  // Read the shell angles from file
+
+  TString FileName = "$(NUSIM)/resource/data/OpticsMLI.dat";
+  MFile::ExpandFileName(FileName);
+
+  FILE* infile = fopen(FileName.Data(), "r");
+  if (infile == 0) {
+    cerr<<"Unable to open file: "<<FileName<<endl;
+    return false;
+  }
+
+  int NEnergy;
+  if (fscanf(infile, "%d\n", &NEnergy) != 1) return false;
+
+  float MLI_attenuation;
+  float MLI_energy;
+  for (int i = 0; i < NEnergy; ++i) {
+    if (fscanf(infile, "%f %f\n",&MLI_energy, &MLI_attenuation) != 2) return false;
+    m_MLIenergy.push_back(MLI_energy);
+	m_MLIatt.push_back(MLI_attenuation);
   }
   fclose(infile);
 
@@ -766,12 +810,20 @@ int NModuleOpticsEngine::GetMirrorGroup(float alpha, int n)
   while (alpha > m_ShellRange[i]) {
     i++;
   }
-  /*if ((i == 1) || (i > n))  {
-    printf("If you see this, something is wrong...i = %d alpha = %f \n",i,alpha);
-  }*/
   return i-1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+float NModuleOpticsEngine::InterpolateMLI(float e_photon) {
+
+  int energy_index = FindIndexReverse(e_photon,m_MLIenergy,12); /* returns which shell photon will hit */
+  
+  float InterpolatedMLIatt = m_MLIatt[energy_index-1] + (m_MLIatt[energy_index]-m_MLIatt[energy_index-1])*
+                             (e_photon - m_MLIenergy[energy_index-1])/(m_MLIenergy[energy_index] - m_MLIenergy[energy_index-1]);
+
+  return InterpolatedMLIatt;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -914,6 +966,8 @@ int NModuleOpticsEngine::Spider(vector<float>& r)
 
   return reject;
 }
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

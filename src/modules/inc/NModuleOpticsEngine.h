@@ -91,6 +91,9 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   //! Read in the shell angles
   bool LoadAngles();
 
+  //! Read in the MLI attentuation
+  bool LoadMLI();
+
   //! Read the reflectivity
   bool LoadReflectivity();
 
@@ -106,6 +109,7 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   float AverageReflection(float inc_angle,int group,int e_idx);
   float Gasdev();
   int Spider(vector<float>& r);
+  float InterpolateMLI(float e_photon);
 
   float Square(float a) { return a*a; }
 
@@ -125,6 +129,10 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   vector<float> m_ShellRange;
   //!
   vector<vector<vector<float> > > m_Reflectivity;
+  //!
+  vector<float> m_MLIatt;
+  //!
+  vector<float> m_MLIenergy;
 
   vector<float> m_Rm1;
   vector<float> m_Rm2;
@@ -159,6 +167,8 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   
   // private members:
  private:
+  //! Number of photons which are blocked due to MLI
+  unsigned int m_BlockedPhotonsMLI;
   //! Number photons which are blocked because they do not reached the optics plane from above
   unsigned int m_BlockedPhotonsPlaneNoReached;
   //! Number of photons which are blocked, because they do not reach the mirror opening
