@@ -817,7 +817,7 @@ int NModuleOpticsEngine::GetMirrorGroup(float alpha, int n)
 
 float NModuleOpticsEngine::InterpolateMLI(float e_photon) {
 
-  int energy_index = FindIndexReverse(e_photon,m_MLIenergy,12); /* returns which shell photon will hit */
+  int energy_index = FindIndexReverse(e_photon,m_MLIenergy,15); /* returns which shell photon will hit */
   
   float InterpolatedMLIatt = m_MLIatt[energy_index-1] + (m_MLIatt[energy_index]-m_MLIatt[energy_index-1])*
                              (e_photon - m_MLIenergy[energy_index-1])/(m_MLIenergy[energy_index] - m_MLIenergy[energy_index-1]);
