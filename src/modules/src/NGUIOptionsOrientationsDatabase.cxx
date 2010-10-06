@@ -70,34 +70,34 @@ void NGUIOptionsOrientationsDatabase::Create()
   TGLayoutHints* FileLayoutTop = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 15, 10);
   TGLayoutHints* FileLayoutBottom = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 10, 15);
 
-  m_CalibratedMetrologyDB = new MGUIEFileSelector(this, "Pre-launch alignment metrology system database:", 
+  m_CalibratedMetrologyDB = new MGUIEFileSelector(this, "Alignment metrology system database (NuSim_CompALIGN_METxxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetCalibratedMetrologyDBFileName());
   m_CalibratedMetrologyDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_CalibratedMetrologyDB, FileLayoutTop);
 
-  m_PerturbedMetrologyDB = new MGUIEFileSelector(this, "Perturbed OR pre-launch metrology system database:", 
+  m_PerturbedMetrologyDB = new MGUIEFileSelector(this, "Perturbed metrology system database (NuSim_CompDB_METxxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetPerturbedMetrologyDBFileName());
   m_PerturbedMetrologyDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_PerturbedMetrologyDB, FileLayoutBottom);
 
   
-  m_CalibratedOpticsDB = new MGUIEFileSelector(this, "Pre-launch alignment optics system database:", 
+  m_CalibratedOpticsDB = new MGUIEFileSelector(this, "Alignment optics system database (NuSim_CompALIGN_OPTxxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetCalibratedOpticsDBFileName());
   m_CalibratedOpticsDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_CalibratedOpticsDB, FileLayoutTop);
   
-  m_PerturbedOpticsDB = new MGUIEFileSelector(this, "Perturbed OR pre-launch optics system database:", 
+  m_PerturbedOpticsDB = new MGUIEFileSelector(this, "Perturbed optics system database (NuSim_CompDB_OPTxxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetPerturbedOpticsDBFileName());
   m_PerturbedOpticsDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_PerturbedOpticsDB, FileLayoutBottom);
 
   
-  m_CalibratedAlignmentsDB = new MGUIEFileSelector(this, "Pre-launch alignments database:", 
+  m_CalibratedAlignmentsDB = new MGUIEFileSelector(this, "Pre-launch alignments database (NuSim_OrientationsALIGN_xxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetCalibratedAlignmentsDBFileName());
   m_CalibratedAlignmentsDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_CalibratedAlignmentsDB, FileLayoutTop);
 
-  m_PerturbedAlignmentsDB = new MGUIEFileSelector(this, "Perturbed OR pre-launch alignments database:", 
+  m_PerturbedAlignmentsDB = new MGUIEFileSelector(this, "Perturbed alignments database (NuSim_Orientations[IDEAL/DB]_xxx.csv):", 
                                            dynamic_cast<NModuleOrientationsDatabase*>(m_Module)->GetPerturbedAlignmentsDBFileName());
   m_PerturbedAlignmentsDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_PerturbedAlignmentsDB, FileLayoutBottom);
