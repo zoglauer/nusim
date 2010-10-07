@@ -167,6 +167,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedMetrologyDB(TString FileName)
   //! Read the data from file
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
@@ -205,6 +206,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
   //! Read the data from file
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
@@ -259,6 +261,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedOpticsDB(TString FileName)
   //! Read the data from file
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
@@ -297,6 +300,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
   //! Read the data from file
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
@@ -353,6 +357,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedAlignmentsDB(TString FileName)
   //! and I would out which more stuff in here...
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
@@ -397,6 +402,7 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
   //! Read the data from file
 
   // Load from file
+  MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(FileName);
   if (in.is_open() == false) {
