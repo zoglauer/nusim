@@ -89,14 +89,20 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
-  int tfield = 4;
+  int tfield = 11;
   long nrow = 0;
-  char *ttype[] = {"X","Y","PHA","Time"};
-  char *tform[] = {"1E","1E","1E","1E"};
-  char *tunit[] = {"pixel","pixel","keV","seconds"};
+  char *ttype[] = {"X","Y","PHA","Time","grade","opticX","opticY","OpticZ","opticVx","opticVy","opticVz"};
+  char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
+  char *tunit[] = {"pixel","pixel","keV","seconds","grade","mm","mm","mm","unit","unit","unit"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
-    
+  if (Status != 0) {
+    mgui<<"Error in creating extension: "<<endl;
+    mgui<<FileName<<show;
+    m_File = 0;
+    return false;
+  }
+
   //! Write WCS header keywords   
   char deg[10], tctyp1[10], tctyp2[10],radesys[10];
   float tcrvl1=Reference_Ra;
@@ -129,7 +135,6 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
 
-   
   firstelem = 1;
   firstrow = 1; 
   counter = 0;
@@ -158,10 +163,20 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
 	double Energy = Event.GetHit(i).GetEnergy();
     NTime Time = Event.GetTime();
    
+	NPhoton OriginalPhoton = Event.GetInitialPhotonRelOM();	
+   
 	c1[counter]= XPix;
     c2[counter]= YPix;
     c3[counter]= Energy;
     c4[counter]= float(Time.GetSeconds());
+	c5[counter]= Event.GetOrigin();
+	c6[counter]= OriginalPhoton.GetPosition()[0];
+	c7[counter]= OriginalPhoton.GetPosition()[1];
+	c8[counter]= OriginalPhoton.GetPosition()[2];
+	c9[counter]= OriginalPhoton.GetDirection()[0];
+	c10[counter]= OriginalPhoton.GetDirection()[1];
+	c11[counter]= OriginalPhoton.GetDirection()[2];
+
     //! Save a chunk of 1000 events at a time
 
     if (counter == 999) {
@@ -170,7 +185,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
       fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, 1000, c2, &Status);
       fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, 1000, c3, &Status);
 	  fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, 1000, c4, &Status);
-
+	  fits_write_col(m_File, TFLOAT, 5, firstrow, firstelem, 1000, c5, &Status);
+      fits_write_col(m_File, TFLOAT, 6, firstrow, firstelem, 1000, c6, &Status);
+      fits_write_col(m_File, TFLOAT, 7, firstrow, firstelem, 1000, c7, &Status);
+      fits_write_col(m_File, TFLOAT, 8, firstrow, firstelem, 1000, c8, &Status);
+      fits_write_col(m_File, TFLOAT, 9, firstrow, firstelem, 1000, c9, &Status);
+	  fits_write_col(m_File, TFLOAT, 10, firstrow, firstelem, 1000, c10, &Status);
+      fits_write_col(m_File, TFLOAT, 11, firstrow, firstelem, 1000, c11, &Status);
 	  firstrow = firstrow + 1000;
 
 	  counter = 0;
@@ -190,26 +211,47 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 {
   //! Close the file    
 
-  // cout<<"CloseFits"<<endl;
+  cout<<"CloseFits"<<endl;
   
   int Status = 0;
-   
+
   //! save the remaining data before closing 
   if (counter != 0) {
 	float rc1[counter];
 	float rc2[counter];
 	float rc3[counter];
 	float rc4[counter];
+	float rc5[counter];
+	float rc6[counter];
+	float rc7[counter];
+	float rc8[counter];
+	float rc9[counter];
+    float rc10[counter];
+	float rc11[counter];
 	for (int i=0; i < counter; i++) {
 	  rc1[i] = c1[i];
 	  rc2[i] = c2[i];
 	  rc3[i] = c3[i];
 	  rc4[i] = c4[i];
+	  rc5[i] = c5[i];
+	  rc6[i] = c6[i];
+	  rc7[i] = c7[i];
+	  rc8[i] = c8[i];
+	  rc9[i] = c9[i];
+	  rc10[i] = c10[i];
+	  rc11[i] = c11[i];
 	}
 	fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1, &Status);
     fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, counter, rc2, &Status);
     fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, counter, rc3, &Status);
 	fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, counter, rc4, &Status);
+	fits_write_col(m_File, TFLOAT, 5, firstrow, firstelem, counter, rc5, &Status);
+    fits_write_col(m_File, TFLOAT, 6, firstrow, firstelem, counter, rc6, &Status);
+    fits_write_col(m_File, TFLOAT, 7, firstrow, firstelem, counter, rc7, &Status);
+    fits_write_col(m_File, TFLOAT, 8, firstrow, firstelem, counter, rc8, &Status);
+    fits_write_col(m_File, TFLOAT, 9, firstrow, firstelem, counter, rc9, &Status);
+	fits_write_col(m_File, TFLOAT, 10, firstrow, firstelem, counter, rc10, &Status);
+	fits_write_col(m_File, TFLOAT, 11, firstrow, firstelem, counter, rc11, &Status);
   }
    
   fits_close_file(m_File, &Status);
