@@ -80,8 +80,7 @@ void NGUIOptionsEventSelector::Create()
   
   m_Energies = new MGUIEMinMaxEntry(this, "Energy window [keV]", false,
                                     dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMin(),
-                                    dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMax(),
-                                    true, 3.0, 80.0);
+                                    dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMax()); // , true, 3.0, 80.0);
   AddFrame(m_Energies, MinMaxLayout);
   
   PostCreate();
