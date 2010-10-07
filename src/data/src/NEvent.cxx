@@ -91,6 +91,7 @@ const NEvent& NEvent::operator=(const NEvent& Event)
   m_Hits = Event.m_Hits;
 
   m_OriginalPhoton = Event.m_OriginalPhoton;
+  m_InitialPhotonRelOM = Event.m_InitialPhotonRelOM;
   m_CurrentPhoton = Event.m_CurrentPhoton;
 
   return (*this);
@@ -134,7 +135,7 @@ void NEvent::Clear()
 
   m_OriginalPhoton.Clear();
   m_CurrentPhoton.Clear();
-
+  m_InitialPhotonRelOM.Clear();
 
   m_Empty = true;
 }
@@ -151,10 +152,12 @@ bool NEvent::Stream(ofstream& S, int WhatToStream)
   S<<"TI "<<m_Time.GetSeconds()<<endl;  // <-- TI MUST be the second one, since the supervisor must know the next evevnt time!
   S<<"ID "<<m_ID<<endl;
   S<<"TE "<<m_Telescope<<endl;
+  S<<"OG "<<m_Origin<<endl;
   if (WhatToStream < 2) {
     S<<"RD "<<m_Ra<<" "<<m_Dec<<endl;
     if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S);
     if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, "OP");
+    if (m_InitialPhotonRelOM.IsEmpty() == false) m_InitialPhotonRelOM.Stream(S, "IP");
     if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, "CP");
     for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
       m_Interactions[i].Stream(S);
@@ -203,6 +206,10 @@ bool NEvent::Parse(TString& Line)
     if (sscanf(Data, "TE %d", &m_Telescope) != 1) {
       Error = true;
     } 
+  } else if (Data[0] == 'O' && Data[1] == 'G') {
+    if (sscanf(Data, "OR %d", &m_Origin) != 1) {
+      Error = true;
+    } 
   } else if (Data[0] == 'R' && Data[1] == 'D') {
     if (sscanf(Data, "RD %lf %lf", &m_Ra, &m_Dec) != 2) {
       Error = true;
@@ -213,6 +220,10 @@ bool NEvent::Parse(TString& Line)
     }
   } else if (Data[0] == 'O' && Data[1] == 'P') {
     if (m_OriginalPhoton.Parse(Line) == false) {
+      Error = true;
+    }
+  } else if (Data[0] == 'I' && Data[1] == 'P') {
+    if (m_InitialPhotonRelOM.Parse(Line) == false) {
       Error = true;
     }
   } else if (Data[0] == 'C' && Data[1] == 'P') {

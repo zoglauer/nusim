@@ -138,6 +138,14 @@ class NEvent
   NPhoton& GetOriginalPhotonRef() { return m_OriginalPhoton; }
 
 
+  //! Set the initial parameters of the photon in the optics module
+  void SetInitialPhotonRelOM(const NPhoton& Photon) { m_InitialPhotonRelOM = Photon; }
+  //! Get A COPY the initial parameters of the photon in the optics module
+  NPhoton GetInitialPhotonRelOM() { return m_InitialPhotonRelOM; }
+  //! Get A REFERENCE to the initial parameters of the photon in the optics module
+  NPhoton& GetInitialPhotonRelOMRef() { return m_InitialPhotonRelOM; }
+
+
   //! Set the original right ascension and declination of the photon not the reconstructed one
   void SetOriginalPhotonRaDec(double Ra, double Dec) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; }
   //! Get the original right ascension - only reasonable when GetOrigin() == c_OriginSource
@@ -280,6 +288,9 @@ class NEvent
   
   //! Original photon parameters 
   NPhoton m_OriginalPhoton;
+
+  //! The initial parameters of the photon in the optics module
+  NPhoton m_InitialPhotonRelOM;
 
   //! Current photon parameters (if this event is no longer in "photon-state", last valid photon parameters)  
   NPhoton m_CurrentPhoton;

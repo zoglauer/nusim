@@ -167,8 +167,9 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   // (b) Retrieve the aperture orienation and position relative to the detector
   NOrientation Orientation = m_Satellite.GetOrientationOptics(Event.GetTime(), Event.GetTelescope());
 
-  // (c) Rotate into aperture coordinate system
+  // (c) Rotate into optics coordinate system & store
   Orientation.TransformIn(Photon);
+  Event.SetInitialPhotonRelOM(Photon);
 
   // (d) Propagate photon to where-ever this module wants it
   //     Let's assume its the plane at the top of the optics module
