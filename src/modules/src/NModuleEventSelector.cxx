@@ -234,7 +234,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  new MXmlNode(Node, "FileName", m_FileName);
+  new MXmlNode(Node, "FileName", CleanPath(m_FileName));
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
 

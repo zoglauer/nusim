@@ -163,7 +163,7 @@ MXmlNode* NModuleEventSaver::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  new MXmlNode(Node, "FileName", m_FileName);
+  new MXmlNode(Node, "FileName", CleanPath(m_FileName));
 
   return Node;
 }

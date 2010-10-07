@@ -288,10 +288,10 @@ MXmlNode* NModuleBackgroundSimulator::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  new MXmlNode(Node, "ApertureSpectrum", m_ApertureSpectrum);
-  new MXmlNode(Node, "ApertureFieldOfView", m_ApertureFieldOfView);
-  new MXmlNode(Node, "DetectorDataBase", m_DetectorDataBase);
-  new MXmlNode(Node, "ShieldHitSpectrum", m_ShieldHitSpectrum);
+  new MXmlNode(Node, "ApertureSpectrum", CleanPath(m_ApertureSpectrum));
+  new MXmlNode(Node, "ApertureFieldOfView", CleanPath(m_ApertureFieldOfView));
+  new MXmlNode(Node, "DetectorDataBase", CleanPath(m_DetectorDataBase));
+  new MXmlNode(Node, "ShieldHitSpectrum", CleanPath(m_ShieldHitSpectrum));
 
   return Node;
 }

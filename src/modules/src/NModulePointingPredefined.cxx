@@ -474,7 +474,7 @@ MXmlNode* NModulePointingPredefined::CreateXmlConfiguration()
   for (unsigned int p = 0; p < m_InitialPointings.size(); ++p) {
     Pointings->AddNode(m_InitialPointings[p].CreateXmlConfiguration());
   }
-  new MXmlNode(Node, "PointingJitterDBFileName", m_PointingJitterDBFileName);
+  new MXmlNode(Node, "PointingJitterDBFileName", CleanPath(m_PointingJitterDBFileName));
   new MXmlNode(Node, "AbsoluteTime", m_AbsoluteTime);
 
   return Node;

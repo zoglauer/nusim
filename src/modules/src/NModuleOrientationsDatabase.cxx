@@ -700,12 +700,12 @@ MXmlNode* NModuleOrientationsDatabase::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  new MXmlNode(Node, "CalibratedMetrologyDBFileName", m_CalibratedMetrologyDBFileName);
-  new MXmlNode(Node, "PerturbedMetrologyDBFileName", m_PerturbedMetrologyDBFileName);
-  new MXmlNode(Node, "CalibratedOpticsDBFileName", m_CalibratedOpticsDBFileName);
-  new MXmlNode(Node, "PerturbedOpticsDBFileName", m_PerturbedOpticsDBFileName);
-  new MXmlNode(Node, "CalibratedAlignmentsDBFileName", m_CalibratedAlignmentsDBFileName);
-  new MXmlNode(Node, "PerturbedAlignmentsDBFileName", m_PerturbedAlignmentsDBFileName);
+  new MXmlNode(Node, "CalibratedMetrologyDBFileName", CleanPath(m_CalibratedMetrologyDBFileName));
+  new MXmlNode(Node, "PerturbedMetrologyDBFileName", CleanPath(m_PerturbedMetrologyDBFileName));
+  new MXmlNode(Node, "CalibratedOpticsDBFileName", CleanPath(m_CalibratedOpticsDBFileName));
+  new MXmlNode(Node, "PerturbedOpticsDBFileName", CleanPath(m_PerturbedOpticsDBFileName));
+  new MXmlNode(Node, "CalibratedAlignmentsDBFileName", CleanPath(m_CalibratedAlignmentsDBFileName));
+  new MXmlNode(Node, "PerturbedAlignmentsDBFileName", CleanPath(m_PerturbedAlignmentsDBFileName));
 
   return Node;
 }

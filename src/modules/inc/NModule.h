@@ -158,6 +158,8 @@ class NModule
   //! Set the name of this module
   void SetName(TString Name) { m_Name = Name; }
 
+  //! Check for $NUSIM paths in the given file name and replace it if possible
+  TString CleanPath(TString Path);
 
   // private methods:
  private:

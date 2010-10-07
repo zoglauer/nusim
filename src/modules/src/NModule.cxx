@@ -314,5 +314,23 @@ MXmlNode* NModule::CreateXmlConfiguration()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+TString NModule::CleanPath(TString Path)
+{
+  //! Check for $NUSIM paths in the given file name and replace it if possible
+
+  TString ToBeReplaced = "$NUSIM";
+  
+  if (ToBeReplaced == "" || ToBeReplaced == "/") return Path;
+
+  MFile::ExpandFileName(ToBeReplaced);
+  ToBeReplaced += "/";
+
+  return Path.ReplaceAll(ToBeReplaced, "$NUSIM/");  
+}
+
+
 // NModule.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

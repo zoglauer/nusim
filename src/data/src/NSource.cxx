@@ -1492,6 +1492,15 @@ MXmlNode* NSource::CreateXmlConfiguration()
 {
   //! Create an XML node tree from the configuration
 
+  TString ToBeReplaced = "$NUSIM";
+  if (ToBeReplaced != "" && ToBeReplaced != "/") {
+    MFile::ExpandFileName(ToBeReplaced);
+    ToBeReplaced += "/";
+
+    m_PositionFileName = m_PositionFileName.ReplaceAll(ToBeReplaced, "$NUSIM/");  
+    m_EnergyFileName = m_EnergyFileName.ReplaceAll(ToBeReplaced, "$NUSIM/");  
+  }
+
   MXmlNode* Node = new MXmlNode(0, "Source");
   
   new MXmlNode(Node, "Name", m_Name);
