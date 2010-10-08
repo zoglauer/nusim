@@ -109,7 +109,7 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   //MVector testaxis(0,0,1);
   
   NPointing P = m_Satellite.GetPointing(m_Time);
-   
+  
   NQuaternion Qstin = P.GetQuaternion()*OS4.GetRotationQuaternion().Invert();
   
   //cout<<Q<<endl;

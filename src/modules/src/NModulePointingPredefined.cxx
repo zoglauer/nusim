@@ -219,6 +219,61 @@ bool NModulePointingPredefined::StopCriterionFullFilled()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+unsigned int NModulePointingPredefined::GetNPointingSlews(NTime First, NTime Second)
+{
+  // Return the number of pointing slews between the given time
+
+  unsigned int IndexAfterFirst = 0;
+  for (IndexAfterFirst = 0; IndexAfterFirst < m_SequencedInitialPointings.size(); ++IndexAfterFirst) {
+    if (m_SequencedInitialPointings[IndexAfterFirst].GetTime() > First) {
+      break; 
+    }
+  }
+  if (m_SequencedInitialPointings.back().GetTime() <= First) return 0;
+  
+  unsigned int IndexAfterSecond = IndexAfterFirst; 
+  for (IndexAfterSecond = IndexAfterFirst; IndexAfterSecond < m_SequencedInitialPointings.size(); ++IndexAfterSecond) {
+    if (m_SequencedInitialPointings[IndexAfterSecond].GetTime() > Second) {
+      break; 
+    }
+  }
+  if (m_SequencedInitialPointings.back().GetTime() <= Second) IndexAfterSecond++;
+ 
+  return IndexAfterSecond-IndexAfterFirst;
+}
+  
+  
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+NTime NModulePointingPredefined::GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID)
+{
+  // Return the time of the given pointing slew between the two times. 
+  // If multiple slews occur between the time, use ID to access the first, second, etc slew time
+  // Counting starts at 0!
+
+  unsigned int NSlews = GetNPointingSlews(First, Second);
+  
+  if (SlewID >= NSlews) {
+    merr<<"Error: SlewID larger than present slews! Using first!"<<endl;
+    SlewID = 0;
+  }
+  
+  unsigned int IndexAfterFirst = 0;
+  for (IndexAfterFirst = 0; IndexAfterFirst < m_SequencedInitialPointings.size(); ++IndexAfterFirst) {
+    if (m_SequencedInitialPointings[IndexAfterFirst].GetTime() > First) {
+      break; 
+    }
+  }
+  
+  return m_SequencedInitialPointings[IndexAfterFirst + SlewID].GetTime();
+}
+  
+  
+////////////////////////////////////////////////////////////////////////////////
+
+
 NPointing NModulePointingPredefined::GetPointing(NTime t) 
 { 
   // Return the pointing of the satellite at a given time

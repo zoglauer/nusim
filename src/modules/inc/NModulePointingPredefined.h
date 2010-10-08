@@ -52,6 +52,14 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   //! Check if stop criterion is fullfilled
   virtual bool StopCriterionFullFilled();
 
+  //! Return the number of pointing slews between the given time
+  virtual unsigned int GetNPointingSlews(NTime First, NTime Second);
+  
+  //! Return the time of the given pointing slew between the two times. 
+  //! If multiple slews occur between the time, use ID to access the first , second, etc slew time
+  //! Counting starts at 0!
+  virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0);
+
   //! Return a reference to the initial pointings
   vector<NPointing>& GetInitialPointingsByRef() { return m_InitialPointings; }
 

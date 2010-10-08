@@ -118,10 +118,12 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
   double Energy = 0.0;
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
     
-
+    //cout<<Event.GetTime()<<":"<<m_Satellite.GetPointing(Event.GetTime()).GetRa()<<":"<<m_Satellite.GetPointing(Event.GetTime()).GetDec()<<":"<<m_Satellite.GetPointing(Event.GetTime()).GetQuaternion()<<endl;
     
     double RA = Event.GetHit(i).GetObservatoryData().GetRa();
     double DEC = Event.GetHit(i).GetObservatoryData().GetDec();
+    
+    //cout<<Event.GetTime()<<":"<<RA<<":"<<DEC<<endl;
     
     MVector D = Event.GetHit(i).GetObservatoryData().GetDirectionEventInIS();
     

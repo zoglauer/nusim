@@ -47,6 +47,9 @@ class NModuleInterfaceEntry
   //! Return the time of the next event
   virtual NTime GetTimeOfNextEvent() { return m_Time; } 
 
+  //! Force the time of the next event
+  virtual void ForceTimeOfNextEvent(const NTime& Time) { m_Time = Time; } 
+
   // protected methods:
  protected:
 
@@ -58,7 +61,7 @@ class NModuleInterfaceEntry
 
   // protected members:
  protected:
-  //! The time, when the next event occurs (Design: Do we need a time class?)
+  //! The time, when the next event occurs
   NTime m_Time;
 
   // private members:

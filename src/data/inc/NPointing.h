@@ -34,7 +34,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//! \brief Object describing a space craft pointing --- it's currrently still empty
+//! \brief Object describing a space craft pointing 
 //! This class represents a space craft pointing. No details are implemented yet
 
 class NPointing

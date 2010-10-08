@@ -270,6 +270,7 @@ void NSupervisor::Clear()
   m_ObservatoryModules.clear();
   m_MergerModules.clear();
   m_StopCriterionModules.clear();
+  m_PointingModules.clear();
   
   m_Interrupt = false;
 
@@ -364,6 +365,8 @@ bool NSupervisor::Run()
   if (m_StarTrackerModules.size() > 0) StarTrackerStart = dynamic_cast<NModuleInterfaceEntry*>(m_StarTrackerModules[0]);
   NModuleInterfaceEntry* MetrologyStart = 0;
   if (m_MetrologyModules.size() > 0) MetrologyStart = dynamic_cast<NModuleInterfaceEntry*>(m_MetrologyModules[0]);
+  
+  NModuleInterfacePointing* Pointing = m_PointingModules[0];
 
   bool HasSourcePipe = false;
   if (m_PipelineModules.size() > 0 && SourceStart != 0) HasSourcePipe = true;
@@ -408,6 +411,9 @@ bool NSupervisor::Run()
   int NPassedEvents = 0;
   
   m_Running = true;
+  
+  // Keep track of the star tracker time, since we might have to do intermediate times to take care of pointing slews
+  NTime LastStarTrackerTime(-100);
 
   while (m_Satellite.GetTimeIdeal() < m_ObservationTime) {
 
@@ -494,6 +500,18 @@ bool NSupervisor::Run()
       if (OR != 0) {
         while (OR->HasEnoughData(TimeOfNextEvent) == false) {
           NTime iTimeOfNextEvent;
+          
+          // Make sure we get the star tracker time also at the boundaries of the pointing slews 
+          NTime NextStarTrackerTime = StarTrackerStart->GetTimeOfNextEvent();
+          unsigned int NSlews = Pointing->GetNPointingSlews(LastStarTrackerTime, NextStarTrackerTime);
+          //cout<<"Slews: "<<NSlews<<" between "<<LastStarTrackerTime<<":"<<NextStarTrackerTime<<endl;
+          if (NSlews > 0) {
+            NTime SlewTime = Pointing->GetPointingSlewTime(LastStarTrackerTime, NextStarTrackerTime);
+            SlewTime -= 0.00000001; // 10 ns before slew
+            StarTrackerStart->ForceTimeOfNextEvent(SlewTime);
+            //cout<<"New next event time: "<<StarTrackerStart->GetTimeOfNextEvent()<<endl;
+          }
+          
           // Check whether star tracker or metrology is next:
           if (HasStarTrackerPipe == true && HasMetrologyPipe == true) {
             if (StarTrackerStart->GetTimeOfNextEvent() < MetrologyStart->GetTimeOfNextEvent()) {
@@ -518,8 +536,15 @@ bool NSupervisor::Run()
             mout<<"Supervisor: No start modules!"<<endl;
           }
           
+          if (StarTrackerNext == false) {
+            // Undo the change because it is not yet our time...
+            StarTrackerStart->ForceTimeOfNextEvent(NextStarTrackerTime);
+          }
+          
           if (StarTrackerNext == true) {
             // The initial star tracker module has its own clock running on "star tracker heart beat"
+            LastStarTrackerTime = StarTrackerStart->GetTimeOfNextEvent();
+            cout<<"Star tracker time: "<<LastStarTrackerTime<<endl;
             StarTrackerData.Clear();
             for (unsigned int s = 0; s < m_StarTrackerModules.size(); ++s) {
               // Do the analysis
@@ -541,7 +566,16 @@ bool NSupervisor::Run()
           } else {
             mout<<"Problem: neither a next star tracker nor a next metrology module."<<endl;
             break;
-          }            
+          }
+          
+          // Make sure we get the star tracker time also at the boundaries of the pointing slews 
+          if (NSlews > 0 && StarTrackerNext == true) {
+            NTime SlewTime = Pointing->GetPointingSlewTime(LastStarTrackerTime, NextStarTrackerTime);
+            SlewTime += 0.000000005; // 5 ns after slew
+            LastStarTrackerTime = SlewTime;
+            SlewTime += 0.000000005; // 5 ns after slew
+            StarTrackerStart->ForceTimeOfNextEvent(SlewTime);
+          }
         }
 
         // Run the observatory pipelines
@@ -602,6 +636,7 @@ bool NSupervisor::Run()
     else {
       if (HasStarTrackerPipe == true && StarTrackerNext == true) {
         // The initial star tracker module has its own clock running on "star tracker heart beat"
+        LastStarTrackerTime = StarTrackerStart->GetTimeOfNextEvent();
         StarTrackerData.Clear();
         for (unsigned int s = 0; s < m_StarTrackerModules.size(); ++s) {
           // Do the analysis
@@ -1336,6 +1371,13 @@ bool NSupervisor::GenerateAllLists()
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
     if (dynamic_cast<NModuleInterfaceStopCriterion*>((*Iter).second) != 0) {
       m_StopCriterionModules.push_back(dynamic_cast<NModuleInterfaceStopCriterion*>((*Iter).second));
+    }
+  }
+
+  m_PointingModules.clear();
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfacePointing*>((*Iter).second) != 0) {
+      m_PointingModules.push_back(dynamic_cast<NModuleInterfacePointing*>((*Iter).second));
     }
   }
 

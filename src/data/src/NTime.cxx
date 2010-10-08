@@ -315,6 +315,7 @@ TString NTime::ToString() const
   // Dump the time as string ion seconds
   
   ostringstream out;
+  out.precision(12);
   out<<m_Seconds<<" sec";
 
   return TString(out.str().c_str());

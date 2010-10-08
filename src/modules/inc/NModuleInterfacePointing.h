@@ -49,6 +49,14 @@ class NModuleInterfacePointing
   //! Set the observation time
   virtual void SetObservationTime(NTime O) { m_ObservationTime = O; }
 
+  //! Return the number of pointing slews between the given time
+  virtual unsigned int GetNPointingSlews(NTime First, NTime Second) { return 0; }
+  
+  //! Return the time of the given pointing slew between the two times. 
+  //! If multiple slews occur between the time, use ID to access the first , second, etc slew time
+  //! Counting starts at 0!
+  virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0) { return NTime(0); }
+
   // protected methods:
  protected:
 

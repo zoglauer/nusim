@@ -205,6 +205,8 @@ class NSupervisor
   vector<NModuleInterfaceMerger*> m_MergerModules;
   //! Sequence of all used stop criterion modules
   vector<NModuleInterfaceStopCriterion*> m_StopCriterionModules;
+  //! Sequence of all used pointing modules
+  vector<NModuleInterfacePointing*> m_PointingModules;
 
   //! Sequence of currently used satellite modules
   vector<NModule*> m_SatelliteModules;
