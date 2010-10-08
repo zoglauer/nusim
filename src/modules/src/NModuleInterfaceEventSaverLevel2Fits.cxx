@@ -157,7 +157,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
   
 	double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
-   	double Ra = Event.GetHit(i).GetObservatoryData().GetRaScaled();
+   	double Ra = Event.GetHit(i).GetObservatoryData().GetRa();
+	Ra = Reference_Ra*60.+(Ra-Reference_Ra*60.)*cos(Reference_Dec/c_Deg);
 	double XPix = (Ra-Reference_Ra*60.)*60./Pixsize;
 	double YPix = (Dec-Reference_Dec*60.)*60/Pixsize;
 	double Energy = Event.GetHit(i).GetEnergy();

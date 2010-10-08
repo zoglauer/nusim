@@ -92,10 +92,9 @@ double NObservatoryData::GetRa()
 double NObservatoryData::GetRaScaled()
 {
   //! Return the right ascension with proper declination scaling
-  
+  // not working!!!
   double OARa = GetRaOA();
   double Dec = GetDec();
-  
   double Value = atan2(m_DirectionEventInIS[1], m_DirectionEventInIS[0])*c_Deg*60;
   if (Value < 0.0) Value += 360*60;
   Value = OARa + (Value-OARa)*cos(Dec/60./c_Deg);
