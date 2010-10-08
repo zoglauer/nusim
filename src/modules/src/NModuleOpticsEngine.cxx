@@ -312,8 +312,8 @@ bool NModuleOpticsEngine::Finalize()
   double EffectiveArea =0.0;
   double EffectiveAreaError = 0.0;
   if (m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics > 0) {
-    EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
-    EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm2[1]*m_Rm2[1])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+    EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+    EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
   }
   cout<<"  Effective Area (average per module): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
   cout<<endl;
@@ -368,7 +368,7 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   // Use 0.0 if you don't want scattering
   if (m_UseScattering) scatter = 6e-5;
   else scatter = 0.0;
-  Rmin = m_Rm2[1];
+  Rmin = m_Rm1[0];
   Rmax = m_Rm1[133];
 
   e_index = (int)floor((e_photon_lo) / m_EnergyMesh);
@@ -662,15 +662,15 @@ bool NModuleOpticsEngine::LoadGeometry()
   }
 
   // Indicea are 1 not 0 based
-  m_Rm1.push_back(0);
+  /*m_Rm1.push_back(0);
   m_Rm2.push_back(0);
   m_Rm3.push_back(0);
   m_Rm4.push_back(0);
   m_Alpha1.push_back(0);
-  m_Alpha2.push_back(0);
+  m_Alpha2.push_back(0);*/
 
   float Alpha1, Rm1, Rm2, Rm3, Rm4;
-  for (int i = 1; i <= m_NShells; ++i) {
+  for (int i = 0; i <= m_NShells; ++i) {
     if (fscanf(infile,"%f %f %f %f %f \n", &Alpha1, &Rm1, &Rm2, &Rm3, &Rm4) != 5) return false;
     m_Rm1.push_back(Rm1);
     m_Rm2.push_back(Rm2);
