@@ -544,7 +544,7 @@ bool NSupervisor::Run()
           if (StarTrackerNext == true) {
             // The initial star tracker module has its own clock running on "star tracker heart beat"
             LastStarTrackerTime = StarTrackerStart->GetTimeOfNextEvent();
-            cout<<"Star tracker time: "<<LastStarTrackerTime<<endl;
+            //cout<<"Star tracker time: "<<LastStarTrackerTime<<endl;
             StarTrackerData.Clear();
             for (unsigned int s = 0; s < m_StarTrackerModules.size(); ++s) {
               // Do the analysis
