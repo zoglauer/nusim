@@ -260,9 +260,14 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     ++m_BlockedPhotonsDoNotExitOptics;
     return true;
   }
-  if (Code == 3) ++m_UpperGhosts;
-  if (Code == 2) ++m_LowerGhosts;
-
+  if (Code == 3) {
+	++m_UpperGhosts;
+    Event.SetOrigin(3);
+	}
+  if (Code == 2) {
+    ++m_LowerGhosts;
+    Event.SetOrigin(3);
+    }
   if (m_UseGhostRays) ++m_ScatteredPhotons;
   else {
     if (Code == 1) ++m_ScatteredPhotons;
