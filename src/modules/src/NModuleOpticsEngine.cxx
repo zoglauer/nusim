@@ -558,7 +558,7 @@ bool NModuleOpticsEngine::LoadReflectivity()
   // READ IN THE REFLECTIVITY FILE(S)
 
   int ne = 850;
-  int na = 161;
+  int na = 361;
 
   vector<vector<vector<float> > > R(m_NGroups+1, vector<vector<float> >(ne, vector<float>(na))); 
   m_Reflectivity = R;
