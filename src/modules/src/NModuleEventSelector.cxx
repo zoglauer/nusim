@@ -65,6 +65,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   //m_Diagnostics = new NGUIDiagnosticsEventSelector();
   
   m_SaveAsFits = false;
+  m_SaveBeforeSelections = true;
   m_EnergyMin = 5;
   m_EnergyMax = 80;
 }
@@ -112,16 +113,17 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   // Main data analysis routine, which updates the event to a new level 
 
   // The first thing we do is safe the event
-  if (m_SaveAsFits == true) {
-    if (IsLevel2FitsFileOpen() == true) {
-      if (SaveEventLevel2Fits(Event) == false) return false;
-    } 
-  } else {
-    if (IsAsciiFileOpen() == true) {
-      if (SaveEventAscii(Event, 2) == false) return false;
+  if (m_SaveBeforeSelections == true) {
+    if (m_SaveAsFits == true) {
+      if (IsLevel2FitsFileOpen() == true) {
+        if (SaveEventLevel2Fits(Event) == false) return false;
+      } 
+    } else {
+      if (IsAsciiFileOpen() == true) {
+        if (SaveEventAscii(Event, 2) == false) return false;
+      }
     }
   }
-
 
   // Check if multiple hits in same module in CZT are adjacent
   bool PatternRejection = false;
@@ -156,6 +158,20 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
 
   if (TotalEnergy > m_EnergyMax || TotalEnergy < m_EnergyMin || PatternRejection == true) {
     Event.SetEventCut(true);
+    return true;
+  }
+
+  // The first thing we do is safe the event
+  if (m_SaveBeforeSelections == false) {
+    if (m_SaveAsFits == true) {
+      if (IsLevel2FitsFileOpen() == true) {
+        if (SaveEventLevel2Fits(Event) == false) return false;
+      } 
+    } else {
+      if (IsAsciiFileOpen() == true) {
+        if (SaveEventAscii(Event, 2) == false) return false;
+      }
+    }
   }
 
   return true;
@@ -213,13 +229,18 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   MXmlNode* FileNameNode = Node->GetNode("FileName");
   if (FileNameNode != 0) {
     m_FileName = FileNameNode->GetValue();
-  }  MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
+  }  
+  MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
   if (EnergyMinNode != 0) {
     m_EnergyMin = EnergyMinNode->GetValueAsDouble();
   }
   MXmlNode* EnergyMaxNode = Node->GetNode("EnergyMax");
   if (EnergyMaxNode != 0) {
     m_EnergyMax = EnergyMaxNode->GetValueAsDouble();
+  }
+  MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
+  if (SaveBeforeSelectionsNode != 0) {
+    m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsDouble();
   }
 
   return true;
@@ -237,6 +258,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   new MXmlNode(Node, "FileName", CleanPath(m_FileName));
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
+  new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
 
   return Node;
 }

@@ -50,6 +50,10 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   void SetEnergyMax(const double EnergyMax) { m_EnergyMax = EnergyMax; }
   //! Get the maximum energy
   double GetEnergyMax() const { return m_EnergyMax; }
+  //! Save before the event selctions
+  void SetSaveBeforeSelections(const bool SaveBeforeSelections) { m_SaveBeforeSelections = SaveBeforeSelections; }
+  //! Return if we should save before event selections
+  double GetSaveBeforeSelections() const { return m_SaveBeforeSelections; }
   
   //! Initialize the module
   virtual bool Initialize();
@@ -89,6 +93,8 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   double m_EnergyMax;
   //! True if we should save as fits file
   bool m_SaveAsFits;
+  //! True if we should save before the event selection have been applied
+  bool m_SaveBeforeSelections;
 
 
 #ifdef ___CINT___

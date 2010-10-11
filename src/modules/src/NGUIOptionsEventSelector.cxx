@@ -62,15 +62,22 @@ void NGUIOptionsEventSelector::Create()
 {
   PreCreate();
 
-  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 20, 15);
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 20, 5);
 
-  m_FileName = new MGUIEFileSelector(this, "Save events before the event selection to thif file:\nSuffix = *.fits: FITS, otherwise as ASCII\nIf empty, don't save anything", 
+  m_FileName = new MGUIEFileSelector(this, "Save events before or after the event selection to the file:\nSuffix = *.fits: FITS, otherwise as ASCII\nIf empty, don't save anything", 
                                      dynamic_cast<NModuleInterfaceIO*>(m_Module)->GetFileName());
   m_FileName->SetFileType("Orientations data base", "*.dat");
-
   AddFrame(m_FileName, FileLayout);
 
-  
+  TGLayoutHints* SaveBeforeSelectionsLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 15);
+  m_SaveBeforeSelections = new TGCheckButton(this, "Save events before selections (otherwise after)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveBeforeSelections() == true) {
+    m_SaveBeforeSelections->SetState(kButtonDown);
+  } else {
+    m_SaveBeforeSelections->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveBeforeSelections, SaveBeforeSelectionsLayout);
+
   TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 15, 10);
   TGLabel* SelectionsLabel = new TGLabel(this, "Event selections:");
   AddFrame(SelectionsLabel, LabelLayout);
@@ -126,6 +133,11 @@ bool NGUIOptionsEventSelector::OnApply()
 	// Modify this to store the data in the module!
 
   dynamic_cast<NModuleInterfaceIO*>(m_Module)->SetFileName(m_FileName->GetFileName());
+  if (m_SaveBeforeSelections->GetState() == kButtonDown) {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
+  } else {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
+  }
 
   if (m_Energies->GetMaxValueDouble() <= m_Energies->GetMinValueDouble()) {
     mgui<<"The minimum energy must be smaller than the maximum energy!"<<show;

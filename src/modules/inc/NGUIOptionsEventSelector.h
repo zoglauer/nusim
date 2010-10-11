@@ -71,6 +71,8 @@ class NGUIOptionsEventSelector : public NGUIOptions
  private:
   //! Choose a file to save the data to:
   MGUIEFileSelector* m_FileName;
+  //! Choose if the saving should be applied before or after the selections
+  TGCheckButton* m_SaveBeforeSelections;
 
   //! Choose the energy window
   MGUIEMinMaxEntry* m_Energies;
