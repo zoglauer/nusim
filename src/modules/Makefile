@@ -27,6 +27,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceIO.o \
 	$(LB)/NModuleInterfaceEventSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverLevel2Fits.o \
+	$(LB)/NModuleInterfaceEventSaverROOTTree.o \
 	$(LB)/NModuleInterfaceStopCriterion.o \
 	$(LB)/NModuleInterfaceDeadTime.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
@@ -58,7 +59,9 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleTriggerEngineBackgroundSims.o \
 	$(LB)/NGUIDiagnosticsDetectorEffectsEngine.o \
 	$(LB)/NGUIOptionsDetectorEffectsEnginePHE.o \
+	$(LB)/NGUIOptionsDetectorEffectsEngineSciSimCIE.o \
 	$(LB)/NModuleDetectorEffectsEngineSciSim.o \
+	$(LB)/NModuleDetectorEffectsEngineSciSimCIE.o \
 	$(LB)/NModuleDetectorEffectsEngineIdeal.o \
 	$(LB)/NModuleDetectorEffectsEnginePHE.o \
 	$(LB)/NModuleDetectorEffectsEngineBackgroundSims.o \

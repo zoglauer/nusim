@@ -40,7 +40,9 @@ ClassImp(NModuleEventSelector)
 
 
 NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), 
-  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(), NModuleInterfaceEventSaverLevel2Fits(Satellite)
+  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(),
+  NModuleInterfaceEventSaverLevel2Fits(Satellite),
+  NModuleInterfaceEventSaverROOTTree(Satellite)
 {
   // Construct an instance of NModuleEventSelector
 
@@ -65,6 +67,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   //m_Diagnostics = new NGUIDiagnosticsEventSelector();
   
   m_SaveAsFits = false;
+  m_SaveAsROOT = false;
   m_SaveBeforeSelections = true;
   m_EnergyMin = 5;
   m_EnergyMax = 80;
@@ -94,8 +97,16 @@ bool NModuleEventSelector::Initialize()
       m_SaveAsFits = false;
     }
     
+    if (m_FileName.EndsWith(".root") == true) {
+      m_SaveAsROOT = true;
+    } else {
+      m_SaveAsROOT = false;
+    }
+    
     if (m_SaveAsFits == true) {
       if (OpenLevel2FitsFile(m_FileName) == false) return false;
+    } else if (m_SaveAsROOT == true) {
+      if (OpenROOTFile(m_FileName) == false) return false;
     } else {
       if (OpenAsciiFile(m_FileName, m_ChosenType) == false) return false;
     }
@@ -118,6 +129,10 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       if (IsLevel2FitsFileOpen() == true) {
         if (SaveEventLevel2Fits(Event) == false) return false;
       } 
+    } else if (m_SaveAsROOT == true) {
+      if (IsROOTFileOpen() == true) {
+	if (SaveEventTree(Event) == false) return false;
+      }  
     } else {
       if (IsAsciiFileOpen() == true) {
         if (SaveEventAscii(Event, 2) == false) return false;

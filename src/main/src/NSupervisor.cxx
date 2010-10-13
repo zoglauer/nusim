@@ -63,6 +63,7 @@ using namespace std;
 #include "NModuleBackgroundSimulator.h"
 
 #include "NModuleDetectorEffectsEngineSciSim.h"
+#include "NModuleDetectorEffectsEngineSciSimCIE.h"
 #include "NModuleDetectorEffectsEnginePHE.h"
 #include "NModuleDetectorEffectsEngineIdeal.h"
 #include "NModuleDetectorEffectsEngineBackgroundSims.h"
@@ -154,6 +155,7 @@ NSupervisor::NSupervisor()
   m_AvailableModules.push_back(new NModuleBackgroundSimulator(m_Satellite));
   
   m_AvailableModules.push_back(new NModuleDetectorEffectsEngineSciSim(m_Satellite));
+  m_AvailableModules.push_back(new NModuleDetectorEffectsEngineSciSimCIE(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorEffectsEnginePHE(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorEffectsEngineIdeal(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorEffectsEngineBackgroundSims(m_Satellite));

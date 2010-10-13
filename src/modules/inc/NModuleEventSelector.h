@@ -25,6 +25,7 @@
 #include "NModuleInterfaceIO.h"
 #include "NModuleInterfaceEventSaverAscii.h"
 #include "NModuleInterfaceEventSaverLevel2Fits.h"
+#include "NModuleInterfaceEventSaverROOTTree.h"
 
 // Forward declarations:
 
@@ -33,7 +34,9 @@
 
 
 class NModuleEventSelector : public NModule, public NModuleInterfaceEvent, 
-  public NModuleInterfaceIO, public NModuleInterfaceEventSaverAscii, public NModuleInterfaceEventSaverLevel2Fits
+  public NModuleInterfaceIO, public NModuleInterfaceEventSaverAscii,
+  public NModuleInterfaceEventSaverLevel2Fits,
+  public NModuleInterfaceEventSaverROOTTree
 {
   // public interface:
  public:
@@ -93,6 +96,8 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   double m_EnergyMax;
   //! True if we should save as fits file
   bool m_SaveAsFits;
+  //! True if we should save as ROOT file
+  bool m_SaveAsROOT;
   //! True if we should save before the event selection have been applied
   bool m_SaveBeforeSelections;
 
