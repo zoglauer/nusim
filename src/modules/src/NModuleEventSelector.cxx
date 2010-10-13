@@ -204,6 +204,10 @@ bool NModuleEventSelector::Finalize()
     if (IsLevel2FitsFileOpen() == true) {
       if (CloseLevel2FitsFile() == false) return false;
     } 
+  } else if (m_SaveAsROOT == true) {
+    if (IsROOTFileOpen() == true) {
+      if (CloseROOTFile() == false) return false;
+    } 
   } else {
     if (IsAsciiFileOpen() == true) {
       if (CloseAsciiFile() == false) return false;

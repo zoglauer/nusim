@@ -24,6 +24,7 @@
 // #include "fitsio.h"
 
 // ROOT libs:
+#include "TDirectory.h"
 
 // MEGAlib libs:
 #include "MStreams.h"
@@ -68,6 +69,8 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
 
   // cout<<"OpenFits"<<endl;
 
+  TDirectory* OrgDirectory = gDirectory;
+
   MFile::ExpandFileName(FileName);
 
   m_File = 0;
@@ -91,7 +94,7 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
   m_EventTree->Branch("PrimaryEnergy",        &m_PrimaryEnergy,       "PrimaryEnergy/D");
   m_EventTree->Branch("PrimaryPosition",      &m_PrimaryPosition);
   m_EventTree->Branch("PrimaryDirection",     &m_PrimaryDirection);
-  m_EventTree->Branch("RA",                   &m_RA,                  "RA_D");
+  m_EventTree->Branch("RA",                   &m_RA,                  "RA/D");
   m_EventTree->Branch("Dec",                  &m_Dec,                 "Dec/D");
   m_EventTree->Branch("XPix",                 &m_XPix,                "XPix/D");
   m_EventTree->Branch("YPix",                 &m_YPix,                "YPix/D");
@@ -102,6 +105,8 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
   m_EventTree->Branch("MinusEnergy",          &m_MinusEnergy,         "MinusEnergy/D");
   m_EventTree->Branch("ReconstructedEnergy",  &m_ReconstructedEnergy, "ReconstructedEnergy/D");
   m_EventTree->Branch("Energies",              m_Energies,            "Energies[9]/D");
+
+  gDirectory = OrgDirectory;
 
   return true;
 }
@@ -120,7 +125,10 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 
   // from NHits
   int NHits = Event.GetNHits();
-  if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
+
+  if      ( NHits == 0 ) return true;
+  else if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
+
   m_Dec    = Event.GetHit(0).GetObservatoryData().GetDec();
   m_RA     = Event.GetHit(0).GetObservatoryData().GetRaScaled();
   m_XPix   = (m_RA - Reference_Ra *60.)*60./Pixsize;
@@ -128,9 +136,9 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_Energy = Event.GetHit(0).GetEnergy();
 
   // from NPhoton
-  m_PrimaryEnergy        = Event.GetOriginalPhoton().GetEnergy();
-  MVector aPosition      = Event.GetOriginalPhoton().GetPosition();
-  MVector aDirection     = Event.GetOriginalPhoton().GetDirection();
+  m_PrimaryEnergy    = Event.GetOriginalPhoton().GetEnergy();
+  MVector aPosition  = Event.GetOriginalPhoton().GetPosition();
+  MVector aDirection = Event.GetOriginalPhoton().GetDirection();
   m_PrimaryPosition .SetXYZ(aPosition.X(), aPosition.Y(), aPosition.Z());
   m_PrimaryDirection.SetXYZ(aDirection.X(), aDirection.Y(), aDirection.Z());
 
@@ -156,7 +164,11 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
       m_MinusEnergy += m_Energies[i];
   }
 
-  m_ReconstructedEnergy = m_Energy - m_MinusEnergy / (9 - m_NTrigs) * m_NTrigs;
+  if ( m_NTrigs == 9 ) {
+    m_ReconstructedEnergy = m_Energy;
+  } else {
+    m_ReconstructedEnergy = m_Energy - m_MinusEnergy / (9 - m_NTrigs) * m_NTrigs;
+  }
 
   m_EventTree->Fill();
 
@@ -170,12 +182,17 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 bool NModuleInterfaceEventSaverROOTTree::CloseROOTFile()
 {
   //! Close the file
+  // cout<<"CloseROOT"<<endl;
+
+  TDirectory* OrgDirectory = gDirectory;
 
   m_File->cd();
   m_EventTree->Write();
   m_File->Close();
 
   m_File = 0;
+
+  OrgDirectory->cd();
 
   return true;
 }
