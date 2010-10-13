@@ -94,6 +94,7 @@ class NModuleInterfaceEventSaverROOTTree
   TTree* m_EventTree;
 
   double   m_Time;
+  int      m_Grade;
   double   m_PrimaryEnergy;
   TVector3 m_PrimaryPosition, m_PrimaryDirection;
   double   m_RA, m_Dec;

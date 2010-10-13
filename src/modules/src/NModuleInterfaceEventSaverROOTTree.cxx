@@ -87,10 +87,13 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
     return false;
   }
 
-  m_EventTree = new TTree("EventTree", "NuSim Event Tree");
+  m_EventTree = new TTree("EventTree",
+			  Form("Event Tree Produced by NuSim ver. %s (SVN rev. %d)",
+			       g_Version.Data(), g_SVNRevision));
 
   //! Create one branched with event information
   m_EventTree->Branch("Time",                 &m_Time,                "Time/D");
+  m_EventTree->Branch("Grade",                &m_Grade,               "Grade/I");
   m_EventTree->Branch("PrimaryEnergy",        &m_PrimaryEnergy,       "PrimaryEnergy/D");
   m_EventTree->Branch("PrimaryPosition",      &m_PrimaryPosition);
   m_EventTree->Branch("PrimaryDirection",     &m_PrimaryDirection);
@@ -121,14 +124,14 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 
   // cout<<"SaveFits"<<endl;
 
-  m_Time   = Event.GetTime().GetSeconds();
-
   // from NHits
   int NHits = Event.GetNHits();
 
   if      ( NHits == 0 ) return true;
   else if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
 
+  m_Time   = Event.GetTime().GetSeconds();
+  m_Grade  = Event.GetOrigin();
   m_Dec    = Event.GetHit(0).GetObservatoryData().GetDec();
   m_RA     = Event.GetHit(0).GetObservatoryData().GetRaScaled();
   m_XPix   = (m_RA - Reference_Ra *60.)*60./Pixsize;
