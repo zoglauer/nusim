@@ -21,6 +21,7 @@
 
 // MEGAlib libs:
 #include "MStreams.h"
+#include "MTime.h"
 
 // NuSTAR libs:
 #include "NModule.h"
@@ -66,11 +67,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_Backprojection->SetYTitle("DEC [deg]");
   m_Backprojection->SetZTitle("counts");
 
-  m_Energy = new TH1D("Spectrum", "Spectrum", 148, 6, 80);
+  m_Energy = new TH1D("Spectrum", "Spectrum", 194, 3, 100);
   m_Energy->SetXTitle("keV");
   m_Energy->SetYTitle("counts");
 
-  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 148, 6, 80);
+  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 194, 3, 100);
   m_NormalizedEnergy->SetXTitle("keV");
   m_NormalizedEnergy->SetYTitle("counts/keV/s/cm^{2}");
   m_NormalizedEnergy->SetMinimum(0);
@@ -348,6 +349,33 @@ void NGUIDiagnosticsBackprojector::Update()
         m_NormalizedEnergy->SetBinContent(b, m_Energy->GetBinContent(b)/m_Energy->GetBinWidth(b)/(m_Area/100)/m_Time.GetSeconds());
       }
 
+      /*
+      // Dump to file:
+      ofstream out;
+      out.open("BackgroundDump.txt");
+      out<<"# Name                 NuSTAR background file - XXX case"<<endl;    
+      out<<""<<endl;
+      MTime Now;   
+      out<<"# Date                 "<<Now.GetYears()<<"-"<<Now.GetMonths()<<"-"<<Now.GetDays()<<endl;              
+      out<<"# Creator              NuSIM - XXX thread"<<endl;            
+      out<<"# Revision             "<<g_SVNRevision<<endl;             
+      out<<" "<<endl;              
+      out<<"# First column         Energy bin center in keV"<<endl;               
+      out<<"# Second column        Rate in cts/s/keV/cm2"<<endl;         
+      out<<"# Bin width            "<<m_NormalizedEnergy->GetBinWidth(1)<<" keV"<<endl; 
+      out<<" "<<endl;               
+      out<<"# Description          Best guess assumptions for input background fluxes simulated with MGGPOD"<<endl;         
+      out<<" "<<endl;  
+      out<<"# Attention:"<<endl;            
+      out<<"# This background excludes the aperture flux"<<endl;            
+      out<<"# This background excludes any depth cuts"<<endl;   
+      out<<" "<<endl; 
+      for (int b = 1; b <= m_NormalizedEnergy->GetNbinsX(); ++b) {
+        out<<m_NormalizedEnergy->GetBinCenter(b)<<"  "<<m_NormalizedEnergy->GetBinContent(b)<<endl;
+      }
+      out.close();
+      */
+      
 //       cout<<"Counts: "<<counts<<endl; 
 //       cout<<"Counts/sec: "<<counts/m_Time.GetSeconds()<<" --> "<<m_Time.GetSeconds()<<" s"<<endl; 
 //       cout<<"Counts/sec/cm2: "<<counts/m_Time.GetSeconds()/(m_Area/100)<<" --> "<<m_Area/100<<" cm2"<<endl; 

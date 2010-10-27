@@ -83,7 +83,7 @@ bool NModuleTriggerEngineIdeal::Initialize()
 
   m_LowTrigger = 50;
   m_HighTrigger = 5000;
-  m_TriggerThreshold = 5;
+  m_TriggerThreshold = 3;
 
   return true;
 }

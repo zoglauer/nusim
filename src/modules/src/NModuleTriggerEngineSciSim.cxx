@@ -83,7 +83,7 @@ bool NModuleTriggerEngineSciSim::Initialize()
 
   m_LowTrigger = 75;
   m_HighTrigger = 5000;
-  m_TriggerThreshold = 5;
+  m_TriggerThreshold = 3;
 
   NModuleInterfaceDeadTime::Initialize();
 
