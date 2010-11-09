@@ -64,7 +64,7 @@ void NGUIOptionsEventSelector::Create()
 
   TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 20, 5);
 
-  m_FileName = new MGUIEFileSelector(this, "Save events before or after the event selection to the file:\nSuffix = *.fits: FITS, otherwise as ASCII\nIf empty, don't save anything", 
+  m_FileName = new MGUIEFileSelector(this, "Save events before or after the event selection to the file:\nSuffix = *.fits: FITS, Suffix = *.root: ROOT, otherwise as ASCII\nIf empty, don't save anything", 
                                      dynamic_cast<NModuleInterfaceIO*>(m_Module)->GetFileName());
   m_FileName->SetFileType("Orientations data base", "*.dat");
   AddFrame(m_FileName, FileLayout);

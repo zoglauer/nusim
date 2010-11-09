@@ -56,6 +56,14 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   //! Create an XML node tree from the configuration
   virtual MXmlNode* CreateXmlConfiguration();
 
+  //! Set the low trigger
+  void   SetLowTrigger(double LowTrigger) { m_LowTrigger = LowTrigger; }
+  //! Set the high trigger
+  void   SetHighTrigger(double HighTrigger) { m_HighTrigger = HighTrigger; }
+  //! Get the low trigger
+  double GetLowTrigger() const { return m_LowTrigger; }
+  //! Get the high trigger
+  double GetHighTrigger() const { return m_HighTrigger; }
 
   // protected methods:
  protected:

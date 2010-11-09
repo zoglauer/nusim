@@ -62,6 +62,9 @@ NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : 
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsVetoDeadTimeEngineDummy)
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsVetoDeadTimeEngineDummy();
+
+  m_LowTrigger = 75;
+  m_HighTrigger = 5000;
 }
 
 
@@ -81,8 +84,6 @@ bool NModuleTriggerEngineSciSim::Initialize()
 {
   // Initialize the module 
 
-  m_LowTrigger = 75;
-  m_HighTrigger = 5000;
   m_TriggerThreshold = 3;
 
   NModuleInterfaceDeadTime::Initialize();
@@ -170,7 +171,7 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     
     Event.AddNinePixelHit(Niner);
   }
-  
+
   // Step (2): Check if a shield veto was raised
   for (unsigned int i = 0; i < Event.GetNShieldHits(); ++i) {
     // Raise veto
@@ -274,6 +275,16 @@ bool NModuleTriggerEngineSciSim::ReadXmlConfiguration(MXmlNode* Node)
     m_ApplyDeadTime = ApplyDeadTimeNode->GetValueAsBoolean();
   }
 
+  MXmlNode* LowTriggerNode = Node->GetNode("LowTrigger");
+  if (LowTriggerNode != 0) {
+    m_LowTrigger = LowTriggerNode->GetValueAsDouble();
+  }
+
+  MXmlNode* HighTriggerNode = Node->GetNode("HighTrigger");
+  if (HighTriggerNode != 0) {
+    m_HighTrigger = HighTriggerNode->GetValueAsDouble();
+  }
+
   return true;
 }
 
@@ -288,6 +299,8 @@ MXmlNode* NModuleTriggerEngineSciSim::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
   new MXmlNode(Node, "ApplyDeadTime", m_ApplyDeadTime);
+  new MXmlNode(Node, "LowTrigger",    m_LowTrigger);
+  new MXmlNode(Node, "HighTrigger",   m_HighTrigger);
 
   return Node;
 }

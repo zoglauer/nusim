@@ -73,6 +73,15 @@ void NGUIOptionsTriggerEngine::Create()
   }
   AddFrame(m_EnableDeadTime, LabelLayout);
 
+  m_LowTrigger = new MGUIEEntry(this, "Shield lower trigger [keV]:", false,
+				dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetLowTrigger());
+  AddFrame(m_LowTrigger, LabelLayout);
+
+  m_HighTrigger = new MGUIEEntry(this, "Shield higher trigger [keV]:", false,
+				 dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetHighTrigger());
+  AddFrame(m_HighTrigger, LabelLayout);
+
+
   PostCreate();
 }
 
@@ -121,8 +130,10 @@ bool NGUIOptionsTriggerEngine::OnApply()
     dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyDeadTime(false);    
   }
 
+  dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetLowTrigger(m_LowTrigger->GetAsDouble());
+  dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetHighTrigger(m_HighTrigger->GetAsDouble());
 
-	return true;
+  return true;
 }
 
 

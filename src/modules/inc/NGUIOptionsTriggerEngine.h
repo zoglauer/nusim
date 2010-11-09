@@ -64,6 +64,12 @@ class NGUIOptionsTriggerEngine : public NGUIOptions
  protected:
   TGCheckButton* m_EnableDeadTime;
 
+  //! Low veto trigger energy threshold
+  MGUIEEntry* m_LowTrigger;
+  //! High veto trigger energy threshold
+  MGUIEEntry* m_HighTrigger;
+
+
   // private members:
  private:
 

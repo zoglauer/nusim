@@ -182,6 +182,10 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       if (IsLevel2FitsFileOpen() == true) {
         if (SaveEventLevel2Fits(Event) == false) return false;
       } 
+    } else if (m_SaveAsROOT == true) {
+      if (IsROOTFileOpen() == true) {
+	if (SaveEventTree(Event) == false) return false;
+      }  
     } else {
       if (IsAsciiFileOpen() == true) {
         if (SaveEventAscii(Event, 2) == false) return false;
