@@ -104,8 +104,8 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
   m_EventTree->Branch("Column",               &m_Column,              "Column/I");
   m_EventTree->Branch("Row",                  &m_Row,                 "Row/I");
   m_EventTree->Branch("NTrigs",               &m_NTrigs,              "NTrigs/I");
-  m_EventTree->Branch("Energy",               &m_Energy,              "Energy/D");
-  m_EventTree->Branch("MinusEnergy",          &m_MinusEnergy,         "MinusEnergy/D");
+  m_EventTree->Branch("TrigEnergy",           &m_TrigEnergy,          "TrigEnergy/D");
+  m_EventTree->Branch("NonTrigEnergy",        &m_NonTrigEnergy,       "NonTrigEnergy/D");
   m_EventTree->Branch("ReconstructedEnergy",  &m_ReconstructedEnergy, "ReconstructedEnergy/D");
   m_EventTree->Branch("Energies",              m_Energies,            "Energies[9]/D");
 
@@ -136,7 +136,8 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_RA     = Event.GetHit(0).GetObservatoryData().GetRaScaled();
   m_XPix   = (m_RA - Reference_Ra *60.)*60./Pixsize;
   m_YPix   = (m_Dec- Reference_Dec*60.)*60./Pixsize;
-  m_Energy = Event.GetHit(0).GetEnergy();
+  // m_TrigEnergy = Event.GetHit(0).GetEnergy();
+  m_ReconstructedEnergy = Event.GetHit(0).GetEnergy();
 
   // from NPhoton
   m_PrimaryEnergy    = Event.GetOriginalPhoton().GetEnergy();
@@ -153,8 +154,8 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_Column = Event.GetNinePixelHit(0).GetXPixel();
   m_Row    = Event.GetNinePixelHit(0).GetYPixel();
 
-  m_Energy  = 0.0;
-  m_MinusEnergy = 0.0;
+  m_TrigEnergy  = 0.0;
+  m_NonTrigEnergy = 0.0;
 
   for ( int i=0; i<9; ++i ) {
     m_Energies[i]
@@ -162,15 +163,9 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
       - Event.GetNinePixelHit(0).GetPreTriggerSampleSum(i+1);
 
     if ( Event.GetNinePixelHit(0).GetTrigger(i+1) == true )
-      m_Energy += m_Energies[i];
+      m_TrigEnergy += m_Energies[i];
     else 
-      m_MinusEnergy += m_Energies[i];
-  }
-
-  if ( m_NTrigs == 9 ) {
-    m_ReconstructedEnergy = m_Energy;
-  } else {
-    m_ReconstructedEnergy = m_Energy - m_MinusEnergy / (9 - m_NTrigs) * m_NTrigs;
+      m_NonTrigEnergy += m_Energies[i];
   }
 
   m_EventTree->Fill();

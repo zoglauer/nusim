@@ -74,6 +74,7 @@ using namespace std;
 #include "NModuleTriggerEngineBackgroundSims.h"
 
 #include "NModuleDetectorCalibratorSciSim.h"
+#include "NModuleDetectorCalibratorSciSimCIE.h"
 #include "NModuleDetectorCalibratorIdeal.h"
 #include "NModuleDetectorCalibratorBackgroundSims.h"
 
@@ -166,6 +167,7 @@ NSupervisor::NSupervisor()
   m_AvailableModules.push_back(new NModuleTriggerEngineIdeal(m_Satellite));
   
   m_AvailableModules.push_back(new NModuleDetectorCalibratorSciSim(m_Satellite));
+  m_AvailableModules.push_back(new NModuleDetectorCalibratorSciSimCIE(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorCalibratorIdeal(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorCalibratorBackgroundSims(m_Satellite));
 

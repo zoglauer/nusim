@@ -66,6 +66,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleDetectorEffectsEnginePHE.o \
 	$(LB)/NModuleDetectorEffectsEngineBackgroundSims.o \
 	$(LB)/NModuleDetectorCalibratorSciSim.o \
+	$(LB)/NModuleDetectorCalibratorSciSimCIE.o \
 	$(LB)/NModuleDetectorCalibratorIdeal.o \
 	$(LB)/NModuleDetectorCalibratorBackgroundSims.o \
 	$(LB)/NGUIOptionsEventSelector.o \

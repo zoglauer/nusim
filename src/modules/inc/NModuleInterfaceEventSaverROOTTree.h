@@ -101,7 +101,7 @@ class NModuleInterfaceEventSaverROOTTree
   double   m_XPix, m_YPix;
   int      m_Column, m_Row;
   int      m_NTrigs;
-  double   m_Energy, m_MinusEnergy, m_ReconstructedEnergy, m_Energies[9];
+  double   m_TrigEnergy, m_NonTrigEnergy, m_ReconstructedEnergy, m_Energies[9];
 
 #ifdef ___CINT___
  public:
