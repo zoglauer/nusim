@@ -136,7 +136,7 @@ bool NGUIOptionsEventSelector::OnApply()
   if (m_SaveBeforeSelections->GetState() == kButtonDown) {
     dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
   } else {
-    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(false);
   }
 
   if (m_Energies->GetMaxValueDouble() <= m_Energies->GetMinValueDouble()) {

@@ -69,7 +69,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   m_SaveAsFits = false;
   m_SaveAsROOT = false;
   m_SaveBeforeSelections = true;
-  m_EnergyMin = 5;
+  m_EnergyMin = 3;
   m_EnergyMax = 80;
 }
 
@@ -263,7 +263,7 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   }
   MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
   if (SaveBeforeSelectionsNode != 0) {
-    m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsDouble();
+    m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsBoolean();
   }
 
   return true;
