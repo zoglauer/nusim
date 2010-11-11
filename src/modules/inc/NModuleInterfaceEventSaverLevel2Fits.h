@@ -87,22 +87,27 @@ class NModuleInterfaceEventSaverLevel2Fits
   long firstelem;
   long firstrow;
   //! fields for fits file. Saving in chunks of 1000 photons
-  float c1[1000]; 
-  float c2[1000];
-  float c3[1000];
-  float c4[1000];
-  float c5[1000];
-  float c6[1000];
-  float c7[1000];
-  float c8[1000];
-  float c9[1000];
-  float c10[1000];
-  float c11[1000];
+  vector <float> c1; 
+  vector <float> c2;
+  vector <float> c3;
+  vector <float> c4;
+  vector <float> c5;
+  vector <float> c6;
+  vector <float> c7;
+  vector <float> c8;
+  vector <float> c9;
+  vector <float> c10;
+  vector <float> c11;
+
     
-  int counter;
+  unsigned int counter;
   float Reference_Ra;
   float Reference_Dec;
   float Pixsize;
+  float maxRa;
+  float minRa;
+  float maxDec;
+  float minDec;
 
 
 #ifdef ___CINT___
