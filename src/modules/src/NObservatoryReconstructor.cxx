@@ -104,13 +104,13 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   
   NQuaternion Robst = m_CalibratedOrientationStarTrackerRelOpticalBench.GetRotationQuaternion();
   NOrientation Robin;
-  Robin.SetRotation(Rstin*Robst);
+  Robin.SetRotation(Rstin*Robst.Invert());
   NQuaternion Qobin = Rstin*Robst;
   NOrientation Rfbob = AspectSolve(md1, md2);
     
-  //MVector testphoton(1,0,0); 
+  //MVector testphoton(0.7071,0.7071,0); 
   //cout<<"Q testphoton="<<Rstin.Rotation(testphoton)<<endl;
-  //cout<<Robst.Rotation(testphoton)<<endl;
+  //cout<<Robst.Invert().Rotation(testphoton)<<endl;
   //cout<<"Robst"<<Robst<<endl;
   //cout<<"Rstin"<<Rstin<<endl;
   //cout<<"Robin"<<Robin.ToString()<<endl;
@@ -158,8 +158,8 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
 
   // Point implementation
   MVector OADet=FindOpticalAxisAtDet(Rfbob, FP, module);  // Find intersection of the optical axis on the detector and express in FB
-  FP.TransformOut(OADet);
-  Rfbob.TransformIn(OADet);
+  //FP.TransformOut(OADet);
+  //Rfbob.TransformIn(OADet);
   //MVector Sky = event-OADet;
   //Robin.TransformOut(Sky);
   //double pls = 6./3600;
@@ -179,6 +179,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   Obs.SetDirectionOpticalAxisInIS(OA);
   Obs.SetDirectionEventInIS(pF);   
   //Obs.SetDirectionEventInIS(event);
+  //Obs.SetDirectionEventInIS(OADet);
   Obs.SetOrientationFocalPlaneToOB(Rfbob);
   Obs.SetOrientationOBToIS(Robin);
 

@@ -18,6 +18,7 @@
 #include "NModuleStarTrackerEngineTrivial.h"
 
 // Standard libs:
+#include <math.h>
 
 // ROOT libs:
 #include "TGClient.h"
@@ -96,25 +97,30 @@ bool NModuleStarTrackerEngineTrivial::Initialize()
 bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& Data) 
 {
   // Main data analysis routine, which updates the event to a new level 
-
-  // We probably need to retrieve the current alignments from the satellite module
-
+  
   NOrientation OS4 = m_Satellite.GetOrientationStarTracker(m_Time, 4);
+  NOrientation S4 = m_Satellite.GetOrientationStarTrackerRelOpticalBench(m_Time,4);
+  NOrientation OB = m_Satellite.GetOrientationOpticalBench(m_Time);
+  NQuaternion Qst4fb = OB.GetRotationQuaternion()*S4.GetRotationQuaternion(); 
 
   // Generate the initial star tracker data as measured by 
 
   NStarTrackerDataSet CH4;
   CH4.SetTime(m_Time);
 
-  //MVector testaxis(0,0,1);
+  MVector testaxis(0,0,1);
   
   NPointing P = m_Satellite.GetPointing(m_Time);
-  
-  NQuaternion Qstin = P.GetQuaternion()*OS4.GetRotationQuaternion().Invert();
-  
-  //cout<<Q<<endl;
-  //cout<<"Before"<<Q.Rotation(testaxis)<<endl;
-  //cout<<"RA "<<P.GetRa()<<" Dec "<<P.GetDec()<<endl;
+  //NQuaternion Qstin = P.GetQuaternion()*OS4.GetRotationQuaternion().Invert();
+  NQuaternion Qstin = P.GetQuaternion()*Qst4fb;
+   
+  // For testing 
+  //MVector OA=Qstin.Rotation(testaxis);
+  //MVector OA=S4.GetRotationQuaternion().exiyRotation(testaxis);
+  //cout<<P.GetQuaternion()<<endl;
+  //cout<<"Before"<<Qstin.Rotation(testaxis)<<endl;
+  //cout<<OA<<endl;
+  //cout<<"RA "<<atan2(OA[1],OA[0])*c_Deg<<" DEC "<<asin(OA[2])*c_Deg<<endl;
 
   CH4.SetOriginalPointing(P);
   CH4.SetMeasuredTransformation(Qstin);
