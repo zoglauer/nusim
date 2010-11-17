@@ -37,13 +37,13 @@ const int NSource::c_Linear                       = 2;
 const int NSource::c_PowerLaw                     = 3; 
 const int NSource::c_BrokenPowerLaw               = 4; 
 const int NSource::c_FileDifferentialFlux         = 5; 
+const int NSource::c_BlackBody                    = 6; 
 
 const int NSource::c_FirstSpectralType            = 1;
-const int NSource::c_LastSpectralType             = 5;
+const int NSource::c_LastSpectralType             = 6;
 
 const int NSource::c_Gaussian                     = 105; 
 const int NSource::c_ThermalBremsstrahlung        = 106; 
-const int NSource::c_BlackBody                    = 107; 
 const int NSource::c_BandFunction                 = 108; 
 
 
