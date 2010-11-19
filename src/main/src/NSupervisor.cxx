@@ -1,4 +1,4 @@
-/*
+ /*
  * NSupervisor.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
@@ -350,7 +350,7 @@ bool NSupervisor::Run()
       dynamic_cast<NModuleInterfaceIO*>((*Iter).second) != 0) {
       TString Name = dynamic_cast<NModuleInterfaceIO*>((*Iter).second)->GetFileName();
       Size_t Last = Name.Last('.');
-      if (Last != 0) {
+      if (Last > 0) {
         Name = Name.Remove(Last, Name.Length() - Last);      
       }
       Name.Append(".cfg");
