@@ -102,6 +102,9 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! Read the calibrated alignments data base
   bool ReadPerturbedAlignmentsDB(TString FileName);
 
+  //! Find the line-delimeter of the file and rewind file afterwards!
+  char FindDelimeter(ifstream& in);
+  
   // private methods:
  private:
 

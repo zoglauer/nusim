@@ -175,17 +175,20 @@ bool NModuleOrientationsDatabase::ReadCalibratedMetrologyDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+  
   // Read the header
   TString Line;
 
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
-  Line.ReadLine(in); // column title 2
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
+  Line.ReadToDelim(in, Delimeter); // column title 2
   
   // Read the data
-  Line.ReadLine(in);
+  Line.ReadToDelim(in, Delimeter);
   if (m_CalibratedMetrologyUncertainties.ParseDB(Line) == false) {
     mgui<<"Parsing failed: Something is wrong with your calibrated metrology data base"<<show;
     in.close();
@@ -214,20 +217,23 @@ bool NModuleOrientationsDatabase::ReadPerturbedMetrologyDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+
   // Read the header
   TString Line;
 
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
-  Line.ReadLine(in); // column title 2
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
+  Line.ReadToDelim(in, Delimeter); // column title 2
   
   // Read the data
   int LineCounter = 0;
   bool Found = false;
   while (!in.eof()) {
-    Line.ReadLine(in);
+    Line.ReadToDelim(in, Delimeter);
     
     ++LineCounter;
     if (Line.Length() > 0) {
@@ -269,17 +275,20 @@ bool NModuleOrientationsDatabase::ReadCalibratedOpticsDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+  
   // Read the header
   TString Line;
 
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
-  Line.ReadLine(in); // column title 2
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
+  Line.ReadToDelim(in, Delimeter); // column title 2
   
   // Read the data
-  Line.ReadLine(in);
+  Line.ReadToDelim(in, Delimeter);
   if (m_CalibratedOpticsUncertainties.ParseDB(Line) == false) {
     mgui<<"Parsing failed: Something is wrong with your calibrated optics data base!"<<show;
     in.close();
@@ -308,19 +317,22 @@ bool NModuleOrientationsDatabase::ReadPerturbedOpticsDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+
   // Read the header
   TString Line;
 
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
-  Line.ReadLine(in); // column title 2
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
+  Line.ReadToDelim(in, Delimeter); // column title 2
   
   // Read the data
   bool Found = false;
   while (!in.eof()) {
-    Line.ReadLine(in);
+    Line.ReadToDelim(in, Delimeter);
     
     if (Line.Length() > 0) {
       if (Line[0] == ',') continue;
@@ -365,19 +377,22 @@ bool NModuleOrientationsDatabase::ReadCalibratedAlignmentsDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+
   // Read the header
   
   // If there is any error in the file, it will always be caught in ParseDB...
   TString Line;
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
   
-  Line.ReadLine(in);
+  Line.ReadToDelim(in, Delimeter);
   TString Positions = Line;
       
-  Line.ReadLine(in);
+  Line.ReadToDelim(in, Delimeter);
   TString Rotations = Line;
 
   NAlignmentsDBEntry O;
@@ -410,20 +425,24 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
     return false;
   }
 
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = FindDelimeter(in);
+  
   // Read the header
   TString Line;
 
-  Line.ReadLine(in); // version
-  Line.ReadLine(in); // type
-  Line.ReadLine(in); // description
-  Line.ReadLine(in); // column title 1
-  Line.ReadLine(in); // column title 2
+  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // type
+  Line.ReadToDelim(in, Delimeter); // description
+  Line.ReadToDelim(in, Delimeter); // column title 1
+  Line.ReadToDelim(in, Delimeter); // column title 2
+
   
   // Read the data
   TString Positions, Rotations;
   bool Found = false;
   while (!in.eof()) {
-    Line.ReadLine(in);
+    Line.ReadToDelim(in, Delimeter);
     
     if (Line.Length() > 0) {
       if (Line[0] == ',') {
@@ -432,8 +451,8 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
       }
       Positions = Line;
       
-      Line.ReadLine(in);
-    
+      Line.ReadToDelim(in, Delimeter);
+
       if (Line.Length() > 0) {
         if (Line[0] == ',') {
           cerr<<"Parsing issue (starts with ','): \""<<FileName<<"\""<<endl;
@@ -463,6 +482,30 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+char NModuleOrientationsDatabase::FindDelimeter(ifstream& in)
+{  
+  //! Find the line-delimeter of the file and rewind file
+ 
+ 
+  // Let's read until we find the first delimeter:
+  char Delimeter;
+  do {
+    in.get(Delimeter);
+  } while (in.eof() == false && int(Delimeter) != 10 && int(Delimeter) != 13); // 10: \n o new line/line feed --- 13: carriage return
+  if (int(Delimeter) == 13) {
+    char c;
+    in.get(c);
+    if (int(c) == 10) Delimeter = c;
+  }
+  in.seekg(0, ios::beg); // rewind
+
+  return Delimeter;
+}
+ 
+ 
 ////////////////////////////////////////////////////////////////////////////////
 
 
