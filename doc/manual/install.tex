@@ -1,0 +1,194 @@
+\chapter{Install}
+
+\section{NuSIM quick installation instructions}
+\subsection{Installation ROOT}
+
+The first prerequisite is ROOT. Here are some tips for the ROOT installation
+\begin{itemize}
+\item For the current version make sure you have installed at least version 5.22 � higher is probably  better, but do not install a version with an uneven minor version number, e.g. 5.25, 5.27 as those are development versions
+\item Make sure you don�t mix 32 bit and 64 bit (i.e. if you compile NuSIM as 64 bit, you also need a 64 bit ROOT).
+\item Do not forget to set all ROOT variables, i.e. ROOTSYS (pointing to the directory where ROOT is installed), and add ROOT to the PATH and LD\_LIBRARY\_PATH (or DYLD\_LIBRARY\_PATH an Mac) variables if you install ROOT in a place not yet included in those paths. 
+\end{itemize}
+
+\subsection{HEAsoft}
+In order to read and write fits files, HEAsoft is required. A standard installation should do, but take into account the following things:
+\begin{itemize}
+\item	NuSIMs configuration tool verifies that HEAsoft is installed only by checking of the HEADAS environment variable is set.
+\item	It seems that on the latest HEADAS installations the required libcfitsio.[so/dylib] (so: Linux, dylib: Mac) does not exist but 
+only a version one, e.g. libcfitsio\_34.so. Since NuSIM should be able to run with any version of libcfitsio you might have to make a link, e.g. do:
+ln �s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
+in the heasoft/$<$system version$>$/lib directory.
+\end{itemize}
+
+\subsection{NuSIM}
+Next, retrieve NuSIM from its repository by using subversion:
+\begin{verbatim}
+svn co https://www.srl.caltech.edu/svn/nusim/trunk nusim
+\end{verbatim}
+Old versions before 0.9.0 can be found in:
+\begin{verbatim}
+svn co https://www.srl.caltech.edu/svn/nustar/trunk/nusim nusim
+\end{verbatim}
+Please ask Andrew Davis (ad@srl.caltech.edu) for a svn login and password.
+
+The above command should have generated the directory nusim with all the source code.
+
+Then set all your paths correctly (the paths are set in a similar way to your ROOT paths � this example is using bash on Linux):
+\begin{verbatim}
+export NUSIM=${some directory}/nusim
+export PATH=${NUSIM}/bin:$PATH
+\end{verbatim}
+For Linux (attention: in some system this variable might not yet have been defined!)
+\begin{verbatim}
+export LD_LIBRARY_PATH=${NUSIM}/lib:${LD_LIBRARY_PATH}
+\end{verbatim}
+For Mac OS X (attention: in some system this variable might not yet have been defined!):
+\begin{verbatim}
+export DYLD_LIBRARY_PATH=${NUSIM}/lib:${DYLD_LIBRARY_PATH}
+\end{verbatim}
+
+The configure NuSIM 
+cd \$NUSIM
+For Linux:
+sh configure -linux -debug
+For Mac OS X:
+sh configure -macosx �debug
+This is followed by a simple:
+make
+(No make install for the time being!)
+
+If you launch NuSIM the first time, or if you expect that the configuration file format has been changed, launch NuSIM with the default configuration:
+
+\begin{verbatim}
+cd \$NUSIM
+nusim -c resources/configurations/Ideal.cfg
+\end{verbatim}
+
+Several more NuSIM configuration files can be found in the resources/configurations directory. Now you should be able to play around with NuSIM.
+
+\textbf{Some more tips:}
+\begin{itemize}
+\item Calling make man creates doxygen documentation. Make sure you have doxygen \& graphviz installed.
+\item If you update NuSIM make sure to completely recompile NuSIM: make clean followed by make. Otherwise you might experience unexpected crashes or weird behaviour. 
+\end{itemize}
+
+\subsection{Frequently asked questions}
+
+\subsubsection{Example configuration}
+For Linux with bash the configuration files should look similar to this. Do NOT simply copy and paste this to your .bashrc-file! You have to adapt it to your own system! This is just an example, to check if you forgot something! 
+Attention: The sequence does matter, since e.g. HEAsoft and ROOT have libraries which are named the same way. In addition, HEAsoft provides its own version of libreadline.so, which might interfere with system maintenance as super-user root. 
+ 
+\begin{verbatim}
+PRG=/prg
+
+# HEASOFT
+if [ "$USER" != "root" ]; then
+  export HEADAS=${PRG}/headas/i686-pc-linux-gnu-libc2.5
+  alias heainit=". $HEADAS/headas-init.sh"
+  source $HEADAS/headas-init.sh
+fi
+
+# ROOT
+export ROOTSYS=${PRG}/root
+export PATH=$PATH:$ROOTSYS/bin
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+
+# NUSIM
+export NUSIM=${SOFTWARE}/Nusim
+export PATH=${NUSIM}/bin:$PATH
+export LD_LIBRARY_PATH=${NUSIM}/lib:${LD_LIBRARY_PATH}
+\end{verbatim}
+
+\subsubsection{ROOT compilation problems}
+
+Error message similar to:
+{\scriptsize \begin{verbatim}
+Compiling XrdNetDNS.cc
+g++ -c -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 
+-D_REENTRANT -D_GNU_SOURCE -Wall -D__macos__  
+-Wno-deprecated -undefined dynamic_lookup -multiply_defined suppress  -O2 -DXrdDEBUG=0 
+     -I. -I.. XrdNetDNS.cc -o ../../obj/XrdNetDNS.o
+XrdNetDNS.cc: In static member function 'static int XrdNetDNS::getHostAddr(const char*, sockaddr*, int, char**)':
+XrdNetDNS.cc:73: error: 'gethostbyname_r' was not declared in this scope
+XrdNetDNS.cc:82: error: 'gethostbyaddr_r' was not declared in this scope
+XrdNetDNS.cc: In static member function 'static int XrdNetDNS::getPort(const char*, const char*, char**)':
+XrdNetDNS.cc:393: error: 'getservbyname_r' was not declared in this scope
+make[5]: *** [../../obj/XrdNetDNS.o] Error 1
+make[4]: *** [Darwinall] Error 2
+make[3]: *** [all] Error 2
+make[2]: *** [XrdNet] Error 2
+make[1]: *** [all] Error 2
+make: *** [net/xrootd/src/xrootd/lib/libXrdSec.so] Error 2
+\end{verbatim}
+}
+The Xrd component of ROOT has sophisticated dependencies, but it is not required for NuSIM. Thus simply disable it during ROOT configuration with:
+\begin{verbatim}
+./configure -�disable-xrootd
+\end{verbatim}
+
+
+\subsubsection{NuSIM configuration/compilation problems}
+
+Error message similar to:
+\begin{verbatim}
+(2) ROOT
+
+Found ROOT: /home/andreas/prg/root/bin/root
+Found ROOT version: 5.26/00 (minimum: 5.22, maximum: 5.28)
+[: 108: ==: unexpected operator
+\end{verbatim}
+You didn�t use �bash� to run configure or you didn�t start configure with: ./configure
+
+
+Error message:
+Generating dictionary... This may take a while...
+rootcint: error while loading shared libraries: libCint.so: cannot open
+shared object file: No such file or directory
+
+Something is wrong with your ROOT installation:
+\begin{itemize}
+\item Did you install ROOT correctly?
+\item	Does your LD\_LIBRARY path contain the correct settings for ROOT?
+\end{itemize}
+Error message:
+Library not found for -lcfitsio
+
+Something is wrong with your HEAsoft installation:
+\begin{itemize}
+\item	Your system has only a versioned version of libcfitsio, e.g. libcfitsio\_34.so but no libcfitsio.so. Since the version ID changes from HEAsoft version to HEAsoft version, HEAsoft should contain a link from the versioned to the unversioned library. but it doesn�t. Therefore you have to make it yourself:
+ln �s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
+in the heasoft/<system version>/lib directory.
+\item	If the above is not the problem, most likely HEAsoft is not or not correctly installed.
+\end{itemize}
+
+\subsubsection{NuSIM execution problems}
+
+The NuSIM GUI program crashes with an error message like (or you see no GUI at all or have �funny fonts�):
+{\scriptsize \begin{verbatim}
+Attaching to program: /proc/29042/exe, process 29042 done.
+[Thread debugging using libthread\_db enabled]
+[New Thread 0x7f9e513606f0 (LWP 29042)]
+0x00007f9e49a1ffd5 in waitpid () from /lib/libc.so.6 error detected on stdin
+The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]
+Detaching from program: /proc/29042/exe, process 29042
+\end{verbatim}}
+
+
+Some Xft implementations (Xft is used for font smoothing) seem to have problems how ROOT is using them. You have to reconfigure ROOT with the option ��disable-xft�, recompile ROOT and recompile MEGAlib.
+As an alternative you can also comment out the line:
+gEnv->SetValue("X11.UseXft", "true");
+in the file \$NUSIM/src/main/src/NGlobal.cxx
+
+
+Error message similar to:
+{\scriptsize \begin{verbatim}
+Error in <TUnixSystem::DynamicPathName>: MathMore[.so | .sl | .dl | .a | .dll] 
+does not exist in <long list of paths>
+Error in <ROOT::Math::IntegratorOneDim::CreateIntegrator>: 
+Error loading one dimensional GSL integrator
+\end{verbatim}
+}
+
+Something is wrong with your ROOT installation. Either you did not compile ROOT�s MathMore library (did you say �disable-mathmore during configuring ROOT?), or the MathMore library couldn�t be compiled because GSL (�GNU scientific library�) isn�t installed on your system. Either way make sure GSL is installed on your system and you have configured ROOT to compile MathMore. Fixing this requires a recompilation of ROOT.
+
+

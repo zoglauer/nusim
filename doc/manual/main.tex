@@ -1,0 +1,43 @@
+%------------------------------------------------------------------------
+%       This Phd thesis is written by Kristin Kruse Madsen
+%------------------------------------------------------------------------
+\documentclass[11pt]{book}
+%\addtolength{\hoffset}{-1.5cm}
+%\addtolength{\textwidth}{2cm}
+\addtolength{\evensidemargin}{-2cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\voffset}{-1cm}
+\addtolength{\textheight}{2cm}
+\addtolength{\textwidth}{2cm}
+\usepackage[pdftex]{graphicx}
+\usepackage{rotating}
+\begin{document}
+
+\include{title}
+
+\frontmatter
+
+\include{abstract}
+\include{preface}
+\include{acknowledgement}
+\mainmatter
+
+\tableofcontents
+\pagestyle{plain}
+
+\include{install}
+\include{modules}
+\include{database_description}
+\include{outputformat}
+
+\appendix
+
+\backmatter
+
+\small{
+% ------------------------------------------------------------------------
+%\bibliographystyle{spiebib}
+%\bibliography{Xbib}
+%}
+\end{document}
+% ------------------------------------------------------------------------
