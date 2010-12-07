@@ -64,6 +64,8 @@ class NOrientation
 	TMatrixD GetRotationMatrix() const { return m_Rotation; }
 	//! Return the rotation in matrix form
 	NQuaternion GetRotationQuaternion() const { return m_Q; }
+	//! Return euler angles
+	MVector GetEulerAngles();
 
   //! Set the rotation as Rotation matrix
   void SetRotation(TMatrixD Rotation);

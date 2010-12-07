@@ -24,6 +24,7 @@
 #include "TGClient.h"
 
 // MEGAlib libs:
+#include "TRandom.h"
 
 // NuSTAR libs:
 #include "NGUIOptionsStarTrackerEngineTrivial.h"
@@ -102,6 +103,7 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   NOrientation S4 = m_Satellite.GetOrientationStarTrackerRelOpticalBench(m_Time,4);
   NOrientation OB = m_Satellite.GetOrientationOpticalBench(m_Time);
   NQuaternion Qst4fb = OB.GetRotationQuaternion()*S4.GetRotationQuaternion(); 
+  double S4err = m_Satellite.GetPointingErrorStarTracker(m_Time, 4)/60./c_Deg;
 
   // Generate the initial star tracker data as measured by 
 
@@ -113,17 +115,24 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   NPointing P = m_Satellite.GetPointing(m_Time);
   //NQuaternion Qstin = P.GetQuaternion()*OS4.GetRotationQuaternion().Invert();
   NQuaternion Qstin = P.GetQuaternion()*Qst4fb;
-   
+  NOrientation Rstin;
+  Rstin.SetRotation(Qstin); 
+  MVector Angle=Rstin.GetEulerAngles();
+  Rstin.SetRotation(Angle[0]+gRandom->Gaus(0,S4err),Angle[1]+gRandom->Gaus(0,S4err),Angle[2]+gRandom->Gaus(0,S4err));
+  Angle=Rstin.GetEulerAngles();
+  
+  P.SetQuaternion(Rstin.GetRotationQuaternion());
+  
   // For testing 
   //MVector OA=Qstin.Rotation(testaxis);
-  //MVector OA=S4.GetRotationQuaternion().exiyRotation(testaxis);
+  //MVector OA=S4.GetRotationQuaternion().Rotation(testaxis);
   //cout<<P.GetQuaternion()<<endl;
   //cout<<"Before"<<Qstin.Rotation(testaxis)<<endl;
   //cout<<OA<<endl;
   //cout<<"RA "<<atan2(OA[1],OA[0])*c_Deg<<" DEC "<<asin(OA[2])*c_Deg<<endl;
 
   CH4.SetOriginalPointing(P);
-  CH4.SetMeasuredTransformation(Qstin);
+  CH4.SetMeasuredTransformation(Rstin.GetRotationQuaternion());
 
   Data.SetStarTrackerDataSet4(CH4);
   m_Time += m_UpdateInterval;

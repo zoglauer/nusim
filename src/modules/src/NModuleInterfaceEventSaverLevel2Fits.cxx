@@ -89,11 +89,16 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
-  int tfield = 11;
   long nrow = 0;
-  char *ttype[] = {"X","Y","PHA","Time","grade","opticX","opticY","OpticZ","opticVx","opticVy","opticVz"};
-  char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
-  char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
+  // Deactivating the direction and origin of photon to save space since the precollimator has been scrapped.
+  //int tfield = 11;
+  //char *ttype[] = {"X","Y","PHA","Time","grade","opticX","opticY","OpticZ","opticVx","opticVy","opticVz"};
+  //char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
+  //char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
+  int tfield = 5;
+  char *ttype[] = {"X","Y","PHA","Time","grade"};
+  char *tform[] = {"1E","1E","1E","1E","1I"};
+  char *tunit[] = {"pixel","pixel","keV","s","grade"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -129,9 +134,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   
 	double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
    	double Ra = Event.GetHit(i).GetObservatoryData().GetRa();
-	//Ra = Reference_Ra*60.+(Ra-Reference_Ra*60.)*cos(Reference_Dec/c_Deg);
-	//double XPix = (Ra-Reference_Ra*60.)*60./Pixsize;
-	//double YPix = (Dec-Reference_Dec*60.)*60/Pixsize;
+
 	if (Dec > maxDec) maxDec=Dec;
 	if (Ra > maxRa) maxRa=Ra;
 	if (Dec < minDec) minDec=Dec;
@@ -147,12 +150,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     c3.push_back(Energy);
     c4.push_back(float(Time.GetSeconds()));
 	c5.push_back(Event.GetOrigin());
-	c6.push_back(OriginalPhoton.GetPosition()[0]);
+	// Deactivating the origin and direction of photon
+	/*c6.push_back(OriginalPhoton.GetPosition()[0]);
 	c7.push_back(OriginalPhoton.GetPosition()[1]);
 	c8.push_back(OriginalPhoton.GetPosition()[2]);
 	c9.push_back(OriginalPhoton.GetDirection()[0]);
 	c10.push_back(OriginalPhoton.GetDirection()[1]);
-	c11.push_back(OriginalPhoton.GetDirection()[2]);
+	c11.push_back(OriginalPhoton.GetDirection()[2]);*/
    
     counter++;
 
@@ -223,10 +227,11 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
  
   float rc1[counter],rc2[counter],
         rc3[counter],rc4[counter],
-		rc5[counter],rc6[counter],
+		rc5[counter];
+		/*,rc6[counter],
 		rc7[counter],rc8[counter],
 		rc9[counter],rc10[counter],
-		rc11[counter];
+		rc11[counter];*/
 
   //! save the data before closing  
   for (unsigned int i = 0; i < counter; ++i) {
@@ -237,12 +242,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 	rc3[i] = c3[i];
 	rc4[i] = c4[i];
 	rc5[i] = c5[i];
-	rc6[i] = c6[i];
+	/*rc6[i] = c6[i];
 	rc7[i] = c7[i];
 	rc8[i] = c8[i];
 	rc9[i] = c9[i];
 	rc10[i] = c10[i];
-	rc11[i] = c11[i];
+	rc11[i] = c11[i];*/
   }	
   
   fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1, &Status);
@@ -250,12 +255,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, counter, rc3, &Status);
   fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, counter, rc4, &Status);
   fits_write_col(m_File, TFLOAT, 5, firstrow, firstelem, counter, rc5, &Status);
-  fits_write_col(m_File, TFLOAT, 6, firstrow, firstelem, counter, rc6, &Status);
+  /*fits_write_col(m_File, TFLOAT, 6, firstrow, firstelem, counter, rc6, &Status);
   fits_write_col(m_File, TFLOAT, 7, firstrow, firstelem, counter, rc7, &Status);
   fits_write_col(m_File, TFLOAT, 8, firstrow, firstelem, counter, rc8, &Status);
   fits_write_col(m_File, TFLOAT, 9, firstrow, firstelem, counter, rc9, &Status);
   fits_write_col(m_File, TFLOAT, 10, firstrow, firstelem, counter, rc10, &Status);
-  fits_write_col(m_File, TFLOAT, 11, firstrow, firstelem, counter, rc11, &Status);
+  fits_write_col(m_File, TFLOAT, 11, firstrow, firstelem, counter, rc11, &Status);*/
   
   float tlmin1 = 0;
   float tlmin2 = 0;
@@ -270,10 +275,6 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float tlmax2 = tlmax1;
   float tlmax3 = 100;
   float tlmax5 = 3;
-
-  /*cout<<maxRa-minRa<<" "<<maxDec-minDec<<endl;
-  cout<<minDec/60.<<" "<<maxDec/60.<<endl;
-  cout<<minRa/60.<<" "<<maxRa/60.<<endl;*/
 
   fits_write_key(m_File, TFLOAT, "TLMIN1", &tlmin1, "Min value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMIN2", &tlmin2, "Min value", &Status); 	  

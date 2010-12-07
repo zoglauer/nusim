@@ -129,14 +129,14 @@ void NOrientation::SetRotation(double x, double y, double z)
   m_Q.SetDCM(MVector(cosz*cosy, -sinz*cosx + cosz*siny*sinx,sinz*sinx + cosz*siny*cosx),
 			 MVector(sinz*cosy, cosz*cosx + sinz*siny*sinx,- cosz*sinx + sinz*siny*cosx),
 			 MVector(- siny, cosy*sinx, cosy*cosx));
-  
-  //q0 = sqrt(m_Rotation(0,0)+m_Rotation(1,1)+m_Rotation(2,2)+1)/2.;
-  //q1 = (m_Rotation(1,2)-m_Rotation(2,1))/(4.*q0);
-  //q2 = (m_Rotation(2,0)-m_Rotation(0,2))/(4.*q0);
-  //q3 = (m_Rotation(0,1)-m_Rotation(1,0))/(4.*q0);
-
-  //m_Q.SetRXYZ(q0,q1,q2,q3);	
 	
+}
+
+MVector NOrientation::GetEulerAngles()
+{
+
+  MVector EulerAngles(atan2(m_Rotation(1,2),m_Rotation(2,2)),-asin(m_Rotation(0,2)), atan2(m_Rotation(0,1),m_Rotation(0,0)));
+  return EulerAngles;
 }
 
 
