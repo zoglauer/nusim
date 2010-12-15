@@ -59,7 +59,6 @@ using namespace std;
 #include "NModuleDetectorSimulatorGeant4.h"
 #include "NModuleDetectorSimulatorPropagatorOnly.h"
 
-#include "NModuleBackgroundSimulatorTrivial.h"
 #include "NModuleBackgroundSimulator.h"
 
 #include "NModuleDetectorEffectsEngineSciSim.h"
@@ -144,15 +143,18 @@ NSupervisor::NSupervisor()
   
   // Pipeline modules
   m_AvailableModules.push_back(new NModuleSourceDistribution(m_Satellite));
+
   m_AvailableModules.push_back(new NModuleApertureEngineNone(m_Satellite));
   m_AvailableModules.push_back(new NModuleApertureEngineTrivial(m_Satellite));
+
   m_AvailableModules.push_back(new NModuleOpticsEngine(m_Satellite));
   m_AvailableModules.push_back(new NModuleOpticsEngineNone(m_Satellite));
   m_AvailableModules.push_back(new NModuleOpticsEngineTrivial(m_Satellite));
+
   m_AvailableModules.push_back(new NModuleDetectorSimulatorIdeal(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorSimulatorPropagatorOnly(m_Satellite));
   m_AvailableModules.push_back(new NModuleDetectorSimulatorDetailed(m_Satellite));
-  m_AvailableModules.push_back(new NModuleBackgroundSimulatorTrivial(m_Satellite));
+  
   m_AvailableModules.push_back(new NModuleBackgroundSimulator(m_Satellite));
   
   m_AvailableModules.push_back(new NModuleDetectorEffectsEngineSciSim(m_Satellite));
