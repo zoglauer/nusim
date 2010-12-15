@@ -104,6 +104,7 @@ void NGUIMain::Create()
 
   // In the beginning we build the menus and define their layout, ...	
   TGLayoutHints* MenuBarItemLayoutLeft = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 0, 0);
+  TGLayoutHints* MenuBarItemLayoutRight = new TGLayoutHints(kLHintsTop | kLHintsRight, 0, 0, 0, 0);
   
   // We continue with the menu bar and its layout ...
   TGLayoutHints* MenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
@@ -122,7 +123,7 @@ void NGUIMain::Create()
   TGPopupMenu* MenuInfo = new TGPopupMenu(fClient->GetRoot());
   MenuInfo->AddEntry("About", c_About);
   MenuInfo->Associate(this);
-  MenuBar->AddPopup("Info", MenuInfo, MenuBarItemLayoutLeft);
+  MenuBar->AddPopup("Info", MenuInfo, MenuBarItemLayoutRight);
 
 
 

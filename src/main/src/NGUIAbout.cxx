@@ -38,6 +38,8 @@ using namespace std;
 #include "NGlobal.h"
 #include "MGUIEText.h"
 #include "MStreams.h"
+#include "MFile.h"
+#include "MParser.h"
 
 // Test:
 
@@ -63,13 +65,14 @@ NGUIAbout::NGUIAbout(const TGWindow* Parent, const TGWindow* Main)
 
   m_ProgramName = "NuSim"; 
   m_IconPath = ""; 
-  m_LeadProgrammer = "";
+  m_LeadProgrammer = "Kristin Kruse Madsen and Andreas Zoglauer";
   m_Programmers = "";
   m_AdditionalProgrammers = "";
-  m_Email = "TBD";
-  m_Updates = "You can find the latest version of NuSim at:\nTBD";
-  m_Copyright = "(C) Copyright by the NUSTAR team\nAll rights reserved";
-  m_MasterReference = "TBD";
+  m_Email = "kristin@srl.caltech.edu & zog@ssl.berkeley.edu";
+  m_Updates = "You can find the latest version of NuSim at:\nhttps://www.srl.caltech.edu/svn/nusim/trunk";
+  m_Copyright = "(C) Copyright by the NuSIM team\nAll rights reserved";
+  m_References.push_back("A. Zoglauer, K. Kruse Madsen et al. \"NuSim: Architecture, Design, and Implementation\", to be written and published some time in 2011...");
+  m_References.push_back("K. Kruse Madsen, A. Zoglauer et al. \"NuSim: Physics Simulation and its Validation\", to be written und published some time in 2011...");
 }
 
 
@@ -102,6 +105,7 @@ void NGUIAbout::Create()
 
   TGCompositeFrame* AboutFrame = MainTab->AddTab("About");
   TGCompositeFrame* ReferencesFrame = MainTab->AddTab("References");
+  TGCompositeFrame* PeopleFrame = MainTab->AddTab("People");
   TGCompositeFrame* BugsFrame = MainTab->AddTab("Bugs");
   TGCompositeFrame* DisclaimerFrame = MainTab->AddTab("Disclaimer");
 
@@ -111,8 +115,6 @@ void NGUIAbout::Create()
   TGLayoutHints* ReferenceLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 15, 2);
   TGLayoutHints* ReferenceTextLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 2, 2);
   TGLayoutHints* TextLayout = new TGLayoutHints(kLHintsExpandX, 30, 30, 2, 5);
-  TGLayoutHints* ReferenceTopicLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 0, 10);
-  TGLayoutHints* LastReferenceTopicLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 0, 30);
   TGLayoutHints* VersionLayout = new TGLayoutHints(kLHintsExpandX, 30, 30, 0, 10);
   TGLayoutHints* TitleLayout = new TGLayoutHints(kLHintsCenterX | kLHintsExpandX | kLHintsTop, 30, 30, 20, 15);
 
@@ -149,7 +151,7 @@ void NGUIAbout::Create()
 
 
   if (m_LeadProgrammer != "") {
-    MGUIEText* m_LeadLabel = new MGUIEText(AboutFrame, "Lead programmer:", MGUIEText::c_Centered, true);
+    MGUIEText* m_LeadLabel = new MGUIEText(AboutFrame, "Lead programmers:", MGUIEText::c_Centered, true);
     AboutFrame->AddFrame(m_LeadLabel, LabelLayout);
     MGUIEText* m_LeadText = new MGUIEText(AboutFrame, m_LeadProgrammer, MGUIEText::c_Centered);
     AboutFrame->AddFrame(m_LeadText, TextLayout);
@@ -219,16 +221,63 @@ void NGUIAbout::Create()
       TGLabel* Reference = new TGLabel(ReferencesFrame, m_References[r]);
       Reference->SetWrapLength(TabWidth);
       ReferencesFrame->AddFrame(Reference, ReferenceTextLayout);
-      TGLabel* ReferenceTopic = new TGLabel(ReferencesFrame, TString("(") + m_Topics[r] + TString(")"));
-      ReferenceTopic->SetWrapLength(TabWidth);
-      ReferenceTopic->SetTextFont(m_ItalicFont);
-      if (r == m_References.size()-1) {
-        ReferencesFrame->AddFrame(ReferenceTopic, LastReferenceTopicLayout);
-      } else {
-        ReferencesFrame->AddFrame(ReferenceTopic, ReferenceTopicLayout);
-      }
     }
   }
+
+
+  TGLabel* ReferencesExtroLabel = new TGLabel(ReferencesFrame, "The above two references are the master references for NuSIM. If you have used NuSim for your publications, please cite BOTH as reference for NuSIM. Thanks, Andreas & Kristin :)");
+  ReferencesExtroLabel->SetWrapLength(TabWidth);
+  ReferencesExtroLabel->SetTextFont(m_ItalicFont);
+  TGLayoutHints* ReferencesExtroLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 30, 5);
+  ReferencesFrame->AddFrame(ReferencesExtroLabel, ReferencesExtroLayout);
+
+
+
+  // The People frame:
+
+  TGLabel* PeopleIntroLabel = new TGLabel(PeopleFrame, "The NuSIM developers and contributors:");
+  PeopleIntroLabel->SetTextFont(m_EmphasizedFont);
+  PeopleIntroLabel->SetWrapLength(TabWidth);
+  TGLayoutHints* PeopleIntroLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 30, 5);
+  PeopleFrame->AddFrame(PeopleIntroLabel, PeopleIntroLayout);
+
+  // Read the People list from file:
+  TString FileName = "$(NUSIM)/doc/Peoples.txt";
+  vector<TString> DeveloperList;
+  if (MFile::Exists(FileName) == true) {
+    MParser Parser;
+   if (Parser.Open(FileName, MFile::c_Read) == true) {
+
+      for (unsigned int i = 0; i < Parser.GetNLines(); ++i) {
+        if (Parser.GetTokenizerAt(i)->GetNTokens() == 0) continue;
+        if (Parser.GetTokenizerAt(i)->IsTokenAt(0, "NM") == true) {
+          DeveloperList.push_back(Parser.GetTokenizerAt(i)->GetTokenAfterAsString(1));
+        }
+      }
+      Parser.Close();    
+    } 
+  }
+
+  TString People;
+  if (DeveloperList.size() > 0) {
+    for (unsigned int i = 0; i < DeveloperList.size(); ++i) {
+      People += DeveloperList[i];
+      if (i != DeveloperList.size()-1) People += ", ";
+    }
+  } else {
+    People = "The file with the developers/contributors is empty...";
+  }
+
+  TGLabel* DeveloperLabel = new TGLabel(PeopleFrame, People);
+  DeveloperLabel->SetWrapLength(TabWidth);
+  TGLayoutHints* DeveloperLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 0, 5);
+  PeopleFrame->AddFrame(DeveloperLabel, DeveloperLayout);
+
+  TGLabel* PeopleExtroLabel = new TGLabel(PeopleFrame, "If you do not appear here, but you think you should, then add yourself to $(NUSIM)/doc/Peoples.txt");
+  PeopleExtroLabel->SetWrapLength(TabWidth);
+  PeopleExtroLabel->SetTextFont(m_ItalicFont);
+  TGLayoutHints* PeopleExtroLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 30, 5);
+  PeopleFrame->AddFrame(PeopleExtroLabel, PeopleExtroLayout);
 
 
 
@@ -240,12 +289,12 @@ void NGUIAbout::Create()
   TGLayoutHints* ProblemsLabelLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 30, 5);
   BugsFrame->AddFrame(ProblemsLabel, ProblemsLabelLayout);
 
-  TGLabel* Problems = new TGLabel(BugsFrame, "No program or documentation is free of bugs and obscurities. Neither is NuSim. However, to minimize their occurances, and thus to improve the performance of the program, if you find any problem in the latest version, please report it in a reproducable form to the lead developer:");
+  TGLabel* Problems = new TGLabel(BugsFrame, "No program or documentation is free of bugs and obscurities. Neither is NuSim. However, to minimize their occurances, and thus to improve the performance of the program, if you find any problem in the latest version, please report it in a reproducable form to the lead developers:");
   Problems->SetWrapLength(TabWidth);
   TGLayoutHints* ProblemsLayout = new TGLayoutHints(kLHintsLeft, 30, 30, 0, 5);
   BugsFrame->AddFrame(Problems, ProblemsLayout);
 
-  TGLabel* EmailLabel = new TGLabel(BugsFrame, m_Email);
+  TGLabel* EmailLabel = new TGLabel(BugsFrame, "zog@ssl.berkeley.edu AND kristin@srl.caltech.edu");
   EmailLabel->SetWrapLength(TabWidth);
   TGLayoutHints* EmailLabelLayout = new TGLayoutHints(kLHintsCenterX, 30, 30, 10, 10);
   BugsFrame->AddFrame(EmailLabel, EmailLabelLayout);

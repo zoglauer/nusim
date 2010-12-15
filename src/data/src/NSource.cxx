@@ -2,7 +2,7 @@
  *                                                                            *
  * NSource.cc                                                                 *
  *                                                                            *
- * Copyright (C) 2001-2009 by Andreas Zoglauer for the MEGA team.             *
+ * Copyright (C) by Andreas Zoglauer.                                         *
  * All rights reserved.                                                       *
  *                                                                            *
  * Please see the file Licence.txt for further copyright information.         *
