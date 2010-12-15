@@ -5,8 +5,8 @@
 
 The first prerequisite is ROOT. Here are some tips for the ROOT installation
 \begin{itemize}
-\item For the current version make sure you have installed at least version 5.22 � higher is probably  better, but do not install a version with an uneven minor version number, e.g. 5.25, 5.27 as those are development versions
-\item Make sure you don�t mix 32 bit and 64 bit (i.e. if you compile NuSIM as 64 bit, you also need a 64 bit ROOT).
+\item For the current version make sure you have installed at least version 5.22, higher is probably  better, but do not install a version with an uneven minor version number, e.g. 5.25, 5.27 as those are development versions
+\item Make sure you don't mix 32 bit and 64 bit (i.e. if you compile NuSIM as 64 bit, you also need a 64 bit ROOT).
 \item Do not forget to set all ROOT variables, i.e. ROOTSYS (pointing to the directory where ROOT is installed), and add ROOT to the PATH and LD\_LIBRARY\_PATH (or DYLD\_LIBRARY\_PATH an Mac) variables if you install ROOT in a place not yet included in those paths. 
 \end{itemize}
 
@@ -16,7 +16,7 @@ In order to read and write fits files, HEAsoft is required. A standard installat
 \item	NuSIMs configuration tool verifies that HEAsoft is installed only by checking of the HEADAS environment variable is set.
 \item	It seems that on the latest HEADAS installations the required libcfitsio.[so/dylib] (so: Linux, dylib: Mac) does not exist but 
 only a version one, e.g. libcfitsio\_34.so. Since NuSIM should be able to run with any version of libcfitsio you might have to make a link, e.g. do:
-ln �s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
+ln -s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
 in the heasoft/$<$system version$>$/lib directory.
 \end{itemize}
 
@@ -33,7 +33,7 @@ Please ask Andrew Davis (ad@srl.caltech.edu) for a svn login and password.
 
 The above command should have generated the directory nusim with all the source code.
 
-Then set all your paths correctly (the paths are set in a similar way to your ROOT paths � this example is using bash on Linux):
+Then set all your paths correctly (the paths are set in a similar way to your ROOT paths - this example is using bash on Linux):
 \begin{verbatim}
 export NUSIM=${some directory}/nusim
 export PATH=${NUSIM}/bin:$PATH
@@ -47,14 +47,14 @@ For Mac OS X (attention: in some system this variable might not yet have been de
 export DYLD_LIBRARY_PATH=${NUSIM}/lib:${DYLD_LIBRARY_PATH}
 \end{verbatim}
 
-The configure NuSIM 
-cd \$NUSIM
-For Linux:
-sh configure -linux -debug
-For Mac OS X:
-sh configure -macosx �debug
-This is followed by a simple:
-make
+To configure NuSIM \\
+cd \$NUSIM \\
+For Linux: \\
+sh configure -linux -debug \\
+For Mac OS X: \\
+sh configure -macosx -debug \\
+This is followed by a simple: \\
+make \\
 (No make install for the time being!)
 
 If you launch NuSIM the first time, or if you expect that the configuration file format has been changed, launch NuSIM with the default configuration:
@@ -68,8 +68,8 @@ Several more NuSIM configuration files can be found in the resources/configurati
 
 \textbf{Some more tips:}
 \begin{itemize}
-\item Calling make man creates doxygen documentation. Make sure you have doxygen \& graphviz installed.
-\item If you update NuSIM make sure to completely recompile NuSIM: make clean followed by make. Otherwise you might experience unexpected crashes or weird behaviour. 
+\item Calling \textbf{make man} creates doxygen documentation. Make sure you have doxygen \& graphviz installed.
+\item If you update NuSIM make sure to completely recompile NuSIM: \textbf{make clean} followed by \textbf{make}. Otherwise you might experience unexpected crashes or weird behaviour. 
 \end{itemize}
 
 \subsection{Frequently asked questions}
@@ -123,7 +123,7 @@ make: *** [net/xrootd/src/xrootd/lib/libXrdSec.so] Error 2
 }
 The Xrd component of ROOT has sophisticated dependencies, but it is not required for NuSIM. Thus simply disable it during ROOT configuration with:
 \begin{verbatim}
-./configure -�disable-xrootd
+./configure -disable-xrootd
 \end{verbatim}
 
 
@@ -137,13 +137,15 @@ Found ROOT: /home/andreas/prg/root/bin/root
 Found ROOT version: 5.26/00 (minimum: 5.22, maximum: 5.28)
 [: 108: ==: unexpected operator
 \end{verbatim}
-You didn�t use �bash� to run configure or you didn�t start configure with: ./configure
+You didn't use bash to run configure or you didn't start configure with: ./configure
 
 
 Error message:
+\begin{verbatim}
 Generating dictionary... This may take a while...
 rootcint: error while loading shared libraries: libCint.so: cannot open
 shared object file: No such file or directory
+\end{verbatim}
 
 Something is wrong with your ROOT installation:
 \begin{itemize}
@@ -151,13 +153,14 @@ Something is wrong with your ROOT installation:
 \item	Does your LD\_LIBRARY path contain the correct settings for ROOT?
 \end{itemize}
 Error message:
+\begin{verbatim}
 Library not found for -lcfitsio
-
+\end{verbatim}
 Something is wrong with your HEAsoft installation:
 \begin{itemize}
-\item	Your system has only a versioned version of libcfitsio, e.g. libcfitsio\_34.so but no libcfitsio.so. Since the version ID changes from HEAsoft version to HEAsoft version, HEAsoft should contain a link from the versioned to the unversioned library. but it doesn�t. Therefore you have to make it yourself:
-ln �s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
-in the heasoft/<system version>/lib directory.
+\item	Your system has only a versioned version of libcfitsio, e.g. libcfitsio\_34.so but no libcfitsio.so. Since the version ID changes from HEAsoft version to HEAsoft version, HEAsoft should contain a link from the versioned to the unversioned library. but it doesn't. Therefore you have to make it yourself:\\
+ln -s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
+in the heasoft/$<$system version$>$/lib directory.
 \item	If the above is not the problem, most likely HEAsoft is not or not correctly installed.
 \end{itemize}
 
@@ -174,9 +177,9 @@ Detaching from program: /proc/29042/exe, process 29042
 \end{verbatim}}
 
 
-Some Xft implementations (Xft is used for font smoothing) seem to have problems how ROOT is using them. You have to reconfigure ROOT with the option ��disable-xft�, recompile ROOT and recompile MEGAlib.
+Some Xft implementations (Xft is used for font smoothing) seem to have problems how ROOT is using them. You have to reconfigure ROOT with the option --disable-xft, recompile ROOT and recompile MEGAlib.
 As an alternative you can also comment out the line:
-gEnv->SetValue("X11.UseXft", "true");
+gEnv-$>$SetValue("X11.UseXft", "true");
 in the file \$NUSIM/src/main/src/NGlobal.cxx
 
 
