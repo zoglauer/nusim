@@ -67,7 +67,7 @@ void NGUIOptionsPointingPattern::Create()
 {
   PreCreate();
 
-  TGLabel* Intro = new TGLabel(this, "This samples the initial photon directions, and generates a pointing pattern, which covers all the photons, steered by the below parameters. Start the sampling by pressing OK. The following process can not be interupted. Afterwards load the generated pattern file into the pointing module");
+  TGLabel* Intro = new TGLabel(this, "This samples the initial photon directions, and generates a pointing pattern, which covers all the photons, steered by the below parameters. Start the sampling by pressing OK. The following process can not be interupted. Afterwards load the generated pattern file into the pointing module.");
   Intro->SetWrapLength(530);
   TGLayoutHints* IntroLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 30, 5);
   AddFrame(Intro, IntroLayout);
