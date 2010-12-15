@@ -221,11 +221,10 @@ void MGUIEEntry::Create()
     AddFrame(m_Input, m_InputLayout);
 		m_Input->Layout();
   } else {
-    m_NumberInput = new TGNumberEntry(this, m_ValueAsDouble);
 		if (m_Type == e_Integer) {
-			m_NumberInput->SetFormat(TGNumberFormat::kNESInteger);
+		  m_NumberInput = new TGNumberEntry(this, m_ValueAsDouble, 9, -1, TGNumberFormat::kNESInteger);
 		} else {
-			m_NumberInput->SetFormat(TGNumberFormat::kNESReal);
+		  m_NumberInput = new TGNumberEntry(this, m_ValueAsDouble, 12, -1, TGNumberFormat::kNESReal);
 		}
 		m_NumberInput->SetLimits(TGNumberFormat::kNELLimitMinMax, m_Min, m_Max);
 		m_NumberInput->Associate(this);
@@ -249,7 +248,7 @@ void MGUIEEntry::Create()
 
 
 bool MGUIEEntry::ProcessMessage(long Message, long Parameter1, 
-                                  long Parameter2)
+                                long Parameter2)
 {
   // Process the messages for this application, mainly the scollbar moves:
   
@@ -430,11 +429,14 @@ int MGUIEEntry::GetAsInt()
     massert(false);
   }
 
+  int Number = 0;
 	if (m_Limits == false) {
-		return (int) ToNumber(m_Input->GetText());	
+		Number = (int) ToNumber(m_Input->GetText());	
 	} else {
-		return m_NumberInput->GetIntNumber();
+		Number = m_NumberInput->GetIntNumber();
 	}
+
+	return Number;
 }
 
 
