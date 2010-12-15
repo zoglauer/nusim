@@ -34,6 +34,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleTemplate.o \
 	$(LB)/NGUIOptionsSource.o \
 	$(LB)/NGUIOptionsSourceDistribution.o \
+	$(LB)/NGUIOptionsPointingPattern.o \
 	$(LB)/NGUIDiagnosticsSourceDistribution.o \
 	$(LB)/NModuleSourceDistribution.o \
 	$(LB)/NModuleOpticsEngine.o \

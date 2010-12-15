@@ -69,6 +69,10 @@ NModuleSourceDistribution::NModuleSourceDistribution(NSatellite& Satellite) : NM
   m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
 
   // Additional data:
+  m_PointingPatternFileName = "$(NUSIM)/ATestPattern.dat";
+  m_NTestPhotons = 1000000;
+  m_DistanceBetweenPointings = 7.3;
+  m_MaxAllowedDistanceForAcceptance = 3.0;
 }
 
 
@@ -280,7 +284,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   
   // Calculate some test events:
   vector<MVector> Tests;
-  unsigned int s_max = 2000000;
+  unsigned int s_max = m_NTestPhotons;
   for (unsigned int s = 0; s < s_max; ++s) {
     if (s % (s_max/10) == 0) {
       cout<<"Simulated "<<s<<"/"<<s_max<<" events"<<endl;
@@ -319,9 +323,9 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   double DecCenter = 0.5*(DecMax+DecMin);
 
   // And set all of its initial parameters:
-  double PointingDistanceDec = 6; // arcmin
+  double PointingDistanceDec = m_DistanceBetweenPointings; // arcmin
   double PointingDistanceRa = PointingDistanceDec/cos(DecCenter/60*c_Rad); // arcmin
-  cout<<"Pointing dis: Ra: "<<PointingDistanceRa<<endl;
+  cout<<"Pointing dis: Ra: "<<PointingDistanceRa<<"  Dec:"<<PointingDistanceDec<<endl;
 
   //! Increase to cover some area around the sources:
   DecMin -= PointingDistanceDec;
@@ -340,11 +344,11 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
     vector<double> Decs;
     vector<bool> Accepted;
     for (int r = 0; r <= RaPoints; ++r) {
-      if (d % 2 == 0) {
+      //if (d % 2 == 0) {
         Ra = RaMin + r*PointingDistanceRa;
-      } else {
-        Ra = RaMin + (r+0.5)*PointingDistanceRa;
-      }
+      //} else {
+      //  Ra = RaMin + (r+0.5)*PointingDistanceRa;
+      //}
       Dec = DecMin + d*PointingDistanceDec;
       
       Ras.push_back(Ra);
@@ -356,7 +360,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
     
       bool Found = false;
       for (unsigned int t = 0; t < Tests.size(); ++t) {
-        if (Tests[t].Angle(TestDir) < PointingDistanceDec/60*c_Rad) {
+        if (Tests[t].Angle(TestDir) < m_MaxAllowedDistanceForAcceptance/60*c_Rad) {
           Found = true;
           break;
         }
@@ -400,7 +404,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
 
   // Dump to file
   ofstream out;
-  out.open("Pointings.dat");  
+  out.open(m_PointingPatternFileName);  
   for (int d = 0; d <= DecPoints; ++d) {
     for (int r = 0; r <= RaPoints; ++r) {
       if (AcceptedPointings[d][r] == true) { 
@@ -451,6 +455,22 @@ bool NModuleSourceDistribution::ReadXmlConfiguration(MXmlNode* Node)
       }
     }
   }
+  MXmlNode* PointingPatternFileNameNode = Node->GetNode("PointingPatternFileName");
+  if (PointingPatternFileNameNode != 0) {
+    m_PointingPatternFileName = PointingPatternFileNameNode->GetValue();
+  }
+  MXmlNode* NTestPhotonsNode = Node->GetNode("NTestPhotons");
+  if (NTestPhotonsNode != 0) {
+    m_NTestPhotons = NTestPhotonsNode->GetValueAsInt();
+  }
+  MXmlNode* DistanceBetweenPointingsNode = Node->GetNode("DistanceBetweenPointings");
+  if (DistanceBetweenPointingsNode != 0) {
+    m_DistanceBetweenPointings = DistanceBetweenPointingsNode->GetValueAsDouble();
+  }
+  MXmlNode* MaxAllowedDistanceForAcceptanceNode = Node->GetNode("MaxAllowedDistanceForAcceptance");
+  if (MaxAllowedDistanceForAcceptanceNode != 0) {
+    m_MaxAllowedDistanceForAcceptance = MaxAllowedDistanceForAcceptanceNode->GetValueAsDouble();
+  }
 
   return true;
 }
@@ -469,7 +489,11 @@ MXmlNode* NModuleSourceDistribution::CreateXmlConfiguration()
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
     Sources->AddNode(m_Sources[s]->CreateXmlConfiguration());
   }
- 
+  new MXmlNode(Node, "PointingPatternFileName", m_PointingPatternFileName);
+  new MXmlNode(Node, "NTestPhotons", m_NTestPhotons);
+  new MXmlNode(Node, "DistanceBetweenPointings", m_DistanceBetweenPointings);
+  new MXmlNode(Node, "MaxAllowedDistanceForAcceptance", m_MaxAllowedDistanceForAcceptance);
+  
   return Node;
 }
 

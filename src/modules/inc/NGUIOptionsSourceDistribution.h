@@ -58,9 +58,10 @@ class NGUIOptionsSourceDistribution : public NGUIOptions
   //! The creation part which gets overwritten
   virtual void Create();
 
-  static const int c_Add    = 1001;
-  static const int c_List   = 1002;
-  static const int c_Remove = 1003;
+  static const int c_Add      = 1001;
+  static const int c_List     = 1002;
+  static const int c_Remove   = 1003;
+  static const int c_Pointing = 1004;
 
   // protected methods:
  protected:
@@ -73,6 +74,8 @@ class NGUIOptionsSourceDistribution : public NGUIOptions
   virtual bool OnList();
   //! Actions after the Remove button has been pressed
 	virtual bool OnRemove();
+  //! Actions after the Pointing button has been pressed
+	virtual bool OnPointing();
 
   //! Create the tab
   void CreateTab(NSource* Source);

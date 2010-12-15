@@ -32,7 +32,7 @@ using namespace std;
 // NuSTAR libs:
 #include "NModule.h"
 #include "NModuleSourceDistribution.h"
-
+#include "NGUIOptionsPointingPattern.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -84,27 +84,33 @@ void NGUIOptionsSourceDistribution::Create()
 	TGLayoutHints* ButtonFrameLayout =	new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsCenterX, 20, 20, 5, 0);
 	AddFrame(ButtonFrame, ButtonFrameLayout);
 
-  TGTextButton* AddButton = new TGTextButton(ButtonFrame, "Add new source", c_Add); 
-  TGLayoutHints* AddButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
-  AddButton->SetMargins(20, 20, 2, 2);
-  AddButton->Associate(this);
-  ButtonFrame->AddFrame(AddButton, AddButtonLayout);
+  TGTextButton* PointingButton = new TGTextButton(ButtonFrame, "Pointing", c_Pointing); 
+  TGLayoutHints* PointingButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 20, 0, 0);
+  PointingButton->SetMargins(10, 10, 2, 2);
+  PointingButton->Associate(this);
+  ButtonFrame->AddFrame(PointingButton, PointingButtonLayout);
 
   TGTextButton* ListButton = new TGTextButton(ButtonFrame, "Import from file", c_List); 
-  TGLayoutHints* ListButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 10, 10, 0, 0);
-  ListButton->SetMargins(20, 20, 2, 2);
+  TGLayoutHints* ListButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 20, 0, 0);
+  ListButton->SetMargins(10, 10, 2, 2);
   ListButton->Associate(this);
   ButtonFrame->AddFrame(ListButton, ListButtonLayout);
 
+  TGTextButton* AddButton = new TGTextButton(ButtonFrame, "Add new source", c_Add); 
+  TGLayoutHints* AddButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 5, 0, 0);
+  AddButton->SetMargins(10, 10, 2, 2);
+  AddButton->Associate(this);
+  ButtonFrame->AddFrame(AddButton, AddButtonLayout);
+
 	TGTextButton* RemoveButton = new TGTextButton(ButtonFrame, "Remove current source", c_Remove); 
-  TGLayoutHints* RemoveButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 0, 0, 0, 0);
-  RemoveButton->SetMargins(20, 20, 2, 2);
+  TGLayoutHints* RemoveButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 0, 0, 0);
+  RemoveButton->SetMargins(10, 10, 2, 2);
   RemoveButton->Associate(this);
   ButtonFrame->AddFrame(RemoveButton, RemoveButtonLayout);
 
   PostCreate();
 
-  Resize(500, 570);
+  Resize(550, 570);
 }
 
 
@@ -127,6 +133,8 @@ bool NGUIOptionsSourceDistribution::ProcessMessage(long Message, long Parameter1
         Status = OnList();
       } else if (Parameter1 == c_Remove) {
         Status = OnRemove();
+      } else if (Parameter1 == c_Pointing) {
+        Status = OnPointing();
       } 
       break;
     default:
@@ -294,6 +302,20 @@ bool NGUIOptionsSourceDistribution::OnAdd()
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NGUIOptionsSourceDistribution::OnPointing()
+{
+  // Modify this to store the data in the module!
+
+  NGUIOptionsPointingPattern* Options = new NGUIOptionsPointingPattern(m_Module);
+  Options->Create();
+  gClient->WaitForUnmap(Options);
+
+  return true;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

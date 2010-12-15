@@ -61,6 +61,27 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! Determine which emission is next
   void DetermineNext();
   
+  
+  //! Set the pointing pattern output file name
+  void SetPointingPatternFileName(TString PointingPatternFileName) { m_PointingPatternFileName = PointingPatternFileName; }
+  //! Get the pointing pattern output file name
+  TString GetPointingPatternFileName() const { return m_PointingPatternFileName; }
+  
+  //! Set the number of test photons for generating the pointing pattern
+  void SetNTestPhotons(int NTestPhotons) { m_NTestPhotons = NTestPhotons; }
+  //! Get the number of test photons for generating the pointing pattern
+  int GetNTestPhotons() const { return m_NTestPhotons; }
+  
+  //! Set the distance between pointings in arcmin
+  void SetDistanceBetweenPointings(double DistanceBetweenPointings) { m_DistanceBetweenPointings = DistanceBetweenPointings; }
+  //! Get the distance between pointings in arcmin
+  double GetDistanceBetweenPointings() const { return m_DistanceBetweenPointings; }
+  
+  //! Set the maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern
+  void SetMaxAllowedDistanceForAcceptance(double MaxAllowedDistanceForAcceptance) { m_MaxAllowedDistanceForAcceptance = MaxAllowedDistanceForAcceptance; }
+  //! Get the maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern
+  double GetMaxAllowedDistanceForAcceptance() const { return m_MaxAllowedDistanceForAcceptance; }
+ 
   //! Generate an optimized pointing pattern
   bool GeneratePointingPattern();
   
@@ -92,6 +113,15 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   vector<NSource*> m_Sources;
   //! The source which is next
   int m_NextComponent;
+
+  //! A file name containing a pointing pattern
+  TString m_PointingPatternFileName;
+  //! The number of test photons for generating the pointing pattern
+  int m_NTestPhotons;
+  //! The distance between pointings in arcmin
+  double m_DistanceBetweenPointings;
+  //! The maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern 
+  double m_MaxAllowedDistanceForAcceptance;
 
   // Diagnostics
   //! Minimum RA of all started photons
