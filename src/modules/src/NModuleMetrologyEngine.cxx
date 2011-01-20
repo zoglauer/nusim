@@ -22,9 +22,12 @@
 
 // ROOT libs:
 #include "TGClient.h"
+#include "TCanvas.h"
+#include "TH2.h"
 
 // MEGAlib libs:
 #include "TRandom.h"
+
 // NuSTAR libs:
 #include "NModule.h"
 #include "NMetrologyData.h"
@@ -64,10 +67,12 @@ NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(
   m_HasDiagnosticsGUI = false;
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsMetrologyEngine)
   // and implement all your GUI options
-  //m_Diagnostics = new MGUIDiognosticsMetrologyEngine();
+  //m_Diagnostics = new MGUIDiagnosticsMetrologyEngine();
 
 
   m_UpdateInterval = 0.01;
+  
+  m_PositionShiftFileName = "$(NUSIM)/resource/data/metcal_pert_002.dat";
 }
 
 
@@ -90,7 +95,287 @@ bool NModuleMetrologyEngine::Initialize()
   // We start before the actual time
   m_Time = -5*m_UpdateInterval;
 
+  // Load the shift data from file
+  MFile::ExpandFileName(m_PositionShiftFileName);
+ 
+  if (MFile::FileExists(m_PositionShiftFileName) == false) {
+    mgui<<"Metrology engine:\nPosition shift file not found: \""<<m_PositionShiftFileName<<"\""<<show;
+    return false;
+  }
+  
+  ifstream in;
+  in.open(m_PositionShiftFileName);
+  if (in.is_open() == false) {
+    mgui<<"Metrology engine:\nUnable to open file: \""<<m_PositionShiftFileName<<"\""<<show;
+    return false;
+  }
+
+  // Let's read until we find the first delimeter, then rewind
+  char Delimeter = '\n'; //FindDelimeter(in);
+
+  // Read the header
+  TString Line;
+
+  Line.ReadToDelim(in, Delimeter); // description
+
+  
+  // Read the data
+  int LineCounter = 0;
+  bool Found = false;
+  while (!in.eof()) {
+    Line.ReadToDelim(in, Delimeter);
+    
+    ++LineCounter;
+    if (Line.Length() > 0) {
+      
+      NMetrologyDetectorShift M;
+      if (M.ParseDB(Line) == false) {
+        mgui<<"Metrology engine:\nParsing failed: Something is wrong with your metrology detector shifts"<<show;
+        in.close();
+        return false;            
+      }
+      m_MetrologyDetectorShifts.push_back(M);
+      Found = true;
+    }
+  } 
+  in.close();
+
+  if (Found == false) {
+    mgui<<"Metrology engine:\nNo entries found in your metrology detector shift data base"<<show;
+    return false;
+  }
+
+  ShowDetectorShifts();
+  
   return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+MVector NModuleMetrologyEngine::InterpolateShift(const MVector& Position)
+{
+  //! Interpolate a shift for the given position from the data set
+
+  MVector Interpolation;
+
+  // Find the clostest position in all 4 quadrants;
+  double TestDistance = 10000.0;
+  
+  MVector pXpY(+TestDistance, +TestDistance, 0.0);
+  MVector pXpY_Shift;
+  double pXpY_Radial = pXpY.Mag();
+  bool pXpY_Found = false;
+  unsigned int pXpY_Index = 0;
+  
+  MVector pXmY(+TestDistance, -TestDistance, 0.0);
+  MVector pXmY_Shift;
+  double pXmY_Radial = pXmY.Mag();
+  bool pXmY_Found = false;
+  unsigned int pXmY_Index = 0;
+
+  MVector mXpY(-TestDistance, +TestDistance, 0.0);
+  MVector mXpY_Shift;
+  double mXpY_Radial = mXpY.Mag();
+  bool mXpY_Found = false;
+  unsigned int mXpY_Index = 0;
+
+  MVector mXmY(-TestDistance, -TestDistance, 0.0);
+  MVector mXmY_Shift;
+  double mXmY_Radial = mXmY.Mag();
+  bool mXmY_Found = false;
+  unsigned int mXmY_Index = 0;
+
+  MVector PositionOffset;
+  for (unsigned int s = 0; s < m_MetrologyDetectorShifts.size(); ++s) {
+    PositionOffset = m_MetrologyDetectorShifts[s].GetPosition() - Position;
+    if (PositionOffset[0] >= 0.0) {
+      if (PositionOffset[1] >= 0.0) {
+        if (PositionOffset.Mag() < pXpY_Radial) {
+          pXpY_Radial = PositionOffset.Mag();
+          pXpY = PositionOffset;
+          pXpY_Found = true;
+          pXpY_Index = s;
+        }
+      } else {
+        if (PositionOffset.Mag() < pXmY_Radial) {
+          pXmY_Radial = PositionOffset.Mag();
+          pXmY = PositionOffset;
+          pXmY_Found = true;
+          pXmY_Index = s;
+        }
+      }
+    } else {
+      if (PositionOffset[1] >= 0.0) {
+        if (PositionOffset.Mag() < mXpY_Radial) {
+          mXpY_Radial = PositionOffset.Mag();
+          mXpY = PositionOffset;
+          mXpY_Found = true;
+          mXpY_Index = s;
+        }
+      } else {
+        if (PositionOffset.Mag() < mXmY_Radial) {
+          mXmY_Radial = PositionOffset.Mag();
+          mXmY = PositionOffset;
+          mXmY_Found = true;
+          mXmY_Index = s;
+        }
+      }
+    }
+  }
+  
+  if (pXpY_Found == false || pXmY_Found == false || mXpY_Found == false || mXmY_Found == false) {
+    //cout<<"Error: Metrology detector position "<<Position<<" is outside calibrated area!"<<endl;
+    //cout<<"Using shift of closest position!!"<<endl;
+    double Distance = numeric_limits<double>::max();
+    unsigned int Index = 0;
+    if (pXpY_Found == true && pXpY_Radial < Distance) {
+      Distance = pXpY_Radial;
+      Index = pXpY_Index;
+    }
+    if (pXmY_Found == true && pXmY_Radial < Distance) {
+      Distance = pXmY_Radial;
+      Index = pXmY_Index;
+    }
+    if (mXpY_Found == true && mXpY_Radial < Distance) {
+      Distance = mXpY_Radial;
+      Index = mXpY_Index;
+    }
+    if (mXmY_Found == true && mXmY_Radial < Distance) {
+      Distance = mXmY_Radial;
+      Index = mXmY_Index;
+    }
+    return m_MetrologyDetectorShifts[Index].GetShift();
+  }
+
+  // Go back to the real thing (instead of offsets)
+  pXpY = m_MetrologyDetectorShifts[pXpY_Index].GetPosition();
+  pXmY = m_MetrologyDetectorShifts[pXmY_Index].GetPosition();
+  mXpY = m_MetrologyDetectorShifts[mXpY_Index].GetPosition();
+  mXmY = m_MetrologyDetectorShifts[mXmY_Index].GetPosition();
+
+  pXpY_Shift = m_MetrologyDetectorShifts[pXpY_Index].GetShift();
+  pXmY_Shift = m_MetrologyDetectorShifts[pXmY_Index].GetShift();
+  mXpY_Shift = m_MetrologyDetectorShifts[mXpY_Index].GetShift();
+  mXmY_Shift = m_MetrologyDetectorShifts[mXmY_Index].GetShift();
+
+  //cout<<"Surrounding positions for "<<Position<<": "<<pXpY<<":"<<pXmY<<":"<<mXpY<<":"<<mXmY<<endl;
+  //cout<<"Surrounding shifts for "<<Position<<": "<<pXpY_Shift<<":"<<pXmY_Shift<<":"<<mXpY_Shift<<":"<<mXmY_Shift<<endl;
+
+  // Interpolate (twice):
+
+  // S(x) = m*x + t
+  // m = (S(x2)-S(x1))/(x2-x1)
+  // t = S(x2) - m*x2
+  // y0 = (y2-y1)/(x2-x1) * (x0-x1) + y1
+
+  double m, t;
+
+  // x-shift interpolation:
+ 
+  // x shift at pY
+  m = (pXpY_Shift.X() - mXpY_Shift.X())/(pXpY.X()-mXpY.X());
+  t = mXpY_Shift.X() - m*mXpY.X();
+  double xShift_pY = m*Position.X() + t;
+  MVector pY(Position.X(), (pXpY.Y() - mXpY.Y())/(pXpY.X()-mXpY.X()) * (Position.X() - mXpY.X()) + mXpY.Y(), 0.0);
+ 
+  //cout<<m<<":"<<t<<":"<<xShift_pY<<":"<<pY<<endl;
+ 
+  // x shift at mY
+  m = (pXmY_Shift.X()-mXmY_Shift.X())/(pXmY.X()-mXmY.X());
+  t = mXmY_Shift.X() - m*mXmY.X();
+  double xShift_mY = m*Position.X() + t;
+  MVector mY(Position.X(), (pXmY.Y() - mXmY.Y())/(pXmY.X()-mXmY.X()) * (Position.X() - mXmY.X()) + mXmY.Y(), 0.0);
+
+  //cout<<m<<":"<<t<<":"<<xShift_mY<<":"<<mY<<endl;
+ 
+  // x shift at position
+  
+  m = (xShift_pY - xShift_mY)/(pY.Y() - mY.Y());
+  t = xShift_mY - m*mY.Y();
+  double xShift = m*Position.Y() + t;
+  
+  //cout<<m<<":"<<t<<":"<<xShift<<endl;
+
+
+  // y-shift interpolation
+   
+  // y shift at pY
+  m = (pXpY_Shift.Y() - mXpY_Shift.Y())/(pXpY.X()-mXpY.X());
+  t = mXpY_Shift.Y() - m*mXpY.X();
+  double yShift_pY = m*Position.X() + t;
+  //MVector pY(Position.X(), (pXpY.Y() - mXpY.Y())/(pXpY.X()-mXpY.X()) * (Position.X() - mXpY.X()) + mXpY.Y(), 0.0);
+ 
+  //cout<<m<<":"<<t<<":"<<xShift_pY<<":"<<pY<<endl;
+ 
+  // y shift at mY
+  m = (pXmY_Shift.Y()-mXmY_Shift.Y())/(pXmY.X()-mXmY.X());
+  t = mXmY_Shift.Y() - m*mXmY.X();
+  double yShift_mY = m*Position.X() + t;
+  //MVector mY(Position.X(), (pXmY.Y() - mXmY.Y())/(pXmY.X()-mXmY.X()) * (Position.X() - mXmY.X()) + mXmY.Y(), 0.0);
+
+  //cout<<m<<":"<<t<<":"<<xShift_mY<<":"<<mY<<endl;
+ 
+  // y shift at position
+  
+  m = (yShift_pY - yShift_mY)/(pY.Y() - mY.Y());
+  t = yShift_mY - m*mY.Y();
+  double yShift = m*Position.Y() + t;
+
+
+
+  return MVector(xShift, yShift, 0.0);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NModuleMetrologyEngine::ShowDetectorShifts()
+{
+  //! Show the detector shift histogram -- that's just for diagnosing the interpolation algorithm
+
+  int Bins = 50;
+  double xMin = -10.15;
+  double xMax = 10.15;
+  double yMin = -10.15;
+  double yMax = 10.15;
+
+
+  TH2D* XShift = new TH2D("XShift", "Interpolated x-shifts", Bins, xMin, xMax, Bins, yMin, yMax);
+  TH2D* YShift = new TH2D("YShift", "Interpolated y-shifts", Bins, xMin, xMax, Bins, yMin, yMax);
+  
+  MVector Position, Shift;
+  for (int bx = 1; bx <= XShift->GetXaxis()->GetNbins(); ++bx) {
+    for (int by = 1; by <= XShift->GetYaxis()->GetNbins(); ++by) {
+      Position.SetXYZ(XShift->GetXaxis()->GetBinCenter(bx), XShift->GetYaxis()->GetBinCenter(by), 0.0);
+      Shift = InterpolateShift(Position);
+      
+      XShift->SetBinContent(bx, by, Shift[0]);
+      YShift->SetBinContent(bx, by, Shift[1]);
+    }
+  }
+ 
+  TH2D* XShiftMeasured = new TH2D("XShiftMeasured", "Measured x-shifts (att: bins without value are also colored)", Bins, xMin, xMax, Bins, yMin, yMax);
+  TH2D* YShiftMeasured = new TH2D("YShiftMeasured", "Measured y-Shifts (att: bins without value are also colored)", Bins, xMin, xMax, Bins, yMin, yMax);
+
+  for (unsigned int i = 0; i < m_MetrologyDetectorShifts.size(); ++i) {
+    XShiftMeasured->Fill(m_MetrologyDetectorShifts[i].GetPosition().X(), m_MetrologyDetectorShifts[i].GetPosition().Y(), m_MetrologyDetectorShifts[i].GetShift().X());
+    YShiftMeasured->Fill(m_MetrologyDetectorShifts[i].GetPosition().X(), m_MetrologyDetectorShifts[i].GetPosition().Y(), m_MetrologyDetectorShifts[i].GetShift().Y());
+  }
+    
+  TCanvas* ShiftCanvas = new TCanvas("ShiftCanvas", "Shifts...", 800, 800);
+  ShiftCanvas->Divide(2, 2);
+  ShiftCanvas->cd(1);
+  XShift->Draw("colz");
+  ShiftCanvas->cd(2);
+  YShift->Draw("colz");
+  ShiftCanvas->cd(3);
+  XShiftMeasured->Draw("colz");
+  ShiftCanvas->cd(4);
+  YShiftMeasured->Draw("colz");
+  ShiftCanvas->Update();
 }
 
 
@@ -194,6 +479,10 @@ bool NModuleMetrologyEngine::ReadXmlConfiguration(MXmlNode* Node)
   if (UpdateIntervalNode != 0) {
     m_UpdateInterval = UpdateIntervalNode->GetValueAsDouble();
   }
+  MXmlNode* PositionShiftFileNameNode = Node->GetNode("PositionShiftFileName");
+  if (PositionShiftFileNameNode != 0) {
+    m_PositionShiftFileName = PositionShiftFileNameNode->GetValueAsString();
+  }
 
   return true;
 }
@@ -208,7 +497,7 @@ MXmlNode* NModuleMetrologyEngine::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);  
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
-
+  new MXmlNode(Node, "PositionShiftFileName", m_PositionShiftFileName);
 
   return Node;
 }

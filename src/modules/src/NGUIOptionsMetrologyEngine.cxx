@@ -65,6 +65,15 @@ void NGUIOptionsMetrologyEngine::Create()
   TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 10, 10);
 	AddFrame(m_UpdateInterval, LabelLayout);
 
+
+  m_ShiftsDB = new MGUIEFileSelector(this, "Detector data base containing position shifts:", 
+                                       dynamic_cast<NModuleMetrologyEngine*>(m_Module)->GetPositionShiftFileName());
+  m_ShiftsDB->SetFileType("Shifts data base", "*.dat");
+
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 50, 20, 5, 10);
+	AddFrame(m_ShiftsDB, FileLayout);
+
+
   PostCreate();
 }
 
@@ -108,6 +117,7 @@ bool NGUIOptionsMetrologyEngine::OnApply()
 	// Modify this to store the data in the module!
 
   dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetUpdateInterval(m_UpdateInterval->GetAsDouble());
+  dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetPositionShiftFileName(m_ShiftsDB->GetFileName());
 
 	return true;
 }

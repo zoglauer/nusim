@@ -18,8 +18,9 @@
 
 // ROOT libs:
 
-// MEGAlib libs:
+// NuSIM libs:
 #include "NGlobal.h"
+#include "NMetrologyDetectorShift.h"
 #include "NModule.h"
 #include "NModuleInterfaceEntry.h"
 #include "NModuleInterfaceMetrology.h"
@@ -61,9 +62,18 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   //! Get the latitude
   double GetUpdateInterval() const { return m_UpdateInterval; }
 
+  //! Set the detector shifts
+  void SetPositionShiftFileName(TString PositionShiftFileName) { m_PositionShiftFileName = PositionShiftFileName; }
+  //! Get the detector shifts
+  TString GetPositionShiftFileName() const { return m_PositionShiftFileName; }
+
+  //! Show the detector shift histogram
+  void ShowDetectorShifts();
 
   // protected methods:
  protected:
+  //! Interpolate a shift for the given position from the data set
+  MVector InterpolateShift(const MVector& Position);
 
   // private methods:
  private:
@@ -77,7 +87,10 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
 
   // private members:
  private:
-
+  //! The name of the file containing the position shifts 
+  TString m_PositionShiftFileName;
+  //! Vector holding the position shift
+  vector<NMetrologyDetectorShift> m_MetrologyDetectorShifts;
 
 
 

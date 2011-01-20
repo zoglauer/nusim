@@ -33,6 +33,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NMetrologyDataSet.o \
 	$(LB)/NMetrologyData.o \
 	$(LB)/NMetrologyDBEntry.o \
+	$(LB)/NMetrologyDetectorShift.o \
 	$(LB)/NOpticsDBEntry.o \
 	$(LB)/NObservatoryData.o \
 	$(LB)/NExtractFitsImage.o \

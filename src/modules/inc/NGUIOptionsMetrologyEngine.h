@@ -27,6 +27,7 @@
 // MEGAlib libs:
 #include "NGlobal.h"
 #include "MGUIEEntry.h"
+#include "MGUIEFileSelector.h"
 
 // NuSTAR libs
 #include "NModule.h"
@@ -63,6 +64,7 @@ class NGUIOptionsMetrologyEngine : public NGUIOptions
   // protected members:
  protected:
   MGUIEEntry* m_UpdateInterval;
+  MGUIEFileSelector* m_ShiftsDB;
 
   // private members:
  private:
