@@ -228,6 +228,7 @@ bool NMetrologyDBEntry::Stream(ofstream& S)
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
   
 
@@ -301,7 +302,7 @@ bool NMetrologyDBEntry::ParseDB(TString Line)
   T.Analyze(Line, false);
       
   if (T.GetNTokens() != 20) {
-    mgui<<"Not enough tokens in string for metrology DB entry ("<<T.GetNTokens()<<" vs. "<<14<<")"<<show;
+    mgui<<"Not enough tokens in string for metrology DB entry ("<<T.GetNTokens()<<" vs. "<<20<<")"<<show;
     return false;
   }
 
