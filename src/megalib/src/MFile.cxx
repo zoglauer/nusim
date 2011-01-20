@@ -150,6 +150,10 @@ bool MFile::FileExists(const char* FileName)
   gSystem->ExpandPathName(Name);
   gSystem->ExpandPathName(Name);
  
+  if (Name.EndsWith("/")) {
+    return false;
+  }
+  
   if (Name.CompareTo(gSystem->DirName((char *) Name.Data())) == 0) {
     return false;
   }
@@ -175,7 +179,11 @@ bool MFile::Exists(TString FileName)
   // Just in case: Expand file name:
   gSystem->ExpandPathName(FileName);
   gSystem->ExpandPathName(FileName);
- 
+  
+  if (FileName.EndsWith("/")) {
+    return false;
+  }
+
   if (FileName.CompareTo(gSystem->DirName(FileName.Data())) == 0) {
     return false;
   }
