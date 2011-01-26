@@ -104,12 +104,13 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   
   NQuaternion Robst = m_CalibratedOrientationStarTrackerRelOpticalBench.GetRotationQuaternion();
   NOrientation Robin;
-  Robin.SetRotation(Rstin*Robst.Invert());
+  Robin.SetRotation(Robst*Rstin);
+  
   NQuaternion Qobin = Rstin*Robst;
   NOrientation Rfbob = AspectSolve(md1, md2);
     
-  //MVector testphoton(0.7071,0.7071,0); 
-  //cout<<"Q testphoton="<<Rstin.Rotation(testphoton)<<endl;
+  //MVector testphoton(0.0,0.0,1.0); 
+  //cout<<"Q testphoton="<<Rstin.Invert().Rotation(testphoton)<<endl;
   //cout<<Robst.Invert().Rotation(testphoton)<<endl;
   //cout<<"Robst"<<Robst<<endl;
   //cout<<"Rstin"<<Rstin<<endl;
@@ -146,8 +147,9 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   //cout<<Robst.Rotation(pF)<<event<<OMF<<endl;
   //MVector OAin = Qobin.Rotation(OA);
   //MVector pFin = Qobin.Rotation(pF); 
-  Robin.TransformOut(pF); 
-  Robin.TransformOut(OA); 
+  Robin.TransformIn(pF); 
+  Robin.TransformIn(OA); 
+  
   cout.precision(10);
     //cout<<module<<OA<<event<<endl; 
     //cout<<"DCM"<<module<<pF<<OA<<T3<<endl;
@@ -158,7 +160,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
 
   // Point implementation
   MVector OADet=FindOpticalAxisAtDet(Rfbob, FP, module);  // Find intersection of the optical axis on the detector and express in FB
-  //FP.TransformOut(OADet);
+  FP.TransformOut(OADet);
   //Rfbob.TransformIn(OADet);
   //MVector Sky = event-OADet;
   //Robin.TransformOut(Sky);
@@ -169,17 +171,17 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
       
   // The necessary things to save are:
   // 1) OA  - direction in inertial space of the optical axis
-  // 2) OADet  - The coordiate of the optical axis on the detector
+  // 2) pF  - The direction of the event in inertial space
   // 3) Rfob - The Transformation between FB and OB
   // 4) Robin - The transformation from OB to inertial space
   
 
   // All data should be stored in the obervatory data set
   Obs.SetTime(m_Time);
-  Obs.SetDirectionOpticalAxisInIS(OA);
+  //Obs.SetDirectionOpticalAxisInIS(OA);
   Obs.SetDirectionEventInIS(pF);   
   //Obs.SetDirectionEventInIS(event);
-  //Obs.SetDirectionEventInIS(OADet);
+  Obs.SetDirectionOpticalAxisInIS(OADet);
   Obs.SetOrientationFocalPlaneToOB(Rfbob);
   Obs.SetOrientationOBToIS(Robin);
 
@@ -231,7 +233,7 @@ NOrientation NObservatoryReconstructor::AspectSolve(const MVector& d1f, const MV
   MVector d1p = ml1+s1*ml1d;
   MVector d2p = ml2+s2*ml2d;
   
-  // Crease unit vectors in terms of detector spots in OB and FB
+  // Create unit vectors in terms of detector spots in OB and FB
   MVector Zf(0,0,1);
   MVector Zp(0,0,1);
   MVector Yf(d2f-d1f);
@@ -258,10 +260,6 @@ NOrientation NObservatoryReconstructor::AspectSolve(const MVector& d1f, const MV
   }
   Tfbs.SetRotation(inv.Invert());
   NOrientation ReconstructedFBOB=Tobs*Tfbs;  // Transformation from Focal Plane to Optics Bench
-  
-  //inv = ReconstructedFBOB.GetRotationMatrix();   // For whatever reason I have to invert to get the 
-  //ReconstructedFBOB.SetRotation(inv.Invert());   // right result, I am sure there is a mathematical reason
-												 // but I will investigate that later...
   
   // Calculate centroids of the laser spots to find out what the translation is.
   MVector rcp=(1./2.)*(d1p+d2p);  // centroid in optic coords
@@ -365,7 +363,7 @@ MVector NObservatoryReconstructor::FindOpticalAxisAtDet(NOrientation Rfbob, NOri
   Rfbob.TransformOut(OpticalAxis);
   FP.TransformIn(OpticalAxis);
   PropagateToPlane(OpticalAxis, DetPlane, DetPlaneNormal); // where OA intersects Det plane
-  MVector OADet = OpticalAxis.GetPosition(); // get new laser intersection in the MD coordinates
+  MVector OADet = OpticalAxis.GetPosition(); // get new coordinates in Focal Plane
   
   return OADet;
 }

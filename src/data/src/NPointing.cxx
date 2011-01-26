@@ -90,19 +90,24 @@ void NPointing::RaDecToQuaternion()
    // Ra, Dec are in radians. Euler angles.
 
    //cout<<"RA/DEC sanity check before: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
-
+   
+   //Important thing to remember here is that the Z-axis of the space craft is what
+   //needs to be pointing at the proper ra/deg. 
+   
+   NQuaternion Qztox(cos(c_Pi/4.),0,sin(c_Pi/4.),0);
+   
    double cr = cos(m_Ra/60*c_Rad/2.);
    double cd = cos((c_Pi/2.-m_Dec/60*c_Rad)/2.);
    double sr = sin(m_Ra/60*c_Rad/2.);
    double sd = sin((c_Pi/2.-m_Dec/60*c_Rad)/2.);
-
+   
    m_Q.m_R = cr*cd;
    m_Q.m_V[0] = -sr*sd;
    m_Q.m_V[1] = cr*sd; 
    m_Q.m_V[2] = sr*cd;
-   
+     
    //QuaternionToRaDec();
-   
+   //cout<<"m_q "<<m_Q<<endl;
    //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
 }
 

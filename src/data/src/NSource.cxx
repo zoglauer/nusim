@@ -1060,6 +1060,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
       NOrientation FBSystem;
       FBSystem.SetRotation(m_Satellite.GetPointing(m_NextEmission).GetQuaternion());
       FBSystem.TransformIn(Test);
+	  //cout<<"testdirection"<<Test.GetDirection()<<endl;
           
       // Into star tracker system:
       //NOrientation StarTrackerSystem;

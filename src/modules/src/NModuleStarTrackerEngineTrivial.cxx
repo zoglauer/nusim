@@ -102,7 +102,7 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   NOrientation OS4 = m_Satellite.GetOrientationStarTracker(m_Time, 4);
   NOrientation S4 = m_Satellite.GetOrientationStarTrackerRelOpticalBench(m_Time,4);
   NOrientation OB = m_Satellite.GetOrientationOpticalBench(m_Time);
-  NQuaternion Qst4fb = OB.GetRotationQuaternion()*S4.GetRotationQuaternion(); 
+  NQuaternion Qfbst = OB.GetRotationQuaternion()*S4.GetRotationQuaternion(); 
   double S4err = m_Satellite.GetPointingErrorStarTracker(m_Time, 4)/60./c_Deg;
 
   // Generate the initial star tracker data as measured by 
@@ -110,11 +110,14 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   NStarTrackerDataSet CH4;
   CH4.SetTime(m_Time);
 
-  MVector testaxis(0,0,1);
+  MVector testaxis(0,0,1.0);
   
   NPointing P = m_Satellite.GetPointing(m_Time);
-  //NQuaternion Qstin = P.GetQuaternion()*OS4.GetRotationQuaternion().Invert();
-  NQuaternion Qstin = P.GetQuaternion()*Qst4fb;
+  
+  //To get Qstin into the proper frame rotation format, P, which was designed as a 
+  //point rotation needs to be inverted.
+  NQuaternion Qstin = Qfbst.Invert()*P.GetQuaternion().Invert();
+  
   NOrientation Rstin;
   Rstin.SetRotation(Qstin); 
   MVector Angle=Rstin.GetEulerAngles();
@@ -124,9 +127,8 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   P.SetQuaternion(Rstin.GetRotationQuaternion());
   
   // For testing 
-  //MVector OA=Qstin.Rotation(testaxis);
+  //MVector OA=Qstin.Invert().Rotation(testaxis);
   //MVector OA=S4.GetRotationQuaternion().Rotation(testaxis);
-  //cout<<P.GetQuaternion()<<endl;
   //cout<<"Before"<<Qstin.Rotation(testaxis)<<endl;
   //cout<<OA<<endl;
   //cout<<"RA "<<atan2(OA[1],OA[0])*c_Deg<<" DEC "<<asin(OA[2])*c_Deg<<endl;
