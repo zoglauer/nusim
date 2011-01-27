@@ -63,6 +63,7 @@ void NPointing::Clear()
 
   m_Ra = 0.0;
   m_Dec = 0.0;
+  //m_Roll = 0.0;
   m_Time.SetSeconds(0.0);
   RaDecToQuaternion();
 
@@ -94,7 +95,15 @@ void NPointing::RaDecToQuaternion()
    //Important thing to remember here is that the Z-axis of the space craft is what
    //needs to be pointing at the proper ra/deg. 
    
-   NQuaternion Qztox(cos(c_Pi/4.),0,sin(c_Pi/4.),0);
+   //double croll=cos(m_Roll/2.);
+   //double sroll=sin(m_Roll/2.);
+   double croll=cos(0*c_Pi/2.);
+   double sroll=sin(0*c_Pi/2.);
+   
+   m_QR.m_R = croll;
+   m_QR.m_V[0] = 0.0;
+   m_QR.m_V[1] = 0.0; 
+   m_QR.m_V[2] = sroll;
    
    double cr = cos(m_Ra/60*c_Rad/2.);
    double cd = cos((c_Pi/2.-m_Dec/60*c_Rad)/2.);
@@ -106,6 +115,8 @@ void NPointing::RaDecToQuaternion()
    m_Q.m_V[1] = cr*sd; 
    m_Q.m_V[2] = sr*cd;
      
+   m_Q = m_Q*m_QR;	 
+   	 
    //QuaternionToRaDec();
    //cout<<"m_q "<<m_Q<<endl;
    //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;

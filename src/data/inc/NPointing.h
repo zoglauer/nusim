@@ -110,8 +110,12 @@ class NPointing
   double m_Ra;
   //! The declination in arcmin (!)
   double m_Dec;
-  //! Representaion of the pointing as a quaternion
+  //! The roll of the spacecraft in radians
+  //double m_Roll;
+  //! Representation of the pointing as a quaternion
   NQuaternion m_Q;
+  //! Representation of the roll quaternion of the spacecraft
+  NQuaternion m_QR;
   //! The time to be spent at this pointing
   NTime m_Time;
   
