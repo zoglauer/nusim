@@ -53,6 +53,9 @@ class NModuleApertureEngineTrivial : public NModule, public NModuleInterfaceEven
   //! Create an XML node tree from the configuration
   virtual MXmlNode* CreateXmlConfiguration();
 
+  //! Finalize the module
+  virtual bool Finalize();
+
 
   // protected methods:
  protected:
@@ -69,7 +72,8 @@ class NModuleApertureEngineTrivial : public NModule, public NModuleInterfaceEven
   // private members:
  private:
 
-
+ //! how many photons got clipped
+ long m_clipped;
 
 
 #ifdef ___CINT___

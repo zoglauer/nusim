@@ -183,6 +183,8 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   unsigned int m_UpperGhosts;
   //! Single reflected photons from the lower mirror
   unsigned int m_LowerGhosts;
+  //! Aperture clipped photons for sanity check reasons
+  unsigned int m_ApertureClip;
 
 #ifdef ___CINT___
  public:

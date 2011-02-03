@@ -145,9 +145,10 @@ bool NModuleOpticsEngine::Initialize()
   m_BlockedPhotonsOpeningNotReached = 0;
   m_BlockedPhotonsEnergyTooHigh = 0;
   m_BlockedPhotonsDoNotExitOptics = 0;
+  m_BlockedPhotonsMLI = 0;
   m_UpperGhosts = 0;
   m_LowerGhosts = 0;
-  
+  m_ApertureClip = 0;
   return true;
 }
 
@@ -176,14 +177,6 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   
   // ATTENTION: ignore everything which is already below the top of the opening cylinder of the optics module
 
-  //! Check for MLI attenutation
-  //! This is a temporary installment
-  float MLIatt = InterpolateMLI(Photon.GetEnergy()); 
-  if (gRandom->Rndm() > MLIatt) {
-    Event.SetBlocked(true);
-    ++m_BlockedPhotonsMLI;
-  }
-  
   MVector TopCenterOutermostRing(0.0, 0.0, m_ShellLength);
   MVector NormalToOutermostRing(0.0, 0.0, 1.0);
   if (PropagateToPlane(Photon, TopCenterOutermostRing, NormalToOutermostRing) == false) {
@@ -210,7 +203,16 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     ++m_BlockedPhotonsEnergyTooHigh;
     return true;
   }
-
+  
+  //! Check for MLI attenutation
+  //! This is a temporary installment
+  float MLIatt = InterpolateMLI(Photon.GetEnergy()); 
+  if (gRandom->Rndm() > MLIatt) {
+    Event.SetBlocked(true);
+    ++m_BlockedPhotonsMLI;
+	return true;
+  }
+  
   // Step 2: Prepare and do the ray-trace:
 
   vector<float> RTDir(4); // "4" since the raytrace code assumes 1 is the first index
@@ -260,28 +262,19 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     ++m_BlockedPhotonsDoNotExitOptics;
     return true;
   }
-  if (Code == 3) {
-	++m_UpperGhosts;
-    Event.SetOrigin(3);
-	}
-  if (Code == 2) {
-    ++m_LowerGhosts;
-    Event.SetOrigin(3);
-    }
-  if (m_UseGhostRays) ++m_ScatteredPhotons;
-  else {
-    if (Code == 1) ++m_ScatteredPhotons;
-	else Event.SetBlocked(true);
-  }
+  if (m_UseGhostRays == 0 && Code == 2){
+	Event.SetBlocked(true);
+	++m_BlockedPhotonsDoNotExitOptics;
+	return true;
+  } 
+  ++m_ScatteredPhotons;
+
   //cout<<"Passed ray trace"<<endl;
 
   // Step 3: 
 
   // (a) Update the current photon data
-  //mimp<<"Warning: had to invert direction x/y to make it work. kristin, remove warning when verified that there are no errors..."<<show;  
-  //Due to the fact that the raytrace coordinate system is upside down as opposed to the optics coordinate system, and the module
-  //is fed coordinates in optics coordinates, once the raytrace is done with them, they have to be put back into the optics coordinates. 
-  //Z position coordinate has to be inverted, x/y direction coordinates have to be flipped.
+
   Photon.SetPosition(MVector(RTPos[1], RTPos[2], RTPos[3]));    
   Photon.SetDirection(MVector(RTDir[1], RTDir[2], RTDir[3]));
   
@@ -294,15 +287,14 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   }
   //*************
 
-  //cout<<Photon.GetPosition()<<endl;
-
-   // (b) Rotate back in world coordinate system
+  // (b) Rotate back in world coordinate system
   Orientation.TransformOut(Photon);
-  //cout<<"P after raytrace:"<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<":"<<Photon.GetDirection().Angle(MVector(0.0, 0.0, -1.0))*c_Deg*60<<endl;
+  //cout<<"P after Raytrace (FB coor):"<<Photon.GetDirection()<<endl;
+  //cout<<"P after raytrace (FB coor):"<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<":"<<Photon.GetDirection().Angle(MVector(0.0, 0.0, -1.0))*c_Deg*60<<endl;
 
   // (c) Set the photon back into the event
   Event.SetCurrentPhoton(Photon);
-
+ 
   return true;
 }
 
@@ -316,22 +308,38 @@ bool NModuleOpticsEngine::Finalize()
   cout<<"Optics engine summary:"<<endl;
   double EffectiveArea =0.0;
   double EffectiveAreaError = 0.0;
+  double EffectiveAreaMLI =0.0;
+  double EffectiveAreaErrorMLI = 0.0;
+  double EffectiveAreaApp =0.0;
+  double EffectiveAreaErrorApp = 0.0;
+  double MLIatt = 0.0;
+  
   if (m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics > 0) {
     EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+	EffectiveAreaMLI = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
+	EffectiveAreaErrorMLI = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
+    EffectiveAreaApp = (m_ScatteredPhotons-m_ApertureClip)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+	EffectiveAreaErrorApp = sqrt(m_ScatteredPhotons-m_ApertureClip)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+    MLIatt = double(m_BlockedPhotonsMLI)/(m_BlockedPhotonsMLI+m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons);
   }
   cout<<"  Effective Area (average per module): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
+  cout<<"  Effective Area with Aperture clip (average per module): ("<<EffectiveAreaApp<<" +- "<<EffectiveAreaErrorApp<<") cm2"<<endl;
+  cout<<"  Effective Area with MLI(average per module): ("<<EffectiveAreaMLI<<" +- "<<EffectiveAreaErrorMLI<<") cm2"<<endl;
   cout<<endl;
   cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
   cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
   cout<<endl;
   cout<<"  Photons entering the optics: "<<m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics<<endl;
   cout<<"  Photons exiting the optics: "<<m_ScatteredPhotons<<endl;
+  cout<<"  Photons clipped by aperture (sanity check): "<<m_ApertureClip<<endl;
   cout<<"  Blocked photons: "<<m_BlockedPhotonsPlaneNoReached + m_BlockedPhotonsOpeningNotReached + m_BlockedPhotonsEnergyTooHigh + m_BlockedPhotonsDoNotExitOptics<<endl;
   cout<<"    Optics plane not reached from above: "<<m_BlockedPhotonsPlaneNoReached<<endl;
   cout<<"    Optics opening not reached:          "<<m_BlockedPhotonsOpeningNotReached<<endl;
   cout<<"    Photon energy above threshold:       "<<m_BlockedPhotonsEnergyTooHigh<<endl;
   cout<<"    Photon is blocked within optics:     "<<m_BlockedPhotonsDoNotExitOptics<<endl;
+  cout<<"  MLI transmission:	      "<<(1.0-MLIatt)<<endl;
+  cout<<"  Photons absorbed by MLI:   "<<m_BlockedPhotonsMLI<<endl;
 
   return true;
 }
@@ -380,6 +388,7 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
 
   j_index = 1;
   photon_energy = e_photon_lo;
+  flag = 0;
  
   incidence_angle1=0.;
   incidence_angle2=0.;
@@ -461,7 +470,7 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   MovePhoton(r,k,m_ShellLength);
 
   r0 = sqrt(Square(r[1]) + Square(r[2]));
-  if (r0 < (m_Rm4[shell_index - 1] + m_SubstrateThickness)){
+  if (r0 < (m_Rm4[shell_index - 1] + m_SubstrateThickness) || r0 >= m_Rm4[shell_index]){
     //cout<<"Block 9"<<endl;
     return 0;
   }
@@ -470,6 +479,14 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     return 0;
   } 
   
+  // Sanity check
+  MovePhoton(r,k,9317.61);
+  r0 = sqrt(Square(r[1]) + Square(r[2]));
+  if (r0 >= 29) {
+     ++m_ApertureClip;
+  }
+  MovePhoton(r,k,m_ShellLength);
+
   k[1] = -k[1];
   k[2] = -k[2];
   k[3] = -k[3];
@@ -477,10 +494,9 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   r[2] = -r[2];
   r[3] = -r[3];
   
-  
-  if (flag == 2) return 2;
-  if (flag == 3) return 3;
-  
+  if (flag == 3) ++m_UpperGhosts;
+  if (flag == 2) ++m_LowerGhosts;
+  if (flag == 2 || flag == 3) return 2;
   return 1; /* succesfull double bounce hit */
 }
 

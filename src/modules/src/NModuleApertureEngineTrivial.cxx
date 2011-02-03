@@ -83,6 +83,7 @@ bool NModuleApertureEngineTrivial::Initialize()
 {
   // Initialize the module 
 
+  m_clipped = 0;
   return true;
 }
 
@@ -98,17 +99,18 @@ bool NModuleApertureEngineTrivial::AnalyzeEvent(NEvent& Event)
 
   // (a) Retrieve the current photon parameters
   NPhoton Photon = Event.GetCurrentPhoton();
-
+  
   // (b) Retrieve the aperture orientation and position relative to the detector
   NOrientation Orientation = m_Satellite.GetOrientationAperture(Event.GetTime(), Event.GetTelescope());
-
+  
   //cout<<"Pos pre ap: "<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<endl;
 
   // (c) Rotate into aperture coordinate system
+  
   Orientation.TransformIn(Photon);
-
+  
   //cout<<"Pos in ap: "<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<endl;
-
+  
   // (d) Propagate photon to where-ever this module wants it
   //     Let's assume its the plane of the outer-most aperture ring:
   MVector TopCenterOutermostRing(0.0, 0.0, 0.0);
@@ -117,19 +119,22 @@ bool NModuleApertureEngineTrivial::AnalyzeEvent(NEvent& Event)
     // The plane is unreachable thus we quit here
     Orientation.TransformOut(Photon);
     Event.SetBlocked(true);
+	m_clipped++;
     return true;
   }
-  // That's just an example
 
   
   // STEP 2: Perform the aperture simulation HERE:
+  //cout<<"Pos in ap: "<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<endl;
 
   double Radius = sqrt(Photon.GetPosition().X()*Photon.GetPosition().X() +
                        Photon.GetPosition().Y()*Photon.GetPosition().Y());
   
-  if (Radius > 58) { // Inner opening of the upper aperture ring
+  // Sanity test
+  if (Radius >= 29) { // Inner opening of the upper aperture ring
     Event.SetBlocked(true);
-    return true;
+	m_clipped++;
+	return true;
   }
 
 
@@ -187,6 +192,16 @@ bool NModuleApertureEngineTrivial::ReadXmlConfiguration(MXmlNode* Node)
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool NModuleApertureEngineTrivial::Finalize()
+{  
+  cout<<endl;
+  cout<<"Aperture engine summary:"<<endl;
+  cout<<"  Photons clipped by aperture:     "<<m_clipped<<endl;
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
