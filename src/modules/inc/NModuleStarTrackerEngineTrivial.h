@@ -53,10 +53,15 @@ class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceS
   //! Create an XML node tree from the configuration
   virtual MXmlNode* CreateXmlConfiguration();
 
-  //! Set the latitude
+  //! Set the update interval
   void SetUpdateInterval(double UpdateInterval) { m_UpdateInterval = UpdateInterval; }
-  //! Get the latitude
+  //! Get the update interval
   double GetUpdateInterval() const { return m_UpdateInterval; }
+
+  //! Enable the blur
+  void EnableBlur(bool BlurEnabled = true) { m_BlurEnabled = BlurEnabled; }
+  //! Enable the blur
+  bool IsBlurEnabled() const { return m_BlurEnabled; }
 
   // protected methods:
  protected:
@@ -68,7 +73,11 @@ class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceS
 
   // protected members:
  protected:
+  //! The interval between updates
   double m_UpdateInterval;
+
+  //! Flag indicating whether of not to use the blur
+  bool m_BlurEnabled;
 
   // private members:
  private:

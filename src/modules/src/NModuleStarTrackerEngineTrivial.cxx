@@ -67,6 +67,7 @@ NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Sat
 
 
   m_UpdateInterval = 10;
+  m_BlurEnabled = true;
 }
 
 
@@ -234,6 +235,10 @@ bool NModuleStarTrackerEngineTrivial::ReadXmlConfiguration(MXmlNode* Node)
   if (UpdateIntervalNode != 0) {
     m_UpdateInterval = UpdateIntervalNode->GetValueAsDouble();
   }
+  MXmlNode* BlurEnabledNode = Node->GetNode("BlurEnabled");
+  if (BlurEnabledNode != 0) {
+    m_BlurEnabled = BlurEnabledNode->GetValueAsBoolean();
+  }
 
   return true;
 }
@@ -249,6 +254,7 @@ MXmlNode* NModuleStarTrackerEngineTrivial::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
+  new MXmlNode(Node, "BlurEnabled", m_BlurEnabled);
 
   return Node;
 }

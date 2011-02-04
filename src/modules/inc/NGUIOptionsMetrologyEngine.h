@@ -65,6 +65,7 @@ class NGUIOptionsMetrologyEngine : public NGUIOptions
  protected:
   MGUIEEntry* m_UpdateInterval;
   MGUIEFileSelector* m_ShiftsDB;
+  TGCheckButton* m_EnableBlur;
 
   // private members:
  private:

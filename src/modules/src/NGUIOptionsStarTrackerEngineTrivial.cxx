@@ -65,6 +65,15 @@ void NGUIOptionsStarTrackerEngineTrivial::Create()
   TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 10, 10);
 	AddFrame(m_UpdateInterval, LabelLayout);
 
+  m_EnableBlur = new TGCheckButton(this, "Enable blur");
+  m_EnableBlur->Associate(this);
+  if (dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->IsBlurEnabled() == true) {
+    m_EnableBlur->SetState(kButtonDown);
+  } else {
+    m_EnableBlur->SetState(kButtonUp);    
+  }
+  AddFrame(m_EnableBlur, LabelLayout);
+
   PostCreate();
 }
 
@@ -108,6 +117,12 @@ bool NGUIOptionsStarTrackerEngineTrivial::OnApply()
 	// Modify this to store the data in the module!
 
   dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->SetUpdateInterval(m_UpdateInterval->GetAsDouble());
+
+  if (m_EnableBlur->GetState() == kButtonDown) {
+    dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->EnableBlur(true);
+  } else {
+    dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->EnableBlur(false);    
+  }
 
 	return true;
 }

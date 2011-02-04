@@ -74,6 +74,16 @@ void NGUIOptionsMetrologyEngine::Create()
 	AddFrame(m_ShiftsDB, FileLayout);
 
 
+  m_EnableBlur = new TGCheckButton(this, "Enable blur");
+  m_EnableBlur->Associate(this);
+  if (dynamic_cast<NModuleMetrologyEngine*>(m_Module)->IsBlurEnabled() == true) {
+    m_EnableBlur->SetState(kButtonDown);
+  } else {
+    m_EnableBlur->SetState(kButtonUp);    
+  }
+  AddFrame(m_EnableBlur, LabelLayout);
+
+
   PostCreate();
 }
 
@@ -118,6 +128,12 @@ bool NGUIOptionsMetrologyEngine::OnApply()
 
   dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetUpdateInterval(m_UpdateInterval->GetAsDouble());
   dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetPositionShiftFileName(m_ShiftsDB->GetFileName());
+
+  if (m_EnableBlur->GetState() == kButtonDown) {
+    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->EnableBlur(true);
+  } else {
+    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->EnableBlur(false);    
+  }
 
 	return true;
 }

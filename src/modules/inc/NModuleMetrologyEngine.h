@@ -62,6 +62,11 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   //! Get the latitude
   double GetUpdateInterval() const { return m_UpdateInterval; }
 
+  //! Enable the blur
+  void EnableBlur(bool BlurEnabled = true) { m_BlurEnabled = BlurEnabled; }
+  //! Enable the blur
+  bool IsBlurEnabled() const { return m_BlurEnabled; }
+
   //! Set the detector shifts
   void SetPositionShiftFileName(TString PositionShiftFileName) { m_PositionShiftFileName = PositionShiftFileName; }
   //! Get the detector shifts
@@ -92,7 +97,8 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   //! Vector holding the position shift
   vector<NMetrologyDetectorShift> m_MetrologyDetectorShifts;
 
-
+  //! Flag indicating whether of not to use the blur
+  bool m_BlurEnabled;
 
 #ifdef ___CINT___
  public:

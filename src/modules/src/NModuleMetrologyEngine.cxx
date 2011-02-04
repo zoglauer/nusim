@@ -71,6 +71,7 @@ NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(
 
 
   m_UpdateInterval = 0.01;
+  m_BlurEnabled = true;
   
   m_PositionShiftFileName = "$(NUSIM)/resource/data/metcal_pert_002.dat";
 }
@@ -483,6 +484,10 @@ bool NModuleMetrologyEngine::ReadXmlConfiguration(MXmlNode* Node)
   if (PositionShiftFileNameNode != 0) {
     m_PositionShiftFileName = PositionShiftFileNameNode->GetValueAsString();
   }
+  MXmlNode* BlurEnabledNode = Node->GetNode("BlurEnabled");
+  if (BlurEnabledNode != 0) {
+    m_BlurEnabled = BlurEnabledNode->GetValueAsBoolean();
+  }
 
   return true;
 }
@@ -498,6 +503,7 @@ MXmlNode* NModuleMetrologyEngine::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);  
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Node, "PositionShiftFileName", m_PositionShiftFileName);
+  new MXmlNode(Node, "BlurEnabled", m_BlurEnabled);
 
   return Node;
 }
