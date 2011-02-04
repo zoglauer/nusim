@@ -1,0 +1,239 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Quaternion Rotation Convention in NuSim}
+\author{Kristin Kruse Madsen}
+\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+\section*{Introduction}
+
+\section{Quaternion convention in NuSim}
+The quaternion is a four vector representation of a rotation transformation. It describes a vector, $\mathbf{u}$, and the rotation angle, $\theta$, around that vector:  $Q = \cos(\theta/2)+\mathbf{u}\sin(\theta/2)$. Computationally for NuSim we have chosen the following quaternion convention
+\begin{equation}
+Q = [q_x, q_y, q_z,q_r]  
+\end{equation}
+where $q_r$ is the real component of the quaternion. All the NuSim quaternion arithmatics are contained in NQuaternion.cxx and NOrientation.cxx.
+
+When rotating a vector with a quaternion, the quaternion and its conjugate must be applied
+\begin{equation}
+\mathbf{w} = Q\mathbf{v}Q^*   
+\end{equation}
+where $q^*$ is the conjugate (or inverse) of the quaternion $q$. The inverse operation is
+\begin{equation}
+Q^*\mathbf{w}Q = \mathbf{v}   
+\end{equation}
+
+Finally two coordinate systems may have offset origins, so to fully describe the transformation between two coordinate frames, a translation is required as well. The complete transformation is therefore given as a quaternion and translation vector pair, Q, $\mathbf{t}$. 
+
+In NuSIM this is stored in the NOrientation class, which contains the quaternion, the quaternion in DCM format, and the translation. In NuSIM a transformation will usually have a capital "R" as the first letter in the variable. For example the transformation from Focal plane Bench, FB, to Optical Bench is R\_fbob. The pure quaternion will usually have a capital "Q" as the first letter in the variable, and a translation a capital "T".
+
+\subsection{Point and Frame Rotations}
+A transformation between two coordinate frames A and B, that takes all vectors in A and expresses them in B, is written Q$_{AB}$, and the  inverse or conjugate of (Q$_{AB})^*$ = Q$_{BA}$.
+
+For NuSim there is an important distinction to be made between the two operations described above. If the observer is sitting in coordinate frame A and applies $Q\mathbf{v}Q^*$, then to the observer the vector $\mathbf{v}$ got rotated by $\theta$ in frame A. This is called the \textit{point rotation}. 
+
+For the same observer applying $Q^*\mathbf{v}Q$ will move the vector by $-\theta$. However, if instead you place the observer on the vector, \textbf{v}, then in this second case the \textit{frame} moved by $\theta$, and \textbf{v} is now expressed in coordinates of the new frame, B, offset from A by $\theta$:
+\begin{equation}
+[\mathbf{v}]_B = Q^*[\mathbf{v}]_AQ
+\end{equation}
+This kind of operation is therefore obviously referred to as \textit{frame rotation}. To get $[\mathbf{v}]_B$ back into the A frame the inverse operation is applied, which is the same as the forwards point rotation.
+
+Since in NuSim we are concerned with expressing the locations of rays of light in different frames, our transformations are in the frame rotation mindset.  The photons are static things and the it is the coordinate frames that move. Therefore if a quaternion defines the alignment of the two frames A and B, $Q_{AB}$, then the forward transformation is:
+\begin{equation}
+[\mathbf{v}]_B = Q_{AB}^*[\mathbf{v}]_AQ_{AB}
+\end{equation}
+and the inverse transformation
+\begin{equation}
+Q_{AB}[\mathbf{v}]_BQ_{AB}^* = [\mathbf{v}]_B 
+\end{equation}
+
+\subsection{Rotations in NQuaternion.cxx}
+
+Conventionally most libraries are written for point rotations. This is also the case for the NuSIM library NQuaternion.cxx, and it thus considers $Q\mathbf{v}Q^*$ to be the forward rotation using code:
+\begin{quotation}
+\begin{verbatim}
+v_new = m_Q.Rotation(v)
+\end{verbatim}
+\end{quotation}
+and the inverse rotation $Q^*\mathbf{v}Q$:  
+\begin{quotation}
+\begin{verbatim}
+v = m_Q.Invert.Rotation(v_new).
+\end{verbatim}
+\end{quotation}
+
+\subsection{Rotations in NOrientation.cxx}
+NOrientation.cxx is the main class. It has the following functions for rotations utilizing the quaternion library NQuaternion.cxx, where:
+\begin{itemize}
+\item \textbf{Direction}: input vector direction of a photon.
+\item \textbf{Position}: input position of the photon.
+\item \textbf{m\_Translation}: is the translation of the transformation.
+\item \textbf{m\_Q}: is the quaternion transform.
+\end{itemize}
+
+\subsubsection{TransformIn}
+This is the NuSim forward transformation for a quaternion, $Q_{AB}$, taking a fixed vector in frame A and expressing it in frame B coordinates. Because the quaternion library is written for point rotations, the inverse of the rotation function is taken: 
+\begin{quotation}
+\begin{verbatim}
+
+Position -= m_Translation;
+Position = m_Q.Invert().Rotation(Position);
+Direction = m_Q.Invert().Rotation(Direction);
+\end{verbatim}
+\end{quotation}
+Notice the translation is taken first then rotated by q.
+ 
+\subsubsection{TransformOut}
+This is the NuSIm inverse transformation of a quaternion, $Q_{AB}$, taking a fixed vector in frame B and expressing it in frame A coordinates.
+\begin{quotation}
+\begin{verbatim}
+
+Direction = m_Q.Rotation(Direction);
+Position = m_Q.Rotation(Position);   
+Position += m_Translation;
+\end{verbatim}
+\end{quotation}
+Notice that the translation is taken last after the position has been rotated by q.
+
+
+
+\subsection{Multiple Transformations}
+When dealing with multiple transformations, point versus frame rotation has to be carefully considered. The two quaternions, $Q_{AB}$ and $Q_{BC}$, can be combined in six different ways, which can result in a bad mixture of point and frame rotations. For a frame rotation the forward transformation combining $Q_{AB}$ and $Q_{BC}$ into $Q_{AC}$ is
+\begin{equation}
+Q_{AC} = Q_{AB}*Q_{BC}
+\end{equation} 
+which is the opposite of how one would combine DCMs. Reversing the multiplication order creates the inverse transform $Q_{CA}$. In terms of NuSIM combining two transforms, R\_AB and R\_BC, appears in code as:
+\begin{quotation}
+\begin{verbatim}
+
+R_AC = R_AB*R_BC
+v_new = R_AC.TransformIn(v).
+\end{verbatim}
+\end{quotation} 
+
+\section{Space craft inertial pointing}
+In NuSim the target pointing is done with the spacecraft bus and the code for it is located in NPointing.cxx. The Z-axis of the bus is pointing at the target Ra, Dec and the module thus designs a quaternion, $Q_{SCIN}$ that will take vector = (0,0,1) and turn it into (Ra,Dec). The quaternion is obtained from:
+\begin{eqnarray}
+q_r &=& \cos(Ra/2)*\cos((\pi/2-Dec)/2) \\
+q_x &=& -\sin(Ra/2)*\sin((\pi/2-Dec)/2) \\
+q_y &=& \cos(Ra/2)*\sin((\pi/2-Dec)/2) \\
+q_z &=& \sin(Ra/2)*\cos((\pi/2-Dec)/2) \;.
+\end{eqnarray}
+To account for a space craft roll, $\theta_z$, about the space craft observatory Z-axis we design a roll quaternion
+\begin{equation}
+Q_{roll} = \cos(\theta_z/2)+\mathbf{z}\sin(\theta_z/2)=[0,0,\sin(\theta_z/2),\cos(\theta_z/2)] \;.
+\end{equation}
+An important thing to note about these two quaternions is that they are designed for point rotations, and therefore in the frame rotation notation
+\begin{eqnarray}
+Q_{INSC} = [q_x,g_y,q_z,q_r] \;.
+\end{eqnarray}
+To this we apply the space craft rotation quaternion from the right, because they are point rotations and in this scenario we first rotate the space craft bus around its Z-axis then apply the (Ra, Dec) move, to obtain the combined pointing quaternion:
+\begin{eqnarray}
+Q_{INSC} = Q_{INSC} * Q_{roll}\;.
+\end{eqnarray}
+This quaternion must be inverted to obtain the transformation from space craft, SC, to inertial space, IN.
+
+\section{Star tracker pointing}
+In NuSim the target pointing is done with the spacecraft bus, but the star tracker is the ultimate reference to inertial space at reconstruction, and the code for calculating the correct quaternion can be found in NModuleStarTrackerEngineTrivial.cxx . 
+
+Because the pointing is done by the space craft, during a bending of the mast the star tracker head will be pointed at a slightly different celestial coordinate. Since we are dealing with the orientation only the translation part of the coordinate systems must be ignored. To calculate the instantaneous orientation of the star tracker with respect to the inertial space we have the following values:
+\begin{itemize}
+\item Space craft bus orientation in inertial space. Since the spacecraft bus is rigidly tied to the focal plane such that SC=FB, we will call it $Q_{INFB}$.
+\item Orientation of optical bench with respect to focal plane bench, $Q_{FBOB}$
+\item Orientation of the star tracker with respect to the optical bench, $Q_{OBST}$
+\end{itemize}
+
+First we need to get the orientation of the star tracker with respect to the focal plane bench:
+\begin{equation}
+Q_{FBST} = Q_{FBOB}*Q_{OBST} \; .
+\end{equation}
+With this we can find $Q_{STIN}$ by combining the transformations since the space craft, SC=FB: 
+\begin{equation}
+Q_{STIN} = (Q_{FBST})^**(Q_{INFB})^* \; .
+\end{equation}
+
+\section{Aspect Reconstruction}
+The aspect reconstruction code can be found in NObservatoryReconstructor.cxx.
+
+In NuSIM the reconstruction code has no knowledge of actual real instantaneous positions of coordinate systems. It draws its information from "calibrated" values and sensors to reconstruct the event. These are the calibrated variables the reconstructor uses:
+\begin{itemize}
+\item Metrology Laser position and direction, R$_{ml1/2}$.
+\item Metrology PSD position, R$_{md1/2}$.
+\item Star tracker orientation and position on the OB, R$_{obst}$.
+\item Optics orientation and position on the OB, R$_{obom1/2}$
+\item Focal Plane detector orientation and position on the FB, R$_{fb1/2}$
+\item Direction of the Optical Axis, OA, in OB.
+\end{itemize}
+The sensor information that the reconstructor uses are the following:
+\begin{itemize}
+\item Interpolated metrology PSD coordinates, \textit{md1/2}.
+\item Interpolated star tracker quaternion, R$_{stin}$.
+\item Event data. All the information pertaining to an event is contained in the \textit{event} class defined in NEvent.cxx.
+\end{itemize}
+
+The steps for reconstructing the aspect and the event are:
+\begin{enumerate}
+\item Time interpolate the metrology PSD coordinates and the star tracker quaternion.
+\footnotesize 
+\begin{verbatim}
+MVector md1 = MetrologyInterp.GetMetrologyDataSet1().GetCalibratedLaserHit();
+MVector md2 = MetrologyInterp.GetMetrologyDataSet2().GetCalibratedLaserHit();
+NQuaternion Robst = m_CalibratedOrientationStarTrackerRelOpticalBench.GetRotationQuaternion();
+\end{verbatim}
+\normalsize
+\item Solve the transformation between Focal Plane Bench and Optics Bench, R$_{fbob}$
+\footnotesize 
+\begin{verbatim}
+NOrientation Rfbob = AspectSolve(md1, md2);
+\end{verbatim}
+\normalsize
+\item Find the star tracker quaternion from OB to Inertial space.
+\footnotesize 
+\begin{verbatim}
+Robin.SetRotation(Robst*Rstin);
+\end{verbatim}
+\normalsize
+\item Transform event into OB coordinates using R$_{fbob}$.
+\footnotesize 
+\begin{verbatim}
+FP.TransformOut(event);   
+Rfbob.TransformIn(event); 
+\end{verbatim}
+\normalsize
+\item Find the optical axis, OA, direction vector in OB.
+\footnotesize 
+\begin{verbatim}
+MVector OA = FindOpticalAxisInSky(Robin,module);
+\end{verbatim}
+\normalsize
+\item Construct the unit vector that points from the location of the event in OB to the center of the optics
+\footnotesize 
+\begin{verbatim}
+MVector OMF = FindOmegaF(Rfbob,module); 
+MVector pF = OMF-event;
+pF.Unitize();
+\end{verbatim}
+\normalsize
+\item Transform the OA and the event direction vector into a vector in inertial space.
+\footnotesize 
+\begin{verbatim}
+Robin.TransformIn(pF); 
+Robin.TransformIn(OA); 
+\end{verbatim}
+\normalsize
+\end{enumerate}
+These steps completes the vectorial aspect and event reconstruction which delivers a pair of vectors, one for the event and one for the direction of the optical axis at the same moment in time, given in celestial coordinates. 
+
+\section{AspectSolve()}
+The most important step in solving the aspect reconstruction is deriving the transformation between FB and OB.
+
+\end{document}

@@ -1,0 +1,182 @@
+%! program = pdflatex
+
+%\documentclass[12pt,a4paper]{memoir} % for a long document
+%\documentclass[12pt,a4paper,article]{memoir} % for a short document
+
+% See the ``Memoir customise'' template for some common customisations
+% Don't forget to read the Memoir manual: memman.pdf
+
+%\title{NuSim - Raytrace, MLI and Aperture stop verification}
+%\author{Kristin Kruse Madsen}
+
+%%% BEGIN DOCUMENT
+%\begin{document}
+
+%\maketitle
+\chapter{NuSim - Raytrace, MLI and Aperture stop verification}
+\section{Purpose}
+This document presents the cross verification of the Raytrace module in NuSim contained in NModuleOpticsEngine.cxx and NModuleApertureStopTrivial.cxx . The cross verification consists of checking number counts and effective area against an external raytrace called "ctrace" from which the NuSIM raytrace originated. These tests were run on NuSim revision 171. 
+
+\section{Test Description}
+NuSim was run with a point source at various monochromatic energies and angular positions. The optics engine module had scattering enabled with a value of 6e-5, and ghostrays enabled. The remaining settings in NuSim have no influence on the obtained results since the results are extracted before they enter into the detector modules. The exact same geometric and reflectivity files were used as input into NuSim and ctrace.
+
+The test was run for 3 different angular positions: on-axis, 3 arcmin off-axis and 12 arcmin off-axis. For the on-axis test energies [5,10,20,30,50,70,75] keV were used, and for off-axis tests only [10,30,70] keV. 
+
+\section{Results}
+There are three different effective areas quoted. The effective area without aperture stop is the effective right after the photons leave the optics. No MLI is included. The effective area with aperture is the area after the aperture has clipped the photons. The effective are with MLI is the area after the photons exit the optic, but with the incoming photons attenuated by the MLI. 
+
+Each test was run for a variable length of time and therefore the results are presented with the total number of input counts used for the simulation. For example when quoting the number of photons rejected by the aperture stop the first number is the photons rejected and the second the total number of incoming photons after the thermal cover has attenuated the incoming photon flux: (photons rejected/total incoming photons).
+
+The number of ghost rays from the upper mirror and lower mirror are quoted in the same way as the aperture clipping.
+
+The area and numbers the the following tables have been double checked against the external raytrace "ctrace". These numbers can be used to check the state of the code.
+
+\subsection{On-axis}
+Tables \ref{ea1} and \ref{statistic1} show the on-axis results. 
+
+\begin{table}[h]
+\caption{On-axis Effective Area}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & Effective Area & Effective Area & Effective Area \\
+(keV) & (cm$^2$) w/o App & (cm$^2$) w App &(cm$^2$) w MLI \\
+\hline
+\hline
+5 & 459.56$\pm$ 0.97 & 466.89$\pm$ 0.95 & 390.13$\pm$ 0.82 \\
+10 & 452.45$\pm$ 0.74 & 440.74$\pm$ 0.74&435.77$\pm$0.72 \\
+20 & 236.06$\pm$ 0.53 & 227.08$\pm$ 0.52 & 230.67$\pm$ 0.52 \\
+30 & 158.41$\pm$ 0.32 & 151.08$\pm$ 0.32 & 155.11$\pm$ 0.32 \\
+50 & 82.64$\pm$ 0.38 & 77.47$\pm$ 0.37 & 80.99$\pm$ 0.37 \\
+70 & 38.82$\pm$ 0.29 & 36.12$\pm$ 0.28 & 38.04$\pm$ 0.28 \\
+75 & 33.97$\pm$ 0.17 & 31.54$\pm$ 0.16 & 33.30$\pm$ 0.17 \\
+\hline
+\end{tabular}
+\end{center}
+\label{ea1}
+\end{table}
+
+\begin{table}[h]
+\caption{On-axis Raytrace statistics}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & \# Photons & \# Photons &  \# Photons \\
+(keV) &  App Clipped & Upper Ghost & Lower Ghost  \\
+\hline
+\hline
+5 & 6183/519070 & 6254/519070 & 0/519070 \\
+10 & 9902/864100 & 10010/864100 & 0/864100  \\
+20 & 7436/880917 & 7551/880917 & 0/880917 \\
+30 & 10814/1566742 & 11011/1566742 & 0/1566742  \\
+50 & 2869/591172 & 2941/591172 & 0/591172 \\
+70 & 1241/489545 & 1298/489545 & 0/489545 \\
+75 & 2668/1167497 & 2788/1167497 & 0/1167497\\
+\hline
+\end{tabular}
+\end{center}
+\label{statistic1}
+\end{table}
+
+\subsection{Off-axis results}
+Tables \ref{ea2} and \ref{statistic2} show the 3 arcmin off-axis results. Tables \ref{ea3} and \ref{statistic3} show the 3 arcmin off-axis results. 
+
+\begin{table}[h]
+\caption{3 arcmin off-axis Effective Area}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & Effective Area & Effective Area & Effective Area \\
+(keV) & (cm$^2$) w/o App & (cm$^2$) w App &(cm$^2$) w MLI \\
+\hline
+\hline
+10 & 435.45$\pm$ 1.80 & 357.86$\pm$ 1.63 & 419.26$\pm$ 1.73 \\
+30 & 147.33$\pm$ 0.56 & 111.51$\pm$ 0.48 & 144.26$\pm$ 0.55 \\
+70 &  28.72$\pm$ 0.29 & 21.26$\pm$ 0.25 & 28.14$\pm$ 0.28\\
+\hline
+\end{tabular}
+\end{center}
+\label{ea2}
+\end{table}
+
+\begin{table}[h]
+\caption{3 arcmin off-axis Raytrace statistics}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & \# Photons & \# Photons &  \# Photons  \\
+(keV) &  App Clipped & Upper Ghost & Lower Ghost  \\
+\hline
+\hline
+10 & 10365/142083 & 11010/142083 & 0/142083\\
+30 & 16702/496019 & 18567/496019 & 0/496019\\
+70 &  2491/355154 & 3240/355154 & 0/355154 \\
+\hline
+\end{tabular}
+\end{center}
+\label{statistic2}
+\end{table}
+
+\begin{table}[h]
+\caption{12 arcmin off-axis Effective Area}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & Effective Area & Effective Area & Effective Area \\
+(keV) & (cm$^2$) w/o App & (cm$^2$) w App &(cm$^2$) w MLI \\
+\hline
+\hline
+10 &  241.17$\pm$ 0.75 & 40.83$\pm$ 0.31 & 232.01$\pm$ 0.72\\
+30 & 61.29$\pm$ 0.25 & 12.23$\pm$ 0.11 & 59.99$\pm$ 0.24 \\
+70 &  9.10$\pm$ 0.13 & 2.65$\pm$ 0.07 & 8.91$\pm$ 0.13\\
+\hline
+\end{tabular}
+\end{center}
+\label{ea3}
+\end{table}
+
+\subsection{MLI results}
+Table \ref{mli} shows the results for the thermal cover transmission. The second column are numbers taken from the input file, and the third the NuSim calculated MLI transmission.
+
+\begin{table}[h]
+\caption{12 arcmin off-axis Raytrace statistics}
+\begin{center}
+\begin{tabular}{|c|r|r|r|}
+\hline
+Energy & \# Photons & \# Photons &  \# Photons  \\
+(keV) &  App Clipped & Upper Ghost & Lower Ghost  \\
+\hline
+\hline
+10 & 84729/449866 & 44481/449866 & 17763/449866\\
+30 & 46890/1016683 & 23631/1016683 & 11888/1016683\\
+70 & 2995/494528 & 944/494528 & 1276/494528\\
+\hline
+\end{tabular}
+\end{center}
+\label{statistic3}
+\end{table}
+
+\begin{table}[h]
+\caption{MLI}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Energy & MLI transmission & MLI transmission \\
+(keV) & input & NuSIM \\
+\hline
+\hline
+5 & 0.849 & 0.847 \\
+10 & 0.962 & 0.962\\
+20 & 0.977 & 0.977\\
+30 & 0.979 & 0.979\\
+50 & 0.980 & 0.980 \\
+70 & 0.980 & 0.980\\ 
+75 & 0.980 & 0.980\\ 
+\hline
+\end{tabular}
+\end{center}
+\label{mli}
+\end{table}%
+
+
+%\end{document}
