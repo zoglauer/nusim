@@ -1,14 +1,65 @@
 \chapter{NuSIM and NuSTAR science}
 
 One of the main goals of NuSIM is to predict, reproduce, and help understand NuSTAR measurements.
-For this task NuSTAR can be considered as a black box, and the user only has to think about the required input data and the output data he gets from NuSIM. 
+For these tasks NuSTAR can be considered as a black box, and the user only has to think about the required input data and the output data he gets from NuSIM. 
 
-This chapter will give an overview of NuSIM science capabilities, the required user inputs, how to perform the simulations, and the output the user can expect from NuSIM. This chapter therefore can be considered as a quick start guide to NuSIM.
+This chapter will give an overview of NuSIM's science capabilities, the required user inputs, how to perform the simulations, and the output the user can expect from NuSIM. This chapter therefore can be considered as a quick start guide to NuSIM.
 
 \section{What NuSIM can do (and what not)}
 
+
+
 \section{User science input}
+
+To start with reasonable parameters, it is a good idea to launch NuSIM with one of the default configurations such as Tycho.cfg in the directory resources/configurations.
+For science simulations only the following modules should be modified:
+\begin{itemize}
+\item The source module: 
+It contains a list of sources which are defined by a name, a beam (e.g. far field point source, or a fits file) determining the origin directions, a spectrum, as well as a flux.
+The beams relevant for science simulations are the far-field point source, which require the RA and DEC of the source, and the fits-image. The later is usually an image which has been measured by e.g. Chandra.
+The spectrum is defined by its type, for example power law. 
+After the type is selected, the user can set the other spectral options.
+In the case of a power law this encompasses the minimum and maximum energy as well as the photon index.
+The final parameter is the flux.
+In order to enable simulations of various beam and spectral parameters, it is necessary to give the energy-integrated flux of each source in ph/s/mm2. 
+The user has to take care of the integration.
+To set many sources at once, it is also possible to read them from an ASCII file using the "Import from file" button. 
+The file is a space-delimited csv file with different columns. If you only have point sources with simple power laws, the columns are: source name (no white spaced allowed), beam type (1 = far-field point source), RA (deg), DEC (deg), spectral type (3 = power law), minimum energy (keV), maximum energy (keV), photon index, flux (ph/s/mm2).
+An example can be found in the resource/configurations directory: GalacticCenter.ImportExample.txt
+\item The pointing module: 
+Here you give the RA and DEC of the direction where NuSTAR should point. 
+This should obviously be the direction of your sources.
+If you do not click the "All times are absolute" button then you will be able to set the total observation time in the Supervisor and the times given in the pointing will be scaled.
+Otherwise all times are absolute. 
+If you have a more complex pointing situation, you can import a list of pointings from file.
+One easy possibility is to generate a default pointing pattern file by clicking the "Pointing" button in the source module. 
+This will generate a text file with different pointings which will cover the area of the sources given in the source generator.
+\item The event selector:
+The event selector has two tasks, to store the simulated events to file and to perform event cuts.
+Currently only energy cuts are implemented.
+The events can be stored in three formats, a fits file containing an event list which can be used with the standard fits tools, a ROOT file, or an ASCII file.
+The user can also choose to store the events before or after the event cuts.
+\item The supervisor:
+In the supervisor you give the total observation time. 
+If you have set absolute times in the pointing module, the simulation will be stopped if the last pointing is finished, or earlier if the observation time is over. 
+\end{itemize}
+The options of all others modules should be left at the standard settings --- unless you are really sure what you are doing.
+
 
 \section{Performing simulations}
 
+Performing simulations is as simple as pressing the "Start Analysis" button. 
+As soon as all modules have initialized the diagnostics window will come up. 
+Every module can have a diagnostics tab attached. 
+The default ones are associated with the source module, the detector effects engine, and the backprojector.
+Switching to the backprojector (the "Results" tab) will show backprojections of the simulated events as well as the simulated spectrum.
+The GUI is updated after as many events as given in the supervisor GUI.
+If this number is too low, the GUI is updated too frequently which will slow down the simulations.
+The simulation can be stopped at any time by pressing the "Stop Analysis" button.
+If a file is selected in the event selector then all events are not only displayed in the GUI, but in parallel also written to the file.
+After the simulations is finished some useful summary information is printed to the screen.
+
 \section{NuSIM science output}
+
+
+
