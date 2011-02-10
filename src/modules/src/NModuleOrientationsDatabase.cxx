@@ -518,7 +518,7 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   // Don't do anything if we are at the same time...
   if (m_Time == t) return;
 
-  bool Interpolate = false;
+  bool Interpolate = true;
 
   // Retrieve latest perturbed alignments
   if (t.GetSeconds() >= 0 && m_PerturbedAlignments.size() > 1) {

@@ -414,18 +414,15 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   Laser.SetPosition(m_Satellite.GetOriginMetrologyLaserRelML(m_Time,1));
   Laser.SetDirection(m_Satellite.GetPointingMetrologyLaserRelML(m_Time,1)); 
   OML1.TransformOut(Laser); // Transforms into global system
-  //cout<<"1 "<<Laser.GetPosition()<<Laser.GetDirection()<<endl;
   OMD1.TransformIn(Laser); // Transforms from global to MD system
-  //cout<<"2 "<<Laser.GetPosition()<<Laser.GetDirection()<<endl;
   PropagateToPlane(Laser, MDplane, MDplaneNormal); // where laser intersects MD plane
   MVector P1 = Laser.GetPosition(); // get new laser intersection in the MD coordinates
-  //cout<<"3 "<<Laser.GetPosition()<<Laser.GetDirection()<<endl;
-  Set1.SetOriginalLaserHit(P1); // updates the metrology set1 module with coordinates
+   Set1.SetOriginalLaserHit(P1); // updates the metrology set1 module with coordinates
   Set1.SetTime(m_Time); 
   Err = gRandom->Gaus(0,MD1Err);
-  P1[0] = P1[0]-Err;
+  if (m_BlurEnabled) P1[0] = P1[0]-Err;
   Err = gRandom->Gaus(0,MD1Err);
-  P1[1] = P1[1]-Err;
+  if (m_BlurEnabled) P1[1] = P1[1]-Err;
   Set1.SetCalibratedLaserHit(P1); 
   
   NMetrologyDataSet Set2;
@@ -438,9 +435,9 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   Set2.SetOriginalLaserHit(P2);
   Set2.SetTime(m_Time);
   Err = gRandom->Gaus(0,MD2Err);
-  P2[0] = P2[0]-Err;
+  if (m_BlurEnabled) P2[0] = P2[0]-Err;
   Err = gRandom->Gaus(0,MD2Err);
-  P2[1] = P2[1]-Err;
+  if (m_BlurEnabled) P2[1] = P2[1]-Err;
   Set2.SetCalibratedLaserHit(P2); 
   // Done!
 

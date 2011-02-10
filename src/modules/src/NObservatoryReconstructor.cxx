@@ -97,7 +97,7 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   MVector md2 = MetrologyInterp.GetMetrologyDataSet2().GetCalibratedLaserHit();
   NOrientation Rmdfb1 = m_CalibratedOrientationMetrologyDetector1;  
   NOrientation Rmdfb2 = m_CalibratedOrientationMetrologyDetector2;  
-  //cout<<"md1 "<<md1<<"md2 "<<md2<<endl; 
+  //cout<<"t="<<m_Time<<"md1 "<<md1<<"md2 "<<md2<<endl; 
 
   Rmdfb1.TransformOut(md1);  // Get the interesection of laser on the metrology detector in FB coords
   Rmdfb2.TransformOut(md2);
@@ -178,10 +178,10 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
 
   // All data should be stored in the obervatory data set
   Obs.SetTime(m_Time);
-  //Obs.SetDirectionOpticalAxisInIS(OA);
+  Obs.SetDirectionOpticalAxisInIS(OA);
   Obs.SetDirectionEventInIS(pF);   
   //Obs.SetDirectionEventInIS(event);
-  Obs.SetDirectionOpticalAxisInIS(OADet);
+  //Obs.SetDirectionOpticalAxisInIS(OADet);
   Obs.SetOrientationFocalPlaneToOB(Rfbob);
   Obs.SetOrientationOBToIS(Robin);
 

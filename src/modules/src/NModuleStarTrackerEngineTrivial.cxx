@@ -122,7 +122,7 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   NOrientation Rstin;
   Rstin.SetRotation(Qstin); 
   MVector Angle=Rstin.GetEulerAngles();
-  Rstin.SetRotation(Angle[0]+gRandom->Gaus(0,S4err),Angle[1]+gRandom->Gaus(0,S4err),Angle[2]+gRandom->Gaus(0,S4err));
+  if (m_BlurEnabled) Rstin.SetRotation(Angle[0]+gRandom->Gaus(0,S4err),Angle[1]+gRandom->Gaus(0,S4err),Angle[2]+gRandom->Gaus(0,S4err));
   Angle=Rstin.GetEulerAngles();
   
   P.SetQuaternion(Rstin.GetRotationQuaternion());
