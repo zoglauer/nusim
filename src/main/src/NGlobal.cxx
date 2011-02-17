@@ -107,7 +107,7 @@ bool NGlobal::Initialize()
   gEnv->SetValue("Gui.BackgroundColor", "#e3dfdf");
 
 #ifndef ___MACOSX___
-  gEnv->SetValue("X11.UseXft", "true");
+  //gEnv->SetValue("X11.UseXft", "true");
 #endif
 
   // Set a common ROOT style for all programs:
