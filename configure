@@ -10,7 +10,8 @@ confhelp() {
     echo "  Standard:";
     echo "    -linux          Linux operating system using g++ (gcc 3.3 or higher)";
     echo "    -linuxicc       Linux operating system using intel compiler (icc 8.x or higher)";
-    echo "    -macosx         MacOSX 10.4 (or higher) operating system";
+    echo "    -macosx         MacOSX 10.4 (or higher) operating system (32-bit, 64-bit, or 32/64-bit hybrid)";
+    echo "    -macosx32       MacOSX 10.4 (or higher) operating system using 32-bit";
     echo ""
     echo "Additional options (default: no optimization and no debugging):";
     echo "    -optimized      create optimized (-O) code";
@@ -187,6 +188,9 @@ case $1 in
 -macosx|-softmacosx) 
     echo "Configuring for MaxOSX with gcc compiler..."
     cp config/Makefile.softmacosx config/Makefile.config;;
+-macosx32) 
+    echo "Configuring for MaxOSX (32 bit) with gcc compiler..."
+    cp config/Makefile.softmacosx32 config/Makefile.config;;
 *) 
     confhelp; 
     exit 0;;

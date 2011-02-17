@@ -47,18 +47,28 @@ For Mac OS X (attention: in some system this variable might not yet have been de
 export DYLD_LIBRARY_PATH=${NUSIM}/lib:${DYLD_LIBRARY_PATH}
 \end{verbatim}
 
-To configure NuSIM \\
-cd \$NUSIM \\
-For Linux: \\
-sh configure -linux -debug \\
-For Mac OS X: \\
-sh configure -macosx -debug \\
-This is followed by a simple: \\
-make \\
-(No make install for the time being!)
+To configure and compile do the following on Linux:
+\begin{verbatim}
+cd $NUSIM 
+sh configure -linux -debug -optimized
+make
+\end{verbatim}
+For Mac OS X do: 
+\begin{verbatim}
+cd $NUSIM 
+sh configure -macosx -debug -optimized
+make
+\end{verbatim}
+For the time being you cannot install NuSIM into a different directory (i.e. there is no "make install"). 
+
+On Mac OS X you will sometimes run into 32-bit/64-bit problems, which manifest themselves in the linker complaining about incompatible libraries. 
+To avoid this, you can force NuSIM to compile in 32-bit mode by configuring it the following way: 
+\begin{verbatim}
+sh configure -macosx32 -debug -optimized
+\end{verbatim}
+This also requires that ROOT and HEAsoft are compiled with 32-bit. While the current version of HEAsoft on Mac OS X can only be compiled in 32-bit, you can force ROOT to compile in 32-bit using ROOT's configure flag "macosx" and not "macosx64", i.e. "./configure maxosx" vs. "./configure macosx64".
 
 If you launch NuSIM the first time, or if you expect that the configuration file format has been changed, launch NuSIM with the default configuration:
-
 \begin{verbatim}
 cd \$NUSIM
 nusim -c resources/configurations/Ideal.cfg
