@@ -11,8 +11,30 @@ This chapter will give an overview of NuSIM's science capabilities, the required
 
 \section{User science input}
 
-To start with reasonable parameters, it is a good idea to launch NuSIM with one of the default configurations such as Tycho.cfg in the directory resources/configurations.
-For science simulations only the following modules should be modified:
+NuSIM contains many more possible input options than are required for science simulations. 
+Indeed, there are many possibilities to set wrong parameters.
+In order to prevent this, NuSIM has an astrophysics mode, which will allow the user to only modify modules relevant for science simulations.
+All other modules are set to standard values by loading them from a default astrophysics configuration file.
+This has the advantage that the user still can use his or her old configuration files even if the default configuration a simulation module has changed.
+In order to activate astrophysics mode, one has to start NuSIM using the "-p"-option: \emph{nusim -p $<$name of configuration file$>$}. 
+
+\begin{figure}[bt]
+  \begin{minipage}[c]{0.48\linewidth}
+    \begin{center}
+      \includegraphics[scale=0.27]{images/MainWindowNormalMode.png}  
+    \end{center}
+  \end{minipage}
+  \hspace{0.04\linewidth}
+  \begin{minipage}[c]{0.48\linewidth}
+    \begin{center}
+      \includegraphics[scale=0.27]{images/MainWindowAstrophysicsMode.png}  
+    \end{center}
+  \end{minipage}
+  \caption{\label{fig:mainwindowmodes} Illustration of the main NuSIM GUI window is normal (left) and astrophysics (right) mode: In the latter, only the source, event selection, and backprojection module are active. }
+\end{figure}
+
+
+Then only the following modules can be modified:
 \begin{itemize}
 \item The source module: 
 It contains a list of sources which are defined by a name, a beam (e.g. far field point source, or a fits file) determining the origin directions, a spectrum, as well as a flux.

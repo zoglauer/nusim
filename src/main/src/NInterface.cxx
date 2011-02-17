@@ -105,6 +105,8 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   Usage<<"             Automatically start analysis without GUI"<<endl;
   Usage<<"      -s --seed <integer>:"<<endl;
   Usage<<"             Set the seed for the random number generator (zero results in a random seed)"<<endl;
+  Usage<<"      -p --mode-astrophysics:"<<endl;
+  Usage<<"             Use a restricted mode which only enables modules relevant for astrophysics"<<endl;
   Usage<<"      -h --help:"<<endl;
   Usage<<"             You know the answer..."<<endl;
   Usage<<endl;
@@ -145,6 +147,9 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
     } else if (Option == "--seed" || Option == "-s") {
       gRandom->SetSeed(atoi(argv[++i]));
       cout<<"Command-line parser: Setting seed to "<<argv[i]<<endl;
+    } else if (Option == "--mode-astrophysics" || Option == "-p") {
+      m_Supervisor->SetAstrophysicsMode(true);
+      cout<<"Command-line parser: Enabling astrophysics mode"<<endl;
     } else if (Option == "--auto" || Option == "-a") {
       // Parse later
     }

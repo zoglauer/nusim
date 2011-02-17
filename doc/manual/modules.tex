@@ -41,7 +41,7 @@ At the moment the time engine provides the absolute time of the satellite. Modul
 \label{sourcegui} 
 \end{center}
 \end{figure}
-The source module generates the initial spatial and spectral photon distribution for the simulator. Figure \ref{sourcegui} shows the options interface GUI for the source module. Multiple sources can be generated and each source needs to have specified a beam type, spectral type and a flux. It is important to note the the flux here is in (ph/mm$^2$/s) and NOT (ph/cm$^2$/s) as is common for most of the HEASOFT software package. In addition, the flux is always the integrated flux within the given energy bounds set with the spectral options.  
+The source module generates the initial spatial and spectral photon distribution for the simulator. Figure \ref{sourcegui} shows the options interface GUI for the source module. Multiple sources can be generated and each source needs to have specified a beam type, spectral type and a flux. It is important to note the the flux here is in (ph/cm$^2$/s). In addition, the flux is always the integrated flux within the given energy bounds set with the spectral options.  
 
 You need to set four parameters for a source: its name, its beam type, its spectral type, and its flux.
 
@@ -65,7 +65,7 @@ The spectral options are:
 \textbf{\${NUSIM}/resource/data/SourceGenerator.examplespectrum.dat}
 \end{itemize}
 
-The final required parameter is the flux in $ph/mm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$.
+The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$.
 
 
 For the sources at infinite distance the photons are started randomly from a disk on a sphere surrounding the opening of the optics modules (the module is chosen randomly) to enable the correct simulation of the effective area as a function of incidence angle. The start time is randomly determined (Poisson distribution) according to the source flux. When the start position, start direction and photon energy are determined, the photon is handed over to the optics module for further simulation.

@@ -67,6 +67,10 @@ class NSupervisor
   //! Toggle Diagnostics window
   void ToggleDiagnosticsWindow();
 
+  //! Set the astrophysics mode
+  void SetAstrophysicsMode(bool On = true) { m_AstrophysicsMode = On; }
+  //! Get the astrophysics mode
+  bool GetAstrophysicsMode() const { return m_AstrophysicsMode; } 
 
   //! Load all data from a file
   bool Load(TString FileName);
@@ -171,6 +175,9 @@ class NSupervisor
  private:
   //! The satellite data
   NSatellite m_Satellite;
+
+  //! True if the restricted astrophysics mode is on
+  bool m_AstrophysicsMode;
 
   //! The observation time which shall be simulated in seconds
   NTime m_ObservationTime;

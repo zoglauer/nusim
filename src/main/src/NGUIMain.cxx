@@ -233,6 +233,7 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   m_OrbitButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_OrbitButton->SetBackgroundColor(yellow);
   m_OrbitButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_OrbitButton->SetEnabled(false);
   m_SatelliteFrame->AddFrame(m_OrbitButton);
   m_OrbitButton->MoveResize(StartX + 0.5*(m_ButtonSizeX+m_ButtonDistanceX), StartY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -249,6 +250,7 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   m_OrientationsButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_OrientationsButton->SetBackgroundColor(yellow);
   m_OrientationsButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_OrientationsButton->SetEnabled(false);
   m_SatelliteFrame->AddFrame(m_OrientationsButton);
   m_OrientationsButton->MoveResize(StartX + 2.5*(m_ButtonSizeX+m_ButtonDistanceX), StartY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -257,6 +259,7 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   m_TimeButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_TimeButton->SetBackgroundColor(yellow);
   m_TimeButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_TimeButton->SetEnabled(false);
   m_SatelliteFrame->AddFrame(m_TimeButton);
   m_TimeButton->MoveResize(StartX + 1.0*(m_ButtonSizeX+m_ButtonDistanceX), StartY + 1.0*(m_ButtonSizeY+m_ButtonDistanceY), m_ButtonSizeX, m_ButtonSizeY);
 
@@ -265,6 +268,7 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   m_GeometryAndDetectorPropertiesButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_GeometryAndDetectorPropertiesButton->SetBackgroundColor(yellow);
   m_GeometryAndDetectorPropertiesButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_GeometryAndDetectorPropertiesButton->SetEnabled(false);
   m_SatelliteFrame->AddFrame(m_GeometryAndDetectorPropertiesButton);
   m_GeometryAndDetectorPropertiesButton->MoveResize(StartX + 2.0*(m_ButtonSizeX+m_ButtonDistanceX), StartY + 1.0*(m_ButtonSizeY+m_ButtonDistanceY), m_ButtonSizeX, m_ButtonSizeY);
 }
@@ -343,6 +347,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_OpticsEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_OpticsEngineButton->SetBackgroundColor(red);
   m_OpticsEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_OpticsEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_OpticsEngineButton);
   m_OpticsEngineButton->MoveResize(StartX, CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -357,6 +362,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_ApertureEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_ApertureEngineButton->SetBackgroundColor(red);
   m_ApertureEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_ApertureEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_ApertureEngineButton);
   m_ApertureEngineButton->MoveResize(StartX, CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -371,6 +377,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_DetectorEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_DetectorEngineButton->SetBackgroundColor(red);
   m_DetectorEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_DetectorEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_DetectorEngineButton);
   m_DetectorEngineButton->MoveResize(StartX, CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -387,6 +394,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_BackgroundEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_BackgroundEngineButton->SetBackgroundColor(red);
   m_BackgroundEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_BackgroundEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_BackgroundEngineButton);
   m_BackgroundEngineButton->MoveResize(StartX + 1*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -403,6 +411,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_StarTrackerEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_StarTrackerEngineButton->SetBackgroundColor(red);
   m_StarTrackerEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_StarTrackerEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_StarTrackerEngineButton);
   m_StarTrackerEngineButton->MoveResize(StartX + 2*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -415,6 +424,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_MetrologyEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_MetrologyEngineButton->SetBackgroundColor(red);
   m_MetrologyEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_MetrologyEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_MetrologyEngineButton);
   m_MetrologyEngineButton->MoveResize(StartX + 3*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -429,6 +439,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_DetectorEffectsEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_DetectorEffectsEngineButton->SetBackgroundColor(red);
   m_DetectorEffectsEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_DetectorEffectsEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_DetectorEffectsEngineButton);
   m_DetectorEffectsEngineButton->MoveResize(StartX + 0.5*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -443,6 +454,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_TriggerEngineButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_TriggerEngineButton->SetBackgroundColor(red);
   m_TriggerEngineButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_TriggerEngineButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_TriggerEngineButton);
   m_TriggerEngineButton->MoveResize(StartX + 0.5*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -457,6 +469,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_DetectorCalibratorButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_DetectorCalibratorButton->SetBackgroundColor(green);
   m_DetectorCalibratorButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_DetectorCalibratorButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_DetectorCalibratorButton);
   m_DetectorCalibratorButton->MoveResize(StartX + 0.5*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -469,6 +482,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_StarTrackerCalibratorButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_StarTrackerCalibratorButton->SetBackgroundColor(green);
   m_StarTrackerCalibratorButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_StarTrackerCalibratorButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_StarTrackerCalibratorButton);
   m_StarTrackerCalibratorButton->MoveResize(StartX + 2*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -485,6 +499,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_MetrologyCalibratorButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_MetrologyCalibratorButton->SetBackgroundColor(green);
   m_MetrologyCalibratorButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_MetrologyCalibratorButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_MetrologyCalibratorButton);
   m_MetrologyCalibratorButton->MoveResize(StartX + 3*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 
@@ -503,6 +518,7 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   m_ObservatoryReconstructorButton->SetMargins(m_ButtonMargins, m_ButtonMargins, m_ButtonMargins, m_ButtonMargins);
   m_ObservatoryReconstructorButton->SetBackgroundColor(green);
   m_ObservatoryReconstructorButton->Associate(this);
+  if (m_Supervisor->GetAstrophysicsMode() == true) m_ObservatoryReconstructorButton->SetEnabled(false);
   m_PipelineFrame->AddFrame(m_ObservatoryReconstructorButton);
   m_ObservatoryReconstructorButton->MoveResize(StartX + 2.5*(m_ButtonSizeX+m_ButtonDistanceX), CurrentY, m_ButtonSizeX, m_ButtonSizeY);
 

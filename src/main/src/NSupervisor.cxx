@@ -241,6 +241,8 @@ NSupervisor::NSupervisor()
 
   m_ToggleDiagnostics = false;
   m_DiagnosticsGUI = 0;
+  
+  m_AstrophysicsMode = false;
 }
 
 
@@ -284,6 +286,8 @@ void NSupervisor::Clear()
 
   m_ObservationTime = 1000.0; //s
   m_UpdateInterval = 10000;
+  
+  // Don't reset astrophysics mode!
 }
 
 
@@ -1499,8 +1503,60 @@ bool NSupervisor::Load(TString FileName)
     }
   }
 
-
   delete Document;
+
+  // If we are in astrophysics mode, then replace the content of the non-science modules with the default content
+  if (m_AstrophysicsMode == true) {
+    // Create a XML document describing the data:
+    
+    TString DefaultFileName("$(NUSIM)/resource/configurations/AstrophysicsMode.cfg");
+    MFile::ExpandFileName(DefaultFileName);
+    
+    MXmlDocument* Document = new MXmlDocument();
+    Document->Load(DefaultFileName);
+
+    if ((Node = Document->GetNode("Version")) != 0) {
+      Version = Node->GetValueAsInt();
+    }
+
+    MXmlNode* ModuleOptions = Document->GetNode("ModuleOptions");
+
+    if ((Node = Document->GetNode("ActiveModuleSequence")) != 0) {
+      for (unsigned int m = 0; m < Node->GetNNodes(); ++m) {
+        MXmlNode* Item = Node->GetNode(m);
+        if (Item->GetNode("Position") != 0 && Item->GetNode("Module") != 0) {
+          if (NModule::IsUsedType(Item->GetNode("Position")->GetValueAsInt()) == false) {
+            cout<<"Removing unused/unavailable module from sequence: "<<Item->GetNode("Module")->GetValue()<<endl;
+            continue;
+          }
+          NModule* M = GetAvailableModuleByXmlTag(Item->GetNode("Module")->GetValue());
+          if (M != 0) {
+            int Position = Item->GetNode("Position")->GetValueAsInt();
+            if (Position == NModule::c_PointingEngine ||
+                Position == NModule::c_SourceGenerator ||
+                Position == NModule::c_EventSelector ||
+                Position == NModule::c_ScienceAnalyzer) {
+              // Do nothing 
+            } else {
+              SetActiveModule(M, Position);
+              
+              MXmlNode* ModuleNode = ModuleOptions->GetNode(M->GetXmlTag());
+              if (ModuleNode != 0) {
+                M->ReadXmlConfiguration(ModuleNode);
+              }
+              
+            }
+          } else {
+            mout<<"Error: Cannot find a module with name: "<<Node->GetNode(m)->GetValue()<<endl;
+          }
+        }
+      }
+    }
+    
+    delete Document;
+    
+  } // end astrophysics mode
+
 
   GenerateAllLists();
 
