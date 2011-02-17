@@ -1347,16 +1347,32 @@ bool NSource::ParseLine(TString Line)
   }
   int Pos = 0;
   m_Name = T.GetTokenAtAsString(Pos++);
+  
   m_BeamType = T.GetTokenAtAsInt(Pos++);
-  if (m_BeamType != 1) return false;
-  m_PositionParam2 = T.GetTokenAtAsDouble(Pos++)*60;
-  m_PositionParam1 = T.GetTokenAtAsDouble(Pos++)*60;
+  if (m_BeamType == NSource::c_FarFieldPoint) {
+    m_PositionParam2 = T.GetTokenAtAsDouble(Pos++)*60;
+    m_PositionParam1 = T.GetTokenAtAsDouble(Pos++)*60;
+  } else {
+    cout<<"Line parser source: This beam type is not yet implemented: "<<m_BeamType<<endl;
+    return false;
+  }
+  
   m_SpectralType = T.GetTokenAtAsInt(Pos++);
-  if (m_SpectralType != 3) return false;
-  m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-  m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-  m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
-  m_InputFlux = T.GetTokenAtAsDouble(Pos++);
+  if (m_SpectralType == NSource::c_PowerLaw) {
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+  } else {
+    cout<<"Line parser source: This beam type is not yet implemented: "<<m_SpectralType<<endl;
+    return false;
+  }
+  
+  if (m_BeamType == NSource::c_FarFieldPoint) {
+    m_InputFlux = T.GetTokenAtAsDouble(Pos++)/100; // /100 to switch from external ph/s/cm2 to internal ph/s/mm2
+  } else {
+    cout<<"Line parser source - flux parsing: This beam type is not yet implemented: "<<m_BeamType<<endl;
+    return false;
+  }
   
   // Do an official "set" to initialize all the other variables:
   SetSpectralType(m_SpectralType);

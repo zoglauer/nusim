@@ -234,6 +234,7 @@ void NGUIOptionsSource::UpdateOptions()
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position Z [mm]: ", false, m_Source->GetPositionParameter3());
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
     m_Flux->SetLabel("Flux [ph/s]:");
+    m_Flux->SetValue(m_Source->GetFlux());
   } else if (m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk X [mm]: ", false, m_Source->GetPositionParameter1());
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
@@ -250,12 +251,14 @@ void NGUIOptionsSource::UpdateOptions()
     m_P7 = new MGUIEEntry(m_BeamOptionsSubFrame, "Radius [mm]: ", false, m_Source->GetPositionParameter7(), true, 0.0000001);
     m_BeamOptionsSubFrame->AddFrame(m_P7, Default);
     m_Flux->SetLabel("Flux [ph/s]:");
+    m_Flux->SetValue(m_Source->GetFlux());
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
     m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60.0, true, 0.0, 360.0);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
-    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
@@ -263,13 +266,15 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [deg]: ", false, m_Source->GetPositionParameter3()/60.0, true, 0.00000001, 180.0);
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
-    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
     m_PF = new MGUIEFileSelector(m_BeamOptionsSubFrame, "Choose a FITS file:", 
                                  m_Source->GetPositionFileName());
     m_PF->SetFileType("FITS file", "*.fits");
     m_BeamOptionsSubFrame->AddFrame(m_PF, Default);
-    m_Flux->SetLabel("Flux [ph/s/mm2]:");
+    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   }
 
 
@@ -385,7 +390,17 @@ void NGUIOptionsSource::UpdateSource()
   m_Source->SetEnergy(E1, E2, E3, E4, E5);
   if (m_EF != 0) m_Source->SetEnergy(m_EF->GetFileName());
 
-  m_Source->SetFlux(m_Flux->GetAsDouble());
+  if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint || 
+      m_BeamTypes->GetSelected() == NSource::c_NearFieldRestrictedPoint ||
+      m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
+    m_Source->SetFlux(m_Flux->GetAsDouble());
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint ||
+     m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk ||
+     m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
+    m_Source->SetFlux(m_Flux->GetAsDouble()/100); // go from the external ph/s/cm2 to the external ph/s/mm2        
+  } else {
+    cerr<<"NGUIm_BeamTypes->GetSelected() == NSource::c_NearFieldBeamOPtionsSource: Unknown beam type... You forgot to implement it..."<<endl;
+  } 
 }
 
 
