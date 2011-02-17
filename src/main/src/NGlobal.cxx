@@ -105,7 +105,10 @@ bool NGlobal::Initialize()
 
   // Initilize some global ROOT variables:
   gEnv->SetValue("Gui.BackgroundColor", "#e3dfdf");
-  //gEnv->SetValue("X11.UseXft", "true");
+
+#ifndef ___MACOSX___
+  gEnv->SetValue("X11.UseXft", "true");
+#endif
 
   // Set a common ROOT style for all programs:
   gStyle->SetTitleBorderSize(0);
