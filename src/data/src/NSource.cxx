@@ -806,6 +806,11 @@ bool NSource::UpgradeFlux()
   m_Flux = m_InputFlux;
 
   if (m_CoordinateSystem == c_FarField) {
+    if (m_Satellite.GetGeometryAndDetectorPropertiesModule() == 0) {
+      merr<<m_Name<<": UpgradeFlux: Satellite doesn't have a geometry module!"<<show;
+      return false;
+    }
+  
     double Radius = m_Satellite.GetSurroundingSphereRadius();
     m_Flux *= c_Pi*Radius*Radius;
     // Since we have two telescopes, we have to multiply the flux by a a factor of 2 if we want to use only one source for two telescopes
