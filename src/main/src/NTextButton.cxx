@@ -133,8 +133,6 @@ Bool_t NTextButton::HandleDoubleClick(Event_t *event)
   // Handle mouse button event.
   // Mostly copy and paste from ROOT - only change is handling of double/right click
 
-  cout<<"DD-Button code: "<<event->fCode<<endl;
-
 
    Bool_t click = kFALSE;
 
