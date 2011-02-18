@@ -64,7 +64,7 @@ NGUIAbout::NGUIAbout(const TGWindow* Parent, const TGWindow* Main)
   SetCleanup(kDeepCleanup);
 
   m_ProgramName = "NuSim"; 
-  m_IconPath = ""; 
+  m_IconPath = "$(NUSIM)/resource/icons/NuSIM_Gray.xpm"; 
   m_LeadProgrammer = "Kristin Kruse Madsen and Andreas Zoglauer";
   m_Programmers = "";
   m_AdditionalProgrammers = "";
@@ -145,7 +145,7 @@ void NGUIAbout::Create()
   }
 
   ostringstream v;
-  v<<"NuSim version "<<g_Version;
+  v<<"(Version: "<<g_Version<<", SVN revision "<<g_SVNRevision<<")"<<endl;
   MGUIEText* m_VersionText = new MGUIEText(AboutFrame, v.str().c_str(), MGUIEText::c_Centered);
   AboutFrame->AddFrame(m_VersionText, VersionLayout);
 

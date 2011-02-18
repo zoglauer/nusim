@@ -207,11 +207,24 @@ void NGUIMain::CreateSatelliteFrame(TGCompositeFrame* Parent)
   if (!lFont) lFont = gClient->GetResourcePool()->GetDefaultFont();
   FontStruct_t LargeFont = lFont->GetFontStruct();
 
-  TGLabel* MainLabel = new TGLabel(m_SatelliteFrame, "NuSim");
-  MainLabel->SetTextFont(LargeFont);
-	m_SatelliteFrame->AddFrame(MainLabel);
-  MainLabel->MoveResize(StartX + 2.0*m_ButtonSizeX + 1.5*m_ButtonDistanceX - 45, 60, 80, 36);
-
+  TString TitleIconName("$(NUSIM)/resource/icons/NuSIM_Yellow.xpm");
+  MFile::ExpandFileName(TitleIconName);
+  
+  if (MFile::Exists(TitleIconName) == true) {
+    const TGPicture* TitlePicture = fClient->GetPicture(TitleIconName);
+    if (TitlePicture == 0) {
+      mgui<<"Can't find picture "<<TitleIconName<<"! Aborting!"<<error;
+      return;
+    }
+    TGIcon* TitleIcon = new TGIcon(m_SatelliteFrame, TitlePicture, TitlePicture->GetWidth()+2, TitlePicture->GetHeight()+2);
+	  m_SatelliteFrame->AddFrame(TitleIcon);
+    TitleIcon->MoveResize(StartX + 2.0*m_ButtonSizeX + 1.5*m_ButtonDistanceX - TitlePicture->GetWidth()/2, 60 - TitlePicture->GetHeight()/2, TitlePicture->GetWidth()+2, TitlePicture->GetHeight()+2);
+  } else {
+    TGLabel* MainLabel = new TGLabel(m_SatelliteFrame, "NuSim");
+    MainLabel->SetTextFont(LargeFont);
+	  m_SatelliteFrame->AddFrame(MainLabel);
+    MainLabel->MoveResize(StartX + 2.0*m_ButtonSizeX + 1.5*m_ButtonDistanceX - 45, 60, 80, 36);
+  }
 
   // Sub-title
   const TGFont* iFont = gClient->GetFont("-*-helvetica-medium-o-*-*-12-*-*-*-*-*-iso8859-1");
@@ -304,11 +317,24 @@ void NGUIMain::CreatePipelineFrame(TGCompositeFrame* Parent)
   if (!lFont) lFont = gClient->GetResourcePool()->GetDefaultFont();
   FontStruct_t LargeFont = lFont->GetFontStruct();
 
-  TGLabel* MainLabel = new TGLabel(m_PipelineFrame, "NuSim");
-  MainLabel->SetTextFont(LargeFont);
-	m_PipelineFrame->AddFrame(MainLabel);
-  MainLabel->MoveResize(StartX + 2.5*m_ButtonSizeX + 2*m_ButtonDistanceX - 45, 60, 80, 36);
-
+  TString TitleIconName("$(NUSIM)/resource/icons/NuSIM_Red.xpm");
+  MFile::ExpandFileName(TitleIconName);
+  
+  if (MFile::Exists(TitleIconName) == true) {
+    const TGPicture* TitlePicture = fClient->GetPicture(TitleIconName);
+    if (TitlePicture == 0) {
+      mgui<<"Can't find picture "<<TitleIconName<<"! Aborting!"<<error;
+      return;
+    }
+    TGIcon* TitleIcon = new TGIcon(m_PipelineFrame, TitlePicture, TitlePicture->GetWidth()+2, TitlePicture->GetHeight()+2);
+	  m_PipelineFrame->AddFrame(TitleIcon);
+    TitleIcon->MoveResize(StartX + 2.5*m_ButtonSizeX + 2.0*m_ButtonDistanceX - TitlePicture->GetWidth()/2, 60 - TitlePicture->GetHeight()/2, TitlePicture->GetWidth()+2, TitlePicture->GetHeight()+2);
+  } else {
+    TGLabel* MainLabel = new TGLabel(m_PipelineFrame, "NuSim");
+    MainLabel->SetTextFont(LargeFont);
+	  m_PipelineFrame->AddFrame(MainLabel);
+    MainLabel->MoveResize(StartX + 2.5*m_ButtonSizeX + 2*m_ButtonDistanceX - 45, 60, 80, 36);
+  }
 
   // Sub-title
   const TGFont* iFont = gClient->GetFont("-*-helvetica-medium-o-*-*-12-*-*-*-*-*-iso8859-1");
