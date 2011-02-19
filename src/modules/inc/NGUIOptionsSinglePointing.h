@@ -76,8 +76,9 @@ class NGUIOptionsSinglePointing : public TGCompositeFrame
   //! ID of this pointing
   unsigned int m_ID;
   
-  MGUIEEntry* m_Ra;
   MGUIEEntry* m_Dec;
+  MGUIEEntry* m_Ra;
+  MGUIEEntry* m_Roll;
   MGUIEEntry* m_Time;
   
   TGTextButton* m_DeleteButton;

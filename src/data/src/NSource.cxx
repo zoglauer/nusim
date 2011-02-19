@@ -1047,7 +1047,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
 
       // Create a pointing to create a rotation quaternion:
       NPointing PhotonOrigin;
-      PhotonOrigin.SetRaDec(RA*60*c_Deg, DEC*60*c_Deg);
+      PhotonOrigin.SetRaDecRoll(RA*60*c_Deg, DEC*60*c_Deg, 180.0*60);
       
       // Create a test photon (can I just use a test direction too???)
       NPhoton Test;

@@ -83,7 +83,7 @@ bool NStarTrackerDataSet::Stream(ofstream& S, TString Keyword)
   if (m_Empty == true) {
     S<<"-"<<endl;
   } else {
-    S<<m_Time.GetSeconds()<<" "<<m_OriginalPointing.GetRa()<<" "<<m_OriginalPointing.GetDec()<<endl;
+    S<<m_Time.GetSeconds()<<" "<<m_OriginalPointing.GetRa()<<" "<<m_OriginalPointing.GetDec()<<" "<<m_OriginalPointing.GetRoll()<<endl;
   }
 
   return true;
@@ -103,14 +103,15 @@ bool NStarTrackerDataSet::Parse(TString& Line)
   }
 
   char Key[2];
-  double T, Ra, Dec;
-  if (sscanf(Line.Data(), 
-             "%s %lf %lf %lf", 
-             Key, &T, &Ra, &Dec) != 4) {
-    return false;
+  double T, Ra, Dec, Roll;
+  Roll = 180.0*60;
+  if (sscanf(Line.Data(), "%s %lf %lf %lf %lf", Key, &T, &Ra, &Dec, &Roll) != 5) {
+    if (sscanf(Line.Data(), "%s %lf %lf %lf", Key, &T, &Ra, &Dec) != 4) {
+      return false;
+    }
   }
   m_Time.SetSeconds(T);
-  m_OriginalPointing.SetRaDec(Ra, Dec);
+  m_OriginalPointing.SetRaDecRoll(Ra, Dec, Roll);
 
   m_Empty = false;
 

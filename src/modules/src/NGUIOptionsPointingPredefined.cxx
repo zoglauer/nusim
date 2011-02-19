@@ -87,7 +87,7 @@ void NGUIOptionsPointingPredefined::Create()
   AddFrame(m_AbsoluteTime, BasicLayout);
 
  
-  m_PointingViewer = new TGCanvas(this, 840, 160);
+  m_PointingViewer = new TGCanvas(this, 1200, 160);
   m_PointingViewer->SetContainer(new TGCompositeFrame(m_PointingViewer->GetViewPort(), 50, 50));
   m_PointingViewer->GetViewPort()->SetCleanup(kDeepCleanup);
   AddFrame(m_PointingViewer, BasicLayout);
@@ -106,6 +106,7 @@ void NGUIOptionsPointingPredefined::Create()
   m_PointingJitterDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_PointingJitterDB, DBLayout);
   
+  Resize(1030, 400);
   
   PostCreate();
 }

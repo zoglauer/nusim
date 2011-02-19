@@ -63,7 +63,7 @@ void NPointing::Clear()
 
   m_Ra = 0.0;
   m_Dec = 0.0;
-  m_Roll = c_Pi;
+  m_Roll = 180*60;
   m_Time.SetSeconds(0.0);
   RaDecToQuaternion();
 
@@ -79,7 +79,7 @@ void NPointing::QuaternionToRaDec()
   // Euler angles in radians. Move in Ra first then Dec.
  
   m_Ra = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
-  m_Dec = 60 * c_Deg * (c_Pi/2.-atan(m_Q.m_V[1]/m_Q.m_R)*2.); 
+  m_Dec = 60 * c_Deg * (c_Pi/2.-atan(m_Q.m_V[1]/m_Q.m_R)*2.);
  }
 
 
@@ -152,6 +152,8 @@ TString NPointing::ToString() const
   T += m_Ra/60;
   T += " deg, DEC=";
   T += m_Dec/60;
+  T += " deg, Roll=";
+  T += m_Roll/60;
   T += " deg";
   if (m_Time.GetSeconds() > 0.0) {
     T += ", Time=";
@@ -177,11 +179,14 @@ bool NPointing::Parse(TString& Line)
 
   char Key[2];
   double Time = 0;
-  if (sscanf(Line.Data(), "%s %lf %lf %lf", Key, &m_Ra, &m_Dec, &Time) != 4) {
-    if (sscanf(Line.Data(), "%s %lf %lf", Key, &m_Ra, &m_Dec) != 3) {
-      Clear();
-      return false;
-    } 
+  if (sscanf(Line.Data(), "%s %lf %lf %lf %lf", Key, &m_Ra, &m_Dec, &m_Roll, &Time) != 5) {
+    if (sscanf(Line.Data(), "%s %lf %lf %lf", Key, &m_Ra, &m_Dec, &Time) != 4) {
+      if (sscanf(Line.Data(), "%s %lf %lf", Key, &m_Ra, &m_Dec) != 3) {
+        Clear();
+        return false;
+      }
+    }
+    m_Roll = c_Pi; 
   } else {
     m_Ra *= 60;
     m_Dec *= 60;
@@ -203,6 +208,8 @@ bool NPointing::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
+  Clear();
+  
   MXmlNode* RaNode = Node->GetNode("RA");
   if (RaNode != 0) {
     m_Ra = RaNode->GetValueAsDouble();
@@ -211,13 +218,17 @@ bool NPointing::ReadXmlConfiguration(MXmlNode* Node)
   if (DecNode != 0) {
     m_Dec = DecNode->GetValueAsDouble();
   }
+  MXmlNode* RollNode = Node->GetNode("Roll");
+  if (RollNode != 0) {
+    m_Roll = RollNode->GetValueAsDouble();
+  }
   MXmlNode* TimeNode = Node->GetNode("Time");
   if (TimeNode != 0) {
     m_Time.SetSeconds(TimeNode->GetValueAsDouble());
   }
 
   // Do an official "set" to initialize all the other variables:
-  SetRaDec(m_Ra, m_Dec);
+  SetRaDecRoll(m_Ra, m_Dec, m_Roll);
 
   return true;
 }
@@ -234,6 +245,7 @@ MXmlNode* NPointing::CreateXmlConfiguration()
   
   new MXmlNode(Node, "RA", m_Ra);
   new MXmlNode(Node, "DEC", m_Dec);
+  new MXmlNode(Node, "Roll", m_Roll);
   new MXmlNode(Node, "Time", m_Time.GetSeconds());
 
   return Node;

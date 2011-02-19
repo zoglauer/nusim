@@ -79,7 +79,7 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
 
   // Some default initilizations:
   NPointing N;
-  N.SetRaDec(180*60, 0.0);
+  N.SetRaDecRoll(180*60, 0.0, 180.0*60.0);
   N.SetTime(10000);
   m_InitialPointings.push_back(N);
   
@@ -507,7 +507,7 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
 
   if (m_InitialPointings.size() == 0) {
     NPointing N;
-    N.SetRaDec(180.0*60, 0.0);
+    N.SetRaDecRoll(180.0*60, 0.0, 180.0*60);
     N.SetTime(10000);
     m_InitialPointings.push_back(N);
   }

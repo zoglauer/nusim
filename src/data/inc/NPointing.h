@@ -50,7 +50,7 @@ class NPointing
   virtual void Clear();
 
   //! Set right ascension and declination (do automatic conversion to quaternion)
-  void SetRaDec(double Ra, double Dec) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; RaDecToQuaternion(); }
+  void SetRaDecRoll(double Ra, double Dec, double Roll) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; m_Roll = Roll; RaDecToQuaternion(); }
   //! Set quaternion (do automatic conversion to quaternion)
   void SetQuaternion(const NQuaternion& Q) { m_Empty = false; m_Q = Q; QuaternionToRaDec(); }
   //! Set the time spent in this pointing
@@ -60,6 +60,8 @@ class NPointing
   double GetRa() const { return m_Ra; }
   //! Get the declination
   double GetDec() const { return m_Dec; }
+  //! Get the declination
+  double GetRoll() const { return m_Roll; }
   //! Get the time to be spent at this pointing
   NTime GetTime() const { return m_Time; }
   
