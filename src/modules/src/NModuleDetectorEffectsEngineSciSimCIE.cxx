@@ -522,7 +522,7 @@ MXmlNode* NModuleDetectorEffectsEngineSciSimCIE::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
 
   // MXmlNode* SomeTagNode = new MXmlNode(Node, "CIEFileName", m_ChargeInductionEfficiencyFileName);
-  new MXmlNode(Node, "CIEFileName", m_ChargeInductionEfficiencyFileName);
+  new MXmlNode(Node, "CIEFileName", CleanPath(m_ChargeInductionEfficiencyFileName));
 
   return Node;
 }

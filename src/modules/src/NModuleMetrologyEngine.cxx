@@ -499,7 +499,7 @@ MXmlNode* NModuleMetrologyEngine::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);  
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
-  new MXmlNode(Node, "PositionShiftFileName", m_PositionShiftFileName);
+  new MXmlNode(Node, "PositionShiftFileName", CleanPath(m_PositionShiftFileName));
   new MXmlNode(Node, "BlurEnabled", m_BlurEnabled);
 
   return Node;

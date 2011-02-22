@@ -489,7 +489,7 @@ MXmlNode* NModuleSourceDistribution::CreateXmlConfiguration()
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
     Sources->AddNode(m_Sources[s]->CreateXmlConfiguration());
   }
-  new MXmlNode(Node, "PointingPatternFileName", m_PointingPatternFileName);
+  new MXmlNode(Node, "PointingPatternFileName", CleanPath(m_PointingPatternFileName));
   new MXmlNode(Node, "NTestPhotons", m_NTestPhotons);
   new MXmlNode(Node, "DistanceBetweenPointings", m_DistanceBetweenPointings);
   new MXmlNode(Node, "MaxAllowedDistanceForAcceptance", m_MaxAllowedDistanceForAcceptance);

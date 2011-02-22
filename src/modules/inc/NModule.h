@@ -147,6 +147,9 @@ class NModule
   //! Return the diagnostics GUI. Returns zero if the is no diagnostics GUI --- only called by TBD.
   virtual NGUIDiagnostics* GetDiagnosticsGUI() { return m_Diagnostics; }
 
+  //! Check for $NUSIM paths in the given file name and replace it if possible
+  static TString CleanPath(TString Path);
+
   //! Read the configuration data from an XML node
   virtual bool ReadXmlConfiguration(MXmlNode* Node);
   //! Create an XML node tree from the configuration
@@ -158,8 +161,6 @@ class NModule
   //! Set the name of this module
   void SetName(TString Name) { m_Name = Name; }
 
-  //! Check for $NUSIM paths in the given file name and replace it if possible
-  TString CleanPath(TString Path);
 
   // private methods:
  private:

@@ -326,9 +326,16 @@ TString NModule::CleanPath(TString Path)
   if (ToBeReplaced == "" || ToBeReplaced == "/") return Path;
 
   MFile::ExpandFileName(ToBeReplaced);
+  
+  TString ToBeReplacedTrunk = ToBeReplaced;
+  ToBeReplacedTrunk += "_trunk/";
   ToBeReplaced += "/";
 
-  return Path.ReplaceAll(ToBeReplaced, "$NUSIM/");  
+  // First replace the extended version
+  Path = Path.ReplaceAll(ToBeReplacedTrunk, "$NUSIM/");
+  Path = Path.ReplaceAll(ToBeReplaced, "$NUSIM/");
+
+  return Path;  
 }
 
 
