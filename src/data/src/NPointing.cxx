@@ -95,10 +95,8 @@ void NPointing::RaDecToQuaternion()
    //Important thing to remember here is that the Z-axis of the space craft is what
    //needs to be pointing at the proper ra/deg. 
    
-   double croll=cos(m_Roll/2.);
-   double sroll=sin(m_Roll/2.);
-   //double croll=cos(0*c_Pi/2.);
-   //double sroll=sin(0*c_Pi/2.);
+   double croll=cos(m_Roll/60*c_Rad/2.);
+   double sroll=sin(m_Roll/60*c_Rad/2.);
    
    m_QR.m_R = croll;
    m_QR.m_V[0] = 0.0;
@@ -186,10 +184,13 @@ bool NPointing::Parse(TString& Line)
         return false;
       }
     }
-    m_Roll = c_Pi; 
+    m_Roll = 180*60; 
+    m_Ra *= 60;
+    m_Dec *= 60;
   } else {
     m_Ra *= 60;
     m_Dec *= 60;
+    m_Roll *= 60;
   }
   
   RaDecToQuaternion();
