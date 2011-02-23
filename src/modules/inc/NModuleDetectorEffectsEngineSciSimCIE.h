@@ -15,6 +15,7 @@
 
 
 // Standard libs:
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -90,6 +91,9 @@ class NModuleDetectorEffectsEngineSciSimCIE : public NModule, public NModuleInte
   double  m_PixelWidthScaleFactorX;
   //! The scale factor in y-direction from pixel width in NuSim to the CIE histogram
   double  m_PixelWidthScaleFactorY;
+
+  //! The correction factor for charge induction efficiency
+  double m_CIECorrectionFactor;
 
   //! The energy resolution function
   MFunction m_EnergyResolution;

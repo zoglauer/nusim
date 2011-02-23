@@ -28,7 +28,8 @@
 // NuSTAR libs:
 #include "NHit.h"
 #include "NPixelHit.h"
-#include "NGUIOptions.h"
+// #include "NGUIOptions.h"
+#include "NGUIOptionsDetectorCalibratorSciSimCIE.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,6 +66,28 @@ NModuleDetectorCalibratorSciSimCIE::NModuleDetectorCalibratorSciSimCIE(NSatellit
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsEnergyAndDepthCalibration)
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsEnergyAndDepthCalibration();
+
+
+  // set gain and offset for single-trigger events
+  // m_GainSingleTrigger = 1.0;
+  // m_OffsetSingleTrigger = 0.0;
+  m_GainSingleTrigger = 1.00144e+00;
+  m_OffsetSingleTrigger = 2.67552e-02;
+  // set gain and offset for double-trigger events
+  // m_GainDoubleTrigger = 1.0;
+  // m_OffsetDoubleTrigger = 0.0;
+  m_GainDoubleTrigger = 1.00387e+00;
+  m_OffsetDoubleTrigger = -6.59802e-02;
+  // set gain and offset for triple-trigger events
+  // m_GainTripleTrigger = 1.0;
+  // m_OffsetTripleTrigger = 0.0;
+  m_GainTripleTrigger = 1.01172e+00;
+  m_OffsetTripleTrigger = 1.73344e-01;
+  // set gain and offset for quadruple-trigger events
+  // m_GainQuadrupleTrigger = 1.0;
+  // m_OffsetQuadrupleTrigger = 0.0;
+  m_GainQuadrupleTrigger = 1.01066e+00;
+  m_OffsetQuadrupleTrigger = -3.17478e-01;
 }
 
 
@@ -156,6 +179,15 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
       ReconstructedEnergy = TrigEnergy - NonTrigEnergy / (9 - NTrigs) * NTrigs;
     }
 
+    if      ( NTrigs == 1 )
+      ReconstructedEnergy = ReconstructedEnergy * m_GainSingleTrigger + m_OffsetSingleTrigger;
+    else if ( NTrigs == 2 )
+      ReconstructedEnergy = ReconstructedEnergy * m_GainDoubleTrigger + m_OffsetDoubleTrigger;
+    else if ( NTrigs == 3 )
+      ReconstructedEnergy = ReconstructedEnergy * m_GainTripleTrigger + m_OffsetTripleTrigger;
+    else if ( NTrigs == 4 )
+      ReconstructedEnergy = ReconstructedEnergy * m_GainQuadrupleTrigger + m_OffsetQuadrupleTrigger;
+
     H.SetEnergy(ReconstructedEnergy);
     H.SetEnergyResolution(0.0);
 
@@ -246,14 +278,16 @@ void NModuleDetectorCalibratorSciSimCIE::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptions* Options = new NGUIOptions(this);
+  // NGUIOptions* Options = new NGUIOptions(this);
 
   // with something like:
   // NGUIOptionsTemplate* Options = new NGUIOptionsTemplate(this);
+  NGUIOptionsDetectorCalibratorSciSimCIE* Options = new NGUIOptionsDetectorCalibratorSciSimCIE(this);
 
   // this stays always the same:
   Options->Create();
   gClient->WaitForUnmap(Options);
+
 }
 
 
@@ -271,6 +305,42 @@ bool NModuleDetectorCalibratorSciSimCIE::ReadXmlConfiguration(MXmlNode* Node)
   }
   */
 
+  MXmlNode* GainSingleTriggerNode = Node->GetNode("GainSingleTrigger");
+  if (GainSingleTriggerNode != 0) {
+    m_GainSingleTrigger = GainSingleTriggerNode->GetValueAsDouble();
+  }
+  MXmlNode* OffsetSingleTriggerNode = Node->GetNode("OffsetSingleTrigger");
+  if (OffsetSingleTriggerNode != 0) {
+    m_OffsetSingleTrigger = OffsetSingleTriggerNode->GetValueAsDouble();
+  }
+
+  MXmlNode* GainDoubleTriggerNode = Node->GetNode("GainDoubleTrigger");
+  if (GainDoubleTriggerNode != 0) {
+    m_GainDoubleTrigger = GainDoubleTriggerNode->GetValueAsDouble();
+  }
+  MXmlNode* OffsetDoubleTriggerNode = Node->GetNode("OffsetDoubleTrigger");
+  if (OffsetDoubleTriggerNode != 0) {
+    m_OffsetDoubleTrigger = OffsetDoubleTriggerNode->GetValueAsDouble();
+  }
+
+  MXmlNode* GainTripleTriggerNode = Node->GetNode("GainTripleTrigger");
+  if (GainTripleTriggerNode != 0) {
+    m_GainTripleTrigger = GainTripleTriggerNode->GetValueAsDouble();
+  }
+  MXmlNode* OffsetTripleTriggerNode = Node->GetNode("OffsetTripleTrigger");
+  if (OffsetTripleTriggerNode != 0) {
+    m_OffsetTripleTrigger = OffsetTripleTriggerNode->GetValueAsDouble();
+  }
+
+  MXmlNode* GainQuadrupleTriggerNode = Node->GetNode("GainQuadrupleTrigger");
+  if (GainQuadrupleTriggerNode != 0) {
+    m_GainQuadrupleTrigger = GainQuadrupleTriggerNode->GetValueAsDouble();
+  }
+  MXmlNode* OffsetQuadrupleTriggerNode = Node->GetNode("OffsetQuadrupleTrigger");
+  if (OffsetQuadrupleTriggerNode != 0) {
+    m_OffsetQuadrupleTrigger = OffsetQuadrupleTriggerNode->GetValueAsDouble();
+  }
+
   return true;
 }
 
@@ -284,9 +354,17 @@ MXmlNode* NModuleDetectorCalibratorSciSimCIE::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
 
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "GainSingleTrigger",   m_GainSingleTrigger);
+  new MXmlNode(Node, "OffsetSingleTrigger", m_OffsetSingleTrigger);
+
+  new MXmlNode(Node, "GainDoubleTrigger",   m_GainDoubleTrigger);
+  new MXmlNode(Node, "OffsetDoubleTrigger", m_OffsetDoubleTrigger);
+
+  new MXmlNode(Node, "GainTripleTrigger",   m_GainTripleTrigger);
+  new MXmlNode(Node, "OffsetTripleTrigger", m_OffsetTripleTrigger);
+
+  new MXmlNode(Node, "GainQuadrupleTrigger",   m_GainQuadrupleTrigger);
+  new MXmlNode(Node, "OffsetQuadrupleTrigger", m_OffsetQuadrupleTrigger);
 
   return Node;
 }

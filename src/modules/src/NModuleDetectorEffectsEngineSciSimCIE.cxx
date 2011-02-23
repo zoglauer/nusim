@@ -188,6 +188,10 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
     return false;
   }
 
+  m_CIECorrectionFactor = 1.0 / m_ChargeInductionEfficiency->GetMaximum();
+
+
+
   // CIE Histogram is 3 by 3 pixels
   m_PixelWidthScaleFactorX
     = ((m_ChargeInductionEfficiency->GetXaxis()->GetXmax()
@@ -326,7 +330,8 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
 	  DistanceXFromPixelCenter = Event.GetInteraction(i).GetPosition().X() - m_PixelCenterPositionX[xp];
 	  DistanceYFromPixelCenter = Event.GetInteraction(i).GetPosition().Y() - m_PixelCenterPositionY[yp];
-	  DistanceZFromCathode     = 1.0 - Event.GetInteraction(i).GetPosition().Z(); // Anode:-1 <--> Cathode:1
+	  DistanceZFromCathode     = Event.GetInteraction(i).GetPosition().Z();                         // Anode:-1 mm <--> Cathode:1 mm
+	  DistanceZFromCathode     = m_Satellite.GetDetectorHalfDimension().Z() - DistanceZFromCathode; // Anode: 2 mm <--> Cathode:0 mm
 
 	  DistanceXFromPixelCenter *= m_PixelWidthScaleFactorX;
 	  DistanceYFromPixelCenter *= m_PixelWidthScaleFactorY;
@@ -352,7 +357,8 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 	    }
 	  }
 
-	  NoisedEnergy = IdealEnergy * ChargeInductionEfficiency;
+	  // NoisedEnergy = IdealEnergy * ChargeInductionEfficiency;
+	  NoisedEnergy = IdealEnergy * ChargeInductionEfficiency * m_CIECorrectionFactor;
 	  /* Do NOT add electric noise
 	  if ( NoisedEnergy > 0.0 )
 	    NoisedEnergy = gRandom->Gaus(NoisedEnergy, m_EnergyResolution.Eval(NoisedEnergy));
@@ -526,7 +532,6 @@ MXmlNode* NModuleDetectorEffectsEngineSciSimCIE::CreateXmlConfiguration()
 
   return Node;
 }
-
 
 // NModuleDetectorEffectsEngineSciSimCIE.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////
