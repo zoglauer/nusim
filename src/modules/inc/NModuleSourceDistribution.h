@@ -77,6 +77,11 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! Get the distance between pointings in arcmin
   double GetDistanceBetweenPointings() const { return m_DistanceBetweenPointings; }
   
+  //! Set roll of the space craft in arcmin
+  void SetRoll(double Roll) { m_Roll = Roll; }
+  //! Get roll of the space craft in arcmin
+  double GetRoll() const { return m_Roll; }
+  
   //! Set the maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern
   void SetMaxAllowedDistanceForAcceptance(double MaxAllowedDistanceForAcceptance) { m_MaxAllowedDistanceForAcceptance = MaxAllowedDistanceForAcceptance; }
   //! Get the maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern
@@ -120,6 +125,8 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   int m_NTestPhotons;
   //! The distance between pointings in arcmin
   double m_DistanceBetweenPointings;
+  //! The roll of the space craft
+  double m_Roll;
   //! The maximum radial distance from the pointing direction within at least one photon must have it's origin in order to accept the pointing in the pattern 
   double m_MaxAllowedDistanceForAcceptance;
 

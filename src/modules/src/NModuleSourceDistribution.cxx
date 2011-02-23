@@ -73,6 +73,7 @@ NModuleSourceDistribution::NModuleSourceDistribution(NSatellite& Satellite) : NM
   m_NTestPhotons = 1000000;
   m_DistanceBetweenPointings = 7.3;
   m_MaxAllowedDistanceForAcceptance = 3.0;
+  m_Roll = 180.0*60.0;
 }
 
 
@@ -408,7 +409,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   for (int d = 0; d <= DecPoints; ++d) {
     for (int r = 0; r <= RaPoints; ++r) {
       if (AcceptedPointings[d][r] == true) { 
-        out<<"RD "<<RaPointings[d][r]/60.0<<" "<<DecPointings[d][r]/60.0<<" "<<10.0<<endl;
+        out<<"RD "<<RaPointings[d][r]/60.0<<" "<<DecPointings[d][r]/60.0<<" "<<m_Roll/60.0<<" "<<10.0<<endl;
       }
     }
   }
@@ -471,6 +472,10 @@ bool NModuleSourceDistribution::ReadXmlConfiguration(MXmlNode* Node)
   if (MaxAllowedDistanceForAcceptanceNode != 0) {
     m_MaxAllowedDistanceForAcceptance = MaxAllowedDistanceForAcceptanceNode->GetValueAsDouble();
   }
+  MXmlNode* RollNode = Node->GetNode("Roll");
+  if (RollNode != 0) {
+    m_Roll = RollNode->GetValueAsDouble();
+  }
 
   return true;
 }
@@ -493,6 +498,7 @@ MXmlNode* NModuleSourceDistribution::CreateXmlConfiguration()
   new MXmlNode(Node, "NTestPhotons", m_NTestPhotons);
   new MXmlNode(Node, "DistanceBetweenPointings", m_DistanceBetweenPointings);
   new MXmlNode(Node, "MaxAllowedDistanceForAcceptance", m_MaxAllowedDistanceForAcceptance);
+  new MXmlNode(Node, "Roll", m_Roll);
   
   return Node;
 }

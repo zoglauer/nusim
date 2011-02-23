@@ -67,6 +67,7 @@ class NGUIOptionsPointingPattern : public NGUIOptions
   MGUIEEntry* m_NTestPhotons;
   MGUIEEntry* m_DistanceBetweenPointings;
   MGUIEEntry* m_MaxAllowedDistanceForAcceptance;
+  MGUIEEntry* m_Roll;
 
 
   // private members:

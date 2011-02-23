@@ -83,6 +83,9 @@ void NGUIOptionsPointingPattern::Create()
   m_MaxAllowedDistanceForAcceptance = new MGUIEEntry(this, "Maximum radial distance between pointing and photon direction in arcmin (e.g. 2.0 arcmin):", false, dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetMaxAllowedDistanceForAcceptance());
 	AddFrame(m_MaxAllowedDistanceForAcceptance, NumberEntryLayout);
 
+  m_Roll = new MGUIEEntry(this, "A default roll of the space craft in degree (use this to align the pointings):", false, dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetRoll()/60.0);
+	AddFrame(m_Roll, NumberEntryLayout);
+
   TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 10);
   m_FileName = new MGUIEFileSelector(this, "Choose a file name to save the pointing pattern to:", 
                                      dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetPointingPatternFileName());
@@ -137,6 +140,7 @@ bool NGUIOptionsPointingPattern::OnApply()
   dynamic_cast<NModuleSourceDistribution*>(m_Module)->SetNTestPhotons(m_NTestPhotons->GetAsInt());
   dynamic_cast<NModuleSourceDistribution*>(m_Module)->SetDistanceBetweenPointings(m_DistanceBetweenPointings->GetAsDouble());
   dynamic_cast<NModuleSourceDistribution*>(m_Module)->SetMaxAllowedDistanceForAcceptance(m_MaxAllowedDistanceForAcceptance->GetAsDouble());
+  dynamic_cast<NModuleSourceDistribution*>(m_Module)->SetRoll(m_Roll->GetAsDouble()*60);
 
   dynamic_cast<NModuleSourceDistribution*>(m_Module)->GeneratePointingPattern();
 
