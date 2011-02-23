@@ -76,10 +76,22 @@ void NPointing::Clear()
 
 void NPointing::QuaternionToRaDec()
 {
-  // Euler angles in radians. Move in Ra first then Dec.
- 
-  m_Ra = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
-  m_Dec = 60 * c_Deg * (c_Pi/2.-atan(m_Q.m_V[1]/m_Q.m_R)*2.);
+  // Rotate unite vector with quaternion and calculate Ra, Dec.
+  // Then calculate the combined rotation around Z axis and 
+  // subtract Ra to obtain the correct Roll.
+  
+  MVector Zhat(0.0,0.0,1.0);
+  m_Q.Rotate(Zhat);
+  
+  m_Ra = 60*c_Deg*atan2(Zhat[1],Zhat[0]);
+  m_Dec = 60*c_Deg*asin(Zhat[2]);
+  m_Roll = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
+  m_Roll -= m_Ra;
+  if (m_Roll < 0) m_Roll+=360.0*60.0;
+  if (m_Ra < 0) m_Ra+=360.0*60.0;
+
+  //cout<<"RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Roll:"<<m_Roll/60.<<endl;
+    
  }
 
 
@@ -112,12 +124,13 @@ void NPointing::RaDecToQuaternion()
    m_Q.m_V[0] = -sr*sd;
    m_Q.m_V[1] = cr*sd; 
    m_Q.m_V[2] = sr*cd;
-     
+   
+   // First apply Ra, Dec, then roll around new Z-axis (Z-Y-Z) rotation. Frame rotation!!
    m_Q = m_Q*m_QR;	 
    	 
-   //QuaternionToRaDec();
+   QuaternionToRaDec();
    //cout<<"m_q "<<m_Q<<endl;
-   //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60<<" DEC: "<<m_Dec/60<<endl;
+   //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Roll:"<<m_Roll/60.<<endl;
 }
 
 

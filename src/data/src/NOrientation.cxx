@@ -488,8 +488,8 @@ bool NOrientation::Parse(TString& Line, int StartToken)
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
+
 
 
 std::ostream& operator<<(std::ostream& os, const NOrientation& O)

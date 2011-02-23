@@ -107,6 +107,7 @@ class NOrientation
   //! Rotate a quaternion out of this coordinate system
   void TransformOut(NQuaternion& Q) const;
 
+  
 
   //! Print the content of this class as a string
   TString ToString() const;

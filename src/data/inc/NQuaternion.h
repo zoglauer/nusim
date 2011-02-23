@@ -133,7 +133,8 @@ class NQuaternion
    NQuaternion Invert() const;
    void Rotate(MVector& vect) const;
    MVector Rotation(const MVector& vect) const;
-
+   MVector ToEuler() const;
+   
    double m_R;          // Real part
    MVector m_V; // vector part
 

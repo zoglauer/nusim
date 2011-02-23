@@ -771,9 +771,40 @@ MVector NQuaternion::Rotation(const MVector& V) const
    return V;
 }
   
-
 ////////////////////////////////////////////////////////////////////////////////
 
+MVector NQuaternion::ToEuler() const
+{
+         MVector Euler;
+
+         double sqw = m_R*m_R;
+         double sqx = m_V[0]*m_V[0];
+         double sqy = m_V[1]*m_V[1];
+         double sqz = m_V[2]*m_V[2];
+		 
+		 double m11 = 2.0*m_R*m_R + 2.0*m_V[0]*m_V[0] - 1.0;
+		 double m12 = 2.0*m_V[0]*m_V[1] + 2.0*m_R*m_V[2];
+		 double m13 = 2.0*m_V[0]*m_V[2] + 2.0*m_R*m_V[1];
+		 double m23 = 2.0*m_V[1]*m_V[2] + 2.0*m_R*m_V[0];
+		 double m33 = 2.0*m_R*m_R + 2.0*m_V[2]*m_V[2];
+
+		 Euler[0] = atan2(m12,m11);
+		 Euler[1] = asin(-m13);
+		 Euler[2] = atan2(m23,m33);
+
+		 // (rotation about 1st axis) heading = rotation about z-axis 
+         //Euler[0] = (atan2(2.0 * (m_V[0]*m_V[1] +m_V[2]*m_R),(sqx - sqy - sqz + sqw)));
+ 
+         // (rotation about 2nd axis) bank = rotation about x-axis
+         //Euler[2] = (atan2(2.0 * (m_V[1]*m_V[2] +m_V[0]*m_R),(-sqx - sqy + sqz + sqw)));
+ 
+         // (rotation about 3rd axis) attitude = rotation about y-axis
+         //Euler[1] = asin(-2.0f * (m_V[0]*m_V[2] - m_V[1]*m_R));
+		
+		 return Euler;
+ }
+
+////////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const NQuaternion& Q)
 {
