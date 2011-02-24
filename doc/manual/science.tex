@@ -1,3 +1,8 @@
+%\documentclass[11pt]{book}
+%\usepackage[pdftex]{graphicx}
+%\usepackage{rotating}
+%\begin{document}
+
 \chapter{NuSIM and NuSTAR science}
 
 One of the main goals of NuSIM is to predict, reproduce, and help understand NuSTAR measurements.
@@ -7,6 +12,20 @@ This chapter will give an overview of NuSIM's science capabilities, the required
 
 \section{What NuSIM can do (and what not)}
 
+NuSIM's strongest point is its imaging simulation capability. The NuSTAR observatory is very dynamical and a steady nominal observation is far from actually steady. The mast will go through an orbital bending cycle due to the sun/shade patterns on the mast, and this can in the worst case cause the effective area to change  by as much as 10\%. In addition there are other thermal perturbations which may affect the reconstruction of the source, increasing the PSF. All of these effects are included in NuSIM, and NuSIM will mimic a typical observation environment, then perform the typical aspect reconstruction on the data. The output will be an aspect reconstructed event list in sky coordinates, equivalent to a level 2 fits file.
+
+NuSIM is very well suited to investigate tiling and pointing patterns of sources as it offers full control of how to orient and where to point the observatory. Also due to the detector gaps care should be taken to think about exact locations.
+
+NuSIM will also correctly process the input spectrum of the source, running it through a detector engine that simulates the NuSTAR detector response. However, if the goal of the simulation is just to get the spectrum, then it is better to use XSPEC, since the choices in input spectrum are limited and a simulation may take several hours. NuSIM is not well suited to iterative investigations. It is therefore advised that investigations on what spectrum and integration time to use in a simulation, should be done prior to the simulation in XSPEC or a similar tool.
+
+Currently NuSIM outputs an event list that can be loaded into DS9. Extractions can be made using FTOOLS, however, at the time NuSIM does not provide an ARF generation routine, so it is not possible to extract fluxes. At the time of writing we are trying to remedy that, but it is a complicated process that may not be available for a while.
+
+\subsection{What NuSIM cannot do}
+NuSIM currently can not simulate variable sources, i.e. there is no way to input a time varying spectrum. Optionally though if a source is known to be in several different states at a certain fraction of time, then NuSIM can simulate each state separately, and the simulations can be stitched together afterwards.
+
+Similarly NuSIM can not assign several different spectral shapes to an input image. Each input image can only have one spectrum assigned to it. If several spectrum exists then it becomes necessary to make an image for each spectrum and simulate them separately. 
+
+In any instance where one observation is composed of several individual simulations that must be added together in parallel (as opposed to stitching together simulations back to back), there will be an error in the absolute countrate. The reason is that the deadtime calculation depends on the total flux, but each sub simulation will have ran at a fraction of the total flux. For example an image of a source consisting of a core and a halo, that each has a different spectrum, should be broken up into two sub images. If each of the images is responsible for 50\% of the combined flux, the two simulations will be run with 50\% of the flux. The resulting countrate of each sub-simulation will be higher than the actual countrate had there been only one simulation with 100\% flux. The error in the countrate depends on the flux level, and will be significant for fluxes above 10 milicrabs. Below that it is negligible.  
 
 
 \section{User science input}
@@ -83,5 +102,13 @@ After the simulations is finished some useful summary information is printed to 
 
 \section{NuSIM science output}
 
+NuSIM outputs the results of the simulation in a simple FITS OGIP compatible event list format, that has coordinates of the event in the standard (X, Y), and pulse height PI in keV. In addition there is a GRADE keyword which currently specifies whether an event was:
+\begin{itemize}
+\item[1] A properly double bounced source photon
+\item[2] A background photon
+\item[3] A single bounce source photon (ghost ray)
+\end{itemize} 
 
+This allows the user to sort the list and make different energy and grade cuts. The file will not run cleanly in XSELECT due to the fact that XSELECT does not have a NuSTAR mission parameter file. The XSELECT mission parameter file with directions can be found on the projectspaces site for NuSIM in the Simulations/Tools folder.
 
+%\end{document}
