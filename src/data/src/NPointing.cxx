@@ -76,15 +76,22 @@ void NPointing::Clear()
 
 void NPointing::QuaternionToRaDec()
 {
-  // Rotate unite vector with quaternion and calculate Ra, Dec.
+  // Rotate unite vector with quaternion to calculate Ra, Dec.
   // Then calculate the combined rotation around Z axis and 
-  // subtract Ra to obtain the correct Roll.
   
   MVector Zhat(0.0,0.0,1.0);
   m_Q.Rotate(Zhat);
   
   m_Ra = 60*c_Deg*atan2(Zhat[1],Zhat[0]);
   m_Dec = 60*c_Deg*asin(Zhat[2]);
+  
+  // Next to find roll:
+  // Q.R = croll*cra*cdeg - sroll*sra*cdeg
+  //       = cdeg*cos(roll+ra)
+  // Q.V[2] = croll*sra*cdeg - sroll*cra*cdeg
+  //          = cdeg*sin(roll+ra)
+  // atan(Q.V[2]/Q.R) = croll/2+ra/2
+  
   m_Roll = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
   m_Roll -= m_Ra;
   if (m_Roll < 0) m_Roll+=360.0*60.0;
