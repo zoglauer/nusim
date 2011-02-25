@@ -15,6 +15,10 @@ The orbit engine provides information about the current orbit position of the sa
 \end{figure}
 The pointing engine provides the pointing of the focal plane module in declination and right ascension. Figure \ref{pointinggui} shows the options interface GUI for the pointing module. As illustrated the pointing module allows the user to define multiple pointings. Each pointing requires a coordinate set, a space craft roll, and an exposure time. Checking the box in the upper left turns the exposure times into absolute seconds, where as leaving it unchecked, the times become relative to the integration time given by the supervisor.
 
+Alternatively the pointings can be loaded in from a file, which will replace any manually entered pointings. Such a pointing file can be for example be created by the source module, which finds an optimal pointing pattern for a given region size.
+
+Finally the last box in the gui allows the user to load a pointing jitter of the spacecraft. However, currently no such database exists.
+
 \subsection{Orientation and alignment engine}
 \begin{figure}[tb]
 \begin{center}
@@ -139,12 +143,27 @@ The trigger module represents the trigger and downlink decision hardware aboard 
 \subsection{Detector data calibrator}
 
 \subsection{Event selector}
+The Event Selector allows the user to filter the output and produce eventlist files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.Root" will produce a ROOT file format. Using any other appendix will produce the usual ascii nusim file format, and leaving it blank will not produce any file at all.
+
+An energy range can be entered to bound the range of the output. If there is no entry then the input range is used.
+
+A box allows the user to decide wether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.
+
+\begin{figure}[tb]
+\begin{center}
+\includegraphics[width=8cm]{images/eventselectorGUI.png}  
+\caption{Event selector interface options GUI.}
+\label{eventgui} 
+\end{center}
+\end{figure}
 
 \subsection{Science analyzer}
 
 \section{Metrology and Star tracker pipeline}
 \subsection{Metrology engine and calibrator}
-The purpose of the metrology engine is to generate data at a rate equivalent to the onboard metrology system. The engine takes the known perturbed aspect of the instrument system and finds the intersection of the metrology laser with the metrology detector. It will then apply noise to the data set simulating the centroiding error of the metrology detector. This is done by applying a Gaussian error to each of the measurement axis. The 1-sigma error is reported in the database file:\\ \textbf{resource/AlignmentDatabases/NuSim\_CompDB\_MET001.csv} . 
+The purpose of the metrology engine is to generate data at a rate equivalent to the onboard metrology system. The engine takes the known perturbed aspect of the instrument system and finds the intersection of the metrology laser with the metrology detector. It will then apply noise to the data set simulating the centroiding error of the metrology detector. This is done by applying a Gaussian error to each of the measurement axis. The blurring can be toggled in the metrology GUI, but should be on by default. The 1-sigma error is reported in the database file:\\ \textbf{resource/AlignmentDatabases/NuSim\_CompDB\_MET001.csv} . 
+
+The metrology PSD suffers from non-linearity. In the aspect reconstruction this non-linearity is corrected out, but for testing reasons it can be overridden such that the aspect reconstruction runs without correcting for the non-linearity. The shifts can be toggled in the metrology GUI.
 
 The engine passes the coordinates on to the Observatory Reconstructor for use in deriving the aspect reconstruction.
 
@@ -158,7 +177,7 @@ Thus if the a unit vector in the star tracker frame is transformed into the VSN 
 \begin{equation}
 x_{VSN}=(Q_{CHU->VSN} )^T* x_{CHU}, 
 \end{equation}
-then RA=atan$(y_{VSN}/x_{VSN})$, DEC=acos$(z_{VSN})$. In the module $(Q_{CHU->VSN})^T$ is produced at a rate equivalent to the onboard Star Tracker. The module will add a Gaussian noise to the transformation to mimic solution error of the Star Camera. The 1-sigma error is reported in the database file:\\ \textbf{resource/AlignmentDatabases/NuSim\_CompDB\_MET001.csv} .
+then RA=atan$(y_{VSN}/x_{VSN})$, DEC=asin$(z_{VSN})$. In the module $(Q_{CHU->VSN})^T$ is produced at a rate equivalent to the onboard Star Tracker. The module will add a Gaussian noise to the transformation to mimic solution error of the Star Camera. The 1-sigma error is reported in the database file:\\ \textbf{resource/AlignmentDatabases/NuSim\_CompDB\_MET001.csv} .
 
  The transformation is passed on to the Observatory Reconstructor, which interpolates the transformation for a specific time and derives the aspect reconstruction.
 
@@ -171,7 +190,7 @@ The inputs to the observatory reconstructor are:
 \item The on-ground alignment data defining the ideal locations of all the instrument components. Specifically, the pointing of the optical axis in optics bench coordinates, the location and pointing direction of the metrology laser in optics bench coordinates, the location and rotation to the metrology detector from focal plane bench coordinates and to the star tracker from optics bench coordinates.
 \end{itemize}
 The output from the observatory reconstructor is a transformation from focal plane module coordinates to celestial coordinate $R_{fbin}$.
-For extensive details on this reconstruction, and the algorithm solution, see the memo “NuSTAR Pointing Reconstruction.”
+For extensive details on the algorithm solution, see Chapter \ref{quaternion}, and for the performance details Appendix \ref{aspect}.
 
 
 \subsection{Observatory merger}
