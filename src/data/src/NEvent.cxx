@@ -207,7 +207,7 @@ bool NEvent::Parse(TString& Line)
       Error = true;
     } 
   } else if (Data[0] == 'O' && Data[1] == 'G') {
-    if (sscanf(Data, "OR %d", &m_Origin) != 1) {
+    if (sscanf(Data, "OG %d", &m_Origin) != 1) {
       Error = true;
     } 
   } else if (Data[0] == 'R' && Data[1] == 'D') {
