@@ -1,12 +1,43 @@
 \chapter{The Modules}
 
-\section{Satellite super module}
+\section{Introduction}
+Figure \ref{normalwin} left panel shows the NuSIM graphical interface. Left clicking on any of the coloured boxes will bring up an options menu for different modes of the module, and left clicking on the module will bring up the options menu for the chosen mode. 
+
+At the bottom of the window there are four grey boxes. The "supervisor" button brings up the main time control of the simulation. The first entry is the total time of the simulation in seconds, and the second entry is the update rate of the diagnostics plots in terms of number of events. It is advisable to set the update rate of the diagnostics window high, since the plotting slows down the simulations speed.
+
+The second grey button "Switch to satellite modules" switches the main window to the satellite control window shown in Figure \ref{normalwin} right panel. This is the control window of the satellite and mainly deals with the loading of databases and setting the space craft pointing. The modules available through this window are described in detail in \ref{ssm}.
+
+The third grey button toggles the displaying of the diagnostics window.
+
+The final button starts the simulation.
+
+\begin{figure}[bt]
+  \begin{minipage}[c]{0.48\linewidth}
+    \begin{center}
+      \includegraphics[scale=0.27]{images/MainWindowNormalMode.png}  
+    \end{center}
+  \end{minipage}
+  \hspace{0.04\linewidth}
+  \begin{minipage}[c]{0.48\linewidth}
+    \begin{center}
+      \includegraphics[scale=0.2]{images/satellitegui.png}  
+    \end{center}
+  \end{minipage}
+  \caption{\label{normalwin} Illustration of the main NuSIM GUI window (left) and satellite module window (right).}
+\end{figure}
+
+\subsection{Universal Saver and Loader: Saving and loading NuSIM simulations}
+There are a variety of output file formats in NuSIM. Each of these will be described under their respective module. However, at almost any point in the simulation the user can choose to save the contents of the EVENT object to an ascii file. The format of this NuSIM file is in detail described in Chapter \ref{outputformat}. 
+
+Under almost every module there are two common options: "Event Saver: Universal saver" and "Event loader: Universal loader". The save option will save the contents of EVENT at that point in the pipeline. The loader will load a NuSIM file and continue the simulation from that point in the pipeline. These two options are mostly used for debugging and testing of the NuSIM functionality.
+
+\section{Satellite super module}\label{ssm}
 The satellite super-module (internally represented by the class NSatellite) provides an interface to all other satellite modules, which are required by various other simulation and analysis modules.
 \subsection{Orbit engine}
 The orbit engine provides information about the current orbit position of the satellite, e.g. altitude, inclination, position in TBD coordinates.
 
 \subsection{Pointing engine}
-\begin{figure}[tb]
+\begin{figure}[bt]
 \begin{center}
 \includegraphics[width=10cm]{images/pointingGUI.png}  
 \caption{Pointing module options GUI.}
@@ -191,6 +222,3 @@ The inputs to the observatory reconstructor are:
 \end{itemize}
 The output from the observatory reconstructor is a transformation from focal plane module coordinates to celestial coordinate $R_{fbin}$.
 For extensive details on the algorithm solution, see Chapter \ref{quaternion}, and for the performance details Appendix \ref{aspect}.
-
-
-\subsection{Observatory merger}
