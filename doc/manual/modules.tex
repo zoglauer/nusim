@@ -166,12 +166,158 @@ The background engine draws the background from an external GEANT simulation, co
 \end{itemize}
 \subsection{Detector interactions engine}
 
+
 \subsection{Detector effects engine}
 
+The main task of the detector effects engine is to convert energies
+deposited in the CdZnTe detector by various interactions to charges
+measured at each pixel.
+There is no time-dependent waveform/sampling information in the output
+signal for each pixel.
+Inputs are position in detector coordinate system and energy
+deposited for each interaction.
+The input may be a vector consisting of multiple interactions.
+Outputs are total charge at each pixel which has a non-zero charge
+deposition.
+This engine is followed by the trigger engine which uses the pixel-wise
+charge information to determine triggers, veto, which pixels to read
+out, etc. This module has 6 options:
+\begin{itemize}
+ \item \textbf{No module}.
+       It is possible to run NuSIM without having a detector effect engine.
+ \item \textbf{SciSim}.
+       The module converts energy of each interaction to charge only
+       in the pixel where interaction occurs with a charge loss database
+       derived from observed data.
+       The surrounding 8 pixels have zero energy.
+       After that, charges in each pixel are integrated.
+ \item \textbf{SciSimCIE}.
+       The module converts energy to charge
+       by a simple multiplicative factor, charge induction efficiency
+       (CIE), which depends on interaction position.
+       In order to shorten computation time, the CIE values are produced
+       by an external software which simulates charge transport and
+       induction in the CdZnTe detector based on the Shockley-Ramo theorem.
+       These values are filled in a 3-d histogram with a volume of 3-by-3
+       pixels in the ROOT file
+       (\textbf{\${NUSIM}/resource/data/CIE\_500V.root}).
+       The ROOT file can be selected via the SciSimCIE GUI in
+       Fig~\ref{DEESciSimCIEGUI}.
+       At the moment, the detector is assumed to have uniform properties,
+       that are temperature ($5{}^\circ\mathrm{C}$),
+       electric field (500~V/2~mm), and mobility-lifetime products for
+       electrons ($5.0 \times 10^{-3}$~cm$^{2}$ V$^{-1}$)
+       and holes ($5.0 \times 10^{-6}$~cm$^{2}$ V$^{-1}$).
+       The SciSimCIE module needs to be followed by the SciSim trigger
+       engine and the SciSimCIE calibrator.
+ \item \textbf{PixSim}.
+       (Not yet implemented.)
+       The main task of this module is to correctly reproduce grade for
+       charge sharing between pixels based on a database measured with
+       an X-ray generator. It can not generate accurate spectrum or depth
+       plot. Monochromatic peaks are simply Gaussian with zero depth.
+       It requires the detector interactions engine as well as incident
+       position to the detector.
+ \item \textbf{PHE}.
+       This module randomly generates event information by reading
+       a PHE FITS file.
+ \item \textbf{Ideal}.
+       This is an ideal detector effects engine with zero energy
+       resolution and no charge trapping or diffusion.
+\end{itemize}
+
+\begin{figure}[tb]
+ \begin{center}
+  \includegraphics[width=8cm]{images/DetectorEffectEngineSciSimCIEGUI.png}
+  \caption{GUI for the SciSimCIE detector effect engine.}
+  \label{DEESciSimCIEGUI}
+ \end{center}
+\end{figure}
+
+
 \subsection{Trigger engine}
-The trigger module represents the trigger and downlink decision hardware aboard the NuSTAR satellite. It shall decide if an energy deposit in the shield represents a veto or the pattern on the detector is valid for a downlink.
+
+The trigger module represents the trigger and downlink decision hardware
+aboard the NuSTAR satellite. It shall decide if an energy deposit in the
+shield represents a veto or the pattern on the detector is valid for
+a downlink. The following 4 modules are available.
+\begin{itemize}
+ \item \textbf{No module}.
+       NuSIM can run without having a trigger engine.
+ \item \textbf{Ideal}.
+       This is a simple trigger module which counts the number of
+       trigger-activated pixels and generate a shield veto.
+ \item \textbf{SciSim}.
+       This module is designed to have the same function as the actual
+       trigger system and must follow the science detector effects
+       engine of SciSim, SciSimCIE, or PixSim.
+       Firstly, it searches for a pixel with the highest
+       charge and fill event information
+       with energies in 3-by-3 pixels which are selected pixel as
+       the center and surrounding 8 pixel.
+       These 9 energies are used to reconstruct an initial energy
+       in the following detector data calibrator for a science
+       simulation and energies in the other pixels are ignored.
+       Next, the module generates a shield veto flag if an energy
+       deposited in the shield is above a lower threshold, which
+       can be changed by the interface options GUI for the SciSim
+       trigger engine in Fig~\ref{TESciSimGUI}.
+       Finally, the module generates a flag to judge whether or not
+       this event are in the dead time. This dead-time selection
+       can be disabled by the top button in GUI.
+ \item \textbf{PHE}.
+       This is a specialized trigger engine for the PHE detector
+       effects path. At the moment, it does nothing.
+\end{itemize}
+
+\begin{figure}[tb]
+ \begin{center}
+  \includegraphics[width=8cm]{images/TriggerEngineSciSimGUI.png}
+  \caption{GUI for the SciSim trigger engine.}
+  \label{TESciSimGUI}
+ \end{center}
+\end{figure}
 
 \subsection{Detector data calibrator}
+
+The task of the detector data calibrator is to calibrate the data
+produced from a detector effects engine and the following trigger
+engine, and generate a level 3 data.
+The main calibrations are the depth collection and the charge share
+events collection. However, there is no depth collection or cut at
+the moment. The following 5 modules are available.
+\begin{itemize}
+ \item \textbf{No module}.
+       NuSim can run without having a detector data calibrator.
+ \item \textbf{SciSim}.
+       This is a detector data calibration engine which belongs to
+       the science simulator thread. At this time, There is no
+       depth collection or charge share collection.
+ \item \textbf{SciSimCIE}.
+       This module uses the 9 energies from the SciSim trigger effect
+       engine to reconstruct an energy to estimate an incident energy.
+       The reconstructed energy is the total energy of triggered pixels
+       minus the average energy of the other non-triggered pixels.
+       Then, energy scales among events with the different number of
+       triggers are calibrated with gain parameters. Although these
+       parameters can be changed by the interface options GUI for the
+       SciSimCIE calibrator in Fig~\ref{DCSciSimCIEGUI}, the default
+       values are already optimized for the current CIE database.
+       They need to be updated if the CIE ROOT file changes.
+ \item \textbf{Ideal}.
+       This module is a calibrator which goes with the ideal
+       detector effects engine.
+ \item \textbf{Replica for background sims}.
+       This module is a calibrator for a background simulation.
+\end{itemize}
+
+\begin{figure}[tb]
+ \begin{center}
+  \includegraphics[width=8cm]{images/DetectorCalibratorSciSimCIEGUI.png}
+  \caption{GUI for the SciSimCIE detector data calibrator.}
+  \label{DCSciSimCIEGUI}
+ \end{center}
+\end{figure}
 
 \subsection{Event selector}
 The Event Selector allows the user to filter the output and produce eventlist files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.Root" will produce a ROOT file format. Using any other appendix will produce the usual ascii nusim file format, and leaving it blank will not produce any file at all.
