@@ -735,6 +735,8 @@ bool NSource::SetEnergy(double EnergyParam1,
  */
 bool NSource::SetEnergyFunctionString(const TString& EnergyFunctionString)
 {
+  if (EnergyFunctionString == "") return true;
+
   m_EnergyFunctionString = EnergyFunctionString;
 
   if (m_EnergyParam1 == 0.0 && m_EnergyParam1 == m_EnergyParam2) {
