@@ -67,6 +67,9 @@ NModuleDetectorEffectsEngineSciSimCIE::NModuleDetectorEffectsEngineSciSimCIE(NSa
   // Set if this module has a diagnostics GUI
   m_HasDiagnosticsGUI = true;
   m_Diagnostics = 0;
+  
+  m_PixelCenterPositionX = 0;
+  m_PixelCenterPositionY = 0;
 }
 
 
@@ -123,7 +126,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
   // Set up the pixel center positions
   int NPixelsX = m_Satellite.GetDetectorPixelsX();
   int NPixelsY = m_Satellite.GetDetectorPixelsY();
+  delete m_PixelCenterPositionX;
   m_PixelCenterPositionX = new double[NPixelsX];
+  delete m_PixelCenterPositionY;
   m_PixelCenterPositionY = new double[NPixelsY];
 
   if ( NPixelsX % 2 == 1 ) { // odd
