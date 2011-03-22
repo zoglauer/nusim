@@ -74,6 +74,7 @@ NGUIOptionsSource::NGUIOptionsSource(NSource* Source, const TGWindow* Parent) :
   m_E4 = 0;
   m_E5 = 0;
   m_EF = 0;
+  m_EFunction = 0;
 }
 
 
@@ -206,6 +207,7 @@ void NGUIOptionsSource::UpdateOptions()
   //UpdateSource();
 
   TGLayoutHints* Default = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX, 0, 0, 0, 0);
+  TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 0, 0, 0, 0);
   
   if (m_BeamOptionsSubFrame != 0) {
     TGFrameElement* E;
@@ -293,6 +295,7 @@ void NGUIOptionsSource::UpdateOptions()
     m_E4 = 0;
     m_E5 = 0;
     m_EF = 0;
+    m_EFunction = 0;
   }
 
   if (m_SpectralTypes->GetSelected() == NSource::c_Monoenergetic) {
@@ -328,17 +331,36 @@ void NGUIOptionsSource::UpdateOptions()
     m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
     m_E3 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Temperature [keV]: ", false, m_Source->GetEnergyParameter3(), true, 0.0);
     m_SpectralOptionsSubFrame->AddFrame(m_E3, Default);
+  } else if (m_SpectralTypes->GetSelected() == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+    m_E1 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy min [keV]: ", false, m_Source->GetEnergyParameter1(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E1, Default);
+    m_E2 = new MGUIEEntry(m_SpectralOptionsSubFrame, "Energy max [keV]: ", false, m_Source->GetEnergyParameter2(), true, 0.0);
+    m_SpectralOptionsSubFrame->AddFrame(m_E2, Default);
+    TGLabel* Label1 = new TGLabel(m_SpectralOptionsSubFrame, "Enter a normalized (ph/cm2/s/keV) spectrum, such as:");
+    m_SpectralOptionsSubFrame->AddFrame(Label1, LabelLayout);
+    TGLabel* Label2 = new TGLabel(m_SpectralOptionsSubFrame, "7.0e-6*pow(x/10, -1)*exp(-sqrt(x/2.2))");
+    m_SpectralOptionsSubFrame->AddFrame(Label2, LabelLayout);
+    //TGLabel* Label3 = new TGLabel(m_SpectralOptionsSubFrame, "Pay attention to the use of \"e\" and \"x\"!");
+    //m_SpectralOptionsSubFrame->AddFrame(Label3, LabelLayout);
+    m_EFunction = new TGTextEntry(m_SpectralOptionsSubFrame, m_Source->GetEnergyFunctionString());
+    m_SpectralOptionsSubFrame->AddFrame(m_EFunction, Default);
   } else if (m_SpectralTypes->GetSelected() == NSource::c_FileDifferentialFlux) {
     m_EF = new MGUIEFileSelector(m_SpectralOptionsSubFrame, "Choose a file containing the spectrum:", 
                                  m_Source->GetEnergyFileName());
     m_EF->SetFileType("Spectrum", "*.dat");
     m_SpectralOptionsSubFrame->AddFrame(m_EF, Default);
   }
-  
+
+  if (m_SpectralTypes->GetSelected() == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+    m_Flux->SetEnabled(false);
+    m_Flux->SetValue(0.0);
+  } else {
+    m_Flux->SetEnabled(true);
+  }
+
   MapSubwindows();
   MapWindow();  
   Layout();
-
 }
 
 
@@ -380,6 +402,21 @@ void NGUIOptionsSource::UpdateSource()
   m_Source->SetPosition(P1, P2, P3, P4, P5, P6, P7);
   if (m_PF != 0) m_Source->SetPosition(m_PF->GetFileName());
 
+
+  // Set the flux before the energy in order that the energy can update the flux
+  if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint ||
+      m_BeamTypes->GetSelected() == NSource::c_NearFieldRestrictedPoint ||
+      m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
+    m_Source->SetFlux(m_Flux->GetAsDouble());
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint ||
+     m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk ||
+     m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
+    m_Source->SetFlux(m_Flux->GetAsDouble()/100); // go from the external ph/s/cm2 to the external ph/s/mm2
+  } else {
+    cerr<<"NGUIm_BeamTypes->GetSelected() == NSource::c_NearFieldBeamOPtionsSource: Unknown beam type... You forgot to implement it..."<<endl;
+  }
+
+
   m_Source->SetSpectralType(m_SpectralTypes->GetSelected());
   double E1 = 0, E2 = 0, E3 = 0, E4 = 0, E5 = 0;
   if (m_E1 != 0) E1 = m_E1->GetAsDouble(); 
@@ -389,18 +426,8 @@ void NGUIOptionsSource::UpdateSource()
   if (m_E5 != 0) E5 = m_E5->GetAsDouble(); 
   m_Source->SetEnergy(E1, E2, E3, E4, E5);
   if (m_EF != 0) m_Source->SetEnergy(m_EF->GetFileName());
-
-  if (m_BeamTypes->GetSelected() == NSource::c_NearFieldPoint || 
-      m_BeamTypes->GetSelected() == NSource::c_NearFieldRestrictedPoint ||
-      m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
-    m_Source->SetFlux(m_Flux->GetAsDouble());
-  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint ||
-     m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk ||
-     m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
-    m_Source->SetFlux(m_Flux->GetAsDouble()/100); // go from the external ph/s/cm2 to the external ph/s/mm2        
-  } else {
-    cerr<<"NGUIm_BeamTypes->GetSelected() == NSource::c_NearFieldBeamOPtionsSource: Unknown beam type... You forgot to implement it..."<<endl;
-  } 
+  if (m_EFunction != 0) m_Source->SetEnergyFunctionString(m_EFunction->GetText());
+  
 }
 
 

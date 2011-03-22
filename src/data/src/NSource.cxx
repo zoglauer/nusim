@@ -37,10 +37,11 @@ const int NSource::c_Linear                       = 2;
 const int NSource::c_PowerLaw                     = 3; 
 const int NSource::c_BrokenPowerLaw               = 4; 
 const int NSource::c_FileDifferentialFlux         = 5; 
-const int NSource::c_BlackBody                    = 6; 
+const int NSource::c_BlackBody                    = 6;
+const int NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV  = 7;
 
 const int NSource::c_FirstSpectralType            = 1;
-const int NSource::c_LastSpectralType             = 6;
+const int NSource::c_LastSpectralType             = 7;
 
 const int NSource::c_Gaussian                     = 105; 
 const int NSource::c_ThermalBremsstrahlung        = 106; 
@@ -136,8 +137,10 @@ void NSource::Initialize()
   m_EnergyParam6 = 0.0;
 
   m_EnergyFileName = "";
+  m_EnergyFunctionString = "";
 
   m_PositionTF1 = 0;
+  m_EnergyTF1 = 0;
 }
 
 
@@ -165,6 +168,7 @@ bool NSource::SetSpectralType(const int& SpectralType)
   case c_BlackBody:
   case c_BandFunction:
   case c_FileDifferentialFlux:
+  case c_NormalizedFunctionInPhPerCm2PerSPerKeV:
     m_SpectralType = SpectralType;
     return true;
   default:
@@ -209,6 +213,9 @@ TString NSource::GetSpectralTypeName(const int SpectralType)
   case c_FileDifferentialFlux:
     Name = "File with differential flux";
     break;
+  case c_NormalizedFunctionInPhPerCm2PerSPerKeV:
+    Name = "Normalized function in ph/cm2/s/keV";
+    break;
   default:
     mout<<"Unknown spectral type: "<<SpectralType<<endl;
     break;
@@ -241,6 +248,8 @@ int NSource::GetSpectralType(TString Name)
     Type = c_BandFunction;
   } else if (Name == "File with differential flux") {
     Type = c_FileDifferentialFlux;
+  } else if (Name == "Normalized function in ph/cm2/s/keV") {
+    Type = c_NormalizedFunctionInPhPerCm2PerSPerKeV;
   } else {
     mout<<"Unknown spectral type: "<<Name<<endl;
   }
@@ -705,10 +714,49 @@ bool NSource::SetEnergy(double EnergyParam1,
   } else if (m_SpectralType == c_BandFunction) {
     // requires reimplementation
   } else if (m_SpectralType == c_FileDifferentialFlux) {
+  } else if (m_SpectralType == c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+    if (m_EnergyParam1 <= 0) {
+      mout<<m_Name<<": The minimum energy must be larger than 0!"<<endl;
+      return false;
+    }
+    if (m_EnergyParam2 <= m_EnergyParam1) {
+      mout<<m_Name<<": The maximum energy must be larger than the minimum energy!"<<endl;
+      return false;
+    }
   } else if (m_SpectralType == c_Activation) {
   }
 
   return UpgradeEnergy();
+}
+
+
+/******************************************************************************
+ * Set the energy function string
+ */
+bool NSource::SetEnergyFunctionString(const TString& EnergyFunctionString)
+{
+  m_EnergyFunctionString = EnergyFunctionString;
+
+  if (m_EnergyParam1 == 0.0 && m_EnergyParam1 == m_EnergyParam2) {
+    mout<<m_Name<<": The energy window has not been initialized!"<<endl;
+    return false;
+  }
+
+  TFormula Formula;
+  if (Formula.Compile(EnergyFunctionString) != 0) {
+    mout<<m_Name<<": The function is not compilable!"<<endl;
+    return false;
+  }
+
+  m_EnergyTF1 = new TF1(m_Name, EnergyFunctionString, m_EnergyParam1, m_EnergyParam2);
+  m_InputFlux = m_EnergyTF1->Integral(m_EnergyParam1, m_EnergyParam2);
+  // The curve is in ph/cm2/s/keV, but we need ph/mm2/s/keV
+  m_InputFlux /= 100;
+
+  // We have to call upgrade flux again, since we chanegd the input flux
+  UpgradeFlux();
+  
+  return true;
 }
 
 
@@ -749,7 +797,7 @@ bool NSource::UpgradeEnergy()
 /******************************************************************************
  * Return true, if the file containing the spectrum could be set correctly
  */
-bool NSource::SetEnergy(TString FileName)
+bool NSource::SetEnergy(const TString& FileName)
 {
   m_EnergyFileName = FileName;
 
@@ -785,9 +833,10 @@ bool NSource::SetFlux(const double& Flux)
     m_InputFlux = Flux;
     return UpgradeFlux();
   } 
+
+  if (m_SpectralType == c_NormalizedFunctionInPhPerCm2PerSPerKeV) return true;
   
   merr<<m_Name<<": Flux is negative: "<<Flux<<show;
-  
   return false;
 }
 
@@ -833,11 +882,9 @@ bool NSource::UpgradeFlux()
 //   }
 
   if (m_Flux <= 0) {
-    merr<<m_Name<<": UpgardeFlux: Source doesn't have a positive flux: "<<m_Flux<<show;
+    merr<<m_Name<<": UpgradeFlux: Source doesn't have a positive flux: "<<m_Flux<<show;
     return false;
   } 
-  
-  //mout<<m_Name<<": New flux: "<<m_Flux<<show;
 
   return true;
 }
@@ -850,7 +897,7 @@ bool NSource::UpgradeFlux()
 bool NSource::CalculateNextEmission(NTime Time)
 {
   double NextEmission = 0;
-
+  
   // This is the main time loop:
   if (m_Flux <= 0) {
     merr<<m_Name<<": CalculateNextEmission: Source doesn't have a positive flux: "<<m_Flux<<":"<<m_InputFlux<<endl;
@@ -935,7 +982,8 @@ bool NSource::GenerateEnergy(NPhoton& Photon)
       if (gRandom->Rndm() <= BlackBody(Energy, m_EnergyParam3)/m_EnergyParam4) break;
     }    
     break;
-  case c_BandFunction:
+  case c_BandFunction:  mout<<m_Name<<": New flux: "<<m_Flux<<show;
+
     while (true) {
       Energy = m_EnergyParam1 + gRandom->Rndm()*(m_EnergyParam2-m_EnergyParam1);
       double BandValue = BandFunction(Energy, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5);
@@ -948,6 +996,10 @@ bool NSource::GenerateEnergy(NPhoton& Photon)
   case c_FileDifferentialFlux:
     // All functionality is in MFunction:
     Energy = m_EnergyFunction.GetRandom();
+    break;
+  case c_NormalizedFunctionInPhPerCm2PerSPerKeV:
+    // All functionality is in MFunction:
+    Energy = m_EnergyTF1->GetRandom();
     break;
   default:
     merr<<"Energy type not yet implemented: "<<m_SpectralType<<endl;
@@ -1490,6 +1542,10 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (EnergyFileNameNode != 0) {
     m_EnergyFileName = EnergyFileNameNode->GetValueAsString();
   }
+  MXmlNode* EnergyFunctionStringNode = Node->GetNode("EnergyFunctionString");
+  if (EnergyFunctionStringNode != 0) {
+    m_EnergyFunctionString = EnergyFunctionStringNode->GetValueAsString();
+  }
 
   // Do an official "set" to initialize all the other variables:
   if (SetSpectralType(m_SpectralType) == false) return false;
@@ -1500,8 +1556,9 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
               m_PositionParam7, m_PositionParam8, m_PositionParam9, 
               m_PositionParam10, m_PositionParam11) == false) return false;
   if (SetPosition(m_PositionFileName) == false) return false;
+  if (SetFlux(m_InputFlux) == false) return false; // Set the flux before the energy !!
   if (SetEnergy(m_EnergyFileName) == false) return false;
-  if (SetFlux(m_InputFlux) == false) return false;
+  if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
 
   return true;
 }
@@ -1543,6 +1600,7 @@ MXmlNode* NSource::CreateXmlConfiguration()
   new MXmlNode(Node, "EnergyParam6", m_EnergyParam6);
   new MXmlNode(Node, "EnergyParam7", m_EnergyParam7);
   new MXmlNode(Node, "EnergyFileName", m_EnergyFileName);
+  new MXmlNode(Node, "EnergyFunctionString", m_EnergyFunctionString);
 
   return Node;
 }

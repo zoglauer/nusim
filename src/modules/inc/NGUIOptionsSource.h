@@ -91,6 +91,7 @@ class NGUIOptionsSource : public TGCompositeFrame
   MGUIEEntry* m_E4;
   MGUIEEntry* m_E5;
   MGUIEFileSelector* m_EF;
+  TGTextEntry* m_EFunction;
 
   int c_BeamComboBox;
   int c_SpectralComboBox;

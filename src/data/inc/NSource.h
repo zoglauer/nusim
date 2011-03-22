@@ -198,9 +198,13 @@ public:
                  double EnergyParam6 = 0.0,
                  double EnergyParam7 = 0.0);
   //! Return true, if the file containing the spectrum could be set correctly
-  bool SetEnergy(TString FileName); 
+  bool SetEnergy(const TString& FileName); 
   //! Return the energy file name
-  TString GetEnergyFileName() { return m_EnergyFileName; }
+  TString GetEnergyFileName() const { return m_EnergyFileName; }
+  //! Set the energy function string
+  bool SetEnergyFunctionString(const TString& EnergyFunctionString);
+  //! Return the energy function string
+  TString GetEnergyFunctionString() const { return m_EnergyFunctionString; }
 
   //! Generate an inititial data of the photon
   bool Generate(NPhoton& Photon, int Telescope);
@@ -248,8 +252,9 @@ public:
   //! Id of a Spectrum from file in format of a differential flux p/cm2/sec/keV
   static const int c_FileDifferentialFlux; 
   //! Id of an activation, i.e. decays
-  static const int c_Activation; 
-
+  static const int c_Activation;
+  //! The ID of a normalized function in ph/cm2/s/keV
+  static const int c_NormalizedFunctionInPhPerCm2PerSPerKeV;
 
   //! Id of an unknown start area
   static const int c_StartAreaUnknown;
@@ -425,6 +430,12 @@ private:
   //! A file containing the spectrum
   MFunction m_EnergyFunction;
 
+  //! A file containing the spectrum
+  TF1* m_EnergyTF1;
+
+  //! A string containing the spectrum
+  TString m_EnergyFunctionString;
+  
   //! The file name of the energy functiomn
   TString m_EnergyFileName;
 };
