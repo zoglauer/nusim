@@ -23,7 +23,7 @@ Currently NuSIM outputs an event list that can be loaded into DS9. Extractions c
 \subsection{What NuSIM cannot do}
 NuSIM currently can not simulate variable sources, i.e. there is no way to input a time varying spectrum. Optionally though if a source is known to be in several different states at a certain fraction of time, then NuSIM can simulate each state separately, and the simulations can be stitched together afterwards.
 
-Similarly NuSIM can not assign several different spectral shapes to an input image. Each input image can only have one spectrum assigned to it. If several spectrum exists then it becomes necessary to make an image for each spectrum and simulate them separately. 
+Similarly NuSIM can not assign several different spectral shapes to an input image. Each input image can only have one spectrum assigned to it. If several spectrum exists then it becomes necessary to make an image for each spectrum and simulate them as separate source.
 
 In any instance where one observation is composed of several individual simulations that must be added together in parallel (as opposed to stitching together simulations back to back), there will be an error in the absolute countrate. The reason is that the deadtime calculation depends on the total flux, but each sub simulation will have ran at a fraction of the total flux. For example an image of a source consisting of a core and a halo, that each has a different spectrum, should be broken up into two sub images. If each of the images is responsible for 50\% of the combined flux, the two simulations will be run with 50\% of the flux. The resulting countrate of each sub-simulation will be higher than the actual countrate had there been only one simulation with 100\% flux. The error in the countrate depends on the flux level, and will be significant for fluxes above 10 milicrabs. Below that it is negligible.  
 
@@ -64,6 +64,9 @@ In the case of a power law this encompasses the minimum and maximum energy as we
 The final parameter is the flux.
 In order to enable simulations of various beam and spectral parameters, it is necessary to give the energy-integrated flux of each source in ph/s/cm$^2$. 
 The user has to take care of the integration.
+An exception is the special spectral option "Normalized function in ph/cm2/s/keV". 
+There you give the spectrum in mathematical form, which must contain the correct normalization in a C/C++ compatible form such as "7.0e-6*pow(x/10, -1)*exp(-sqrt(x/2.2))".
+Pay attention to use of "x" for energy and "e" not "E" for the exponent.
 To set many sources at once, it is also possible to read them from an ASCII file using the "Import from file" button. 
 The file is a space-delimited csv file with different columns. If you only have point sources with simple power laws, the columns are: source name (no white spaced allowed), beam type (1 = far-field point source), RA (deg), DEC (deg), spectral type (3 = power law), minimum energy (keV), maximum energy (keV), photon index, flux (ph/s/cm$^2$).
 An example can be found in the resource/configurations directory: GalacticCenter.ImportExample.txt

@@ -1,6 +1,7 @@
 # This is a list of NuSIm developers
 # If you do not appear here, but you think you should, then simply add yourself...
  
+NM Isaiah Harp
 NM Takao Kitaguti
 NM Kristin Kruse Madsen
 NM Andreas Zoglauer

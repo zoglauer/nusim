@@ -98,9 +98,16 @@ The spectral options are:
 \item \textbf{Black body}: Requires the upper and lower boarder of the energy range in keV as well as the temperature in keV.
 \item \textbf{File with differential flux}: Read differential spectrum from an ASCII file. The spectrum does not require any special normalization besides being 1/keV, since the total flux is as always given by the flux keyword. An example file of the format can be found at:\\
 \textbf{\${NUSIM}/resource/data/SourceGenerator.examplespectrum.dat}
+\item \textbf{Normalized function in ph/cm2/s/keV}: Requires the upper and lower boarder of the energy range in keV as well as a function in C/C++ form.  You can use all C/C++ function such as exp, log, pow, sqrt, tan, cos, sin, etc. as well as all ROOT functions in the standard ROOR form such as TMath::Gaus(x), etc. Please consult the ROOT manual for all available functions.
+
+Example 1: 7.0e-6*pow(x/10, -1)*exp(-sqrt(x/2.2))
+
+Example 2: TMath::Gaus(x, 67.9, 1.5)
+
+Pay attention to use of "x" for energy and "e" not "E" for the exponent. This is the only spectral option which does not need a flux input, because it is assumed to be correctly normalized.
 \end{itemize}
 
-The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$.
+The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$. This final input is not required for the spectral option "Normalized function in ph/cm2/s/keV".
 
 
 For the sources at infinite distance the photons are started randomly from a disk on a sphere surrounding the opening of the optics modules (the module is chosen randomly) to enable the correct simulation of the effective area as a function of incidence angle. The start time is randomly determined (Poisson distribution) according to the source flux. When the start position, start direction and photon energy are determined, the photon is handed over to the optics module for further simulation.
