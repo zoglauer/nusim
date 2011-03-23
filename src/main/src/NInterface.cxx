@@ -137,6 +137,15 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
     }		
   }
     
+  // First parse all high level options
+  for (int i = 1; i < argc; i++) {
+    Option = argv[i];
+    if (Option == "--mode-astrophysics" || Option == "-p") {
+      m_Supervisor->SetAstrophysicsMode(true);
+      cout<<"Command-line parser: Enabling astrophysics mode"<<endl;
+    }
+  }
+    
   // Now parse all low level options
   bool ConfigurationLoaded = false;
   for (int i = 1; i < argc; i++) {
