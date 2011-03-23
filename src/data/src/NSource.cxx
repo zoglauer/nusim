@@ -104,7 +104,7 @@ void NSource::Initialize()
   m_NextEmission = 0;
 
   m_NGeneratedParticles = 0;
-  
+
   m_CoordinateSystem = c_Invalid;
   m_SpectralType = c_Invalid;
   m_BeamType = c_Invalid;
@@ -114,9 +114,9 @@ void NSource::Initialize()
   // Intensity of this source
   m_InputFlux = c_Invalid;
   m_Flux = c_Invalid;
-  
+
   m_NGeneratedParticles = 0;
-  
+
   m_PositionParam1 = 0.0;
   m_PositionParam2 = 0.0;
   m_PositionParam3 = 0.0;
@@ -128,7 +128,7 @@ void NSource::Initialize()
   m_PositionParam9 = 0.0;
   m_PositionParam10 = 0.0;
   m_PositionParam11 = 0.0;
-  
+
   m_EnergyParam1 = 0.0;
   m_EnergyParam2 = 0.0;
   m_EnergyParam3 = 0.0;
@@ -1397,11 +1397,13 @@ bool NSource::ParseLine(TString Line)
 {
   // This is NOT a universal parser - just a quick hack to convert some data
   // Format: 164700.1-460559  1  251.75063  -46.10000  3   5.0  80.0  2.0  0.000035200
-  
+
+  Initialize();
+
   MTokenizer T(' ', false);
   T.Analyze(Line);
-  if (T.GetNTokens() != 9) {
-    cout<<"Line parser source: Number of tokens not OK: "<<T.GetNTokens()<<endl;
+  if (T.GetNTokens() < 3) {
+    cout<<"Line parser source: Number of tokens not OK"<<endl;
     return false;
   }
   int Pos = 0;
@@ -1409,41 +1411,113 @@ bool NSource::ParseLine(TString Line)
   
   m_BeamType = T.GetTokenAtAsInt(Pos++);
   if (m_BeamType == NSource::c_FarFieldPoint) {
+    if (T.GetNTokens() < Pos + 2) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for beam"<<endl;
+      return false;
+    }
     m_PositionParam2 = T.GetTokenAtAsDouble(Pos++)*60;
     m_PositionParam1 = T.GetTokenAtAsDouble(Pos++)*60;
+  } else if (m_BeamType == NSource::c_FarFieldDisk) {
+    if (T.GetNTokens() < Pos + 3) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for beam"<<endl;
+      return false;
+    }
+    m_PositionParam2 = T.GetTokenAtAsDouble(Pos++)*60;
+    m_PositionParam1 = T.GetTokenAtAsDouble(Pos++)*60;
+    m_PositionParam3 = T.GetTokenAtAsDouble(Pos++)*60;
+  } else if (m_BeamType == NSource::c_FarFieldFitsFile) {
+    if (T.GetNTokens() < Pos + 1) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for beam"<<endl;
+      return false;
+    }
+    m_PositionFileName = T.GetTokenAtAsString(Pos++);
   } else {
-    cout<<"Line parser source: This beam type is not yet implemented: "<<m_BeamType<<endl;
+    cout<<m_Name<<": Line parser source: This beam type is not yet implemented: "<<m_BeamType<<endl;
     return false;
   }
   
   m_SpectralType = T.GetTokenAtAsInt(Pos++);
-  if (m_SpectralType == NSource::c_PowerLaw) {
+  if (m_SpectralType == NSource::c_Monoenergetic) {
+    if (T.GetNTokens() < Pos + 1) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+  } else if (m_SpectralType == NSource::c_Linear) {
+    if (T.GetNTokens() < Pos + 2) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+  } else if (m_SpectralType == NSource::c_PowerLaw) {
+    if (T.GetNTokens() < Pos + 3) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
     m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
     m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
     m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+  } else if (m_SpectralType == NSource::c_BrokenPowerLaw) {
+    if (T.GetNTokens() < Pos + 5) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam4 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam5 = T.GetTokenAtAsDouble(Pos++);
+  } else if (m_SpectralType == NSource::c_FileDifferentialFlux) {
+    if (T.GetNTokens() < Pos + 1) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyFileName = T.GetTokenAtAsString(Pos++);
+  } else if (m_SpectralType == NSource::c_BlackBody) {
+    if (T.GetNTokens() < Pos + 3) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+  } else if (m_SpectralType == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+    if (T.GetNTokens() < Pos + 3) {
+      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+      return false;
+    }
+    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+    m_EnergyFunctionString = T.GetTokenAtAsString(Pos++);
   } else {
-    cout<<"Line parser source: This beam type is not yet implemented: "<<m_SpectralType<<endl;
+    cout<<m_Name<<": Line parser source: This spectral type is not yet implemented: "<<m_SpectralType<<endl;
     return false;
   }
-  
-  if (m_BeamType == NSource::c_FarFieldPoint) {
-    m_InputFlux = T.GetTokenAtAsDouble(Pos++)/100; // /100 to switch from external ph/s/cm2 to internal ph/s/mm2
-  } else {
-    cout<<"Line parser source - flux parsing: This beam type is not yet implemented: "<<m_BeamType<<endl;
-    return false;
+
+  if (m_SpectralType != NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+    if (m_BeamType == NSource::c_FarFieldPoint ||
+      m_BeamType == NSource::c_FarFieldDisk ||
+      m_BeamType == NSource::c_FarFieldFitsFile) {
+      m_InputFlux = T.GetTokenAtAsDouble(Pos++)/100; // /100 to switch from external ph/s/cm2 to internal ph/s/mm2
+    } else {
+      cout<<m_Name<<": Line parser source - flux parsing: This beam type is not yet implemented: "<<m_BeamType<<endl;
+      return false;
+    }
   }
   
   // Do an official "set" to initialize all the other variables:
-  SetSpectralType(m_SpectralType);
-  SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5);
-  SetBeamType(m_BeamType);
-  SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
-              m_PositionParam4, m_PositionParam5, m_PositionParam6, 
-              m_PositionParam7, m_PositionParam8, m_PositionParam9, 
-              m_PositionParam10, m_PositionParam11);
-  SetPosition(m_PositionFileName);
-  SetEnergy(m_EnergyFileName);
-  SetFlux(m_InputFlux);
+  if (SetSpectralType(m_SpectralType) == false) return false;
+  if (SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5) == false) return false;
+  if (SetBeamType(m_BeamType) == false) return false;
+  if (SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
+              m_PositionParam4, m_PositionParam5, m_PositionParam6,
+              m_PositionParam7, m_PositionParam8, m_PositionParam9,
+              m_PositionParam10, m_PositionParam11) == false) return false;
+  if (SetPosition(m_PositionFileName) == false) return false;
+  if (SetFlux(m_InputFlux) == false) return false; // Set the flux before the energy !!
+  if (SetEnergy(m_EnergyFileName) == false) return false;
+  if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
   
   return true;
 }
@@ -1455,6 +1529,8 @@ bool NSource::ParseLine(TString Line)
 bool NSource::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
+
+  Initialize();
 
   MXmlNode* NameNode = Node->GetNode("Name");
   if (NameNode != 0) {

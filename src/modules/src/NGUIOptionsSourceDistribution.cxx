@@ -210,14 +210,21 @@ bool NGUIOptionsSourceDistribution::OnList()
     return false;
   }
 
+
   TString Line;
   vector<NSource*>& Sources = dynamic_cast<NModuleSourceDistribution*>(m_Module)->GetSourcesRef();
-  while (Line.ReadLine(in)) {   
+  // Remove all existing sources - we have an intentional mini memory leak...
+  //for (unsigned int s = 0; s < Sources.size(); ++s) {
+  //  delete Sources[s];
+  //}
+  Sources.clear();
+  while (Line.ReadLine(in)) {
+    if (Line.BeginsWith("#") == true || Line.BeginsWith(" ") == true || Line == "") continue;
     NSource* Source = new NSource(m_Module->GetSatelliteRef());
     if (Source->ParseLine(Line) == true) {
       Sources.push_back(Source);
-      CreateTab(Sources.back());
-      m_Tab->SetTab(Sources.size()-1);
+      //CreateTab(Sources.back());
+      //m_Tab->SetTab(Sources.size()-1);
     } else {
       cout<<"Unable to parse line: "<<Line<<endl;
       delete Source; 
