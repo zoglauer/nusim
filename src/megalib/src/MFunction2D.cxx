@@ -737,7 +737,7 @@ void MFunction2D::Plot()
       }
     }
 
-    TCanvas* Canvas = new TCanvas("DiagnosticsCanvas", "DiagnosticsCanvas");
+    TCanvas* Canvas = new TCanvas("DiagnosticsCanvas", "DiagnosticsCanvas", 800, 800);
     Canvas->cd();
     Hist->Draw("colz");
     //Graph->Draw("PCOL");
