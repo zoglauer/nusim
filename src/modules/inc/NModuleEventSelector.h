@@ -53,6 +53,12 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   void SetEnergyMax(const double EnergyMax) { m_EnergyMax = EnergyMax; }
   //! Get the maximum energy
   double GetEnergyMax() const { return m_EnergyMax; }
+
+  //! Set the maximum depth
+  void SetDepthMax(const double DepthMax) { m_DepthMax = DepthMax; }
+  //! Get the maximum depth
+  double GetDepthMax() const { return m_DepthMax; }
+
   //! Save before the event selctions
   void SetSaveBeforeSelections(const bool SaveBeforeSelections) { m_SaveBeforeSelections = SaveBeforeSelections; }
   //! Return if we should save before event selections
@@ -94,6 +100,10 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   double m_EnergyMin;
   //! The maximum energy
   double m_EnergyMax;
+
+  //! The maximum depth
+  double m_DepthMax;
+  
   //! True if we should save as fits file
   bool m_SaveAsFits;
   //! True if we should save as ROOT file

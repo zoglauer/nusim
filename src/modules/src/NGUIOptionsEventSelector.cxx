@@ -89,6 +89,10 @@ void NGUIOptionsEventSelector::Create()
                                     dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMin(),
                                     dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMax()); // , true, 3.0, 80.0);
   AddFrame(m_Energies, MinMaxLayout);
+
+  m_DepthMax = new MGUIEEntry(this, "Maximum depth measured from top of detector [mm]", false,
+                              dynamic_cast<NModuleEventSelector*>(m_Module)->GetDepthMax(), true, 0.0);
+  AddFrame(m_DepthMax, MinMaxLayout);
   
   PostCreate();
 }
@@ -146,6 +150,7 @@ bool NGUIOptionsEventSelector::OnApply()
   
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMin(m_Energies->GetMinValueDouble());
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMax(m_Energies->GetMaxValueDouble());
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetDepthMax(m_DepthMax->GetAsDouble());
   
 	return true;
 }

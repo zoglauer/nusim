@@ -69,8 +69,11 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   m_SaveAsFits = false;
   m_SaveAsROOT = false;
   m_SaveBeforeSelections = true;
+
   m_EnergyMin = 3;
   m_EnergyMax = 80;
+
+  m_DepthMax = 40;
 }
 
 
@@ -123,6 +126,12 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
 {
   // Main data analysis routine, which updates the event to a new level 
 
+  if (Event.GetNHits() == 0) {
+    cerr<<"Error (?): NModuleEventSelector: Event without hits..."<<endl;
+    Event.SetEventCut(true);
+    return true;
+  }
+
   // The first thing we do is safe the event
   if (m_SaveBeforeSelections == true) {
     if (m_SaveAsFits == true) {
@@ -131,7 +140,7 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       } 
     } else if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	if (SaveEventTree(Event) == false) return false;
+	      if (SaveEventTree(Event) == false) return false;
       }  
     } else {
       if (IsAsciiFileOpen() == true) {
@@ -176,6 +185,15 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     return true;
   }
 
+  double AverageDepth = 0.0;
+  for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
+    AverageDepth += (NModule::m_Satellite.GetDetectorHalfDimension().Z() - Event.GetHit(i).GetPosition().Z());
+  }
+  if (AverageDepth/Event.GetNHits() > m_DepthMax) {
+    Event.SetEventCut(true);
+    return true;
+  }
+
   // The first thing we do is safe the event
   if (m_SaveBeforeSelections == false) {
     if (m_SaveAsFits == true) {
@@ -184,7 +202,7 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       } 
     } else if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	if (SaveEventTree(Event) == false) return false;
+	      if (SaveEventTree(Event) == false) return false;
       }  
     } else {
       if (IsAsciiFileOpen() == true) {
@@ -261,6 +279,10 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   if (EnergyMaxNode != 0) {
     m_EnergyMax = EnergyMaxNode->GetValueAsDouble();
   }
+  MXmlNode* DepthMaxNode = Node->GetNode("DepthMax");
+  if (DepthMaxNode != 0) {
+    m_DepthMax = DepthMaxNode->GetValueAsDouble();
+  }
   MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
   if (SaveBeforeSelectionsNode != 0) {
     m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsBoolean();
@@ -281,6 +303,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   new MXmlNode(Node, "FileName", CleanPath(m_FileName));
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
+  new MXmlNode(Node, "DepthMax", m_DepthMax);
   new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
 
   return Node;

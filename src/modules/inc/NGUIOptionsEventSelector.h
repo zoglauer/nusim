@@ -27,6 +27,7 @@
 
 // MEGAlib libs:
 #include "NGlobal.h"
+#include "MGUIEEntry.h"
 #include "MGUIEMinMaxEntry.h"
 
 // NuSTAR libs
@@ -76,6 +77,8 @@ class NGUIOptionsEventSelector : public NGUIOptions
 
   //! Choose the energy window
   MGUIEMinMaxEntry* m_Energies;
+  //! Choose a depth cut
+  MGUIEEntry* m_DepthMax;
 
 
 
