@@ -138,7 +138,7 @@ void NModuleSourceDistribution::DetermineNext()
       m_Time = m_Sources[s]->GetNextEmission();
       m_NextComponent = s;
     }
-  }  
+  }
 }
 
 
@@ -267,6 +267,8 @@ bool NModuleSourceDistribution::Finalize()
 bool NModuleSourceDistribution::GeneratePointingPattern()
 {
   //! Generate an optimized pointing pattern
+
+  m_Time = 0.0;
 
   double RaMin = numeric_limits<double>::max();
   double DecMin = numeric_limits<double>::max();
