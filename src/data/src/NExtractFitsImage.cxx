@@ -123,7 +123,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   fits_read_keyword(File, "CTYPE1", Dummy, NULL, &Status);
   if (TString(Dummy) != "'RA---TAN'") {
     mgui<<"We have an unhandled x-axis type in the fits file: \""<<Dummy<<"\" (expected: 'RA---TAN')"<<show;
-    return false;
+    //return false;
   }
   if (Status != 0) {
     mgui<<"Cannot retrieve CTYPE1 keyword..."<<show;
@@ -167,7 +167,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   }  
   if (TString(Dummy) != "'DEC--TAN'") {
     mgui<<"We have an unhandled y-axis type in the fits file: \""<<Dummy<<"\" (expected: 'DEC--TAN')"<<show;
-    return false;
+    //return false;
   }
   //cout<<"yAxisType: "<<Dummy<<endl;
   
