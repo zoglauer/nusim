@@ -210,7 +210,7 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   if (gRandom->Rndm() > MLIatt) {
     Event.SetBlocked(true);
     ++m_BlockedPhotonsMLI;
-	return true;
+    return true;
   }
   
   // Step 2: Prepare and do the ray-trace:
@@ -513,14 +513,14 @@ bool NModuleOpticsEngine::LoadAngles()
 
   FILE* infile = fopen(FileName.Data(), "r");
   if (infile == 0) {
-    cerr<<"Unable to open file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to open file: "<<FileName<<endl;
     return false;
   }
 
   int NGroups;
   if (fscanf(infile, "%d\n", &NGroups) != 1) return false;
   if (NGroups != m_NGroups) {
-    cerr<<"Number of groups on file not identical with the number in the optics engine"<<endl;
+    cerr<<"Optics engine error: Number of groups on file not identical with the number in the optics engine"<<endl;
     return false;
   }
   float ShellRange;
@@ -546,7 +546,7 @@ bool NModuleOpticsEngine::LoadMLI()
 
   FILE* infile = fopen(FileName.Data(), "r");
   if (infile == 0) {
-    cerr<<"Unable to open file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to open file: "<<FileName<<endl;
     return false;
   }
 
@@ -591,16 +591,16 @@ bool NModuleOpticsEngine::LoadReflectivity()
   /* READ IN THE FILENAMES */
   infile = fopen(FileName.Data(), "r");
   if (infile == 0) {
-    cerr<<"Unable to read reflectivity master file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to read reflectivity master file: "<<FileName<<endl;
     return false;
   }
   if (fscanf(infile,"%s \n", directory) != 1) {
-    cerr<<"Unable to read directory from reflectivity master file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to read directory from reflectivity master file: "<<FileName<<endl;
     return false;
   }
   for (i=0; i < m_NGroups; i++) {
     if (fscanf(infile,"%s\n",Rfile[i]) != 1) {
-      cerr<<"Unable to read reflectivity file from reflectivity master file: "<<FileName<<endl;
+      cerr<<"Optics engine error: Unable to read reflectivity file from reflectivity master file: "<<FileName<<endl;
       return false;
     }
   } 
@@ -617,25 +617,25 @@ bool NModuleOpticsEngine::LoadReflectivity()
     
     infile = fopen(FileName.Data(),"r");
     if (infile == 0) {
-      cerr<<"Unable to open file: "<<FileName.Data()<<endl;
+      cerr<<"Optics engine error: Unable to open file: "<<FileName.Data()<<endl;
       return false;
     }
     if (fscanf(infile, "%s %s \n", buffer, buffer) != 2) {
-      cerr<<"Unable to parse first line in file: "<<FileName.Data()<<endl;
+      cerr<<"Optics engine error: Unable to parse first line in file: "<<FileName.Data()<<endl;
       return false;
     }
     if (fscanf(infile, "%s \n",buffer) != 1) {
-      cerr<<"Unable to parse second line in file: "<<FileName.Data()<<endl;
+      cerr<<"Optics engine error: Unable to parse second line in file: "<<FileName.Data()<<endl;
       return false;
     }
     for (j=0; j < ne; j++){
       if (fscanf(infile, "%f ", &ref_e[j]) != 1) {
-        cerr<<"Unable to parse file (energy value): "<<FileName.Data()<<endl;
+        cerr<<"Optics engine error: Unable to parse file (energy value): "<<FileName.Data()<<endl;
         return false;
       }
       for (l=0; l < na; l++) {
         if (fscanf(infile, "%f ", &m_Reflectivity[i+1][j][l]) != 1) {
-          cerr<<"Unable to parse file (reflectivity value): "<<FileName.Data()<<endl;
+          cerr<<"Optics engine error: Unable to parse file (reflectivity value): "<<FileName.Data()<<endl;
           return false;
         }
       }
@@ -658,7 +658,7 @@ bool NModuleOpticsEngine::LoadGeometry()
 
   FILE* infile = fopen(FileName.Data(), "r");
   if (infile == 0) {
-    cerr<<"Unable to read file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to read file: "<<FileName<<endl;
     return false;
   }
 
@@ -666,19 +666,19 @@ bool NModuleOpticsEngine::LoadGeometry()
   // A getline() would have made more sense ??? 
   char buffer[80]; 
   if (fscanf(infile,"%s \n", buffer) != 1) {
-    cerr<<"Unable to scan file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to scan file: "<<FileName<<endl;
     return false;
   }
   if (fscanf(infile,"%s %s \n", buffer, buffer) != 2) {
-    cerr<<"Unable to scan file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to scan file: "<<FileName<<endl;
     return false;
   }
   if (fscanf(infile,"%s %s \n", buffer, buffer) != 2) {
-    cerr<<"Unable to scan file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to scan file: "<<FileName<<endl;
     return false;
   }
   if (fscanf(infile,"%s %s \n", buffer, buffer) != 2) {
-    cerr<<"Unable to scan file: "<<FileName<<endl;
+    cerr<<"Optics engine error: Unable to scan file: "<<FileName<<endl;
     return false;
   }
 
@@ -870,14 +870,33 @@ float NModuleOpticsEngine::ConeReflectionPoint(vector<float>& k,vector<float>& r
 ////////////////////////////////////////////////////////////////////////////////
 
 
-float NModuleOpticsEngine::AverageReflection(float inc_angle, int group, int e_idx)
+float NModuleOpticsEngine::AverageReflection(float inc_angle, unsigned int group, unsigned int e_idx)
 {
-  int t_index_lo,t_index_hi; /* bracketing angular indices */
+  unsigned int t_index_lo,t_index_hi; /* bracketing angular indices */
   float R, ref_t_lo, ref_t_hi;
 
   R = 0.;
-  t_index_lo = (int) floor(inc_angle / m_AngularMesh);
-  t_index_hi = (int) ceil(inc_angle / m_AngularMesh);
+  t_index_lo = (unsigned int) floor(inc_angle / m_AngularMesh);
+  t_index_hi = (unsigned int) ceil(inc_angle / m_AngularMesh);
+
+  // Sanity checks:
+  if (group > m_Reflectivity.size()) {
+    cerr<<"Optics engine error: Optics group ID out of bounds: "<<group<<" vs. "<<m_Reflectivity.size()<<" max!"<<endl;
+    return 0;
+  }
+  if (e_idx > m_Reflectivity[group].size()) {
+    cerr<<"Optics engine error: Optics energy bin out of bounds: "<<e_idx<<" vs. "<<m_Reflectivity[group].size()<<" max!"<<endl;
+    return 0;
+  }
+  if (t_index_lo > m_Reflectivity[group][e_idx].size()) {
+    cerr<<"Optics engine error: Optics lower \"t\" bin out of bounds: "<<t_index_lo<<" vs. "<<m_Reflectivity[group][e_idx].size()<<" max!"<<endl;
+    return 0;
+  }
+  if (t_index_hi > m_Reflectivity[group][e_idx].size()) {
+    cerr<<"Optics engine error: Optics upper \"t\" bin out of bounds: "<<t_index_hi<<" vs. "<<m_Reflectivity[group][e_idx].size()<<" max!"<<endl;
+    return 0;
+  }
+  
   ref_t_lo = m_Reflectivity[group][e_idx][t_index_lo];
   ref_t_hi = m_Reflectivity[group][e_idx][t_index_hi];
 

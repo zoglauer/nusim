@@ -106,7 +106,7 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   int FindIndexReverse(float x, vector<float>& array, int n);
   int GetMirrorGroup(float alpha, int n);
   float ConeReflectionPoint(vector<float>& k,vector<float>& r,float apex,float alpha);
-  float AverageReflection(float inc_angle,int group,int e_idx);
+  float AverageReflection(float inc_angle, unsigned int group, unsigned int e_idx);
   float Gasdev();
   int Spider(vector<float>& r);
   float InterpolateMLI(float e_photon);
