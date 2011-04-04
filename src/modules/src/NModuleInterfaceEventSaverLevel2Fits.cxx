@@ -96,9 +96,9 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
   //char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
   int tfield = 5;
-  char *ttype[] = {"X","Y","PHA","Time","grade"};
-  char *tform[] = {"1E","1E","1E","1E","1I"};
-  char *tunit[] = {"pixel","pixel","keV","s","grade"};
+  char* ttype[] = {"X","Y","PHA","Time","grade"};
+  char* tform[] = {"1E","1E","1E","1E","1I"};
+  char* tunit[] = {"pixel","pixel","keV","s","grade"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -173,8 +173,6 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 {
   //! Close the file    
 
-  cout<<"CloseFits"<<endl;
-   
   int Status = 0;
   
   //! Write WCS header keywords   
@@ -195,8 +193,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   strcpy(mission,"NuSim");
   strcpy(telescope,"NuSim");
   
-  float Time_Start[] = {c4[0]};
-  float Time_End[] = {c4[counter-1]};
+  float Time_Start[] = { 0.0 };
+  float Time_End[] = { 0.0 };
+
+  if (c4.size() > 0) {
+    Time_Start[0] = c4[0];
+    Time_End[0] = c4[counter-1];
+  }
   
   fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
   fits_write_key(m_File, TSTRING, "MISSION", mission, " ", &Status); 	  
@@ -227,7 +230,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
  
   float rc1[counter],rc2[counter],
         rc3[counter],rc4[counter],
-		rc5[counter];
+        rc5[counter];
 		/*,rc6[counter],
 		rc7[counter],rc8[counter],
 		rc9[counter],rc10[counter],
@@ -235,20 +238,21 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 
   //! save the data before closing  
   for (unsigned int i = 0; i < counter; ++i) {
-	
-	float Ra = maxRa+(c1[i]-maxRa)*cos(minDec/c_Deg/60.);
-	rc1[i] = (maxRa-Ra)*60./Pixsize;
-	rc2[i] = (c2[i]-minDec)*60/Pixsize;	
-	rc3[i] = c3[i];
-	rc4[i] = c4[i];
-	rc5[i] = c5[i];
-	/*rc6[i] = c6[i];
-	rc7[i] = c7[i];
-	rc8[i] = c8[i];
-	rc9[i] = c9[i];
-	rc10[i] = c10[i];
-	rc11[i] = c11[i];*/
-  }	
+    float Ra = maxRa+(c1[i]-maxRa)*cos(minDec/c_Deg/60.);
+    rc1[i] = (maxRa-Ra)*60./Pixsize;
+    rc2[i] = (c2[i]-minDec)*60/Pixsize;
+    rc3[i] = c3[i];
+    rc4[i] = c4[i];
+    rc5[i] = c5[i];
+    /*
+    rc6[i] = c6[i];
+    rc7[i] = c7[i];
+    rc8[i] = c8[i];
+    rc9[i] = c9[i];
+    rc10[i] = c10[i];
+    rc11[i] = c11[i];
+    */
+  }
   
   fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1, &Status);
   fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, counter, rc2, &Status); 
@@ -268,10 +272,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float tlmin5 = 1;
   float tlmax1 = 0;
   if ( (maxRa-minRa) > (maxDec-minDec)) {
-	tlmax1 = (maxRa-minRa)*60./Pixsize;
-	} else {
-	tlmax1 = (maxDec-minDec)*60./Pixsize;
-    }
+    tlmax1 = (maxRa-minRa)*60./Pixsize;
+  } else {
+    tlmax1 = (maxDec-minDec)*60./Pixsize;
+  }
   float tlmax2 = tlmax1;
   float tlmax3 = 100;
   float tlmax5 = 3;
@@ -296,7 +300,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
     mgui<<"Error in creating extension: "<<endl;
-	m_File = 0;
+    m_File = 0;
     return false;
   }
     

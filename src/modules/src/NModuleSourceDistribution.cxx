@@ -268,6 +268,22 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
 {
   //! Generate an optimized pointing pattern
 
+  // We have to initialize a few modules here:
+  if (m_Satellite.Initialize() == false) {
+    mgui<<"Unable to initialize the satellite - aborting..."<<error;
+    return false;
+  }
+  if (dynamic_cast<NModule*>(m_Satellite.GetPointingModule())->Initialize() == false) {
+    mgui<<"Unable to initialize the pointing modulee - aborting..."<<error;
+    return false;
+  }
+  if (dynamic_cast<NModule*>(m_Satellite.GetOrientationsModule())->Initialize() == false) {
+    mgui<<"Unable to initialize the orientations module - aborting..."<<error;
+    return false;
+  }
+
+    
+  // Since during the pointing pattern generation no external time-synchroniztaion happens initilaize the time with zero  
   m_Time = 0.0;
 
   double RaMin = numeric_limits<double>::max();
@@ -277,7 +293,7 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
 
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
-    m_Sources[s]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
+    m_Sources[s]->CalculateNextEmission(m_Time);
   }
   DetermineNext();
 
