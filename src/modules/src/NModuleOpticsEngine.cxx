@@ -98,7 +98,8 @@ bool NModuleOpticsEngine::Initialize()
   m_EnergyMesh = .1; // keV
 
   m_NShells = 133;
-  m_NGroups = 10; 
+  m_NGroups = 10;
+  m_MaxAngle = 1./c_Deg; //radians 
 
 
   // Determine the angles (shell range)
@@ -425,6 +426,8 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     /*calculate reflected vector (new k,r)*/
     MovePhoton(r,k,z_interaction);
     incidence_angle1 = Reflection(r,k,m_Alpha1[shell_index],scatter);
+	/*Check that incidence angle is not too large*/
+	if (incidence_angle1 > m_MaxAngle) return 0;
     /*get the reflectivity and decide whether to kill the photon*/
     RR = AverageReflection(incidence_angle1,mirror_group,e_index);
     if (gRandom->Rndm() > RR) {
@@ -459,6 +462,7 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
     /*calculate reflected vector (new k,r)*/
     MovePhoton(r,k,z_interaction);
     incidence_angle2 = Reflection(r,k,m_Alpha2[shell_index],scatter);
+	if (incidence_angle2 > m_MaxAngle) return 0;
 	/*get the reflectivity and decide whether to kill the photon*/
     RR = AverageReflection(incidence_angle2,mirror_group,e_index); 
     if (gRandom->Rndm() > RR)  {

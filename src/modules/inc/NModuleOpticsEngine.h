@@ -155,7 +155,8 @@ class NModuleOpticsEngine : public NModule, public NModuleInterfaceEvent, public
   float m_AngularMesh;
   //! Energy grid distance
   float m_EnergyMesh;
-
+  //! Maximum allowable reflection angle
+  float m_MaxAngle;
   //! True if scattering is activated
   bool m_UseScattering;
 
