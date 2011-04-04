@@ -19,7 +19,7 @@ ROOTGLIBS     = $(shell root-config --glibs)
 
 # Compiler & linker options:
 CXX           = /opt/experimental/bin/g++
-CXXFLAGS      = $(OPT) -Wall -fno-exceptions -fPIC  -D_REENTRANT -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
+CXXFLAGS      = $(OPT) -Wall -Wno-write-strings -fno-exceptions -fPIC  -D_REENTRANT -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
 DEFINES       = -UHARDWARE
 LD            = /opt/experimental/bin/g++
 LDFLAGS       = $(OPT) -D___LINUX___
