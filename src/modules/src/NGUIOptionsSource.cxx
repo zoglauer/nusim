@@ -347,7 +347,7 @@ void NGUIOptionsSource::UpdateOptions()
   } else if (m_SpectralTypes->GetSelected() == NSource::c_FileDifferentialFlux) {
     m_EF = new MGUIEFileSelector(m_SpectralOptionsSubFrame, "Choose a file containing the spectrum:", 
                                  m_Source->GetEnergyFileName());
-    m_EF->SetFileType("Spectrum", "*.dat");
+    m_EF->SetFileType("Spectrum", "*.spe");
     m_SpectralOptionsSubFrame->AddFrame(m_EF, Default);
   }
 
