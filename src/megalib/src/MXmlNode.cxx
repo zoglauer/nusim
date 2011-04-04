@@ -27,6 +27,8 @@
 #include "MXmlNode.h"
 
 // Standard libs:
+#include <algorithm>
+using namespace std;
 
 // ROOT libs:
 
@@ -260,6 +262,29 @@ void MXmlNode::AddNode(MXmlNode* Node)
   return m_Nodes.push_back(Node);
 }
 
+ 
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool MXmlNode::RemoveNode(MXmlNode* Node)
+{
+  //! Remove node either from this node or from one of its daughters
+
+  vector<MXmlNode*>::iterator I = find(m_Nodes.begin(), m_Nodes.end(), Node);
+  if (I != m_Nodes.end()) {
+    m_Nodes.erase(I);
+    return true;
+  } else {
+    for (unsigned int n = 0; n < m_Nodes.size(); ++n) {
+      if (m_Nodes[n]->RemoveNode(Node) == true) {
+        return true;
+      }
+    } 
+  }
+  
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -398,6 +423,23 @@ double MXmlNode::GetMaxValueAsDouble() const
 
   mout<<"Xml: Value error in node \""<<m_Name<<"\" --- Value is not a min/max node!"<<endl;
   return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void MXmlNode::Find(const TString& Name, vector<MXmlNode*>& Nodes)
+{
+  //! Find all nodes with the given Name
+
+  if (m_Name == Name) {
+    Nodes.push_back(this);
+  }
+  
+  for (unsigned int n = 0; n < m_Nodes.size(); ++n) {
+    m_Nodes[n]->Find(Name, Nodes);
+  }
 }
 
 

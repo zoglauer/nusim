@@ -83,7 +83,8 @@ class MXmlNode : public MXmlData
   MXmlNode* GetNode(TString Name);
   //! Add a node
   void AddNode(MXmlNode* Node);
-
+  //! Remove node either from this node or from one of its daughters
+  bool RemoveNode(MXmlNode* Node);
 
   //! Return the number of attributes
   unsigned int GetNAttributes() { return m_Attributes.size(); }
@@ -97,6 +98,9 @@ class MXmlNode : public MXmlData
 
   //! Returns the XML text
   virtual TString ToString(unsigned int Indent = 0);
+
+  //! Find all nodes with the given Name
+  void Find(const TString& Name, vector<MXmlNode*>& Nodes);
 
 
   // protected methods:
