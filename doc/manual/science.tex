@@ -1,10 +1,12 @@
-%\documentclass[11pt]{book}
-%\usepackage[pdftex]{graphicx}
-%\usepackage{rotating}
-%\begin{document}
+\documentclass[11pt]{article}
+\usepackage[pdftex]{graphicx}
+\usepackage{rotating}
+\begin{document}
 
-\chapter{NuSIM and NuSTAR science}
-
+\title{NuSIM and NuSTAR science. Quick Start Guide.}
+\author{Andreas Zoglauer and Kristin Kruse Madsen}
+%\chapter{NuSIM and NuSTAR science. Quick Start Guide.}
+\maketitle
 One of the main goals of NuSIM is to predict, reproduce, and help understand NuSTAR measurements.
 For these tasks NuSTAR can be considered as a black box, and the user only has to think about the required input data and the output data he gets from NuSIM. 
 
@@ -18,9 +20,34 @@ NuSIM is very well suited to investigate tiling and pointing patterns of sources
 
 NuSIM will also correctly process the input spectrum of the source, running it through a detector engine that simulates the NuSTAR detector response. However, if the goal of the simulation is just to get the spectrum, then it is better to use XSPEC, since the choices in input spectrum are limited and a simulation may take several hours. NuSIM is not well suited to iterative investigations. It is therefore advised that investigations on what spectrum and integration time to use in a simulation, should be done prior to the simulation in XSPEC or a similar tool.
 
-Currently NuSIM outputs an event list that can be loaded into DS9. Extractions can be made using FTOOLS, however, at the time NuSIM does not provide an ARF generation routine, so it is not possible to extract fluxes. At the time of writing we are trying to remedy that, but it is a complicated process that may not be available for a while.
+
+\begin{center}
+\begin{tabular}{|p{9cm}|}
+\hline
+\hline \textbf{NuSIM is suitable for} : \\ 
+\hline  
+\hline
+Pointing and tiling pattern simulations for extended fields. \\
+\hline
+Extended objects. \\
+\hline
+Pointing environmental stability. \\
+\hline
+Sensitivity studies.\\
+\hline
+\hline \textbf{NuSIM is not suitable for}: \\
+\hline
+\hline
+Variability. NuSim can not simulate variable spectra. \\
+\hline
+Detailed spectral analysis. Very time consuming as any change in parameter requires a new simulation.\\
+\hline
+\end{tabular} 
+\end{center}
 
 \subsection{What NuSIM cannot do}
+Currently NuSIM outputs an event list that can be loaded into DS9. Extractions can be made using FTOOLS, however, at the time NuSIM does not provide an ARF generation routine, so it is not possible to extract fluxes. At the time of writing we are trying to remedy that, but it is a complicated process that may not be imminently available.
+
 NuSIM currently can not simulate variable sources, i.e. there is no way to input a time varying spectrum. Optionally though if a source is known to be in several different states at a certain fraction of time, then NuSIM can simulate each state separately, and the simulations can be stitched together afterwards.
 
 Similarly NuSIM can not assign several different spectral shapes to an input image. Each input image can only have one spectrum assigned to it. If several spectrum exists then it becomes necessary to make an image for each spectrum and simulate them as separate source.
@@ -105,13 +132,34 @@ After the simulations is finished some useful summary information is printed to 
 
 \section{NuSIM science output}
 
-NuSIM outputs the results of the simulation in a simple FITS OGIP compatible event list format, that has coordinates of the event in the standard (X, Y), and pulse height PI in keV. In addition there is a GRADE keyword which currently specifies whether an event was:
+NuSIM outputs the results of the simulation in a simple FITS OGIP compatible event list format, that has coordinates of the event in the standard FITS OGIP sky coordinates (X, Y), and pulse height PI in keV. In addition there is a GRADE keyword which currently specifies whether an event was:
 \begin{itemize}
 \item[1] A properly double bounced source photon
 \item[2] A background photon
 \item[3] A single bounce source photon (ghost ray)
 \end{itemize} 
 
-This allows the user to sort the list and make different energy and grade cuts. The file will not run cleanly in XSELECT due to the fact that XSELECT does not have a NuSTAR mission parameter file. The XSELECT mission parameter file with directions can be found on the projectspaces site for NuSIM in the Simulations/Tools folder.
+This allows the user to sort the list and make different energy and grade cuts. It should be stressed, however, that all three grades are part of the actual image.
 
-%\end{document}
+The output file will not run cleanly in XSELECT due to the fact that XSELECT does not have a NuSTAR mission parameter file. To use XSELECT with the files it is necessary to download a mission parameter file not part of the general HEASOFT distribution. This file with directions can be found on the projectspaces site for NuSIM in the Simulations/Tools folder.
+
+\section{Example simuations}
+Shown here are two example simulations describing the input used to run them.
+
+\subsection{Simulation of extended object}
+When simulating an extended source the objective is usually looking for features such as filaments in a supernova remnant. If the source has already been observed with CHANDRA or XMM then the input to NuSIM may conveniently be a fits image from those observatories. If not then the object must be simulated with some external tool to create an intensity map of the source.
+
+Once the choice of input image has been chosen, a spectrum for the source must be specified. The spectrum may be either of the NuSIM internal spectra, or input as a file. When the shape of the spectrum has been specified, a desired energy range must be chosen and the total flux calculated over that particular energy range. For example if a power-law with normalization 10 and photon index 2.1 is chosen over the energy range of 5-80 keV, the total flux is 1.47 ph/cm$^2$/sec. This number must be supplied with the spectrum parameters since inside NuSIM, normalization is not an input parameter of the models, but is instead contained in the total flux. In a similar way an input spectral file need not be in absolute units, but should be supplied with the total flux of the energy range over which the file is specified.
+
+Only one spectrum can be assigned per image. If a source exhibits several different spectra the image must be decomposed into separate images, and each image assigned to a spectrum.
+
+Finally due to the geometry of the detectors a pointing plan must be considered. Things to think about are the number of pointing's needed to cover the source, and placement with respect to detector gaps.
+
+\subsection{Simulation of survey}
+For the simulation of a survey typically the objects are considered point sources. In this instance a catalogue with locations of each source can be used. If in addition the source spectra can be approximated by the NuSIM supplied models, the model parameters can be loaded as list together with the source location. If the sources require a more complex spectra it is necessary to load the spectra for each source as a separate file.
+
+When the shape of the spectrum has been specified, a desired energy range must be chosen and the total flux calculated over that particular energy range. For example if a power-law with normalization 10 and photon index 2.1 is chosen over the energy range of 5-80 keV, the total flux is 1.47 ph/cm$^2$/sec. This number must be supplied with the spectrum parameters since inside NuSIM, normalization is not an input parameter of the models, but is instead contained in the total flux. In a similar way an input spectral file need not be in absolute units, but should be supplied with the total flux of the energy range over which the file is specified.
+
+For surveys pointing strategies are of great importance. Things to consider when designing a pointing strategy is how much each consecutive pointing should overlap, what rotation of the observatory, the integration time, etc. There are tools in NuSIM to help facilitate the optimal pointing when given the total size of the field to be surveyed, the total exposure time, and the amount of overlap.
+
+\end{document}
