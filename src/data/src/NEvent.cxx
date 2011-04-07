@@ -18,6 +18,8 @@
 #include "NEvent.h"
 
 // Standard libs:
+#include <iomanip>
+using namespace std;
 
 // ROOT libs:
 
@@ -149,7 +151,7 @@ bool NEvent::Stream(ofstream& S, int WhatToStream)
   //! Stream the content to an ASCII file 
 
   S<<"SE"<<endl;
-  S<<"TI "<<m_Time.GetSeconds()<<endl;  // <-- TI MUST be the second one, since the supervisor must know the next evevnt time!
+  S<<"TI "<<m_Time.GetString(9)<<endl;  // <-- TI MUST be the second one, since the supervisor must know the next event time!
   S<<"ID "<<m_ID<<endl;
   S<<"TE "<<m_Telescope<<endl;
   S<<"OG "<<m_Origin<<endl;

@@ -19,6 +19,7 @@
 
 // Standard libs:
 #include <sstream>
+#include <iomanip>
 using namespace std;
 
 // ROOT libs:
@@ -317,6 +318,20 @@ TString NTime::ToString() const
   ostringstream out;
   out.precision(12);
   out<<m_Seconds<<" sec";
+
+  return TString(out.str().c_str());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TString NTime::GetString(unsigned int Precision) const
+{
+  // Dump the time as string ion seconds
+  
+  ostringstream out;
+  out<<fixed<<setprecision(Precision)<<m_Seconds;
 
   return TString(out.str().c_str());
 }

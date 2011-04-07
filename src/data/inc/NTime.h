@@ -101,8 +101,10 @@ class NTime
   //! The <= operator
   bool operator<=(const NTime& Time) const;
 
+  //! Get as string with the given precisision and without "sec"
+  TString GetString(unsigned int Precision = 9) const;
 
-  //! Dump the time as string ion seconds
+  //! Dump the time as string in seconds in the form "123.1376765 sec"
   TString ToString() const;
 
   // protected methods:
