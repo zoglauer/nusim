@@ -174,6 +174,15 @@ bool SphericalPattern::ParseCommandLine(int argc, char** argv)
 		}
   }
 
+  if (m_FitsFileName == "") {
+	  cout<<"Error: Empty file name!"<<endl;
+    return false;
+  }
+  if (MFile::Exists(m_FitsFileName) == false) {
+	  cout<<"Error: File does not exist: "<<m_FitsFileName<<endl;
+    return false;
+  }
+
   return true;
 }
 
