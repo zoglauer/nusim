@@ -186,7 +186,7 @@ bool ConcatDat::Analyze()
   if (Saver.Initialize() == false) return false;
 
   NTime TimeOffset(0);
-  unsigned int IDOffset = 0;
+  unsigned long IDOffset = 0;
   for (unsigned int f = 0; f < m_InputFileNames.size(); ++f) {
     NModuleEventLoader Loader(Sat);
     Loader.SetFileName(m_InputFileNames[f]);
@@ -194,7 +194,7 @@ bool ConcatDat::Analyze()
     
     NEvent Event;
     NTime LatestTime(0);
-    unsigned int LatestID = 0;
+    unsigned long LatestID = 0;
     while (Loader.AnalyzeEvent(Event) == true) {
       if (Event.IsEmpty() == true) break; 
       

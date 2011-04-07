@@ -78,9 +78,9 @@ class NEvent
   TString GetOriginString() const;
 
   //! Set the ID of this event
-  void SetID(unsigned int ID) { m_Empty = false; m_ID = ID; }
+  void SetID(unsigned long ID) { m_Empty = false; m_ID = ID; }
   //! Return the ID of this event
-  unsigned int GetID() const { return m_ID; }
+  unsigned long GetID() const { return m_ID; }
 
   //! Set the telescope module of this event
   void SetTelescope(unsigned int Telescope) { m_Empty = false; m_Telescope = Telescope; }
@@ -273,7 +273,7 @@ class NEvent
   unsigned int m_Origin;
 
   //! ID of this event
-  unsigned int m_ID;
+  unsigned long m_ID;
 
   //! Telescope of this event
   unsigned int m_Telescope;
