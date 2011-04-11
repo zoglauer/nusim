@@ -160,14 +160,9 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
     double Energies[9];
 
     for ( int j=0; j<9; ++j ) {
-      Energies[j]
-	= Event.GetNinePixelHit(0).GetPostTriggerSampleSum(j+1)
-	- Event.GetNinePixelHit(0).GetPreTriggerSampleSum(j+1);
-
-      if ( Event.GetNinePixelHit(0).GetTrigger(j+1) == true )
-	TrigEnergy += Energies[j];
-      else
-	NonTrigEnergy += Energies[j];
+      Energies[j] = Niner.GetPostTriggerSampleSum(j+1) - Niner.GetPreTriggerSampleSum(j+1);
+      if ( Niner.GetTrigger(j+1) == true ) TrigEnergy    += Energies[j];
+      else                                 NonTrigEnergy += Energies[j];
     }
 
     double ReconstructedEnergy;
