@@ -191,10 +191,12 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
     H.SetEnergy(ReconstructedEnergy);
     H.SetEnergyResolution(0.0);
 
-    double InteractionPositionZ = Event.GetInteraction(i).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
-    if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
-	 || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
-      H.SetBadDepthCalibration(true);
+    for (unsigned int j = 0; j < Event.GetNInteractions(); ++j) {
+      double InteractionPositionZ = Event.GetInteraction(j).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
+      if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
+	   || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
+	H.SetBadDepthCalibration(true);
+      }
     }
 
     // Comment in if you comment out hit merging:
