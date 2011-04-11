@@ -79,6 +79,7 @@ const NEvent& NEvent::operator=(const NEvent& Event)
 
   m_Blocked = Event.m_Blocked;
   m_LostInDeadTime = Event.m_LostInDeadTime;
+  m_BadDepthCalibration = Event.m_BadDepthCalibration;
   m_VetoLow = Event.m_VetoLow;
   m_VetoHigh = Event.m_VetoHigh;
   m_Trigger = Event.m_Trigger;
@@ -117,6 +118,7 @@ void NEvent::Clear()
 
   m_Blocked = false;
   m_LostInDeadTime = false;
+  m_BadDepthCalibration = false;
   m_VetoLow = false;
   m_VetoHigh = false;
   m_Trigger = true;

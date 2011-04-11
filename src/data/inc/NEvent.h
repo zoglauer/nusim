@@ -129,6 +129,10 @@ class NEvent
   //! Return the event cut flag
   bool GetEventCut() const { return m_EventCut; }
 
+  //! Set the bad depth calibration flag
+  void SetBadDepthCalibration(bool BadDepthCalibration = true) { m_BadDepthCalibration = BadDepthCalibration; }
+  //! Return the bad depth calibration flag
+  bool GetBadDepthCalibration() const { return m_BadDepthCalibration; }
 
   //! Set the original photon parameters
   void SetOriginalPhoton(const NPhoton& Photon);
@@ -337,6 +341,8 @@ class NEvent
   //! Event cut flag of this event
   bool m_EventCut;
 
+  //! Bad depth calibration flag of this event
+  bool m_BadDepthCalibration;
 
 #ifdef ___CINT___
  public:

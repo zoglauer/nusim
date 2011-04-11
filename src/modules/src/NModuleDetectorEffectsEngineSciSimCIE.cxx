@@ -309,6 +309,7 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
   vector<NPixelHit> PixelHits;
 
+  double InteractionPositionZ;
   double DistanceXFromPixelCenter, DistanceYFromPixelCenter, DistanceZFromCathode;
 
   // Step 1:
@@ -327,6 +328,31 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
       massert(xPixel >= 0 && xPixel < NPixelsX);
       massert(yPixel >= 0 && yPixel < NPixelsY);
 
+      InteractionPositionZ = Event.GetInteraction(i).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
+
+      // Out of expected interaction range (-1 -- 1 mm)
+      if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
+	   || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
+
+	mdebug << "Interaction position Z (" << InteractionPositionZ << " mm) is out of range (-1 -- 1 mm)." << show;
+
+	if ( InteractionPositionZ > m_Satellite.GetDetectorHalfDimension().Z() ) {
+	  InteractionPositionZ =  m_Satellite.GetDetectorHalfDimension().Z() - 1.0e-10;
+	} else {
+	  InteractionPositionZ = -m_Satellite.GetDetectorHalfDimension().Z() + 1.0e-10;
+	}
+
+	Event.GetInteraction(i).SetPosition(MVector(Event.GetInteraction(i).GetPosition().X(),
+						    Event.GetInteraction(i).GetPosition().Y(),
+						    InteractionPositionZ));
+
+	mdebug << "Dummy interaction position Z (" << InteractionPositionZ << " mm) is set"  << show;
+
+	Event.SetBadDepthCalibration(true);
+      }
+
+      DistanceZFromCathode = m_Satellite.GetDetectorHalfDimension().Z() - InteractionPositionZ; // Anode: 2 mm <--> Cathode:0 mm
+
       // Create 9 pixel hits
       for (int xp = xPixel-1; xp <= xPixel+1; ++xp) {
         for (int yp = yPixel-1; yp <= yPixel+1; ++yp) {
@@ -335,8 +361,6 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
 	  DistanceXFromPixelCenter = Event.GetInteraction(i).GetPosition().X() - m_PixelCenterPositionX[xp];
 	  DistanceYFromPixelCenter = Event.GetInteraction(i).GetPosition().Y() - m_PixelCenterPositionY[yp];
-	  DistanceZFromCathode     = Event.GetInteraction(i).GetPosition().Z();                         // Anode:-1 mm <--> Cathode:1 mm
-	  DistanceZFromCathode     = m_Satellite.GetDetectorHalfDimension().Z() - DistanceZFromCathode; // Anode: 2 mm <--> Cathode:0 mm
 
 	  DistanceXFromPixelCenter *= m_PixelWidthScaleFactorX;
 	  DistanceYFromPixelCenter *= m_PixelWidthScaleFactorY;
