@@ -348,7 +348,7 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
 	mdebug << "Dummy interaction position Z (" << InteractionPositionZ << " mm) is set"  << show;
 
-	Event.SetBadDepthCalibration(true);
+	// Event.SetBadDepthCalibration(true);
       }
 
       DistanceZFromCathode = m_Satellite.GetDetectorHalfDimension().Z() - InteractionPositionZ; // Anode: 2 mm <--> Cathode:0 mm

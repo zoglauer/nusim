@@ -418,7 +418,6 @@ bool NSupervisor::Run()
   int NLostInDeadTimeEvents = 0;
   int NVetoedEvents = 0;
   int NCutEvents = 0;
-  int NBadDepthCalEvents = 0;
   int NPassedEvents = 0;
   
   m_Running = true;
@@ -625,10 +624,6 @@ bool NSupervisor::Run()
           NCutEvents++;
           break;
         }
-        if (Event.GetBadDepthCalibration() == true) {
-          NBadDepthCalEvents++;
-          break;
-        }
         if (Event.GetTrigger() == false) {
           break;
         }
@@ -643,7 +638,7 @@ bool NSupervisor::Run()
         gSystem->ProcessEvents();
         
       }
-      if (Event.GetBlocked() == false && Event.GetLostInDeadTime() == false && Event.GetVeto() == false && Event.GetBadDepthCalibration() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
+      if (Event.GetBlocked() == false && Event.GetLostInDeadTime() == false && Event.GetVeto() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
         NPassedEvents++;
       }
     }
@@ -737,7 +732,6 @@ bool NSupervisor::Run()
   cout<<"  Blocked events:             "<<setw(9)<<NBlockedEvents<<" "<<setw(9)<<NBlockedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<"  Lost in dead time events:   "<<setw(9)<<NLostInDeadTimeEvents<<" "<<setw(9)<<NLostInDeadTimeEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<"  Vetoed events:              "<<setw(9)<<NVetoedEvents<<" "<<setw(9)<<NVetoedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Bad depth cal events:       "<<setw(9)<<NBadDepthCalEvents<<" "<<setw(9)<<NBadDepthCalEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<"  Cut events:                 "<<setw(9)<<NCutEvents<<" "<<setw(9)<<NCutEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<"  Passed events:              "<<setw(9)<<NPassedEvents<<" "<<setw(9)<<NPassedEvents/m_Satellite.GetTimeIdeal().GetSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<endl;
