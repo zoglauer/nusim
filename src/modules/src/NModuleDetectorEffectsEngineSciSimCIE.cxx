@@ -342,13 +342,13 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 	  InteractionPositionZ = -m_Satellite.GetDetectorHalfDimension().Z() + 1.0e-10;
 	}
 
+	/*
 	Event.GetInteraction(i).SetPosition(MVector(Event.GetInteraction(i).GetPosition().X(),
 						    Event.GetInteraction(i).GetPosition().Y(),
 						    InteractionPositionZ));
+	*/
 
 	mdebug << "Dummy interaction position Z (" << InteractionPositionZ << " mm) is set"  << show;
-
-	// Event.SetBadDepthCalibration(true);
       }
 
       DistanceZFromCathode = m_Satellite.GetDetectorHalfDimension().Z() - InteractionPositionZ; // Anode: 2 mm <--> Cathode:0 mm
@@ -405,10 +405,10 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 	  P.SetPostTriggerSampleSum(NoisedEnergy);
 
           // Zero values mean no trigger
-	  P.SetIdealAverageDepth(Event.GetInteraction(i).GetPosition().Z());
+	  P.SetIdealAverageDepth(InteractionPositionZ);
 	  P.SetIdealEnergy(IdealEnergy);
 
-	  P.SetNoisedAverageDepth(Event.GetInteraction(i).GetPosition().Z());
+	  P.SetNoisedAverageDepth(InteractionPositionZ);
 	  P.SetNoisedEnergy(NoisedEnergy);
 
 	  PixelHits.push_back(P);

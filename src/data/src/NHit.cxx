@@ -93,6 +93,8 @@ void NHit::Clear()
   m_PositionResolution = g_VectorNotDefined;
   m_EnergyResolution = g_DoubleNotDefined;
   
+  m_BadDepthCalibration = false;
+
   m_ObservatoryData.Clear();
 }
 

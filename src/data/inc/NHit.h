@@ -89,6 +89,10 @@ class NHit
   //! Return the energy resolution in keV
   double GetEnergyResolution() const { return m_EnergyResolution; }
   
+  //! Set the hit flag for bad depth calibration
+  void SetBadDepthCalibration(bool BadDepthCalibration) { m_BadDepthCalibration = BadDepthCalibration; }
+  //! Return the hit flag for bad depth calibration
+  bool GetBadDepthCalibration() const { return m_BadDepthCalibration; }
   
   //! Set the observatory data
   void SetObservatoryData(const NObservatoryData& ObservatoryData) { m_Empty = false; m_ObservatoryData = ObservatoryData; }
@@ -138,6 +142,9 @@ class NHit
   //! Energy resolution of the hit
   double m_EnergyResolution;
   
+  //! Hit flag for bad depth calibration
+  bool m_BadDepthCalibration;
+
   //! The observatory data
   NObservatoryData m_ObservatoryData;
 

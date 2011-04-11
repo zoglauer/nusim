@@ -159,15 +159,15 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
     double NonTrigEnergy = 0.0;
     double Energies[9];
 
-    for ( int i=0; i<9; ++i ) {
-      Energies[i]
-	= Event.GetNinePixelHit(0).GetPostTriggerSampleSum(i+1)
-	- Event.GetNinePixelHit(0).GetPreTriggerSampleSum(i+1);
+    for ( int j=0; j<9; ++j ) {
+      Energies[j]
+	= Event.GetNinePixelHit(0).GetPostTriggerSampleSum(j+1)
+	- Event.GetNinePixelHit(0).GetPreTriggerSampleSum(j+1);
 
-      if ( Event.GetNinePixelHit(0).GetTrigger(i+1) == true )
-	TrigEnergy += Energies[i];
+      if ( Event.GetNinePixelHit(0).GetTrigger(j+1) == true )
+	TrigEnergy += Energies[j];
       else
-	NonTrigEnergy += Energies[i];
+	NonTrigEnergy += Energies[j];
     }
 
     double ReconstructedEnergy;
@@ -190,6 +190,12 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
 
     H.SetEnergy(ReconstructedEnergy);
     H.SetEnergyResolution(0.0);
+
+    double InteractionPositionZ = Event.GetInteraction(i).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
+    if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
+	 || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
+      H.SetBadDepthCalibration(true);
+    }
 
     // Comment in if you comment out hit merging:
     Event.AddHit(H);
