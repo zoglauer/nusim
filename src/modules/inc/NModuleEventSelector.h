@@ -108,6 +108,8 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   bool m_SaveAsFits;
   //! True if we should save as ROOT file
   bool m_SaveAsROOT;
+  //! True if we should save as dat file
+  bool m_SaveAsDat;
   //! True if we should save before the event selection have been applied
   bool m_SaveBeforeSelections;
 

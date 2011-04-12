@@ -68,6 +68,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   
   m_SaveAsFits = false;
   m_SaveAsROOT = false;
+  m_SaveAsDat = false;
   m_SaveBeforeSelections = true;
 
   m_EnergyMin = 3;
@@ -94,24 +95,46 @@ bool NModuleEventSelector::Initialize()
   // Initialize the module 
 
   if (m_FileName != "") {
-    if (m_FileName.EndsWith(".fits") == true) {
+    if (m_FileName.Last('.') == kNPOS) {
+      mgui<<"Unknown file suffix: \""<<m_FileName<<"\". Not saving anything!"<<error;
+      return true;
+    }
+
+    TString FileBase = m_FileName(0, m_FileName.Last('.'));
+    TString FileSuffix = m_FileName(m_FileName.Last('.'), m_FileName.Length() - m_FileName.Last('.'));
+
+    if (FileSuffix.Contains("fits") == false && FileSuffix.Contains(".root") == false && FileSuffix.Contains(".dat") == false) {
+      mgui<<"Unknown file suffix: \""<<m_FileName<<"\". Not saving anything!"<<error;   
+      return true;
+    }
+
+    if (FileSuffix.Contains("fits") == true) {
       m_SaveAsFits = true;
     } else {
       m_SaveAsFits = false;
     }
     
-    if (m_FileName.EndsWith(".root") == true) {
+    if (FileSuffix.Contains("root") == true) {
       m_SaveAsROOT = true;
     } else {
       m_SaveAsROOT = false;
     }
     
-    if (m_SaveAsFits == true) {
-      if (OpenLevel2FitsFile(m_FileName) == false) return false;
-    } else if (m_SaveAsROOT == true) {
-      if (OpenROOTFile(m_FileName) == false) return false;
+    if (FileSuffix.Contains("dat") == true) {
+      m_SaveAsDat = true;
     } else {
-      if (OpenAsciiFile(m_FileName, m_ChosenType) == false) return false;
+      m_SaveAsDat = false;
+    }
+     
+
+    if (m_SaveAsFits == true) {
+      if (OpenLevel2FitsFile(FileBase + ".fits") == false) return false;
+    } 
+    if (m_SaveAsROOT == true) {
+      if (OpenROOTFile(FileBase + ".root") == false) return false;
+    } 
+    if (m_SaveAsDat == true) {
+      if (OpenAsciiFile(FileBase + ".dat", m_ChosenType) == false) return false;
     }
   }
   
@@ -138,11 +161,13 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       if (IsLevel2FitsFileOpen() == true) {
         if (SaveEventLevel2Fits(Event) == false) return false;
       } 
-    } else if (m_SaveAsROOT == true) {
+    }
+    if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
 	      if (SaveEventTree(Event) == false) return false;
       }  
-    } else {
+    }
+    if (m_SaveAsDat == true) {
       if (IsAsciiFileOpen() == true) {
         if (SaveEventAscii(Event, 2) == false) return false;
       }
@@ -189,7 +214,7 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
     AverageDepth += (NModule::m_Satellite.GetDetectorHalfDimension().Z() - Event.GetHit(i).GetPosition().Z());
   }
-  if (AverageDepth/Event.GetNHits() > m_DepthMax) {
+  if (AverageDepth < 0 || AverageDepth/Event.GetNHits() > m_DepthMax) {
     Event.SetEventCut(true);
     return true;
   }
@@ -200,11 +225,13 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
       if (IsLevel2FitsFileOpen() == true) {
         if (SaveEventLevel2Fits(Event) == false) return false;
       } 
-    } else if (m_SaveAsROOT == true) {
+    }
+    if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
 	      if (SaveEventTree(Event) == false) return false;
       }  
-    } else {
+    }
+    if (m_SaveAsDat == true) {
       if (IsAsciiFileOpen() == true) {
         if (SaveEventAscii(Event, 2) == false) return false;
       }
@@ -226,11 +253,13 @@ bool NModuleEventSelector::Finalize()
     if (IsLevel2FitsFileOpen() == true) {
       if (CloseLevel2FitsFile() == false) return false;
     } 
-  } else if (m_SaveAsROOT == true) {
+  }
+  if (m_SaveAsROOT == true) {
     if (IsROOTFileOpen() == true) {
       if (CloseROOTFile() == false) return false;
     } 
-  } else {
+  }
+  if (m_SaveAsDat == true) {
     if (IsAsciiFileOpen() == true) {
       if (CloseAsciiFile() == false) return false;
     }
