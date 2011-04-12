@@ -75,8 +75,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   int Status = 0;
   m_File = 0;
   
-  Reference_Ra = m_Satellite.GetPointing(0).GetRa();
-  Reference_Dec = m_Satellite.GetPointing(0).GetDec();
+  //Reference_Ra = m_Satellite.GetPointing(0).GetRa();
+  //Reference_Dec = m_Satellite.GetPointing(0).GetDec();
   Pixsize = 6.;
   
   fits_create_file(&m_File, FileName, &Status);
@@ -111,7 +111,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   firstelem = 1;
   firstrow = 1; 
   counter = 0;
-  minRa = maxRa = Reference_Ra;  // arcmin
+  minRa = maxRa = numeric_limits<double>::max();  // arcmin
   minDec = maxDec = Reference_Dec;  // arcmin
 
  
@@ -132,35 +132,53 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
   
-	double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
+	  double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
    	double Ra = Event.GetHit(i).GetObservatoryData().GetRa();
 
-	if (Dec > maxDec) maxDec=Dec;
-	if (Ra > maxRa) maxRa=Ra;
-	if (Dec < minDec) minDec=Dec;
-	if (Ra < minRa) minRa=Ra;
+    if (counter == 0) {
+      minRa = maxRa = Ra;
+      minDec = maxDec = Dec;
+    }
+    if (Dec > maxDec) {
+      maxDec = Dec;
+      //cout<<"New max. DEC (ID="<<Event.GetID()<<"): "<<maxDec/60.0<<endl;      
+    }
+    if (Ra > maxRa) {
+      maxRa = Ra;
+      //cout<<"New max. RA (ID="<<Event.GetID()<<"): "<<maxRa/60.0<<endl;      
+    }
+    if (Dec < minDec) {
+      minDec=Dec;
+      //cout<<"New min. DEC (ID="<<Event.GetID()<<"): "<<minDec/60.0<<endl;      
+    }
+	  if (Ra < minRa) {
+      minRa = Ra;
+      //cout<<"New min. RA (ID="<<Event.GetID()<<"): "<<minRa/60.0<<endl;      
+    }
 	
-	double Energy = Event.GetHit(i).GetEnergy();
+	  double Energy = Event.GetHit(i).GetEnergy();
     NTime Time = Event.GetTime();
    
-	NPhoton OriginalPhoton = Event.GetInitialPhotonRelOM();	
+	  NPhoton OriginalPhoton = Event.GetInitialPhotonRelOM();	
    
-	c1.push_back(Ra);
+	  c1.push_back(Ra);
     c2.push_back(Dec);
     c3.push_back(Energy);
     c4.push_back(float(Time.GetSeconds()));
-	c5.push_back(Event.GetOrigin());
-	// Deactivating the origin and direction of photon
-	/*c6.push_back(OriginalPhoton.GetPosition()[0]);
-	c7.push_back(OriginalPhoton.GetPosition()[1]);
-	c8.push_back(OriginalPhoton.GetPosition()[2]);
-	c9.push_back(OriginalPhoton.GetDirection()[0]);
-	c10.push_back(OriginalPhoton.GetDirection()[1]);
-	c11.push_back(OriginalPhoton.GetDirection()[2]);*/
+	  c5.push_back(Event.GetOrigin());
+	  // Deactivating the origin and direction of photon
+	  /*
+    c6.push_back(OriginalPhoton.GetPosition()[0]);
+	  c7.push_back(OriginalPhoton.GetPosition()[1]);
+	  c8.push_back(OriginalPhoton.GetPosition()[2]);
+	  c9.push_back(OriginalPhoton.GetDirection()[0]);
+	  c10.push_back(OriginalPhoton.GetDirection()[1]);
+	  c11.push_back(OriginalPhoton.GetDirection()[2]);
+    */
    
     counter++;
 
-     }
+  }
     
   return true;
 }
