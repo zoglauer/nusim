@@ -49,7 +49,7 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_FixedSize = false;
   m_NeedsResize = false;
   
-  m_MaxBins = 2048;
+  m_MaxBins = 4096;
 
   m_MinDec = -10;
   m_MaxDec = 10;
@@ -141,11 +141,11 @@ void NGUIDiagnosticsBackprojector::SetInitialPointing(double Ra, double Dec)
 
   // Limit the number of bins, or we spend for ever updating the histogram...
   if (BinsDec > m_MaxBins) {
-    mout<<"Max. number of DEC bins reached"<<endl;
+    mout<<"Max. number of DEC bins reached: "<<m_MaxBins<<endl;
     BinsDec = m_MaxBins;
   }
   if (BinsRa > m_MaxBins) {
-    mout<<"Max. number of RA bins reached"<<endl;
+    mout<<"Max. number of RA bins reached: "<<m_MaxBins<<endl;
     BinsRa = m_MaxBins;
   }
 
@@ -200,22 +200,26 @@ void NGUIDiagnosticsBackprojector::AddBackprojection(double Ra, double Dec)
     m_MinRa = Ra;
     m_NeedsResize = true;
     if (m_MinRa < 0.0) m_MinRa = 0.0;
+    //cout<<"New Ra min: "<<Ra<<endl;
   }
   if (Ra > m_MaxRa) {
     m_MaxRa = Ra;
     m_NeedsResize = true;
     if (m_MaxRa > 360.0) m_MaxRa = 360.0;
+    //cout<<"New Ra max: "<<Ra<<endl;
   }
   m_Dec.push_back(Dec);
   if (Dec < m_MinDec) {
     m_MinDec = Dec;
     m_NeedsResize = true;
     if (m_MinDec < -90) m_MinDec = -90;
+    //cout<<"New Dec min: "<<Dec<<endl;
   }
   if (Dec > m_MaxDec) {
     m_MaxDec = Dec;
     m_NeedsResize = true;
     if (m_MaxDec > 90) m_MaxDec = 90;
+    //cout<<"New Dec max: "<<Dec<<endl;
   }
   
   //cout<<Ra<<":"<<Dec<<endl;
@@ -319,13 +323,14 @@ void NGUIDiagnosticsBackprojector::Update()
       
       // Limit the number of bins, or we spend for ever updating the histogram...
       if (BinsDec > m_MaxBins) {
-        mout<<"Max. number of DEC bins reached"<<endl;
+        mout<<"Max. number of DEC bins reached: "<<m_MaxBins<<endl;
         BinsDec = m_MaxBins;
       }
       if (BinsRa > m_MaxBins) {
-        mout<<"Max. number of RA bins reached"<<endl;
+        mout<<"Max. number of RA bins reached: "<<m_MaxBins<<endl;
         BinsRa = m_MaxBins;
       }
+
       
       m_Backprojection->Reset();
       m_Backprojection->SetBins(BinsRa, m_MinRa, m_MaxRa, BinsDec, m_MinDec, m_MaxDec);
