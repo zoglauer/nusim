@@ -1,0 +1,31 @@
+%! program = pdflatex
+
+\documentclass[12pt]{article}
+\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\geometry{a4paper} % or letter or a5paper or ... etc
+\usepackage[pdftex]{graphicx}
+
+% See the ``Article customise'' template for come common customisations
+\begin{document}
+
+\title{NuSIM simulation status/report}
+\author{Andreas Zoglauer, Kristin Kruse Madsen}
+
+
+%%% BEGIN DOCUMENT
+
+\maketitle
+\tableofcontents
+
+\newpage
+
+\include {CasA/SimReport}
+\include {G1.9/SimReport}
+\include {Kepler/SimReport}
+\include {SN1006/SimReport}
+\include {Tycho/SimReport}
+\include {GalacticCenter/SimReport}
+\include {Westerlund1/SimReport}
+\include {Cosmos/SimReport}
+
+\end{document}
