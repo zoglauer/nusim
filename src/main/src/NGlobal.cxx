@@ -88,6 +88,18 @@ const double c_FarAway = 1E30; // cm
 const double c_LargestEnergy = 0.999*numeric_limits<float>::max();
 const MVector c_NullVector(0.0, 0.0, 0.0);
 
+const double deg = 60.0;
+const double arcmin = 1.0;  // default unit for angles
+const double arcsec = 1.0/60.0;
+const double rad = 180.0/c_Pi * 60.0;
+
+extern const double m = 1000.0;
+extern const double cm = 10.0;
+extern const double mm = 1.0;
+
+extern const double cm2 = 100.0;
+extern const double mm2 = 1.0;
+
 NGlobal g_Global;
 
 

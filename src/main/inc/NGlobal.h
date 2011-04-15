@@ -66,6 +66,18 @@ extern const double c_FarAway;        // Radius for conversion from spherical to
 extern const double c_LargestEnergy;  // 
 extern const MVector c_NullVector;
 
+// Units
+extern const double deg;
+extern const double arcmin;
+extern const double arcsec;
+extern const double rad;
+
+extern const double m;
+extern const double cm;
+extern const double mm;
+
+extern const double cm2;
+extern const double mm2;
 
 
 //! \brief Initialization of everything global
