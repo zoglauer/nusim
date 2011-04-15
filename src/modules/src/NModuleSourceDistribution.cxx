@@ -199,7 +199,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   MVector SP = Photon.GetDirection();
   SP=-SP;
 
-  // SP is alreday in focal bench corrdinates, thus we only have to apply the pointing rotation:
+  // SP is alreday in focal bench coordinates, thus we only have to apply the pointing rotation:
   NPointing P = m_Satellite.GetPointing(m_Time);
   SP = P.GetQuaternion().Rotation(SP);
   
