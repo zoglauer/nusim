@@ -84,30 +84,12 @@ class NModuleInterfaceEventSaverLevel2Fits
   //! Reference to the satellite module 
   NSatellite& m_Satellite; 
    
-  long firstelem;
-  long firstrow;
   //! fields for fits file. Saving in chunks of 1000 photons
-  vector <float> c1; 
-  vector <float> c2;
-  vector <float> c3;
-  vector <float> c4;
-  vector <float> c5;
-  vector <float> c6;
-  vector <float> c7;
-  vector <float> c8;
-  vector <float> c9;
-  vector <float> c10;
-  vector <float> c11;
-
-    
-  unsigned int counter;
-  float Reference_Ra;
-  float Reference_Dec;
-  float Pixsize;
-  float maxRa;
-  float minRa;
-  float maxDec;
-  float minDec;
+  vector<double> m_Ra; 
+  vector<double> m_Dec;
+  vector<double> m_Energy;
+  vector<double> m_Time;
+  vector<double> m_Origin;
 
 
 #ifdef ___CINT___

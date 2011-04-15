@@ -75,10 +75,6 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   int Status = 0;
   m_File = 0;
   
-  //Reference_Ra = m_Satellite.GetPointing(0).GetRa();
-  //Reference_Dec = m_Satellite.GetPointing(0).GetDec();
-  Pixsize = 6.;
-  
   fits_create_file(&m_File, FileName, &Status);
   if (Status != 0) {
     mgui<<"Error in creating file: "<<endl;
@@ -102,19 +98,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
-    mgui<<"Error in creating extension: "<<endl;
+    mgui<<"Error in creating extension: "<<ExtensionName<<endl;
     mgui<<FileName<<show;
     m_File = 0;
     return false;
   }
 
-  firstelem = 1;
-  firstrow = 1; 
-  counter = 0;
-  minRa = maxRa = numeric_limits<double>::max();  // arcmin
-  minDec = maxDec = Reference_Dec;  // arcmin
-
- 
   return true;
 }
 
@@ -125,59 +114,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
 {
   //! Main data analysis routine, which updates the event to a new level 
-
-  // cout<<"SaveFits"<<endl;
-  
-  // int Status = 0;
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
-  
-	  double Dec = Event.GetHit(i).GetObservatoryData().GetDec();
-   	double Ra = Event.GetHit(i).GetObservatoryData().GetRa();
-
-    if (counter == 0) {
-      minRa = maxRa = Ra;
-      minDec = maxDec = Dec;
-    }
-    if (Dec > maxDec) {
-      maxDec = Dec;
-      //cout<<"New max. DEC (ID="<<Event.GetID()<<"): "<<maxDec/60.0<<endl;      
-    }
-    if (Ra > maxRa) {
-      maxRa = Ra;
-      //cout<<"New max. RA (ID="<<Event.GetID()<<"): "<<maxRa/60.0<<endl;      
-    }
-    if (Dec < minDec) {
-      minDec=Dec;
-      //cout<<"New min. DEC (ID="<<Event.GetID()<<"): "<<minDec/60.0<<endl;      
-    }
-	  if (Ra < minRa) {
-      minRa = Ra;
-      //cout<<"New min. RA (ID="<<Event.GetID()<<"): "<<minRa/60.0<<endl;      
-    }
-	
-	  double Energy = Event.GetHit(i).GetEnergy();
-    NTime Time = Event.GetTime();
-   
-	  NPhoton OriginalPhoton = Event.GetInitialPhotonRelOM();	
-   
-	  c1.push_back(Ra);
-    c2.push_back(Dec);
-    c3.push_back(Energy);
-    c4.push_back(float(Time.GetSeconds()));
-	  c5.push_back(Event.GetOrigin());
-	  // Deactivating the origin and direction of photon
-	  /*
-    c6.push_back(OriginalPhoton.GetPosition()[0]);
-	  c7.push_back(OriginalPhoton.GetPosition()[1]);
-	  c8.push_back(OriginalPhoton.GetPosition()[2]);
-	  c9.push_back(OriginalPhoton.GetDirection()[0]);
-	  c10.push_back(OriginalPhoton.GetDirection()[1]);
-	  c11.push_back(OriginalPhoton.GetDirection()[2]);
-    */
-   
-    counter++;
-
+	  m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
+    m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
+    m_Energy.push_back(Event.GetHit(i).GetEnergy());
+    m_Time.push_back(float(Event.GetTime().GetSeconds()));
+	  m_Origin.push_back(Event.GetOrigin());
   }
     
   return true;
@@ -189,20 +132,119 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
 
 bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 {
-  //! Close the file    
+  // Close the file    
 
   int Status = 0;
-  
+
+  if (m_Ra.size() == 0) {
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return true;
+  }
+
+  // The default image pixel size:
+  double PixelSize = 6.0*arcsec;
+  double PixelLimit = 2048.0; // +- center, so the real limits is double this size
+
+  // Calculate the minimum, maximum and average RA & DEC
+
+  double DecMin = numeric_limits<double>::max();
+  double DecMax = -numeric_limits<double>::max();
+  double DecAvg = 0;
+  for (unsigned int i = 0; i < m_Dec.size(); ++i) {
+    if (m_Dec[i] < DecMin) {
+      DecMin = m_Dec[i];
+      //cout<<"New dec min: "<<DecMin/deg<<endl;
+    }
+    if (m_Dec[i] > DecMax) {
+      DecMax = m_Dec[i];
+      //cout<<"New dec max: "<<DecMax/deg<<endl;
+    }
+    DecAvg += m_Dec[i];
+  }
+  DecAvg /= m_Dec.size();
+
+  //cout<<"Intermediate min, avg, max: "<<DecMin/deg<<":"<<DecAvg/deg<<":"<<DecMax/deg<<endl;
+
+  // Make sure we are with the maximum allowed image pixel size
+  if ((DecAvg - DecMin)/PixelSize > PixelLimit) {
+    DecMin = DecAvg - PixelLimit*PixelSize;
+  }
+  if ((DecMax - DecAvg)/PixelSize > PixelLimit) {
+    DecMax = DecAvg + PixelLimit*PixelSize;
+  }
+
+  // We want to "point" at RaAvg, thus we have to make a symmetric field around RaAvg
+  if (DecAvg - DecMin > DecMax - DecAvg) {
+    DecMax = 2*DecAvg - DecMin;
+  } else {
+    DecMin = 2*DecAvg - DecMax;
+  } 
+
+  //cout<<"Final min, avg, max: "<<DecMin/deg<<":"<<DecAvg/deg<<":"<<DecMax/deg<<endl;
+
+  double RaMin = numeric_limits<double>::max();
+  double RaMax = -numeric_limits<double>::max();
+  double RaAvg = 0;
+  for (unsigned int i = 0; i < m_Ra.size(); ++i) {
+    if (m_Ra[i] < RaMin) {
+      RaMin = m_Ra[i];
+      //cout<<"New RA min: "<<RaMin/deg<<endl;
+    }
+    if (m_Ra[i] > RaMax) {
+      RaMax = m_Ra[i];
+      //cout<<"New RA max: "<<RaMax/deg<<endl;
+    }
+    RaAvg += m_Ra[i];
+  }
+  RaAvg /= m_Ra.size();
+
+  //cout<<"Intermediate min, avg, max: "<<RaMin/deg<<":"<<RaAvg/deg<<":"<<RaMax/deg<<endl;
+
+  // Make sure we are with the maximum allowed image pixel size
+  if ((RaAvg - RaMin)/PixelSize*cos(DecAvg/rad) > PixelLimit) {
+    RaMin = RaAvg - PixelLimit*PixelSize / cos(DecAvg/rad);
+  }
+  if ((RaMax - RaAvg)/PixelSize > PixelLimit) {
+    RaMax = RaAvg + PixelLimit*PixelSize / cos(DecAvg/rad);
+  }
+
+  // We want to "point" at RaAvg, thus we have to make a symmetric field around RaAvg
+  if (RaAvg - RaMin > RaMax - RaAvg) {
+    RaMax = 2*RaAvg - RaMin;
+  } else {
+    RaMin = 2*RaAvg - RaMax;
+  } 
+
+  //cout<<"Final min, avg, max: "<<RaMin/deg<<":"<<RaAvg/deg<<":"<<RaMax/deg<<endl;
+
+  // Throw out everything beyond the borders
+  for (vector<double>::iterator I = m_Ra.begin(); I != m_Ra.end(); ) {
+    if ((*I) < RaMin || (*I) > RaMax || m_Dec[int(I-m_Ra.begin())] < DecMin || m_Dec[int(I-m_Ra.begin())] > DecMax) {
+      unsigned int Diff = int(I-m_Ra.begin());
+      cout<<"Erasing events at time "<<m_Time[Diff]<<" since the position is out of bounds!"<<endl;
+      I = m_Ra.erase(I);
+      m_Dec.erase(m_Dec.begin() + Diff);
+      m_Energy.erase(m_Energy.begin() + Diff);
+      m_Time.erase(m_Time.begin() + Diff);
+      m_Origin.erase(m_Origin.begin() + Diff);
+    } else {
+      ++I;
+    }
+  }
+
+
+
   //! Write WCS header keywords   
-  char deg[10], tctyp1[10], tctyp2[10],radesys[10],object[10];
+  char degree[10], tctyp1[10], tctyp2[10],radesys[10],object[10];
   char instrume[10], mission[10], telescope[10];
-  float tcrvl1=maxRa/60.;
-  float tcrvl2=minDec/60.;
-  float tcdlt1=-Pixsize/3600.;
+  float tcrvl1=RaMax/deg;
+  float tcrvl2=DecMin/deg;
+  float tcdlt1=-PixelSize/deg;
   float tcdlt2=-tcdlt1;
   float tcrpx1=0.0, tcrpx2=0.0;
   
-  strcpy(deg,"deg");
+  strcpy(degree,"deg");
   strcpy(tctyp1,"RA---TAN");
   strcpy(tctyp2,"DEC--TAN");
   strcpy(radesys,"FK5");
@@ -214,9 +256,9 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float Time_Start[] = { 0.0 };
   float Time_End[] = { 0.0 };
 
-  if (c4.size() > 0) {
-    Time_Start[0] = c4[0];
-    Time_End[0] = c4[counter-1];
+  if (m_Time.size() > 0) {
+    Time_Start[0] = m_Time[0];
+    Time_End[0] = m_Time[m_Ra.size()-1];
   }
   
   fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
@@ -230,13 +272,19 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TFLOAT, "TCRVL2", &tcrvl2, "Transform to celestrial coords", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRPX1", &tcrpx1, "Pixel reference point", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRPX2", &tcrpx2, "Pixel reference point", &Status); 	  
-  fits_write_key(m_File, TSTRING, "TCRUNI1", deg," ", &Status);
-  fits_write_key(m_File, TSTRING, "TCRUNI2", deg," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCRUNI1", degree," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCRUNI2", degree," ", &Status);
   fits_write_key(m_File, TSTRING, "TCTYP1", tctyp1," ", &Status);
   fits_write_key(m_File, TSTRING, "TCTYP2", tctyp2," ", &Status); 
   fits_write_key(m_File, TSTRING, "RADESYS", radesys, " ", &Status);
   fits_write_key(m_File, TSTRING, "OBJECT", object, "NuSim object", &Status);
-  
+
+  if (Status != 0) {
+    mgui<<"Error in creating header for events table "<<endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
   
    //! Write NuSim header keywords
   char version[10];
@@ -245,56 +293,50 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
 
- 
-  float rc1[counter],rc2[counter],
-        rc3[counter],rc4[counter],
-        rc5[counter];
-		/*,rc6[counter],
-		rc7[counter],rc8[counter],
-		rc9[counter],rc10[counter],
-		rc11[counter];*/
+  // We have to use pointers here to prevent a stack overflow for large data sets!
+  float* fRa = new float[m_Ra.size()];
+  float* fDec = new float[m_Ra.size()];
+  float* fEnergy = new float[m_Ra.size()];
+  float* fTime = new float[m_Ra.size()];
+  float* fOrigin = new float[m_Ra.size()];
 
   //! save the data before closing  
-  for (unsigned int i = 0; i < counter; ++i) {
-    float Ra = maxRa+(c1[i]-maxRa)*cos(minDec/c_Deg/60.);
-    rc1[i] = (maxRa-Ra)*60./Pixsize;
-    rc2[i] = (c2[i]-minDec)*60/Pixsize;
-    rc3[i] = c3[i];
-    rc4[i] = c4[i];
-    rc5[i] = c5[i];
-    /*
-    rc6[i] = c6[i];
-    rc7[i] = c7[i];
-    rc8[i] = c8[i];
-    rc9[i] = c9[i];
-    rc10[i] = c10[i];
-    rc11[i] = c11[i];
-    */
+  for (unsigned int i = 0; i < m_Ra.size(); ++i) {
+    float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecMin/rad);
+    fRa[i] = (RaMax-Ra)/PixelSize;
+    fDec[i] = (m_Dec[i]-DecMin)/PixelSize;
+    fEnergy[i] = m_Energy[i];
+    fTime[i] = m_Time[i];
+    fOrigin[i] = m_Origin[i];
   }
   
-  fits_write_col(m_File, TFLOAT, 1, firstrow, firstelem, counter, rc1, &Status);
-  fits_write_col(m_File, TFLOAT, 2, firstrow, firstelem, counter, rc2, &Status); 
-  fits_write_col(m_File, TFLOAT, 3, firstrow, firstelem, counter, rc3, &Status);
-  fits_write_col(m_File, TFLOAT, 4, firstrow, firstelem, counter, rc4, &Status);
-  fits_write_col(m_File, TFLOAT, 5, firstrow, firstelem, counter, rc5, &Status);
-  /*fits_write_col(m_File, TFLOAT, 6, firstrow, firstelem, counter, rc6, &Status);
-  fits_write_col(m_File, TFLOAT, 7, firstrow, firstelem, counter, rc7, &Status);
-  fits_write_col(m_File, TFLOAT, 8, firstrow, firstelem, counter, rc8, &Status);
-  fits_write_col(m_File, TFLOAT, 9, firstrow, firstelem, counter, rc9, &Status);
-  fits_write_col(m_File, TFLOAT, 10, firstrow, firstelem, counter, rc10, &Status);
-  fits_write_col(m_File, TFLOAT, 11, firstrow, firstelem, counter, rc11, &Status);*/
+  fits_write_col(m_File, TFLOAT, 1, 1, 1, m_Ra.size(), fRa, &Status);
+  fits_write_col(m_File, TFLOAT, 2, 1, 1, m_Ra.size(), fDec, &Status); 
+  fits_write_col(m_File, TFLOAT, 3, 1, 1, m_Ra.size(), fEnergy, &Status);
+  fits_write_col(m_File, TFLOAT, 4, 1, 1, m_Ra.size(), fTime, &Status);
+  fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fOrigin, &Status);
+
+  if (Status != 0) {
+    mgui<<"Error writing event table!"<<endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
   
+  delete [] fRa;
+  delete [] fDec;
+  delete [] fEnergy;
+  delete [] fTime;
+  delete [] fOrigin;
+
+
   float tlmin1 = 0;
   float tlmin2 = 0;
   float tlmin3 = 0;
   float tlmin5 = 1;
-  float tlmax1 = 0;
-  if ( (maxRa-minRa) > (maxDec-minDec)) {
-    tlmax1 = (maxRa-minRa)*60./Pixsize;
-  } else {
-    tlmax1 = (maxDec-minDec)*60./Pixsize;
-  }
-  float tlmax2 = tlmax1;
+
+  float tlmax1 = (RaMax-RaMin)*cos(DecAvg/rad)/PixelSize;
+  float tlmax2 = (DecMax-DecMin)/PixelSize;
   float tlmax3 = 100;
   float tlmax5 = 3;
 
@@ -307,17 +349,25 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TFLOAT, "TLMAX3", &tlmax3, "Max value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMAX4", &tlmax5, "Max value", &Status); 	   
    
+  if (Status != 0) {
+    mgui<<"Error writing event table header: TLInfo!"<<endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+
   //! create GTI table extension
   char ExtensionName[] = "GTI";
   int tfield = 2;
   long nrow = 0;
-  char *ttype[] = {"Start","Stop"};
-  char *tform[] = {"1E","1E"};
-  char *tunit[] = {"s","s"};
+  char* ttype[] = {"Start","Stop"};
+  char* tform[] = {"1E","1E"};
+  char* tunit[] = {"s","s"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
-    mgui<<"Error in creating extension: "<<endl;
+    mgui<<"Error in creating table: "<<ExtensionName<<endl;
+    fits_close_file(m_File, &Status);
     m_File = 0;
     return false;
   }
