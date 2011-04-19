@@ -29,10 +29,13 @@ LOBJS = $(LB)/MAssert.o \
 	$(LB)/MTimer.o \
 	$(LB)/MSystem.o \
 	$(LB)/MVector.o \
+	$(LB)/MString.o \
 	$(LB)/MFileManager.o \
 	$(LB)/MTokenizer.o \
 	$(LB)/MFunction.o \
 	$(LB)/MFunction2D.o \
+	$(LB)/MFunction3D.o \
+	$(LB)/MFunction3DSpherical.o \
 	$(LB)/MParser.o \
 	$(LB)/MFileResponse.o \
 	$(LB)/MResponseMatrix.o \

@@ -1,12 +1,12 @@
-\documentclass[11pt]{article}
-\usepackage[pdftex]{graphicx}
-\usepackage{rotating}
-\begin{document}
+%\documentclass[11pt]{article}
+%\usepackage[pdftex]{graphicx}
+%\usepackage{rotating}
+%\begin{document}
 
-\title{NuSIM and NuSTAR science. Quick Start Guide.}
-\author{Andreas Zoglauer and Kristin Kruse Madsen}
-%\chapter{NuSIM and NuSTAR science. Quick Start Guide.}
-\maketitle
+%\title{NuSIM and NuSTAR science. Quick Start Guide.}
+%\author{Andreas Zoglauer and Kristin Kruse Madsen}
+\chapter{NuSIM and NuSTAR science. Quick Start Guide.}
+%\maketitle
 One of the main goals of NuSIM is to predict, reproduce, and help understand NuSTAR measurements.
 For these tasks NuSTAR can be considered as a black box, and the user only has to think about the required input data and the output data he gets from NuSIM. 
 
@@ -104,7 +104,7 @@ If you do not click the "All times are absolute" button then you will be able to
 Otherwise all times are absolute. 
 If you have a more complex pointing situation, you can import a list of pointings from file.
 One easy possibility is to generate a default pointing pattern file by clicking the "Pointing" button in the source module. 
-This will generate a text file with different pointings which will cover the area of the sources given in the source generator.
+This will generate a text file with different pointings which will cover the area of the sources given in the source generator. The file format is described in \ref{inputformats:pointing}.
 \item The event selector:
 The event selector has two tasks, to store the simulated events to file and to perform event cuts.
 Currently only energy cuts are implemented.
@@ -162,4 +162,4 @@ When the shape of the spectrum has been specified, a desired energy range must b
 
 For surveys pointing strategies are of great importance. Things to consider when designing a pointing strategy is how much each consecutive pointing should overlap, what rotation of the observatory, the integration time, etc. There are tools in NuSIM to help facilitate the optimal pointing when given the total size of the field to be surveyed, the total exposure time, and the amount of overlap.
 
-\end{document}
+%\end{document}

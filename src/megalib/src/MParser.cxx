@@ -63,6 +63,10 @@ MParser::MParser(char Separator, bool AllowComposed) : MFile()
 MParser::~MParser()
 {
   // Delete this instance of MParser
+  
+  for (unsigned int l = 0; l < m_Lines.size(); ++l) { 
+    delete m_Lines[l];
+  }
 }
 
 

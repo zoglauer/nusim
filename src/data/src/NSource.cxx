@@ -39,9 +39,10 @@ const int NSource::c_BrokenPowerLaw               = 4;
 const int NSource::c_FileDifferentialFlux         = 5; 
 const int NSource::c_BlackBody                    = 6;
 const int NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV  = 7;
+const int NSource::c_NormalizedEnergyPositionFluxFunction = 8;
 
 const int NSource::c_FirstSpectralType            = 1;
-const int NSource::c_LastSpectralType             = 7;
+const int NSource::c_LastSpectralType             = 8;
 
 const int NSource::c_Gaussian                     = 105; 
 const int NSource::c_ThermalBremsstrahlung        = 106; 
@@ -57,9 +58,10 @@ const int NSource::c_FarFieldDisk                 = 2;
 const int NSource::c_NearFieldPoint               = 3;
 const int NSource::c_NearFieldBeam                = 4;
 const int NSource::c_FarFieldFitsFile             = 5;
+const int NSource::c_FarFieldNormalizedEnergyPositionFluxFunction = 6;
 
 const int NSource::c_FirstBeamType                = 1;
-const int NSource::c_LastBeamType                 = 5;
+const int NSource::c_LastBeamType                 = 6;
 
 
 // Not used just kept since this is the original cosima code: 
@@ -169,6 +171,7 @@ bool NSource::SetSpectralType(const int& SpectralType)
   case c_BandFunction:
   case c_FileDifferentialFlux:
   case c_NormalizedFunctionInPhPerCm2PerSPerKeV:
+  case c_NormalizedEnergyPositionFluxFunction:
     m_SpectralType = SpectralType;
     return true;
   default:
@@ -216,6 +219,9 @@ TString NSource::GetSpectralTypeName(const int SpectralType)
   case c_NormalizedFunctionInPhPerCm2PerSPerKeV:
     Name = "Normalized function in ph/cm2/s/keV";
     break;
+  case c_NormalizedEnergyPositionFluxFunction:
+    Name ="Normalized energy-position-flux function in ph/cm2/s/keV";
+    break;
   default:
     mout<<"Unknown spectral type: "<<SpectralType<<endl;
     break;
@@ -250,6 +256,8 @@ int NSource::GetSpectralType(TString Name)
     Type = c_FileDifferentialFlux;
   } else if (Name == "Normalized function in ph/cm2/s/keV") {
     Type = c_NormalizedFunctionInPhPerCm2PerSPerKeV;
+  } else if (Name == "Normalized energy-position-flux function in ph/cm2/s/keV") {
+    Type = c_NormalizedEnergyPositionFluxFunction;
   } else {
     mout<<"Unknown spectral type: "<<Name<<endl;
   }
@@ -288,12 +296,14 @@ bool NSource::SetBeamType(const int& BeamType)
   case c_FarFieldGaussian:
   case c_FarFieldFile:
   case c_FarFieldFitsFile:
+  case c_FarFieldNormalizedEnergyPositionFluxFunction:
   case c_FarFieldFileZenithDependent:
+  case c_NormalizedEnergyPositionFluxFunction:
     m_CoordinateSystem = c_FarField;
     m_BeamType = BeamType;
     break;
   default:
-    mout<<m_Name<<": Unknown beam type: "<<BeamType<<endl;
+    mout<<m_Name<<": Unknown beam type (in SetBeamType): "<<BeamType<<endl;
     return false;
   }
 
@@ -328,8 +338,11 @@ TString NSource::GetBeamTypeName(const int BeamType)
   case c_FarFieldFitsFile:
     Name = "From FITS file (far field)";
     break;
+  case c_FarFieldNormalizedEnergyPositionFluxFunction:
+    Name = "From normalized energy-position-flux function (far field)";
+    break;
   default:
-    mout<<"Unknown beam type: "<<BeamType<<endl;
+    mout<<"Unknown beam type (in GetBeamTypeName): "<<BeamType<<endl;
     break;
   }
 
@@ -356,8 +369,10 @@ int NSource::GetBeamType(TString Name)
     Type = c_FarFieldFile;
   } else if (Name == "From FITS file (far field)") {
     Type = c_FarFieldFitsFile;
+  } else if (Name == "From normalized energy-position-flux function (far field)") {
+    Type = c_FarFieldNormalizedEnergyPositionFluxFunction;
   } else {
-    mout<<"Unknown beam type: "<<Name<<endl;
+    mout<<"Unknown beam type (in GetBeamType): "<<Name<<endl;
   }
  
   return Type;
@@ -739,6 +754,8 @@ bool NSource::SetEnergyFunctionString(const TString& EnergyFunctionString)
 
   m_EnergyFunctionString = EnergyFunctionString;
 
+  if (m_SpectralType != c_NormalizedFunctionInPhPerCm2PerSPerKeV) return true;
+
   if (m_EnergyParam1 == 0.0 && m_EnergyParam1 == m_EnergyParam2) {
     mout<<m_Name<<": The energy window has not been initialized!"<<endl;
     return false;
@@ -893,6 +910,28 @@ bool NSource::UpgradeFlux()
 
 
 /******************************************************************************
+ * Return true if the combined normalized energy=beam-flux-function could be set
+ */
+bool NSource::SetNormalizedEnergyPositionFluxFunction(TString FileName)
+{
+  m_NormalizedEnergyPositionFluxFileName = FileName;
+  if (m_BeamType != c_FarFieldNormalizedEnergyPositionFluxFunction) return true;
+  if (MFile::Exists(FileName) == false) return false;
+  
+  m_NormalizedEnergyPositionFluxFunction.Set(FileName, "AP");
+
+  // Integrate over to determine the flux
+  m_InputFlux = m_NormalizedEnergyPositionFluxFunction.Integrate();
+  // Switch to mm2
+  m_InputFlux /= 100;
+
+  UpgradeFlux();
+  
+  return true;
+}
+
+
+/******************************************************************************
  * Return the time to the next photon emission of this source:
  * The error in this routine is <= Scale
  */
@@ -927,6 +966,7 @@ bool NSource::CalculateNextEmission(NTime Time)
  */
 bool NSource::Generate(NPhoton& Photon, int Telescope)
 {
+  // DO NOT CHANGE THIS SEQUENCE, ENERGY MUST COME BEFORE POSITION!
   if (GenerateEnergy(Photon) == false) return false;
   if (GeneratePosition(Photon, Telescope) == false) return false;
 
@@ -1003,6 +1043,11 @@ bool NSource::GenerateEnergy(NPhoton& Photon)
     // All functionality is in MFunction:
     Energy = m_EnergyTF1->GetRandom();
     break;
+  case c_NormalizedEnergyPositionFluxFunction:
+    // All functionality is in MFunction3DSpherical:
+    // We temporarily store the position here in m_PositionParam1, m_PositionParam2
+    m_NormalizedEnergyPositionFluxFunction.GetRandom(m_PositionParam1, m_PositionParam2, Energy);
+    break;
   default:
     merr<<"Energy type not yet implemented: "<<m_SpectralType<<endl;
     Energy = 55.5;
@@ -1034,6 +1079,7 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
         m_BeamType == c_FarFieldDisk ||
         m_BeamType == c_FarFieldArea ||
         m_BeamType == c_FarFieldFitsFile ||
+        m_BeamType == c_FarFieldNormalizedEnergyPositionFluxFunction ||
         m_BeamType == c_FarFieldFileZenithDependent) {
       if (m_BeamType == c_FarFieldPoint) {
         // Fixed start direction
@@ -1087,6 +1133,10 @@ bool NSource::GeneratePosition(NPhoton& Photon, int Telescope)
         m_PositionFunction2D.GetRandom(RA, DEC);
         RA *= c_Rad;
         DEC *= c_Rad;
+      } else if (m_BeamType == c_FarFieldNormalizedEnergyPositionFluxFunction) {
+        // RA / DEC have been predetermied during GenerateEnergy()
+        RA = m_PositionParam1 * c_Rad;
+        DEC = m_PositionParam2 * c_Rad;
       }
       
       // Procedure
@@ -1431,79 +1481,87 @@ bool NSource::ParseLine(TString Line)
       return false;
     }
     m_PositionFileName = T.GetTokenAtAsString(Pos++);
+  } else if (m_BeamType == NSource::c_FarFieldNormalizedEnergyPositionFluxFunction) {
+    m_NormalizedEnergyPositionFluxFileName  = T.GetTokenAtAsString(Pos++);
   } else {
     cout<<m_Name<<": Line parser source: This beam type is not yet implemented: "<<m_BeamType<<endl;
     return false;
   }
-  
-  m_SpectralType = T.GetTokenAtAsInt(Pos++);
-  if (m_SpectralType == NSource::c_Monoenergetic) {
-    if (T.GetNTokens() < Pos + 1) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-  } else if (m_SpectralType == NSource::c_Linear) {
-    if (T.GetNTokens() < Pos + 2) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-  } else if (m_SpectralType == NSource::c_PowerLaw) {
-    if (T.GetNTokens() < Pos + 3) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
-  } else if (m_SpectralType == NSource::c_BrokenPowerLaw) {
-    if (T.GetNTokens() < Pos + 5) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam4 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam5 = T.GetTokenAtAsDouble(Pos++);
-  } else if (m_SpectralType == NSource::c_FileDifferentialFlux) {
-    if (T.GetNTokens() < Pos + 1) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyFileName = T.GetTokenAtAsString(Pos++);
-  } else if (m_SpectralType == NSource::c_BlackBody) {
-    if (T.GetNTokens() < Pos + 3) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
-  } else if (m_SpectralType == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
-    if (T.GetNTokens() < Pos + 3) {
-      cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
-      return false;
-    }
-    m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
-    m_EnergyFunctionString = T.GetTokenAtAsString(Pos++);
-  } else {
-    cout<<m_Name<<": Line parser source: This spectral type is not yet implemented: "<<m_SpectralType<<endl;
-    return false;
-  }
 
-  if (m_SpectralType != NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
-    if (m_BeamType == NSource::c_FarFieldPoint ||
-      m_BeamType == NSource::c_FarFieldDisk ||
-      m_BeamType == NSource::c_FarFieldFitsFile) {
-      m_InputFlux = T.GetTokenAtAsDouble(Pos++)/100; // /100 to switch from external ph/s/cm2 to internal ph/s/mm2
+  if (m_BeamType != NSource::c_FarFieldNormalizedEnergyPositionFluxFunction) {
+    m_SpectralType = T.GetTokenAtAsInt(Pos++);
+    if (m_SpectralType == NSource::c_Monoenergetic) {
+      if (T.GetNTokens() < Pos + 1) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+    } else if (m_SpectralType == NSource::c_Linear) {
+      if (T.GetNTokens() < Pos + 2) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+    } else if (m_SpectralType == NSource::c_PowerLaw) {
+      if (T.GetNTokens() < Pos + 3) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+    } else if (m_SpectralType == NSource::c_BrokenPowerLaw) {
+      if (T.GetNTokens() < Pos + 5) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam4 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam5 = T.GetTokenAtAsDouble(Pos++);
+    } else if (m_SpectralType == NSource::c_FileDifferentialFlux) {
+      if (T.GetNTokens() < Pos + 1) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyFileName = T.GetTokenAtAsString(Pos++);
+    } else if (m_SpectralType == NSource::c_BlackBody) {
+      if (T.GetNTokens() < Pos + 3) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam3 = T.GetTokenAtAsDouble(Pos++);
+    } else if (m_SpectralType == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+      if (T.GetNTokens() < Pos + 3) {
+        cout<<m_Name<<": Line parser source: Not enough tokens for spectrum"<<endl;
+        return false;
+      }
+      m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
+      m_EnergyFunctionString = T.GetTokenAtAsString(Pos++);
     } else {
-      cout<<m_Name<<": Line parser source - flux parsing: This beam type is not yet implemented: "<<m_BeamType<<endl;
+      cout<<m_Name<<": Line parser source: This spectral type is not yet implemented: "<<m_SpectralType<<endl;
       return false;
     }
+  
+  
+    if (m_SpectralType != NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV) {
+      if (m_BeamType == NSource::c_FarFieldPoint ||
+        m_BeamType == NSource::c_FarFieldDisk ||
+        m_BeamType == NSource::c_FarFieldFitsFile) {
+        m_InputFlux = T.GetTokenAtAsDouble(Pos++)/100; // /100 to switch from external ph/s/cm2 to internal ph/s/mm2
+      } else {
+        cout<<m_Name<<": Line parser source - flux parsing: This beam type is not yet implemented: "<<m_BeamType<<endl;
+        return false;
+      }
+    }
+  } else {
+    m_SpectralType = NSource::c_NormalizedEnergyPositionFluxFunction;
+    m_InputFlux = 1.0;
   }
   
   // Do an official "set" to initialize all the other variables:
@@ -1518,7 +1576,8 @@ bool NSource::ParseLine(TString Line)
   if (SetFlux(m_InputFlux) == false) return false; // Set the flux before the energy !!
   if (SetEnergy(m_EnergyFileName) == false) return false;
   if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
-  
+  if (SetNormalizedEnergyPositionFluxFunction(m_NormalizedEnergyPositionFluxFileName) == false) return false;
+
   return true;
 }
   
@@ -1624,6 +1683,10 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (EnergyFunctionStringNode != 0) {
     m_EnergyFunctionString = EnergyFunctionStringNode->GetValueAsString();
   }
+  MXmlNode* NormalizedEnergyPositionFluxFileNameNode = Node->GetNode("NormalizedEnergyPositionFluxFileName");
+  if (NormalizedEnergyPositionFluxFileNameNode != 0) {
+    m_NormalizedEnergyPositionFluxFileName = NormalizedEnergyPositionFluxFileNameNode->GetValueAsString();
+  }
 
   // Do an official "set" to initialize all the other variables:
   if (SetSpectralType(m_SpectralType) == false) return false;
@@ -1637,6 +1700,7 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (SetFlux(m_InputFlux) == false) return false; // Set the flux before the energy !!
   if (SetEnergy(m_EnergyFileName) == false) return false;
   if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
+  if (SetNormalizedEnergyPositionFluxFunction(m_NormalizedEnergyPositionFluxFileName) == false) return false;
 
   return true;
 }
@@ -1679,7 +1743,8 @@ MXmlNode* NSource::CreateXmlConfiguration()
   new MXmlNode(Node, "EnergyParam7", m_EnergyParam7);
   new MXmlNode(Node, "EnergyFileName", m_EnergyFileName);
   new MXmlNode(Node, "EnergyFunctionString", m_EnergyFunctionString);
-
+  new MXmlNode(Node, "NormalizedEnergyPositionFluxFileName", m_NormalizedEnergyPositionFluxFileName);
+  
   return Node;
 }
 

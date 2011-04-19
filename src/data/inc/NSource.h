@@ -38,6 +38,7 @@ using namespace std;
 #include "MTokenizer.h"
 #include "MFunction.h"
 #include "MFunction2D.h"
+#include "MFunction3DSpherical.h"
 #include "MXmlNode.h"
 
 
@@ -172,6 +173,11 @@ public:
   //! Return the intensity
   double GetFlux() const { return m_InputFlux; } 
 
+  //! Return true if the combined normalized energy=beam-flux-function could be set
+  bool SetNormalizedEnergyPositionFluxFunction(TString FileName);
+  //! Return the energy file name
+  TString GetNormalizedEnergyPositionFluxFileName() { return m_NormalizedEnergyPositionFluxFileName; }
+
   //! Return true, if the position vector could be set correctly
   bool SetPosition(double PositionParam1 = 0.0, 
                    double PositionParam2 = 0.0, 
@@ -255,6 +261,8 @@ public:
   static const int c_Activation;
   //! The ID of a normalized function in ph/cm2/s/keV
   static const int c_NormalizedFunctionInPhPerCm2PerSPerKeV;
+  //! Id of a beam distribution from combined energy-position-flux-function
+  static const int c_NormalizedEnergyPositionFluxFunction;
 
   //! Id of an unknown start area
   static const int c_StartAreaUnknown;
@@ -283,6 +291,8 @@ public:
   static const int c_FarFieldFileZenithDependent;
   //! Id of a beam distribution from file in form of FITS file
   static const int c_FarFieldFitsFile;
+  //! Id of a beam distribution from combined energy-position-flux-function
+  static const int c_FarFieldNormalizedEnergyPositionFluxFunction;
 
   //! Id of a point like source in Cartesian coordinates
   static const int c_NearFieldPoint;
@@ -436,8 +446,15 @@ private:
   //! A string containing the spectrum
   TString m_EnergyFunctionString;
   
-  //! The file name of the energy functiomn
+  //! The file name of the energy function
   TString m_EnergyFileName;
+  
+  //! A file containing the spectrum
+  TString m_NormalizedEnergyPositionFluxFileName;
+  
+  //! A file containing the spectrum
+  MFunction3DSpherical m_NormalizedEnergyPositionFluxFunction;
+
 };
 
 #endif

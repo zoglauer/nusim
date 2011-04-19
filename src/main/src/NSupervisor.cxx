@@ -598,6 +598,9 @@ bool NSupervisor::Run()
             break;
           }
         }
+        
+        // Update the GUI...
+        gSystem->ProcessEvents();
       }
       
 

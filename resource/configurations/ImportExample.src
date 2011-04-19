@@ -1,94 +1,6 @@
 # This file describes the source import file format
 # =================================================
 
-# In general line which are empty, or which start with a space or a "#" are ignored.
-
-# The file contains 4 sections:
-# - The source name
-# - The beam options
-# - The spectral options
-# - The flux
-
-# The first column is always the name of the source.
-# It must not contain any spaces.
-
-# In general, different beam and spectral options result in different number of columns
-# Therefore the beam and spectral options section is always preceeded by a number 
-# representing the beam type:
-
-# The options are:
-# 1: FarFieldPoint
-# 2: FarFieldDisk
-# 3: NearFieldPoint    --- do not use
-# 4: NearFieldBeam     --- do not use
-# 5: FarFieldFitsFile
-# Only the once relevent for astrophysics are accessible via this input options file
-
-# The far field point source is followed by two numbers
-# (1) RA in deg
-# (2) DEC in deg
-
-# The far field disk source is followed by three numbers
-# (1) RA in deg
-# (2) DEC in deg
-# (3) The extend (radius) in deg
-
-# The far field fits file is followed by a file name.
-# Currently it must not contain any spaces!
-# You can use $(NUSIM) to represent the NuSIM directory
-# (1) File name
-
-# The spectral options are
-# 1: Monoenergetic
-# 2: Linear
-# 3: PowerLaw
-# 4: BrokenPowerLaw
-# 5: FileDifferentialFlux
-# 6: BlackBody
-# 7: NormalizedFunctionInPhPerCm2PerSPerKeV
-
-# The monoenergetic option is followed by one number
-# (1) Energy in keV
-
-# The linear option is followed by two numbers
-# (1) Minimum energy in keV
-# (2) Maximum energy in keV
-
-# The powerlaw option is followed by three numbers
-# (1) Minimum energy in keV
-# (2) Maximum energy in keV
-# (3) Photon index
-
-# The broken powerlaw option is followed by five numbers
-# (1) Minimum energy in keV
-# (2) Maximum energy in keV
-# (3) Break energy in keV
-# (4) Photon index low
-# (5) Photon index high
-
-# The file with the differential flux is given by only one file name
-# Currently it must not contain any spaces!
-# You can use $(NUSIM) to represent the NuSIM directory
-# (1) File name
-
-# The black body option is followed by three numbers
-# (1) Minimum energy in keV
-# (2) Maximum energy in keV
-# (3) Temperature energy in keV
-
-# The normalized function in ph/cm2/s/keV is given by two number and a string
-# The string represents a function and must not contain any spaces!
-# You can use all C/C++ (pow, exp, sqrt, cos, sin, etc.) and all
-# ROOT functions, such as TMath:Gaus(...), etc.
-# (1) Minimum energy in keV
-# (2) Maximum energy in keV
-# (3) Function string
-
-# For all options but the normalized spectrum, the final column is the
-# flux in ph/cm2/s within the given spectral band
-
-
-
 # Examples:
 
 Mono                  1  266.20  -29.00   1  40.0                     0.00001
@@ -104,6 +16,7 @@ MonoPoint             1  266.20  -29.15                               1  40.0   
 MonoDisk              2  266.30  -29.15 0.05                          1  50.0   0.000015
 MonoFile              5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60.0   0.000020
 
+AllInOne              6  $(NUSIM)/resource/examples/Tycho/Tycho.3Ddat
 
 
 

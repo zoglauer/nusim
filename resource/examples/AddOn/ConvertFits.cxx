@@ -1,8 +1,8 @@
 /* 
- * SphericalPattern.cxx
+ * ConvertFits.cxx
  *
  *
- * Copyright (C) 1998-2010 by Andreas Zoglauer.
+ * Copyright (C) by Andreas Zoglauer.
  * All rights reserved.
  *
  *
@@ -30,6 +30,7 @@ using namespace std;
 #include <TApplication.h>
 #include <TStyle.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TMarker.h>
@@ -38,17 +39,18 @@ using namespace std;
 // NuSIM
 #include "NExtractFitsImage.h"
 #include "MFunction2D.h"
+#include "MFunction3DSpherical.h"
 
 
 /******************************************************************************/
 
-class SphericalPattern
+class ConvertFits
 {
 public:
   /// Default constructor
-  SphericalPattern();
+  ConvertFits();
   /// Default destructor
-  ~SphericalPattern();
+  ~ConvertFits();
   
   /// Parse the command line
   bool ParseCommandLine(int argc, char** argv);
@@ -72,7 +74,7 @@ private:
 /******************************************************************************
  * Default constructor
  */
-SphericalPattern::SphericalPattern() : m_Interrupt(false)
+ConvertFits::ConvertFits() : m_Interrupt(false)
 {
   gStyle->SetPalette(1, 0);
 }
@@ -81,7 +83,7 @@ SphericalPattern::SphericalPattern() : m_Interrupt(false)
 /******************************************************************************
  * Default destructor
  */
-SphericalPattern::~SphericalPattern()
+ConvertFits::~ConvertFits()
 {
   // Intentionally left blanck
 }
@@ -90,11 +92,11 @@ SphericalPattern::~SphericalPattern()
 /******************************************************************************
  * Parse the command line
  */
-bool SphericalPattern::ParseCommandLine(int argc, char** argv)
+bool ConvertFits::ParseCommandLine(int argc, char** argv)
 {
   ostringstream Usage;
   Usage<<endl;
-  Usage<<"  Usage: SphericalPattern <options>"<<endl;
+  Usage<<"  Usage: ConvertFits <options>"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"         -f:   fits file name"<<endl;
   Usage<<"         -h:   print this help"<<endl;
@@ -160,7 +162,7 @@ bool SphericalPattern::ParseCommandLine(int argc, char** argv)
 /******************************************************************************
  * Do whatever analysis is necessary
  */
-bool SphericalPattern::Analyze()
+bool ConvertFits::Analyze()
 {
   if (m_Interrupt == true) return false;
 
@@ -168,16 +170,74 @@ bool SphericalPattern::Analyze()
   MFunction2D F;
   NExtractFitsImage Extractor;
   Extractor.Extract(m_FitsFileName, F);
+
   
   F.Plot();
+  
+  // Now convert to an MFunction3DSpherical
+  
+  // Spectrum:
+  double EnergyMin = 10;
+  double EnergyMax = 80;
+  unsigned int EnergyBins = (unsigned int) (EnergyMax - EnergyMin);
+  TF1* Flux = new TF1("Convert", "2.0e-4*pow(x/10, -3.2)", 10, 80);
+  
+  vector<double> X = F.GetXAxis();
+  vector<double> Y = F.GetYAxis();
       
+  vector<double> E;
+  for (unsigned int e = 0; e <= EnergyBins; ++e) {
+    E.push_back(EnergyMin + e*(EnergyMax - EnergyMin)/EnergyBins);
+  }
+  
+  vector<double> V(X.size()*Y.size()*E.size(), 0);
+  
+  double Sum = 0;
+  for (unsigned int x = 0; x < X.size(); ++x) {
+    for (unsigned int y = 0; y < Y.size(); ++y) {
+      Sum += F.Eval(X[x], Y[y]);
+    }
+  }
+  
+  double TotalArea = 0.0;
+  double TotalFlux = 0.0;
+  double xPixelHalfSize = (X.back() - X[0])/(X.size()-1)/2 * c_Rad;
+  double yPixelHalfSize = (Y.back() - Y[0])/(Y.size()-1)/2 * c_Rad;
+  for (unsigned int x = 0; x < X.size(); ++x) {
+    for (unsigned int y = 0; y < Y.size(); ++y) {
+      double Area = (cos(Y[y]*c_Rad-yPixelHalfSize) - cos(Y[y]*c_Rad + yPixelHalfSize))* (2*xPixelHalfSize);
+      TotalArea += Area;
+      //cout<<"Area: "<<Area<<":"<<xPixelHalfSize<<":"<<yPixelHalfSize<<endl;
+      for (unsigned int e = 0; e < E.size(); ++e) {
+        //cout<<"x:"<<X[x]<<"  y:"<<Y[y]<<"  e:"<<E[e]<<"  F:"<<F.Eval(X[x], Y[y])<<"  S:"<<Sum<<"  Flux:"<<Flux->Eval(E[e])<<endl;
+        V[x + X.size()*y + X.size()*Y.size()*e] = F.Eval(X[x], Y[y])/Sum*Flux->Eval(E[e])/Area;
+        TotalFlux += F.Eval(X[x], Y[y])/Sum*Flux->Eval(E[e])/Area;
+      }
+    }
+  }  
+  
+  MFunction3DSpherical S;
+  S.Set(X, Y, E, V);
+ 
+  cout<<"Integral: "<<S.Integrate()<<endl;
+ 
+  S.Save("Tycho.3Ddat");
+  
+  //S.Plot(true);
+    
+  MFunction3DSpherical T;
+  T.Set("Tycho.3Ddat", "AP");
+  cout<<"Integral: "<<T.Integrate()<<endl;
+  T.Save("Tycho.v2.3Ddat");
+
+       
   return true;
 }
 
 
 /******************************************************************************/
 
-SphericalPattern* g_Prg = 0;
+ConvertFits* g_Prg = 0;
 
 /******************************************************************************/
 
@@ -206,9 +266,9 @@ int main(int argc, char** argv)
   //(void) signal(SIGINT, CatchSignal);
 
 
-  TApplication SphericalPatternApp("SphericalPatternApp", 0, 0);
+  TApplication ConvertFitsApp("ConvertFitsApp", 0, 0);
 
-  g_Prg = new SphericalPattern();
+  g_Prg = new ConvertFits();
 
   if (g_Prg->ParseCommandLine(argc, argv) == false) {
     cerr<<"Error during parsing of command line!"<<endl;
@@ -219,7 +279,7 @@ int main(int argc, char** argv)
     return -2;
   } 
 
-  SphericalPatternApp.Run();
+  ConvertFitsApp.Run();
 
   cout<<"Program exited normally!"<<endl;
 

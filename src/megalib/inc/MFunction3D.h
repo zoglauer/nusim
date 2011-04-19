@@ -1,7 +1,7 @@
 /*
- * MFunction2D.h
+ * MFunction3D.h
  *
- * Copyright (C) 2008-2009 by Andreas Zoglauer.
+ * Copyright (C) 2008-2010 by Andreas Zoglauer.
  * All rights reserved.
  *
  * Please see the source-file for the copyright-notice.
@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __MFunction2D__
-#define __MFunction2D__
+#ifndef __MFunction3D__
+#define __MFunction3D__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,42 +34,57 @@ using std::vector;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class MFunction2D
+class MFunction3D
 {
   // public interface:
  public:
   //! Default constructor
-  MFunction2D();
+  MFunction3D();
   //! Copy constructor
-  MFunction2D(const MFunction2D& Function2D);
+  MFunction3D(const MFunction3D& Function3D);
   //! Default destructor
-  virtual ~MFunction2D();
+  virtual ~MFunction3D();
 
   //! Default assignment constructor
-  const MFunction2D& operator=(const MFunction2D& F);
+  const MFunction3D& operator=(const MFunction3D& F);
 
   //! Set the basic data, load the file and parse it
-  bool Set(const TString FileName, 
-           const TString KeyWord, 
+  virtual bool Set(const TString FileName,
+           const TString KeyWord,
            const unsigned int InterpolationType = c_InterpolationLinear);
 
-  //! Set the basic data from two vectors
-  bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Values, unsigned int InterpolationType = c_InterpolationLinear);
+  //! Set the basic data from four vectors
+  virtual bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, const vector<double>& Values, unsigned int InterpolationType = c_InterpolationLinear);
 
   //! Multiply the x-axis by some value
   void ScaleX(double Scaler);
 
+  //! Scale the x-axis to it's new min and max
+  void RescaleX(double XMin, double XMax);
+
   //! Multiply the y-axis by some value
   void ScaleY(double Scaler);
 
-  //! Scale the content by some value
+  //! Scale the x-axis to it's new min and max
+  void RescaleY(double YMin, double YMax);
+
+  //! Multiply the z-axis by some value
   void ScaleZ(double Scaler);
 
+  //! Scale the x-axis to it's new min and max
+  void RescaleZ(double ZMin, double ZMax);
+
+  //! Invert the z-axis content
+  void InvertZ();
+
+  //! Scale the value axis by some value
+  void ScaleV(double Scaler);
+
   //! Evaluate the data for a specific x value 
-  double Eval(double x, double y) const;
+  double Eval(double x, double y, double z) const;
 
   //! Return random numbers x, y distributed as the underlying function
-  void GetRandom(double& x, double& y);
+  virtual void GetRandom(double& x, double& y, double& z);
 
   //! Get the minimum x-value
   double GetXMin() const;
@@ -83,37 +98,29 @@ class MFunction2D
   double GetZMin() const;
   //! Get the maximum z-value
   double GetZMax() const;
-
-  //! Get the x-axis
-  vector<double> GetXAxis() const { return m_X; }
-  //! Get the y-axis
-  vector<double> GetYAxis() const { return m_Y; }
+  //! Get the minimum value
+  double GetVMin() const;
+  //! Get the maximum value
+  double GetVMax() const;
 
   //! ID representing an unknown interpolation
   static const unsigned int c_InterpolationUnknown;
-  //! ID representing a constant interpolation
-  static const unsigned int c_InterpolationNone;
   //! ID representing a constant interpolation
   static const unsigned int c_InterpolationConstant;
   //! ID representing a linear interpolation (default)
   static const unsigned int c_InterpolationLinear;
 
   //! Plot the function in a Canvas (diagnostics only)
-  void Plot();
+  virtual void Plot();
 
   // protected methods:
  protected:
-  //! Perform an optimized (partially binary) search for the bin
-  int FindBin(const vector<double>& Array, double Value) const;
 
   // private methods:
  private:
 
   // protected members:
  protected:
-
-  // private members:
- private:
   //! Interpolation method used
   unsigned int m_InterpolationType;
 
@@ -123,20 +130,19 @@ class MFunction2D
   vector<double> m_Y;
   //! The z-axis data
   vector<double> m_Z;
+  //! The value-axis data
+  vector<double> m_V;
 
   //! For random number generation store the maximum
   double m_Maximum;
-  //! For random number generation store the minimum
-  double m_Minimum;
 
-  // For random number generation:
-  //! The function as cumulative distribution:
-  vector<double> m_Cumulative;
+  // private members:
+ private:
   
 
 #ifdef ___CINT___
  public:
-  ClassDef(MFunction2D, 0) // no description
+  ClassDef(MFunction3D, 0) // no description
 #endif
 
 };
