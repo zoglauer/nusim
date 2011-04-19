@@ -48,7 +48,7 @@ The pointing engine provides the pointing of the focal plane module in declinati
 
 Alternatively the pointings can be loaded in from a file, which will replace any manually entered pointings. Such a pointing file can be for example be created by the source module, which finds an optimal pointing pattern for a given region size.
 
-Finally the last box in the gui allows the user to load a pointing jitter of the spacecraft. However, currently no such database exists.
+Finally the last box in the GUI allows the user to load a pointing jitter of the spacecraft. However, currently no such database exists.
 
 \subsection{Orientation and alignment engine}
 \begin{figure}[tb]
@@ -87,6 +87,7 @@ The beam type defines the geometry and the position of the source. The position 
  \item \textbf{Point source (near field)}: This is used for mimicking a calibration source at a finite distance above the detector. It requires the position of the source (x, y, z in mm).
  \item \textbf{Pencil beam (near field)}: This beam is used to verify CZT detector calibrations. The pencil beam requires a start position as well as a direction (x, y, z in mm), as well as the radius of the beam.  
  \item \textbf{Read from fits file}: This creates a photon field based on a fits intensity image.
+ \item \textbf{Normalized combined energy-beam-flux file}: This is the only all-in-one option, a file which contains a normalized (ph/cm$^2$/s/keV/sr) energy-beam-matrix. You do not need to give an additional spectrum or the flux. The file format is described in section \ref{input:3Ddat}.
  \end{itemize}
  
 The spectral options are:
@@ -98,7 +99,7 @@ The spectral options are:
 \item \textbf{Black body}: Requires the upper and lower boarder of the energy range in keV as well as the temperature in keV.
 \item \textbf{File with differential flux}: Read differential spectrum from an ASCII file. The spectrum does not require any special normalization besides being 1/keV, since the total flux is as always given by the flux keyword. An example file of the format can be found at:\\
 \textbf{\${NUSIM}/resource/data/SourceGenerator.examplespectrum.dat}
-\item \textbf{Normalized function in ph/cm2/s/keV}: Requires the upper and lower boarder of the energy range in keV as well as a function in C/C++ form.  You can use all C/C++ function such as exp, log, pow, sqrt, tan, cos, sin, etc. as well as all ROOT functions in the standard ROOR form such as TMath::Gaus(x), etc. Please consult the ROOT manual for all available functions.
+\item \textbf{Normalized function in ph/cm$^2$/s/keV}: Requires the upper and lower boarder of the energy range in keV as well as a function in C/C++ form.  You can use all C/C++ function such as exp, log, pow, sqrt, tan, cos, sin, etc. as well as all ROOT functions in the standard ROOT form such as TMath::Gaus(x), etc. Please consult the ROOT manual for all available functions.
 
 Example 1: 7.0e-6*pow(x/10, -1)*exp(-sqrt(x/2.2))
 
@@ -107,16 +108,16 @@ Example 2: TMath::Gaus(x, 67.9, 1.5)
 Pay attention to use of "x" for energy and "e" not "E" for the exponent. This is the only spectral option which does not need a flux input, because it is assumed to be correctly normalized.
 \end{itemize}
 
-The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$. This final input is not required for the spectral option "Normalized function in ph/cm2/s/keV".
+The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$. This final input is not required for the spectral option "Normalized function in ph/cm2/s/keV" or the beam \"FarFieldNormalizedEnergyBeamFluxFunction\".
 
 
 For the sources at infinite distance the photons are started randomly from a disk on a sphere surrounding the opening of the optics modules (the module is chosen randomly) to enable the correct simulation of the effective area as a function of incidence angle. The start time is randomly determined (Poisson distribution) according to the source flux. When the start position, start direction and photon energy are determined, the photon is handed over to the optics module for further simulation.
 
 
-\paragraph{Known issuses} 
+\paragraph{Known issues} 
 
 \begin{itemize}
-\item If you have too many sources then no tab is displayed in the GUI. This is a ROOT issue within the TGTab class. If you have too many sources it can on some systems take a long time to dispaly the GUI. This is another ROOT issue within the TGTab class.
+\item If you have too many sources then no tab is displayed in the GUI. This is a ROOT issue within the TGTab class. If you have too many sources it can on some systems take a long time to display the GUI. This is another ROOT issue within the TGTab class.
 \item If you change the beam or spectral type, all parameters get reset
 \item Stay away from having sources close to the zenith or nadir (RA, DEC is 0 or 180 degrees) 
 \end{itemize}
@@ -295,7 +296,7 @@ events collection. However, there is no depth collection or cut at
 the moment. The following 5 modules are available.
 \begin{itemize}
  \item \textbf{No module}.
-       NuSim can run without having a detector data calibrator.
+       NuSIM can run without having a detector data calibrator.
  \item \textbf{SciSim}.
        This is a detector data calibration engine which belongs to
        the science simulator thread. At this time, There is no
@@ -327,11 +328,11 @@ the moment. The following 5 modules are available.
 \end{figure}
 
 \subsection{Event selector}
-The Event Selector allows the user to filter the output and produce eventlist files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.Root" will produce a ROOT file format. Using any other appendix will produce the usual ascii nusim file format, and leaving it blank will not produce any file at all.
+The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.Root" will produce a ROOT file format. Using any other appendix will produce the usual ascii NuSIM file format, and leaving it blank will not produce any file at all.
 
 An energy range can be entered to bound the range of the output. If there is no entry then the input range is used.
 
-A box allows the user to decide wether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.
+A box allows the user to decide whether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.
 
 \begin{figure}[tb]
 \begin{center}
