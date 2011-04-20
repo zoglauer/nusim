@@ -140,7 +140,8 @@ bool NGUIOptionsEventSelector::OnApply()
 
   TString Name = m_FileName->GetFileName();
   if (Name != "") {
-    if (Name.EndsWith("fits") == false && Name.EndsWith(".root") == false && Name.EndsWith(".dat") == false) {
+    TString FileSuffix = Name(Name.Last('.'), Name.Length() - Name.Last('.'));
+    if (FileSuffix.Contains("fits") == false && FileSuffix.Contains("root") == false && FileSuffix.Contains("dat") == false) {
       mgui<<"Unknown file suffix: \""<<Name<<"\". Please use either dat, root, or fits!"<<show;   
       return false;
     }
