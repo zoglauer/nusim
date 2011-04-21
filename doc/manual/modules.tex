@@ -27,7 +27,7 @@ The final button starts the simulation.
 \end{figure}
 
 \subsection{Universal Saver and Loader: Saving and loading NuSIM simulations}
-There are a variety of output file formats in NuSIM. Each of these will be described under their respective module. However, at almost any point in the simulation the user can choose to save the contents of the EVENT object to an ascii file. The format of this NuSIM file is in detail described in Chapter \ref{outputformat}. 
+There are a variety of output file formats in NuSIM. Each of these will be described under their respective module. However, at almost any point in the simulation the user can choose to save the contents of the EVENT object to an ASCII file. The format of this NuSIM file is in detail described in Chapter \ref{outputformat}. 
 
 Under almost every module there are two common options: "Event Saver: Universal saver" and "Event loader: Universal loader". The save option will save the contents of EVENT at that point in the pipeline. The loader will load a NuSIM file and continue the simulation from that point in the pipeline. These two options are mostly used for debugging and testing of the NuSIM functionality.
 
@@ -173,6 +173,15 @@ The background engine draws the background from an external GEANT simulation, co
 \item \textbf{Event Loader: Universal loader}. Allows the user to load a previously saved event list.
 \end{itemize}
 \subsection{Detector interactions engine}
+
+The master background engine contains 2 different background components, the instrumental background and the aperture background.
+
+The instrumental background has been generated using Geant simulation which comprised the complete expected background: cosmic photons, protons, electron, and positrons, Albedo photons, electrons, positrons, neutrons and protons, trapped protons from passage through the SAA as well as all activation from neutrons and protons. it is split into two parts which have to be set in the GUI: All events which cause interactions in the detector --- this includes detector only and shield and detector interactions --- and shield only interactions.
+Although ~20.000 hours supercomputer time was available only 100.000 s of background could be simulated. This means all 100ks the background is reused. 
+To minimze problems, the interaction positions on the detector are modified, by randomly switching the detector of the pattern and the rotation of the pattern.
+The energy, however, is not modified. 
+
+The second component is the aperture component, i.e. cosmic diffuse photons which which have an unobscured path to the detector because the aperture is not perfect. However, Beryllium absorption, etc. is taken into account. The input is split into two files, a spectrum and a position pattern on the detectors (which is uneven due to obscuration of the optics). The original input for the data was the Gruber et al. cosmic diffuse spectrum. 
 
 
 \subsection{Detector effects engine}
