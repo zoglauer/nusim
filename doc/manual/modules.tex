@@ -166,23 +166,35 @@ The aperture engine places an aperture in the photon path and rejects any photon
 \label{bkggui} 
 \end{center}
 \end{figure}
-The background engine draws the background from an external GEANT simulation, combining it with the expected background flux from the sky. This module has four options:
+The background engine draws the background from an external GEANT simulation, combining it with the expected background flux from the sky. This module has three options:
 \begin{itemize}
 \item \textbf{No Module}. It is possible to run NuSIM without having a background engine.
 \item \textbf{Master Background Simulator}. As the name implies this is the actual background option to use when running science simulations. Figure \ref{bkggui} shows the interface options GUI and the files can be found in \textbf{\${NUSIM}/resource/data/}.
 \item \textbf{Event Loader: Universal loader}. Allows the user to load a previously saved event list.
 \end{itemize}
-\subsection{Detector interactions engine}
 
 The master background engine contains 2 different background components, the instrumental background and the aperture background.
 
 The instrumental background has been generated using Geant simulation which comprised the complete expected background: cosmic photons, protons, electron, and positrons, Albedo photons, electrons, positrons, neutrons and protons, trapped protons from passage through the SAA as well as all activation from neutrons and protons. it is split into two parts which have to be set in the GUI: All events which cause interactions in the detector --- this includes detector only and shield and detector interactions --- and shield only interactions.
-Although ~20.000 hours supercomputer time was available only 100.000 s of background could be simulated. This means all 100ks the background is reused. 
-To minimze problems, the interaction positions on the detector are modified, by randomly switching the detector of the pattern and the rotation of the pattern.
-The energy, however, is not modified. 
+Although 20.000~hours supercomputer time were available, only 100.000~s of background could be simulated. As consequence all 100~ks the background is reused.
+To minimize problems, a random start position in the background file is used and the interaction positions on the detector are modified by randomly switching the detector(s) in which the pattern(s) occurred and by rotating the pattern(s).
+The energy, however, is not modified.
 
-The second component is the aperture component, i.e. cosmic diffuse photons which which have an unobscured path to the detector because the aperture is not perfect. However, Beryllium absorption, etc. is taken into account. The input is split into two files, a spectrum and a position pattern on the detectors (which is uneven due to obscuration of the optics). The original input for the data was the Gruber et al. cosmic diffuse spectrum. 
+The second component is the aperture component, i.e. cosmic diffuse photons which which have an unobscured path to the detector because the aperture is not perfect. However, Beryllium absorption, etc. is taken into account. The input is split into two files, a spectrum and a position pattern on the detectors (which is uneven due to obscuration of the optics). The original input for the data was the Gruber et al. cosmic diffuse spectrum.
 
+
+\subsection{Detector interactions engine}
+
+The task of the detector interactions engine is to simulate the photons once they enter the detector.
+Three simulation modules are available:
+\begin{itemize}
+ \item \textbf{Only propagate to the detector plane}.
+As the name says, this module does not perform simulations inside the detector, but only propagates the photon to the detector plane. This propagation takes into account Beryllium window absorptions.
+ \item \textbf{Ideal interactions}.
+After propagating the photon to the detector plane as in the previous module, this module performs a simple interaction simulation by only taking into account the interaction depth according to the total absorption probability in CZT along the direction of the original photon. It does not take into account photo effect, fluorescence, Rayleigh or Compton scattering.
+ \item \textbf{Detailed: Compton, photo, Rayleigh}.
+This is the most frequently used module. It takes account Photo effect including fluorescence photons which can escape the detector (although only the photon with the highest energy is considered), Rayleigh scattering and Compton scattering. Comparisons with Geant4 have shown that the results are within 5\% of Geant4 (version 9.2).
+\end{itemize}
 
 \subsection{Detector effects engine}
 
