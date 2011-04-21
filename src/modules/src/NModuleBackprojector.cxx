@@ -48,13 +48,13 @@ ClassImp(NModuleBackprojector)
   // Set all module relevant information
 
   // Set the module name --- has to be unique
-  m_Name = "Backprojector";
+  m_Name = "Backprojection imaging";
 
   // Set the XML tag --- has to be unique --- no spaces allowed
   m_XmlTag = "XmlTagBackprojector";
 
   // Set the tool tip text
-  m_ToolTip = "Performs a simple backprojection of the event.";
+  m_ToolTip = "Performs a simple backprojections to image the events.";
 
   // Set all types this modules handles
   m_ModuleType = c_ScienceAnalyzer;
