@@ -1,0 +1,191 @@
+\chapter{The various input file formats}
+
+\section{For the source engine}
+
+\subsection{fits-files}
+
+NuSIM is able to read standard (Chandra) fits file as input.
+You can test if NuSIM is able to read the file with the program ViewFits, which is located in resource/examples/AddOn. It is not compiled by default, thus you have to type
+\begin{verbatim}
+make PRG=ViewFits only
+\end{verbatim}
+To run it type:
+\begin{verbatim}
+ViewFits -f <you fits file here>
+\end{verbatim}
+If a canvas with your image shows up, you are good to go.
+
+\subsection{The spe-format for input spectra}
+
+This format represents an input spectrum.
+It looks like this:
+\begin{verbatim}
+IP LIN
+
+DP 3 1.775
+DP 3.04907 1.73616
+DP 3.09894 1.69814
+DP 3.14962 1.66093
+DP 3.20114 1.62449
+DP 3.25349 1.58882
+DP 3.30671 1.55391
+DP 3.36079 1.51972
+DP 3.41576 1.48626
+DP 3.47163 1.4535
+DP 3.52841 1.42144
+
+EN
+\end{verbatim}
+
+The IP line give the interpolation type. Possible are LINLIN (equals LIN), LINLOG, LOGLIN, and LOGLOG (equals LOG). Choose the interpolation type which is most reasonable for you data (i.e in which your looks like a straight line).
+If your spectrum contains line features it is best to always use LIN.
+
+Data point are represented by the "DP" keyword.
+The first number represents the energy and the second the flux in something like ph/cm$^2$/s/keV.
+The normalization does not need to be correct because it is given with the "Flux" keyword in the source input.
+
+Make sure the last line in your file is "EN" for "The End".
+
+Lines starting with "\#" are interpreted as comments
+
+\subsection{The 3Ddat format \label{input:3Ddat}}
+
+The 3Ddat format represents a 3D data space spanned by RA, DEC, and energy. It's content is flux at the axis position in ph/cm$^2$/s/keV/sr.
+
+The file look like this:
+
+\begin{verbatim}
+IP LIN
+
+# RA axis in deg:
+PA 35.1 35.2 35.3 35.4 35.5
+# Dec axis in deg:
+TA 5.05 5.10 5.15 5.20 5.25
+# Energy axis in keV:
+EA 10 15 20 25 30 35 40
+
+AP 0 0 0  0.50
+AP 0 0 1  0.25
+AP 0 0 2  0.12
+AP 0 0 3  0.07
+
+# Skip the rest
+
+EN
+\end{verbatim}
+
+The IP line give the interpolation type. Currently only LIN, linear interpolation, is supported.
+
+The next three lines represent the data points on the axes at which the flux is given. PA (phi-axis) represents the right ascension in degree, TA (theta-axis) represents the declination in degree, EA (energy-axis) represents the energy in keV.
+
+The following section gives the value at the axis points for the given ID (number starting with zero!) of the data point on the three axis.
+For example "AP 3 1 5 1.6" represents a flux of 1.6 ph/cm$^2$/s/keV/sr for the 4th axis point in the RA-axis (35.4 deg), the 2nd axis point in the DEC-axis (5.10 deg), and the 6th axis point of the energy axis (35 keV).
+
+Make sure the last line in your file is "EN" for "The End".
+
+Lines starting with "\#" are interpreted as comments
+
+
+\subsection{The src file to import sources}
+
+Finally it is possible to import whole source lists into the source engine.
+This is done via the src-file. the following is an example:
+\begin{verbatim}
+Mono                  1  266.20  -29.00   1  40.0                     0.00001
+Linear                1  266.25  -29.00   2  30.0  35.0               0.00002
+Plaw                  1  266.30  -29.00   3  3.0  80.0   0.3          0.00003
+BrokenPlaw            1  266.40  -29.00   4  5.0  80.0  20.0 0.6 2.4  0.00004
+FileDifferentialFlux  1  266.35  -29.00   5  $(NUSIM)/resource/configurations/SourceGenerator.examplespectrum.dat 0.00004
+BlackBody             1  266.35  -29.05   6  5.0  20.0 80.0           0.00004
+SomethingAbsorbed     1  266.30  -29.05   7  10.0 80.0 7.0e-6*pow(x/10,-1.1)*exp(-sqrt(x/2.2))
+AGauss                1  266.25  -29.05   7  10.0 80.0 4.3e-6*TMath::Gaus(x,67.9,2.1)
+
+MonoPoint             1  266.20  -29.15                               1  40.0   0.000010
+MonoDisk              2  266.30  -29.15 0.05                          1  50.0   0.000015
+MonoFile              5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60.0   0.000020
+\end{verbatim}
+
+Each line represents a source (due to tex file formating one line might look as multiple in your printout) and each line consists of up to four sections:
+\begin{enumerate}
+\item The source name
+\item The beam options
+\item The spectral options
+\item The flux
+\end{enumerate}
+
+The first column is always the name of the source. It must not contain any spaces.
+
+In general, different beam and spectral options result in different number of columns.
+Therefore the beam and spectral options section is always preceeded by a number representing the beam type:
+
+The beam options are:
+\begin{enumerate}
+\item FarFieldPoint
+\item FarFieldDisk
+\item NearFieldPoint --- do not use
+\item NearFieldBeam --- do not use
+\item FarFieldFitsFile
+\item FarFieldNormalizedEnergyPositionFluxFunction
+\end{enumerate}
+Attention: Only the ones relevant for astrophysics are accessible via this input options file.
+
+The far field point source is followed by two numbers: (1) RA in deg, (2) DEC in deg.
+
+The far field disk source is followed by three numbers: (1) RA in deg, (2) DEC in deg, (3) The extend (radius) in deg.
+
+The far field fits file is followed by a file name. Currently it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory: (1) File name.
+
+The far field normalized combined energy-spectrum-flux function is only followed by file name since the file contains already all other options: (1) File name. Currently it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory
+
+
+The spectral options are
+\begin{enumerate}
+\item Monoenergetic
+\item Linear
+\item PowerLaw
+\item BrokenPowerLaw
+\item FileDifferentialFlux
+\item BlackBody
+\item NormalizedFunctionInPhPerCm2PerSPerKeV
+\item NormalizedEnergyPositionFluxFunction --- not required since redundant with FarFieldNormalizedEnergyPositionFluxFunction
+\end{enumerate}
+
+
+The monoenergetic option is followed by one number: (1) Energy in keV.
+
+The linear option is followed by two numbers: (1) Minimum energy in keV, (2) Maximum energy in keV.
+
+The powerlaw option is followed by three numbers: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Photon index.
+
+The broken powerlaw option is followed by five numbers: (1) Minimum energy in keV,  (2) Maximum energy in keV, (3) Break energy in keV, (4) Photon index low, (5) Photon index high.
+
+The file with the differential flux is given by only one file name: (1) File name. Again it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory.
+
+The black body option is followed by three numbers: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Temperature energy in keV.
+
+The normalized function in ph/cm2/s/keV is given by two number and a string: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Function string.
+The string represents a function and must not contain any spaces!
+You can use all C/C++ (pow, exp, sqrt, cos, sin, etc.) and all ROOT functions, such as TMath:Gaus(...), etc.
+
+
+For all options but the normalized spectrum, the final column is the flux in ph/cm2/s within the given spectral band
+
+
+
+\section{For the pointing engine \label{inputformats:pointing}}
+
+A possible input for the pointing is a pointing pattern file with the suffix pat.
+It looks like this (from the Tycho example directory):
+\begin{verbatim}
+RD 6.29 64.115 0 10
+RD 6.35 64.115 6 10
+RD 6.41 64.115 12 10
+RD 6.29 64.1375 18 10
+RD 6.35 64.1375 24 10
+RD 6.41 64.1375 30 10
+RD 6.29 64.16 36 10
+RD 6.35 64.16 42 10
+RD 6.41 64.16 48 10
+\end{verbatim}
+
+The first number represents the right ascension in degree, the second number the declination in degree, the third number the Roll of the space craft in degree and the final number the relative or absolute observation time.
