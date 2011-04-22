@@ -2,8 +2,11 @@
 
 \documentclass[12pt]{article}
 \usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
-\geometry{a4paper} % or letter or a5paper or ... etc
+\geometry{letterpaper} % or letter or a5paper or ... etc
 \usepackage[pdftex]{graphicx}
+\usepackage{fullpage}
+
+\parindent 0pt
 
 % See the ``Article customise'' template for come common customisations
 \begin{document}
@@ -24,8 +27,14 @@
 \include {Kepler/SimReport}
 \include {SN1006/SimReport}
 \include {Tycho/SimReport}
+
+\include {Vela/SimReport}
+\include {G21.5-0.9/SimReport}
+\include {G54.1+0.3/SimReport}
+
 \include {GalacticCenter/SimReport}
 \include {Westerlund1/SimReport}
+
 \include {Cosmos/SimReport}
 
 \end{document}

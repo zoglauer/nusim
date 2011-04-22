@@ -170,6 +170,16 @@ bool SphericalPattern::Analyze()
   Extractor.Extract(m_FitsFileName, F);
   
   F.Plot();
+  
+  double Sum = 0;
+  vector<double> X = F.GetXAxis();
+  vector<double> Y = F.GetYAxis();
+  for (unsigned int x = 0; x < X.size(); ++x) {
+    for (unsigned int y = 0; y < Y.size(); ++y) {
+      Sum += F.Eval(X[x], Y[y]);
+    }
+  }
+  cout<<"Sum: "<<Sum<<endl;
       
   return true;
 }
