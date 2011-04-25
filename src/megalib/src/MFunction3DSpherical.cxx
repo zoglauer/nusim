@@ -27,6 +27,9 @@
 #include "MFunction3DSpherical.h"
 
 // Standard libs:
+#include <fstream>
+#include <iomanip>
+using namespace std;
 
 // ROOT libs:
 #include "TH3.h"
@@ -308,6 +311,9 @@ void MFunction3DSpherical::Save(TString FileName)
   ofstream out;
   out.open(FileName);
   
+  out<<scientific;
+  out<<setprecision(8);
+  
   out<<"IP LIN"<<endl;
 
   out<<"PA ";
@@ -407,12 +413,19 @@ void MFunction3DSpherical::Plot(bool Random)
     Hist->SetXTitle("phi in degree");
     Hist->SetYTitle("theta in degree");
     Hist->SetZTitle("energy in keV");
+
+    TCanvas* Canvas = new TCanvas("DiagnosticsCanvas", "DiagnosticsCanvas");
+    Canvas->cd();
+
     if (Random == true) {
       double x, y, z;
       unsigned int i_max = 100000;
       for (unsigned int i = 0; i < 100000; ++i) {
         if (i % (i_max/1000) == 0) {
           cout<<"\rSimulation progress: "<<100.0 * i/i_max<<"     "<<flush;
+          Hist->Draw("colz");
+          Canvas->Update();
+          gSystem->ProcessEvents();
         }
         GetRandom(x, y, z);
         Hist->Fill(x, y, z, 1);
@@ -427,8 +440,7 @@ void MFunction3DSpherical::Plot(bool Random)
       }
     }
 
-    TCanvas* Canvas = new TCanvas("DiagnosticsCanvas", "DiagnosticsCanvas");
-    Canvas->cd();
+
     Hist->Draw("colz");
     Canvas->Update();
 
