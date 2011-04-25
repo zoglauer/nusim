@@ -439,8 +439,8 @@ void NGUIOptionsSource::UpdateSource()
      m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk ||
      m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
     m_Source->SetFlux(m_Flux->GetAsDouble()/100); // go from the external ph/s/cm2 to the external ph/s/mm2
-  } else if (m_BeamTypes->GetSelected() == NSource::c_NormalizedEnergyPositionFluxFunction) {
-    m_Source->SetFlux(0.0);
+  } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldNormalizedEnergyPositionFluxFunction) {
+    // <-- Flux has been set during beam setting!!
   } else {
     cerr<<"NGUIOptionsSource::UpdateSource: Unknown beam type ("<<m_BeamTypes->GetSelected()<<")... You forgot to implement it..."<<endl;
   }
