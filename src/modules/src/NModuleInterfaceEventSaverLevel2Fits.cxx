@@ -18,7 +18,9 @@
 #include "NModuleInterfaceEventSaverLevel2Fits.h"
 
 // Standard libs:
-#include "math.h"
+#include <cmath>
+#include <cstdio>
+using namespace std;
 
 // HEAsoft
 #include "fitsio.h"
@@ -103,6 +105,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
     m_File = 0;
     return false;
   }
+
+  m_Ra.clear();
+  m_Dec.clear();
+  m_Energy.clear();
+  m_Time.clear();
+  m_Origin.clear();
+
 
   return true;
 }
@@ -385,7 +394,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_close_file(m_File, &Status);
   
   m_File = 0;
-
+  
   return true;
 }
 
