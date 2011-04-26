@@ -160,6 +160,8 @@ bool NModulePointingPredefined::ReadPointingJitterDB(TString FileName)
 {
   //! Read the data from file
 
+  MFile::ExpandFileName(FileName);
+
   // Load from file
   ifstream in;
   in.open(FileName);
