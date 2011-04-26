@@ -86,7 +86,7 @@ class NModuleDetectorEffectsEngineSciSimCIE : public NModule, public NModuleInte
   //! The charge induction efficiency root histogram name
   TString m_ChargeInductionEfficiencyHistName;
   //! The charge induction efficiency root histogram
-  TH3D*   m_ChargeInductionEfficiency;
+  TH3F*   m_ChargeInductionEfficiency;
   //! The scale factor in x-direction from pixel width in NuSim to the CIE histogram
   double  m_PixelWidthScaleFactorX;
   //! The scale factor in y-direction from pixel width in NuSim to the CIE histogram

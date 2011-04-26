@@ -68,6 +68,7 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   
   m_SaveAsFits = false;
   m_SaveAsROOT = false;
+  m_SaveAsResponseROOT = false;
   m_SaveAsDat = false;
   m_SaveBeforeSelections = true;
 
@@ -75,6 +76,9 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   m_EnergyMax = 80;
 
   m_DepthMax = 40;
+
+  m_SelectByBadDepthCal = false;
+  m_SelectByDepthCut    = false;
 }
 
 
@@ -116,6 +120,11 @@ bool NModuleEventSelector::Initialize()
     
     if (FileSuffix.Contains("root") == true) {
       m_SaveAsROOT = true;
+      if  (FileBase.Contains("response", TString::kIgnoreCase) == true) {
+	m_SaveAsResponseROOT = true;
+      } else {
+	m_SaveAsResponseROOT = false;
+      }
     } else {
       m_SaveAsROOT = false;
     }
@@ -164,7 +173,11 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     }
     if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	      if (SaveEventTree(Event) == false) return false;
+	if ( m_SaveAsResponseROOT == false ) {
+	  if (SaveEventTree(Event) == false) return false;
+	} else {
+	  if (SaveResponse(Event) == false) return false;
+	}
       }  
     }
     if (m_SaveAsDat == true) {
@@ -219,6 +232,25 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     return true;
   }
 
+
+  // Filter out the event with the flag for bad detph calibration
+  for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
+    if (Event.GetHit(i).GetBadDepthCalibration() == true && m_SelectByBadDepthCal == true) {
+      Event.SetEventCut(true);
+      return true;
+    }
+  }
+
+
+  // Filter out the event with the flag for depth cut
+  for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
+    if (Event.GetHit(i).GetDepthCut() == true && m_SelectByDepthCut == true) {
+      Event.SetEventCut(true);
+      return true;
+    }
+  }
+
+
   // The first thing we do is safe the event
   if (m_SaveBeforeSelections == false) {
     if (m_SaveAsFits == true) {
@@ -228,7 +260,11 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     }
     if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	      if (SaveEventTree(Event) == false) return false;
+	if ( m_SaveAsResponseROOT == false ) {
+	  if (SaveEventTree(Event) == false) return false;
+	} else {
+	  if (SaveResponse(Event) == false) return false;
+	}
       }  
     }
     if (m_SaveAsDat == true) {
@@ -312,6 +348,14 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   if (DepthMaxNode != 0) {
     m_DepthMax = DepthMaxNode->GetValueAsDouble();
   }
+  MXmlNode* SelectByBadDepthCalNode = Node->GetNode("SelectByBadDepthCal");
+  if (SelectByBadDepthCalNode != 0) {
+    m_SelectByBadDepthCal = SelectByBadDepthCalNode->GetValueAsBoolean();
+  }
+  MXmlNode* SelectByDepthCutNode = Node->GetNode("SelectByDepthCut");
+  if (SelectByDepthCutNode != 0) {
+    m_SelectByDepthCut = SelectByDepthCutNode->GetValueAsBoolean();
+  }
   MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
   if (SaveBeforeSelectionsNode != 0) {
     m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsBoolean();
@@ -332,7 +376,9 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   new MXmlNode(Node, "FileName", CleanPath(m_FileName));
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
-  new MXmlNode(Node, "DepthMax", m_DepthMax);
+  new MXmlNode(Node, "DepthMax",  m_DepthMax);
+  new MXmlNode(Node, "SelectByBadDepthCal", m_SelectByBadDepthCal);
+  new MXmlNode(Node, "SelectByDepthCut",    m_SelectByDepthCut);
   new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
 
   return Node;

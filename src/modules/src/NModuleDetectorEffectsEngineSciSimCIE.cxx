@@ -68,6 +68,8 @@ NModuleDetectorEffectsEngineSciSimCIE::NModuleDetectorEffectsEngineSciSimCIE(NSa
   m_HasDiagnosticsGUI = true;
   m_Diagnostics = 0;
   
+  m_ChargeInductionEfficiencyFileName = "$NUSIM/resource/data/CIE_450V_TypicalMuTau.root";
+
   m_PixelCenterPositionX = 0;
   m_PixelCenterPositionY = 0;
 }
@@ -99,7 +101,15 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
 
   // Load the charge induction efficiency
   // m_ChargeInductionEfficiencyFileName = "$(NUSIM)/resource/data/CIE_300V.root";
-  m_ChargeInductionEfficiencyHistName = "CIE";
+  if ( m_ChargeInductionEfficiencyFileName.Contains("CIE_500V.root") == true ) {
+    mout << error
+	 << "=========================================================" << error
+	 << " ERROR in " << m_Name << error
+	 << "---------------------------------------------------------" << error
+         << "  " << m_ChargeInductionEfficiencyFileName.Data() << " is old CIE ROOT file!" << error
+	 << "  Choose the latest CIE ROOT file." << error
+	 << "---------------------------------------------------------" << error << error;
+  }
   MFile::ExpandFileName(m_ChargeInductionEfficiencyFileName);
   if (LoadChargeInductionEfficiency() == false) {
     return false;
@@ -107,15 +117,33 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
 
   // Set up the energy resolution
   vector<double> X;
-  X.push_back(0.0);
-  X.push_back(30.0);
-  X.push_back(60.0);
-  X.push_back(80.0);
   vector<double> Y;
-  Y.push_back(0.60/2.35);
-  Y.push_back(0.60/2.35);
-  Y.push_back(1.2/2.35);
-  Y.push_back(1.6/2.35);
+
+  X.push_back( -50.0); Y.push_back(0.8/2.354820);
+  X.push_back( -10.0); Y.push_back(0.8/2.354820);
+  X.push_back(   0.0); Y.push_back(0.8/2.354820);
+  X.push_back(   0.5); Y.push_back(0.7/2.354820);
+  X.push_back(   1.0); Y.push_back(0.6/2.354820);
+  X.push_back(   2.0); Y.push_back(0.5/2.354820);
+  X.push_back(   5.0); Y.push_back(0.4/2.354820);
+  X.push_back(   7.0); Y.push_back(0.4/2.354820);
+  X.push_back(  10.0); Y.push_back(0.4/2.354820);
+  X.push_back(  40.0); Y.push_back(0.5/2.354820);
+  X.push_back(  60.0); Y.push_back(0.6/2.354820);
+  X.push_back(  86.5); Y.push_back(0.8/2.354820);
+  X.push_back( 105.0); Y.push_back(1.0/2.354820);
+  X.push_back( 200.0); Y.push_back(1.2/2.354820);
+  X.push_back( 300.0); Y.push_back(1.3/2.354820);
+  X.push_back( 400.0); Y.push_back(1.4/2.354820);
+  X.push_back( 500.0); Y.push_back(1.5/2.354820);
+  X.push_back( 600.0); Y.push_back(1.6/2.354820);
+  X.push_back( 700.0); Y.push_back(1.7/2.354820);
+  X.push_back( 800.0); Y.push_back(1.8/2.354820);
+  X.push_back( 900.0); Y.push_back(1.9/2.354820);
+  X.push_back(1000.0); Y.push_back(2.0/2.354820);
+  X.push_back(1500.0); Y.push_back(2.5/2.354820);
+  X.push_back(2000.0); Y.push_back(3.0/2.354820);
+
   m_EnergyResolution.Set(X, Y);
 
   m_LowTrigger = 50;
@@ -166,7 +194,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
 {
   TDirectory *OrgDirectory = gDirectory;
 
-  if ( MFile::Exists(m_ChargeInductionEfficiencyFileName ) == false) {
+  m_ChargeInductionEfficiencyHistName = "CIE";
+
+  if ( MFile::Exists(m_ChargeInductionEfficiencyFileName) == false) {
     cout << "ERROR: unable to find charge induction efficiency file \""
 	 << m_ChargeInductionEfficiencyFileName << "\"" << endl;
     gDirectory = OrgDirectory;
@@ -183,7 +213,7 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
   }
 
   m_ChargeInductionEfficiency
-    = (TH3D*) m_ChargeInductionEfficiencyROOTFile->Get(m_ChargeInductionEfficiencyHistName.Data());
+    = (TH3F*) m_ChargeInductionEfficiencyROOTFile->Get(m_ChargeInductionEfficiencyHistName.Data());
   if (    m_ChargeInductionEfficiency == 0
        || m_ChargeInductionEfficiency->IsZombie() ) {
     cout << "ERROR: unable to get charge induction efficiency histogram \""
@@ -198,15 +228,29 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
 
 
   // CIE Histogram is 3 by 3 pixels
+  if ( m_ChargeInductionEfficiency->GetNbinsX() % 3 == 0 ) {
+    m_PixelWidthScaleFactorX
+      = ((m_ChargeInductionEfficiency->GetXaxis()->GetXmax()
+	  - m_ChargeInductionEfficiency->GetXaxis()->GetXmin()) / 3.0)
+      / m_Satellite.GetDetectorAveragePixelSizeX();
+  } else {
   m_PixelWidthScaleFactorX
-    = ((m_ChargeInductionEfficiency->GetXaxis()->GetXmax()
-	- m_ChargeInductionEfficiency->GetXaxis()->GetXmin()) / 3.0)
+    = ((m_ChargeInductionEfficiency->GetXaxis()->GetBinLowEdge(m_ChargeInductionEfficiency->GetNbinsX())
+	- m_ChargeInductionEfficiency->GetXaxis()->GetBinUpEdge(1)) / 3.0)
     / m_Satellite.GetDetectorAveragePixelSizeX();
+  }
 
-  m_PixelWidthScaleFactorY
-    = ((m_ChargeInductionEfficiency->GetYaxis()->GetXmax()
-	- m_ChargeInductionEfficiency->GetYaxis()->GetXmin()) / 3.0)
-    / m_Satellite.GetDetectorAveragePixelSizeY();
+  if ( m_ChargeInductionEfficiency->GetNbinsY() % 3 == 0 ) {
+    m_PixelWidthScaleFactorY
+      = ((m_ChargeInductionEfficiency->GetYaxis()->GetXmax()
+	  - m_ChargeInductionEfficiency->GetYaxis()->GetXmin()) / 3.0)
+      / m_Satellite.GetDetectorAveragePixelSizeY();
+  } else {
+    m_PixelWidthScaleFactorY
+      = ((m_ChargeInductionEfficiency->GetYaxis()->GetBinLowEdge(m_ChargeInductionEfficiency->GetNbinsY())
+	  - m_ChargeInductionEfficiency->GetYaxis()->GetBinUpEdge(1)) / 3.0)
+      / m_Satellite.GetDetectorAveragePixelSizeY();
+  }
 
   gDirectory = OrgDirectory;
   return true;

@@ -83,6 +83,16 @@ class NNinePixelHit
   //! Get the trigger flag
   bool GetTrigger(unsigned int PixelID) const;
   
+  //! Set the number of triggers
+  void SetNTriggers(int NTriggers) { m_Empty = false; m_NTriggers = NTriggers; };
+  //! Get the number of triggers
+  int GetNTriggers() const { return m_NTriggers; };
+  
+  //! Set the trigger grade
+  void SetTriggerGrade(int TriggerGrade) { m_Empty = false; m_TriggerGrade = TriggerGrade; };
+  //! Get the trigger grade
+  int GetTriggerGrade() const { return m_TriggerGrade; };
+  
 
   //! Set the ideal average depth position
   void SetIdealAverageDepth(double IdealAverageDepth) { m_Empty = false; m_IdealAverageDepth = IdealAverageDepth; }
@@ -143,6 +153,10 @@ class NNinePixelHit
   vector<double> m_PostTriggerSampleSum;
   //! The trigger flag
   vector<int> m_Trigger;
+  //! The number of triggers
+  int m_NTriggers;
+  //! The number of triggers
+  int m_TriggerGrade;
     
   //! The ideal average depth position
   double m_IdealAverageDepth;

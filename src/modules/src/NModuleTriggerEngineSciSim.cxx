@@ -38,6 +38,56 @@ ClassImp(NModuleTriggerEngineSciSim)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const int NModuleTriggerEngineSciSim::m_TriggerPattern[33] = {
+  // single trigger
+  (0x01 << 4), // Grade0
+  // double triggers
+  (0x01 << 4) + (0x01 << 1), // Grade1
+  (0x01 << 4) + (0x01 << 5), // Grade2
+  (0x01 << 4) + (0x01 << 7), // Grade3
+  (0x01 << 4) + (0x01 << 3), // Grade4
+  // triple triggers
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5), // Grade5
+  (0x01 << 4) + (0x01 << 5) + (0x01 << 7), // Grade6
+  (0x01 << 4) + (0x01 << 7) + (0x01 << 3), // Grade7
+  (0x01 << 4) + (0x01 << 3) + (0x01 << 1), // Grade8
+  // quadruple triggers
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5) + (0x01 << 2), // Grade9
+  (0x01 << 4) + (0x01 << 5) + (0x01 << 7) + (0x01 << 8), // Grade10
+  (0x01 << 4) + (0x01 << 7) + (0x01 << 3) + (0x01 << 6), // Grade11
+  (0x01 << 4) + (0x01 << 3) + (0x01 << 1) + (0x01 << 0), // Grade12
+  // othres
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5) + (0x01 << 7) + (0x01 << 3), // Grade13
+  //
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5) + (0x01 << 3), // Grade14
+  (0x01 << 4) + (0x01 << 5) + (0x01 << 7) + (0x01 << 1), // Grade15
+  (0x01 << 4) + (0x01 << 7) + (0x01 << 3) + (0x01 << 5), // Grade16
+  (0x01 << 4) + (0x01 << 3) + (0x01 << 1) + (0x01 << 7), // Grade17
+  //
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5) + (0x01 << 3) + (0x01 << 2), // Grade18
+  (0x01 << 4) + (0x01 << 5) + (0x01 << 7) + (0x01 << 1) + (0x01 << 8), // Grade19
+  (0x01 << 4) + (0x01 << 7) + (0x01 << 3) + (0x01 << 5) + (0x01 << 6), // Grade20
+  (0x01 << 4) + (0x01 << 3) + (0x01 << 1) + (0x01 << 7) + (0x01 << 0), // Grade21
+  //
+  (0x01 << 4) + (0x01 << 1) + (0x01 << 5) + (0x01 << 3) + (0x01 << 0), // Grade22
+  (0x01 << 4) + (0x01 << 5) + (0x01 << 7) + (0x01 << 1) + (0x01 << 2), // Grade23
+  (0x01 << 4) + (0x01 << 7) + (0x01 << 3) + (0x01 << 5) + (0x01 << 8), // Grade24
+  (0x01 << 4) + (0x01 << 3) + (0x01 << 1) + (0x01 << 7) + (0x01 << 6), // Grade25
+  //
+  (0x01 << 4) + (0x01 << 2), // Grade26
+  (0x01 << 4) + (0x01 << 0), // Grade27
+  (0x01 << 4) + (0x01 << 6), // Grade28
+  (0x01 << 4) + (0x01 << 8), // Grade29
+  //
+  (0x01 << 4) + (0x01 << 0) + (0x01 << 2) + (0x01 << 6) + (0x01 << 8), // Grade30
+  //
+  (0x01 << 0) + (0x01 << 1) + (0x01 << 2) + (0x01 << 3) + (0x01 << 4) + (0x01 << 5) + (0x01 << 6) + (0x01 << 7) + (0x01 << 8), // Grade31
+  //
+  0  // Grade32
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceDeadTime()
 {
@@ -133,6 +183,9 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     int ID = 0;
     int NPixelsX = m_Satellite.GetDetectorPixelsX();
     int NPixelsY = m_Satellite.GetDetectorPixelsY();
+    int NTriggersInNiner = 0;
+    int TriggerPattern = 0;
+    int TriggerGrade = 32;
     for (int xp = Niner.GetXPixel()-1; xp <= Niner.GetXPixel()+1; ++xp) {
       for (int yp = Niner.GetYPixel()-1; yp <= Niner.GetYPixel()+1; ++yp) {
         ++ID;
@@ -147,11 +200,13 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
               P.GetXPixel() == xp && P.GetYPixel() == yp) {
             Niner.SetPreTriggerSampleSum(ID, P.GetPreTriggerSampleSum()); 
             Niner.SetPostTriggerSampleSum(ID, P.GetPostTriggerSampleSum());
-          
+
             if (P.GetPostTriggerSampleSum() - P.GetPreTriggerSampleSum() > m_TriggerThreshold) {
               Niner.SetTrigger(ID, true);
+	      NTriggersInNiner++;
+	      TriggerPattern += (0x01 << (ID-1));
             }
-          
+
             // Use energy weighted depths:
             if (Niner.GetIdealEnergy() + P.GetIdealEnergy() > 0) {
               Niner.SetIdealAverageDepth((Niner.GetIdealAverageDepth()*Niner.GetIdealEnergy() + P.GetIdealAverageDepth()*P.GetIdealEnergy())/(Niner.GetIdealEnergy() + P.GetIdealEnergy()));
@@ -169,6 +224,16 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
       }
     }
     
+    for ( int grade=0; grade<33; grade++ ) {
+      if ( TriggerPattern == m_TriggerPattern[grade] ) {
+	TriggerGrade = grade;
+	break;
+      }
+    }
+
+    Niner.SetNTriggers(NTriggersInNiner);
+    Niner.SetTriggerGrade(TriggerGrade);
+
     Event.AddNinePixelHit(Niner);
   }
 
@@ -218,7 +283,7 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
 
 bool NModuleTriggerEngineSciSim::Finalize()
 {
-  // Finalzie the module
+  // Finalize the module
   
   cout<<endl;
   cout<<"Trigger engine (SciSim) summary:"<<endl;

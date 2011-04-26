@@ -88,6 +88,8 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   //! The pixel trigger threshold
   double m_TriggerThreshold;
 
+  //! The pixel trigger pattern
+  static const int m_TriggerPattern[33];
 
 
 #ifdef ___CINT___

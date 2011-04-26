@@ -72,6 +72,10 @@ const NHit& NHit::operator=(const NHit& Hit)
 
   m_ObservatoryData = Hit.m_ObservatoryData;
 
+  m_BadDepthCalibration = Hit.m_BadDepthCalibration;
+
+  m_DepthCut = Hit.m_DepthCut;
+
   return (*this);
 }
 
@@ -93,9 +97,12 @@ void NHit::Clear()
   m_PositionResolution = g_VectorNotDefined;
   m_EnergyResolution = g_DoubleNotDefined;
   
+  m_ObservatoryData.Clear();
+
   m_BadDepthCalibration = false;
 
-  m_ObservatoryData.Clear();
+  m_DepthCut = false;
+
 }
 
 

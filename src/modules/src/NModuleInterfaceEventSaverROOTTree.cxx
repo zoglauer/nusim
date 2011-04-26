@@ -93,7 +93,7 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
 
   //! Create one branched with event information
   m_EventTree->Branch("Time",                 &m_Time,                "Time/D");
-  m_EventTree->Branch("Grade",                &m_Grade,               "Grade/I");
+  m_EventTree->Branch("Origin",               &m_Origin,              "Origin/I");
   m_EventTree->Branch("PrimaryEnergy",        &m_PrimaryEnergy,       "PrimaryEnergy/D");
   m_EventTree->Branch("PrimaryPosition",      &m_PrimaryPosition);
   m_EventTree->Branch("PrimaryDirection",     &m_PrimaryDirection);
@@ -101,13 +101,28 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
   m_EventTree->Branch("Dec",                  &m_Dec,                 "Dec/D");
   m_EventTree->Branch("XPix",                 &m_XPix,                "XPix/D");
   m_EventTree->Branch("YPix",                 &m_YPix,                "YPix/D");
+  m_EventTree->Branch("TelescopeID",          &m_TelID,               "TelescopeID/I");
+  m_EventTree->Branch("DetectorID",           &m_DetID,               "DetectorID/I");
   m_EventTree->Branch("Column",               &m_Column,              "Column/I");
   m_EventTree->Branch("Row",                  &m_Row,                 "Row/I");
+  m_EventTree->Branch("BadDepthCal",          &m_BadDepthCal,         "BadDepthCal/O");
+  m_EventTree->Branch("DepthCut",             &m_DepthCut,            "DepthCut/O");
   m_EventTree->Branch("NTrigs",               &m_NTrigs,              "NTrigs/I");
+  m_EventTree->Branch("Grade",                &m_Grade,               "Grade/I");
   m_EventTree->Branch("TrigEnergy",           &m_TrigEnergy,          "TrigEnergy/D");
   m_EventTree->Branch("NonTrigEnergy",        &m_NonTrigEnergy,       "NonTrigEnergy/D");
   m_EventTree->Branch("ReconstructedEnergy",  &m_ReconstructedEnergy, "ReconstructedEnergy/D");
   m_EventTree->Branch("Energies",              m_Energies,            "Energies[9]/D");
+
+  m_Response = new TH2D("Response",
+			Form("Detector Response Produced by NuSim ver. %s (SVN rev. %d)",
+			     g_Version.Data(), g_SVNRevision),
+			820, 2.95, 84.95,  // ARF
+			820, 2.95, 84.95); // RMF Ebounds
+
+  m_Response->SetXTitle("Primary Energy (keV)");
+  m_Response->SetYTitle("Observed Energy (keV)");
+  m_Response->SetZTitle("Counts");
 
   gDirectory = OrgDirectory;
 
@@ -122,22 +137,25 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 {
   //! Main data analysis routine, which updates the event to a new level
 
-  // cout<<"SaveFits"<<endl;
+  // cout<<"SaveROOT"<<endl;
 
   // from NHits
   int NHits = Event.GetNHits();
-
   if      ( NHits == 0 ) return true;
   else if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
+  NHit& Hit = Event.GetHitRef(0);
+
+  // m_TrigEnergy = Hit.GetEnergy();
+  m_ReconstructedEnergy = Hit.GetEnergy();
+  m_BadDepthCal         = Hit.GetBadDepthCalibration();
+  m_DepthCut            = Hit.GetDepthCut();
 
   m_Time   = Event.GetTime().GetSeconds();
-  m_Grade  = Event.GetOrigin();
-  m_Dec    = Event.GetHit(0).GetObservatoryData().GetDec();
-  m_RA     = Event.GetHit(0).GetObservatoryData().GetRaScaled();
+  m_Origin = Event.GetOrigin();
+  m_Dec    = Hit.GetObservatoryData().GetDec();
+  m_RA     = Hit.GetObservatoryData().GetRaScaled();
   m_XPix   = (m_RA - Reference_Ra *60.)*60./Pixsize;
   m_YPix   = (m_Dec- Reference_Dec*60.)*60./Pixsize;
-  // m_TrigEnergy = Event.GetHit(0).GetEnergy();
-  m_ReconstructedEnergy = Event.GetHit(0).GetEnergy();
 
   // from NPhoton
   m_PrimaryEnergy    = Event.GetOriginalPhoton().GetEnergy();
@@ -146,29 +164,54 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_PrimaryPosition .SetXYZ(aPosition.X(), aPosition.Y(), aPosition.Z());
   m_PrimaryDirection.SetXYZ(aDirection.X(), aDirection.Y(), aDirection.Z());
 
-  m_NTrigs = Event.GetNPixelTriggers();
-
   // from NNinePixelHist
   int NNinePixelHits = Event.GetNNinePixelHits();
   if ( NNinePixelHits > 1 ) mout << "Warning: NNinePixelHits (" << NNinePixelHits << ")> 1" << endl;
-  m_Column = Event.GetNinePixelHit(0).GetXPixel();
-  m_Row    = Event.GetNinePixelHit(0).GetYPixel();
+  NNinePixelHit& Niner = Event.GetNinePixelHitRef(0);
+
+  m_TelID  = Niner.GetTelescope();
+  m_DetID  = Niner.GetDetector();
+  m_Column = Niner.GetXPixel();
+  m_Row    = Niner.GetYPixel();
+  m_NTrigs = Niner.GetNTriggers();
+  m_Grade  = Niner.GetTriggerGrade();
 
   m_TrigEnergy  = 0.0;
   m_NonTrigEnergy = 0.0;
-
   for ( int i=0; i<9; ++i ) {
-    m_Energies[i]
-      = Event.GetNinePixelHit(0).GetPostTriggerSampleSum(i+1)
-      - Event.GetNinePixelHit(0).GetPreTriggerSampleSum(i+1);
+    m_Energies[i] = Niner.GetPostTriggerSampleSum(i+1) - Niner.GetPreTriggerSampleSum(i+1);
 
-    if ( Event.GetNinePixelHit(0).GetTrigger(i+1) == true )
+    if ( Niner.GetTrigger(i+1) == true ) {
       m_TrigEnergy += m_Energies[i];
-    else 
+    } else {
       m_NonTrigEnergy += m_Energies[i];
+    }
   }
 
   m_EventTree->Fill();
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleInterfaceEventSaverROOTTree::SaveResponse(NEvent& Event)
+{
+  //! Main data analysis routine, which updates the event to a new level
+
+  // cout<<"SaveROOT"<<endl;
+
+  // from NHits
+  int NHits = Event.GetNHits();
+  if      ( NHits == 0 ) return true;
+  else if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
+
+  m_ReconstructedEnergy = Event.GetHit(0).GetEnergy();
+  m_PrimaryEnergy       = Event.GetOriginalPhoton().GetEnergy();
+
+  m_Response->Fill(m_PrimaryEnergy, m_ReconstructedEnergy);
 
   return true;
 }
@@ -185,7 +228,8 @@ bool NModuleInterfaceEventSaverROOTTree::CloseROOTFile()
   TDirectory* OrgDirectory = gDirectory;
 
   m_File->cd();
-  m_EventTree->Write();
+  if ( m_EventTree->GetEntries() > 0 ) m_EventTree->Write();
+  if ( m_Response ->GetEntries() > 0 ) m_Response ->Write();
   m_File->Close();
 
   m_File = 0;

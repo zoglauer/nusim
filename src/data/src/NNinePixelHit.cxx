@@ -78,6 +78,8 @@ void NNinePixelHit::Clear()
     m_PostTriggerSampleSum.push_back(0);
     m_Trigger.push_back(0);
   }
+  m_NTriggers = g_UnsignedIntNotDefined;
+  m_TriggerGrade = g_UnsignedIntNotDefined;
 
   m_Empty = true;
 }

@@ -79,6 +79,10 @@ class NGUIOptionsEventSelector : public NGUIOptions
   MGUIEMinMaxEntry* m_Energies;
   //! Choose a depth cut
   MGUIEEntry* m_DepthMax;
+  //! Choose a selection by bad depth calibration flag
+  TGCheckButton* m_SelectByBadDepthCal;
+  //! Choose a selection by depth cut
+  TGCheckButton* m_SelectByDepthCut;
 
 
 

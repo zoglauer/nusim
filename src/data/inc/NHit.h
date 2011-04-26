@@ -89,11 +89,6 @@ class NHit
   //! Return the energy resolution in keV
   double GetEnergyResolution() const { return m_EnergyResolution; }
   
-  //! Set the hit flag for bad depth calibration
-  void SetBadDepthCalibration(bool BadDepthCalibration) { m_BadDepthCalibration = BadDepthCalibration; }
-  //! Return the hit flag for bad depth calibration
-  bool GetBadDepthCalibration() const { return m_BadDepthCalibration; }
-  
   //! Set the observatory data
   void SetObservatoryData(const NObservatoryData& ObservatoryData) { m_Empty = false; m_ObservatoryData = ObservatoryData; }
   //! Return A COPY of the observatory data
@@ -101,6 +96,15 @@ class NHit
   //! Return A REFERENCE of the observatory data
   NObservatoryData& GetObservatoryDataRef() { return m_ObservatoryData; }
   
+  //! Set the hit flag for bad depth calibration
+  void SetBadDepthCalibration(bool BadDepthCalibration) { m_Empty = false; m_BadDepthCalibration = BadDepthCalibration; }
+  //! Return the hit flag for bad depth calibration
+  bool GetBadDepthCalibration() const { return m_BadDepthCalibration; }
+  
+  //! Set the depth cut flag of the hit (true: invalid hit, false: valid)
+  void SetDepthCut(bool DepthCut) { m_Empty = false; m_DepthCut = DepthCut; }
+  //! Return the depth cut flag of the hit
+  bool GetDepthCut() const { return m_DepthCut; }
   
   //! Stream the content to an ASCII file 
   bool Stream(ofstream& S);
@@ -142,12 +146,14 @@ class NHit
   //! Energy resolution of the hit
   double m_EnergyResolution;
   
-  //! Hit flag for bad depth calibration
-  bool m_BadDepthCalibration;
-
   //! The observatory data
   NObservatoryData m_ObservatoryData;
 
+  //! Hit flag for bad depth calibration
+  bool m_BadDepthCalibration;
+
+  //! Depth cut flag
+  bool m_DepthCut;
 
 #ifdef ___CINT___
  public:

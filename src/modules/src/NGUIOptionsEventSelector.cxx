@@ -96,6 +96,24 @@ void NGUIOptionsEventSelector::Create()
                               dynamic_cast<NModuleEventSelector*>(m_Module)->GetDepthMax(), true, 0.0);
   AddFrame(m_DepthMax, MinMaxLayout);
   
+  m_SelectByBadDepthCal = new TGCheckButton(this, "Enable event selection by bad depth calibration flag");
+  m_SelectByBadDepthCal->Associate(this);
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSelectByBadDepthCal() == true) {
+    m_SelectByBadDepthCal->SetState(kButtonDown);
+  } else {
+    m_SelectByBadDepthCal->SetState(kButtonUp);
+  }
+  AddFrame(m_SelectByBadDepthCal, LabelLayout);
+
+  m_SelectByDepthCut = new TGCheckButton(this, "Enable event selection by depth cut");
+  m_SelectByDepthCut->Associate(this);
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSelectByDepthCut() == true) {
+    m_SelectByDepthCut->SetState(kButtonDown);
+  } else {
+    m_SelectByDepthCut->SetState(kButtonUp);
+  }
+  AddFrame(m_SelectByDepthCut, LabelLayout);
+
   PostCreate();
 }
 
@@ -162,8 +180,22 @@ bool NGUIOptionsEventSelector::OnApply()
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMin(m_Energies->GetMinValueDouble());
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMax(m_Energies->GetMaxValueDouble());
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetDepthMax(m_DepthMax->GetAsDouble());
+
+
+  if (m_SelectByBadDepthCal->GetState() == kButtonDown) {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSelectByBadDepthCal(true);
+  } else {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSelectByBadDepthCal(false);
+  }
+
+  if (m_SelectByDepthCut->GetState() == kButtonDown) {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSelectByDepthCut(true);
+  } else {
+    dynamic_cast<NModuleEventSelector*>(m_Module)->SetSelectByDepthCut(false);
+  }
+
   
-	return true;
+  return true;
 }
 
 

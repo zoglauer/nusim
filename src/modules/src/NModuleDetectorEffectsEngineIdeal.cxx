@@ -54,7 +54,7 @@ NModuleDetectorEffectsEngineIdeal::NModuleDetectorEffectsEngineIdeal(NSatellite&
   m_XmlTag = "XmlTagDetectorEffectsEngineIdeal";
 
   // Set the tool tip text
-  m_ToolTip = "This is an ideal detector effects engine - ideal energy resolution, no charge sharing, etc.\n"
+  m_ToolTip = "This is an ideal detector effects engine - ideal energy resolution, no charge trapping, no charge sharing, etc.\n"
     "It should be used in combination with the ideal energy calibrator.";
 
   // Set the module type

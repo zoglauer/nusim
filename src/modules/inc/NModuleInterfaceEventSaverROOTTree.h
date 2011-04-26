@@ -24,6 +24,7 @@
 // ROOT libs:
 #include "TFile.h"
 #include "TTree.h"
+#include "TH2.h"
 #include "TVector3.h"
 
 // MEGAlib libs:
@@ -64,6 +65,8 @@ class NModuleInterfaceEventSaverROOTTree
   //! WhatToStream: see NEvent::Stream
   virtual bool SaveEventTree(NEvent& Event);
 
+  virtual bool SaveResponse(NEvent& Event);
+
   //! Close the file
   virtual bool CloseROOTFile();
 
@@ -91,16 +94,22 @@ class NModuleInterfaceEventSaverROOTTree
   float Reference_Dec;
   float Pixsize;
 
+  //! Event list in ROOT TTree class
   TTree* m_EventTree;
 
+  //! Detector response in ROOT TH2 class
+  TH2D*  m_Response;
+
   double   m_Time;
-  int      m_Grade;
+  int      m_Origin;
   double   m_PrimaryEnergy;
   TVector3 m_PrimaryPosition, m_PrimaryDirection;
   double   m_RA, m_Dec;
   double   m_XPix, m_YPix;
-  int      m_Column, m_Row;
-  int      m_NTrigs;
+  int      m_TelID, m_DetID, m_Column, m_Row;
+  bool     m_BadDepthCal;
+  bool     m_DepthCut;
+  int      m_NTrigs, m_Grade;
   double   m_TrigEnergy, m_NonTrigEnergy, m_ReconstructedEnergy, m_Energies[9];
 
 #ifdef ___CINT___

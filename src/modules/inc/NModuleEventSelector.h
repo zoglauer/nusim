@@ -59,6 +59,16 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   //! Get the maximum depth
   double GetDepthMax() const { return m_DepthMax; }
 
+  //! Set the event selecton flag by bad depth calibration flag
+  void SetSelectByBadDepthCal(const bool SelectByBadDepthCal) { m_SelectByBadDepthCal = SelectByBadDepthCal; }
+  //! Get the event selecton flag by bad depth calibration flag
+  bool GetSelectByBadDepthCal() const { return m_SelectByBadDepthCal; }
+
+  //! Set the event selecton flag by depth cut
+  void SetSelectByDepthCut(const bool SelectByDepthCut) { m_SelectByDepthCut = SelectByDepthCut; }
+  //! Get the event selecton flag by depth cut
+  bool GetSelectByDepthCut() const { return m_SelectByDepthCut; }
+
   //! Save before the event selctions
   void SetSaveBeforeSelections(const bool SaveBeforeSelections) { m_SaveBeforeSelections = SaveBeforeSelections; }
   //! Return if we should save before event selections
@@ -103,11 +113,18 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
 
   //! The maximum depth
   double m_DepthMax;
+
+  //! The event selecton flag by bad depth calibration flag
+  bool m_SelectByBadDepthCal;
+  //! The event selecton flag by depth cut
+  bool m_SelectByDepthCut;
   
   //! True if we should save as fits file
   bool m_SaveAsFits;
   //! True if we should save as ROOT file
   bool m_SaveAsROOT;
+  //! True if we should save as ROOT file for NuSTAR response
+  bool m_SaveAsResponseROOT;
   //! True if we should save as dat file
   bool m_SaveAsDat;
   //! True if we should save before the event selection have been applied

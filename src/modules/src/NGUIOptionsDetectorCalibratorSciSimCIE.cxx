@@ -88,13 +88,18 @@ void NGUIOptionsDetectorCalibratorSciSimCIE::Create()
   AddFrame(m_OffsetTripleTrigger, LabelLayout);
 
   m_GainQuadrupleTrigger = new MGUIEEntry(this, "Gain for quadruple-trigger events:", false,
-				       dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->GetGainQuadrupleTrigger());
+					  dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->GetGainQuadrupleTrigger());
   AddFrame(m_GainQuadrupleTrigger, LabelLayout);
 
   m_OffsetQuadrupleTrigger = new MGUIEEntry(this, "Offset for quadruple-trigger events:", false,
-					 dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->GetOffsetQuadrupleTrigger());
+					    dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->GetOffsetQuadrupleTrigger());
   AddFrame(m_OffsetQuadrupleTrigger, LabelLayout);
 
+  m_DepthCutFile = new MGUIEFileSelector(this, "Choose a ROOT file for depth cut:",
+					 dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->GetDepthCutFileName());
+  m_DepthCutFile->SetFileType("ROOT file for depth cut", "*.root");
+
+  AddFrame(m_DepthCutFile, LabelLayout);
 
   PostCreate();
 }
@@ -149,6 +154,8 @@ bool NGUIOptionsDetectorCalibratorSciSimCIE::OnApply()
 
   dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->SetGainQuadrupleTrigger(m_GainQuadrupleTrigger->GetAsDouble());
   dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->SetOffsetQuadrupleTrigger(m_OffsetQuadrupleTrigger->GetAsDouble());
+
+  dynamic_cast<NModuleDetectorCalibratorSciSimCIE*>(m_Module)->SetDepthCutFileName(m_DepthCutFile->GetFileName());
 
   return true;
 }

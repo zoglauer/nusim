@@ -17,6 +17,7 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TSpline.h"
 
 // MEGAlib libs:
 #include "NGlobal.h"
@@ -69,6 +70,10 @@ class NModuleDetectorCalibratorSciSimCIE : public NModule, public NModuleInterfa
   //! Set the offset for quadruple-trigger events
   void   SetOffsetQuadrupleTrigger(double OffsetQuadrupleTrigger) { m_OffsetQuadrupleTrigger = OffsetQuadrupleTrigger; }
 
+  //! Set the ROOT file name of the depth cut
+  void SetDepthCutFileName(const TString DepthCutFileName)
+  { m_DepthCutFileName = DepthCutFileName; }
+
   //! Get the gain for single-trigger events
   double GetGainSingleTrigger() const { return m_GainSingleTrigger; }
   //! Get the offset for single-trigger events
@@ -86,12 +91,17 @@ class NModuleDetectorCalibratorSciSimCIE : public NModule, public NModuleInterfa
   //! Get the offset for quadruple-trigger events
   double GetOffsetQuadrupleTrigger() const { return m_OffsetQuadrupleTrigger; }
 
+  //! Get the ROOT file name of the depth cut
+  TString GetDepthCutFileName() const { return m_DepthCutFileName; }
+
   // protected methods:
  protected:
 
   // private methods:
  private:
 
+  //! Load ROOT TSpline3 object for depth cut
+  bool LoadDepthCutSpline();
 
 
   // protected members:
@@ -120,6 +130,23 @@ class NModuleDetectorCalibratorSciSimCIE : public NModule, public NModuleInterfa
   double m_GainQuadrupleTrigger;
   //! Offset for quadruple-trigger events
   double m_OffsetQuadrupleTrigger;
+
+  //! The ROOT file name for depth cut
+  TString   m_DepthCutFileName;
+  //! The ROOT file for depth cut
+  TFile*    m_DepthCutROOTFile;
+  //! The ROOT object name for depth cut with single-trigger events
+  TString   m_DepthCutSingleTriggerName;
+  //! The ROOT object for depth cut with single-trigger events
+  TSpline3* m_DepthCutSingleTrigger;
+  //! The ROOT object name for depth cut with double-trigger events
+  TString   m_DepthCutDoubleTriggerName;
+  //! The oROOT bject for depth cut with double-trigger events
+  TSpline3* m_DepthCutDoubleTrigger;
+
+  //! The offset in y-axis of depth plot for depth cut
+  double m_DepthCutOffsetY;
+
 
 
 #ifdef ___CINT___

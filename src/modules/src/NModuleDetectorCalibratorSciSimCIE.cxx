@@ -88,6 +88,11 @@ NModuleDetectorCalibratorSciSimCIE::NModuleDetectorCalibratorSciSimCIE(NSatellit
   // m_OffsetQuadrupleTrigger = 0.0;
   m_GainQuadrupleTrigger = 1.01066e+00;
   m_OffsetQuadrupleTrigger = -3.17478e-01;
+
+  m_DepthCutFileName = "$NUSIM/resource/data/DepthCut.root";
+
+  // 0.3 means typical energy resolution (FWHM) of observed pedestal signals
+  m_DepthCutOffsetY = -0.3;
 }
 
 
@@ -106,6 +111,62 @@ NModuleDetectorCalibratorSciSimCIE::~NModuleDetectorCalibratorSciSimCIE()
 bool NModuleDetectorCalibratorSciSimCIE::Initialize()
 {
   // Initialize the module
+  // Load the depth cut from ROOT file
+  MFile::ExpandFileName(m_DepthCutFileName);
+  if (LoadDepthCutSpline() == false) {
+    return false;
+  }
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ * Load ROOT TSpline3 object for depth cut
+ */
+bool NModuleDetectorCalibratorSciSimCIE::LoadDepthCutSpline()
+{
+  TDirectory *OrgDirectory = gDirectory;
+
+  m_DepthCutSingleTriggerName = "DepthCutNTrigs1Spline";
+  m_DepthCutDoubleTriggerName = "DepthCutNTrigs2Spline";
+
+  if ( MFile::Exists(m_DepthCutFileName) == false) {
+    cout << "ERROR: unable to find ROOT file for depth cut \""
+         << m_DepthCutFileName << "\"" << endl;
+    gDirectory = OrgDirectory;
+    return false;
+  }
+
+  m_DepthCutROOTFile = new TFile(m_DepthCutFileName.Data(), "READONLY");
+  if ( m_DepthCutROOTFile == 0 || m_DepthCutROOTFile->IsZombie() ) {
+    cout << "ERROR: unable to open ROOT file for depth cut \""
+         << m_DepthCutFileName << "\"" << endl;
+    gDirectory = OrgDirectory;
+    return false;
+  }
+
+  m_DepthCutSingleTrigger
+    = (TSpline3*) m_DepthCutROOTFile->Get(m_DepthCutSingleTriggerName.Data());
+  if (    m_DepthCutSingleTrigger == 0 || m_DepthCutSingleTrigger->IsZombie() ) {
+    cout << "ERROR: unable to get ROOT object for depth cut \""
+         << m_DepthCutSingleTriggerName << "\"" << endl;
+    m_DepthCutROOTFile->Print();
+    gDirectory = OrgDirectory;
+    return false;
+  }
+
+  m_DepthCutDoubleTrigger
+    = (TSpline3*) m_DepthCutROOTFile->Get(m_DepthCutDoubleTriggerName.Data());
+  if (    m_DepthCutDoubleTrigger == 0 || m_DepthCutDoubleTrigger->IsZombie() ) {
+    cout << "ERROR: unable to get ROOT object for depth cut \""
+         << m_DepthCutDoubleTriggerName << "\"" << endl;
+    m_DepthCutROOTFile->Print();
+    gDirectory = OrgDirectory;
+    return false;
+  }
 
   return true;
 }
@@ -161,12 +222,15 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
 
     for ( int j=0; j<9; ++j ) {
       Energies[j] = Niner.GetPostTriggerSampleSum(j+1) - Niner.GetPreTriggerSampleSum(j+1);
-      if ( Niner.GetTrigger(j+1) == true ) TrigEnergy    += Energies[j];
-      else                                 NonTrigEnergy += Energies[j];
+      if ( Niner.GetTrigger(j+1) == true ) {
+	TrigEnergy    += Energies[j];
+      } else {
+	NonTrigEnergy += Energies[j];
+      }
     }
 
     double ReconstructedEnergy;
-    int NTrigs = Event.GetNPixelTriggers();
+    int NTrigs = Niner.GetNTriggers();
 
     if ( NTrigs == 9 ) {
       ReconstructedEnergy = TrigEnergy;
@@ -186,12 +250,56 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
     H.SetEnergy(ReconstructedEnergy);
     H.SetEnergyResolution(0.0);
 
+
+
+    //====================================
+    // Set flag for bad depth calibration
+    //====================================
+
     for (unsigned int j = 0; j < Event.GetNInteractions(); ++j) {
       double InteractionPositionZ = Event.GetInteraction(j).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
       if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
 	   || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
 	H.SetBadDepthCalibration(true);
       }
+    }
+
+
+    //========================
+    // Set flag for depth cut
+    //========================
+    H.SetDepthCut(false); // valid event
+
+    if ( NTrigs == 1 ) {
+
+      double CutEnergyY = m_DepthCutOffsetY * sqrt(8.0 / (9.0-NTrigs));
+
+      if ( ReconstructedEnergy < m_DepthCutSingleTrigger->GetXmin() ) {
+	CutEnergyY += 0.0;
+      } else if ( ReconstructedEnergy > m_DepthCutSingleTrigger->GetXmax() ) {
+	CutEnergyY += m_DepthCutSingleTrigger->Eval(m_DepthCutSingleTrigger->GetXmax()) / m_DepthCutSingleTrigger->GetXmax() * ReconstructedEnergy;
+      } else {
+	CutEnergyY += m_DepthCutSingleTrigger->Eval(ReconstructedEnergy);
+      }
+
+      if ( NonTrigEnergy / (9 - NTrigs) < CutEnergyY )
+	H.SetDepthCut(true); // invalid event filtered out by depth cut
+
+    } else if ( NTrigs == 2 ) {
+
+      double CutEnergyY = m_DepthCutOffsetY * sqrt(8.0 / (9.0-NTrigs));
+
+      if ( ReconstructedEnergy < m_DepthCutDoubleTrigger->GetXmin() ) {
+	CutEnergyY += 0.0;
+      } else if ( ReconstructedEnergy > m_DepthCutDoubleTrigger->GetXmax() ) {
+	CutEnergyY += m_DepthCutDoubleTrigger->Eval(m_DepthCutDoubleTrigger->GetXmax()) / m_DepthCutDoubleTrigger->GetXmax() * ReconstructedEnergy;
+      } else {
+	CutEnergyY += m_DepthCutDoubleTrigger->Eval(ReconstructedEnergy);
+      }
+
+      if ( NonTrigEnergy / (9 - NTrigs) < CutEnergyY )
+	H.SetDepthCut(true);  // invalid event filtered out by depth cut
+
     }
 
     // Comment in if you comment out hit merging:
@@ -344,6 +452,11 @@ bool NModuleDetectorCalibratorSciSimCIE::ReadXmlConfiguration(MXmlNode* Node)
     m_OffsetQuadrupleTrigger = OffsetQuadrupleTriggerNode->GetValueAsDouble();
   }
 
+  MXmlNode* DepthCutFileNameNode = Node->GetNode("DepthCutFileName");
+  if (DepthCutFileNameNode != 0) {
+    m_DepthCutFileName = DepthCutFileNameNode->GetValue();
+  }
+
   return true;
 }
 
@@ -368,6 +481,9 @@ MXmlNode* NModuleDetectorCalibratorSciSimCIE::CreateXmlConfiguration()
 
   new MXmlNode(Node, "GainQuadrupleTrigger",   m_GainQuadrupleTrigger);
   new MXmlNode(Node, "OffsetQuadrupleTrigger", m_OffsetQuadrupleTrigger);
+
+  new MXmlNode(Node, "DepthCutFileName", CleanPath(m_DepthCutFileName));
+
 
   return Node;
 }

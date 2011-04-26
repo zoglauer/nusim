@@ -27,6 +27,7 @@
 // MEGAlib libs:
 #include "NGlobal.h"
 #include "MGUIEEntry.h"
+#include "MGUIEFileSelector.h"
 
 // NuSTAR libs
 #include "NModule.h"
@@ -83,6 +84,8 @@ class NGUIOptionsDetectorCalibratorSciSimCIE : public NGUIOptions
   //! Offset for quadruple-trigger events
   MGUIEEntry* m_OffsetQuadrupleTrigger;
 
+  //! ROOT file name for depth cut
+  MGUIEFileSelector* m_DepthCutFile;
 
   // private members:
  private:
