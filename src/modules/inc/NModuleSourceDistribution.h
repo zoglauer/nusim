@@ -61,6 +61,9 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! Determine which emission is next
   void DetermineNext();
   
+  //! Perform a time jump:
+  virtual void PerformTimeJump(const NTime& TimeJump);
+
   
   //! Set the pointing pattern output file name
   void SetPointingPatternFileName(TString PointingPatternFileName) { m_PointingPatternFileName = PointingPatternFileName; }

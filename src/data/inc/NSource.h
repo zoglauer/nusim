@@ -70,6 +70,9 @@ public:
   //! Return the time to the next photon emission of this source:
   NTime GetNextEmission() const { return m_NextEmission; }
 
+  //! Peform a time jump
+  void PerformTimeJump(const NTime& Jump) { m_NextEmission += Jump; }
+
   //! Return true, if this source has still photons for the emission
   bool IsActive() const { return m_IsActive; }
 

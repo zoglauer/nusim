@@ -140,6 +140,20 @@ void NModuleSourceDistribution::DetermineNext()
     }
   }
 }
+  
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NModuleSourceDistribution::PerformTimeJump(const NTime& TimeJump)
+{
+  //! Perform a time jump:
+
+  m_Time += TimeJump;
+  for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    m_Sources[s]->PerformTimeJump(TimeJump);
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
