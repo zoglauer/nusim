@@ -69,6 +69,8 @@ NModuleDetectorEffectsEngineSciSimCIE::NModuleDetectorEffectsEngineSciSimCIE(NSa
   m_Diagnostics = 0;
   
   m_ChargeInductionEfficiencyFileName = "$NUSIM/resource/data/CIE_450V_TypicalMuTau.root";
+  m_ChargeInductionEfficiencyROOTFile = 0;
+  m_ChargeInductionEfficiency = 0;
 
   m_PixelCenterPositionX = 0;
   m_PixelCenterPositionY = 0;
@@ -100,16 +102,13 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
 					   m_Satellite.GetDetectorPixelsX(), m_Satellite.GetDetectorPixelsY());
 
   // Load the charge induction efficiency
-  // m_ChargeInductionEfficiencyFileName = "$(NUSIM)/resource/data/CIE_300V.root";
   if ( m_ChargeInductionEfficiencyFileName.Contains("CIE_500V.root") == true ) {
-    mout << error
-	 << "=========================================================" << error
-	 << " ERROR in " << m_Name << error
-	 << "---------------------------------------------------------" << error
-         << "  " << m_ChargeInductionEfficiencyFileName.Data() << " is old CIE ROOT file!" << error
-	 << "  Choose the latest CIE ROOT file." << error
-	 << "---------------------------------------------------------" << error << error;
+    mgui << " ERROR in " << m_Name << "\n"
+         << "  " << m_ChargeInductionEfficiencyFileName.Data() << " is obsolete CIE ROOT file!\n"
+	 << "  Choose the latest CIE ROOT file." << error;
+    return false;
   }
+
   MFile::ExpandFileName(m_ChargeInductionEfficiencyFileName);
   if (LoadChargeInductionEfficiency() == false) {
     return false;
@@ -195,6 +194,18 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
   TDirectory *OrgDirectory = gDirectory;
 
   m_ChargeInductionEfficiencyHistName = "CIE";
+
+  if ( m_ChargeInductionEfficiencyROOTFile != 0 ) {
+    if ( m_ChargeInductionEfficiencyROOTFile->GetName() == m_ChargeInductionEfficiencyFileName ) {
+      mdebug << "CIE ROOT file name is the same. Skip to load CIE ROOT file." << show;
+      return true;
+    } else {
+      m_ChargeInductionEfficiencyROOTFile->Close();
+      delete m_ChargeInductionEfficiencyROOTFile;
+      m_ChargeInductionEfficiencyROOTFile = 0;
+      m_ChargeInductionEfficiency = 0;
+    }
+  }
 
   if ( MFile::Exists(m_ChargeInductionEfficiencyFileName) == false) {
     cout << "ERROR: unable to find charge induction efficiency file \""

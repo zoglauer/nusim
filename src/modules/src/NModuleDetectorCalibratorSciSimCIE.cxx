@@ -90,6 +90,9 @@ NModuleDetectorCalibratorSciSimCIE::NModuleDetectorCalibratorSciSimCIE(NSatellit
   m_OffsetQuadrupleTrigger = -3.17478e-01;
 
   m_DepthCutFileName = "$NUSIM/resource/data/DepthCut.root";
+  m_DepthCutROOTFile = 0;
+  m_DepthCutSingleTrigger = 0;
+  m_DepthCutDoubleTrigger = 0;
 
   // 0.3 means typical energy resolution (FWHM) of observed pedestal signals
   m_DepthCutOffsetY = -0.3;
@@ -133,6 +136,19 @@ bool NModuleDetectorCalibratorSciSimCIE::LoadDepthCutSpline()
   m_DepthCutSingleTriggerName = "DepthCutNTrigs1Spline";
   m_DepthCutDoubleTriggerName = "DepthCutNTrigs2Spline";
 
+  if ( m_DepthCutROOTFile != 0 ) {
+    if ( m_DepthCutROOTFile->GetName() == m_DepthCutFileName ) {
+      mout << "ROOT file name for depth cut is the same. Skip to load ROOT file for depth cut." << show;
+      return true;
+    } else {
+      m_DepthCutROOTFile->Close();
+      delete m_DepthCutROOTFile;
+      m_DepthCutROOTFile = 0;
+      m_DepthCutSingleTrigger = 0;
+      m_DepthCutDoubleTrigger = 0;
+    }
+  }
+
   if ( MFile::Exists(m_DepthCutFileName) == false) {
     cout << "ERROR: unable to find ROOT file for depth cut \""
          << m_DepthCutFileName << "\"" << endl;
@@ -168,6 +184,7 @@ bool NModuleDetectorCalibratorSciSimCIE::LoadDepthCutSpline()
     return false;
   }
 
+  gDirectory = OrgDirectory;
   return true;
 }
 
