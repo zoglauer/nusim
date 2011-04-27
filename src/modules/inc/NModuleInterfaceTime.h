@@ -47,9 +47,14 @@ class NModuleInterfaceTime
   virtual void SetTimeIdeal(const NTime& Ideal) {}
   //! Advance the ideal time
   virtual void AdvanceTimeIdeal(const NTime& Time) {}
-
   //! Get the ideal time
   virtual NTime GetTimeIdeal() { return NTime(); }
+
+  //! Set the effective observation time
+  virtual void SetEffectiveObservationTime(const NTime& Time) { }
+  //! Get the effective observation time
+  virtual NTime GetEffectiveObservationTime() { return NTime(); }
+
 
   //! Get the time as measured by the instrument
   virtual NTime GetTimeSatelliteBus() { return NTime(); }

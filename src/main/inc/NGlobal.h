@@ -79,6 +79,15 @@ extern const double mm;
 extern const double cm2;
 extern const double mm2;
 
+extern const double ns;
+extern const double us;
+extern const double ms;
+extern const double s;
+extern const double minute;
+extern const double hour;
+extern const double day;
+extern const double year;
+
 
 //! \brief Initialization of everything global
 //! This is a global class taking care of initialization of ROOT and some global constants

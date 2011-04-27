@@ -60,6 +60,9 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   //! Counting starts at 0!
   virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0);
 
+  //! Start a new orbit at the given time with the given time jump...
+  virtual void StartNewOrbit(const NTime& TimeJump);
+  
   //! Return a reference to the initial pointings
   vector<NPointing>& GetInitialPointingsByRef() { return m_InitialPointings; }
 
@@ -72,6 +75,11 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   bool GetAbsoluteTime() const { return m_AbsoluteTime; }
   //! Set if the pointing are absolute
   void SetAbsoluteTime(bool AbsoluteTime) { m_AbsoluteTime = AbsoluteTime; }
+
+  //! Return true if we are in continous roll mode
+  bool GetContinuousRollMode() const { return m_ContinuousRollMode; }
+  //! Set if we are in continous roll mode
+  void SetContinuousRollMode(bool ContinuousRollMode) { m_ContinuousRollMode = ContinuousRollMode; }
 
   //! Import pointings
   bool ImportPointings(TString FileName);
@@ -149,6 +157,13 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   //! The pertubed alignments in space as a function of time...
   vector<NPointingJitterDBEntry> m_PointingJitters;   
 
+
+  //! True if we are in continous roll mode
+  bool m_ContinuousRollMode;
+  //! The inital roll in continuous roll mode
+  double m_ContinousRollModeInitialRoll;
+  //! The total roll per second in continuous roll mode
+  double m_ContinousRollModeRollPerSecond;
   
   /*
   //! The last pointing call for the random walk

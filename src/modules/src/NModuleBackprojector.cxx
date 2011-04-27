@@ -98,7 +98,7 @@ bool NModuleBackprojector::Initialize()
 
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
                                                                                  m_Satellite.GetPointing(0).GetDec());
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetTimeIdeal());
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
                                                                    
                                                                                     
   return true;
@@ -142,7 +142,7 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
     dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddBackprojection(RA, DEC);
   }
   dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddEnergy(Energy);
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(Event.GetTime());
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
 
   //cout<<"Energy: "<<Energy<<endl;
 
@@ -157,7 +157,7 @@ bool NModuleBackprojector::Finalize()
 {
   // Finalize the module
   
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetTimeIdeal());
+  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
   
   return true;
 }

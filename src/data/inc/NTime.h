@@ -84,6 +84,8 @@ class NTime
   //! The * operator with a double
   NTime operator*(const double& Scalar) const;
 
+  //! The / operator with a time
+  double operator/(const NTime& Time) const;
   //! The / operator with a double
   NTime operator/(const double& Scalar) const;
 

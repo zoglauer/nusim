@@ -43,6 +43,7 @@ ClassImp(NGUIOptionsPointingPredefined)
 
 const int NGUIOptionsPointingPredefined::c_Import   = 850;
 const int NGUIOptionsPointingPredefined::c_Absolute = 851;
+const int NGUIOptionsPointingPredefined::c_Roll     = 852;
 
   
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,15 +77,25 @@ void NGUIOptionsPointingPredefined::Create()
   TGLayoutHints* BasicLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX, 20, 20, 10, 0);
 
 
-  m_AbsoluteTime = 
+  m_AbsoluteTime =
     new TGCheckButton(this, "Pointing times are absolute. Otherwise they are relative to the observation time set in the supervisor (they do not need to add up to anything).", c_Absolute);
   m_AbsoluteTime->Associate(this);
   if (dynamic_cast<NModulePointingPredefined*>(m_Module)->GetAbsoluteTime() == true) {
     m_AbsoluteTime->SetState(kButtonDown);
   } else {
-    m_AbsoluteTime->SetState(kButtonUp);    
+    m_AbsoluteTime->SetState(kButtonUp);
   }
   AddFrame(m_AbsoluteTime, BasicLayout);
+
+  m_TurnOffContinuousRoll =
+    new TGCheckButton(this, "Turn off the continous roll of the spacecraft (for testing only). If this mode is on, only the FIRST roll in the below list is used, and this initial roll is modified at ~1 deg per day", c_Roll);
+  m_TurnOffContinuousRoll->Associate(this);
+  if (dynamic_cast<NModulePointingPredefined*>(m_Module)->GetContinuousRollMode() == true) {
+    m_TurnOffContinuousRoll->SetState(kButtonUp);
+  } else {
+    m_TurnOffContinuousRoll->SetState(kButtonDown);
+  }
+  AddFrame(m_TurnOffContinuousRoll, BasicLayout);
 
  
   m_PointingViewer = new TGCanvas(this, 1200, 160);
@@ -290,7 +301,12 @@ bool NGUIOptionsPointingPredefined::OnApply()
   if (m_AbsoluteTime->GetState() == kButtonDown) {
     dynamic_cast<NModulePointingPredefined*>(m_Module)->SetAbsoluteTime(true);
   } else {
-    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetAbsoluteTime(false);    
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetAbsoluteTime(false);
+  }
+  if (m_TurnOffContinuousRoll->GetState() == kButtonDown) {
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousRollMode(false);
+  } else {
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousRollMode(true);
   }
   
 	return true;

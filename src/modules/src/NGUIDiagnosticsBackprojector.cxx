@@ -59,8 +59,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_MaxRa = 10;
   m_BinSizeRa = PixelSize/60;
   
+  m_Area = 0;
+  m_Time.SetSeconds(0);
+
   // Add all histograms and canvases below
-  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T = ") + m_Time.ToString(), 
+  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T_{eff} = ") + m_Time.ToString(), 
                               int(m_BinSizeRa*(m_MaxRa-m_MinRa)), m_MinRa, m_MaxRa, 
                               int(m_BinSizeDec*(m_MaxDec-m_MinDec)), m_MinDec, m_MaxDec);
   m_Backprojection->SetXTitle("RA [deg]");
@@ -80,9 +83,6 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
 
   m_BackprojectionCanvas = 0;
   m_EnergyCanvas = 0;
-
-  m_Area = 0;
-  m_Time.SetSeconds(0);
   
   m_InitialRa = 0;
   m_InitialDec = 0;
@@ -339,7 +339,7 @@ void NGUIDiagnosticsBackprojector::Update()
         m_Backprojection->Fill(m_Ra[i], m_Dec[i]);
       }
     }
-    m_Backprojection->SetTitle(TString("Backprojected hits after T = ") + m_Time.ToString());
+    m_Backprojection->SetTitle(TString("Backprojected hits after T_{eff} = ") + m_Time.ToString());
     m_BackprojectionCanvas->GetCanvas()->Modified();
     m_BackprojectionCanvas->GetCanvas()->Update();
     gSystem->ProcessEvents();

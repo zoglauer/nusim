@@ -74,6 +74,19 @@ void NPointing::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+void NPointing::SetRoll(double Roll)
+{  
+  //! Set a new roll
+  
+  m_Empty = false;
+  m_Roll = Roll;
+  RaDecToQuaternion();  
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NPointing::QuaternionToRaDec()
 {
   // Rotate unite vector with quaternion to calculate Ra, Dec.

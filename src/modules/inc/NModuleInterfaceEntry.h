@@ -50,6 +50,9 @@ class NModuleInterfaceEntry
   //! Force the time of the next event
   virtual void ForceTimeOfNextEvent(const NTime& Time) { m_Time = Time; } 
 
+  //! Perform a time jump:
+  virtual void PerformTimeJump(const NTime& TimeJump) { m_Time += TimeJump; } 
+
   // protected methods:
  protected:
 

@@ -300,6 +300,17 @@ NTime NTime::operator*(const double& Scale) const
 ////////////////////////////////////////////////////////////////////////////////
 
 
+double NTime::operator/(const NTime& Time) const
+{
+  //! The / operator with a time
+
+  return m_Seconds/Time.GetSeconds();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 NTime NTime::operator/(const double& Scale) const
 {
   //! The / operator with a double

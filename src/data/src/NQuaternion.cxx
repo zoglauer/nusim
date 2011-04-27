@@ -777,10 +777,12 @@ MVector NQuaternion::ToEuler() const
 {
          MVector Euler;
 
+         /*
          double sqw = m_R*m_R;
          double sqx = m_V[0]*m_V[0];
          double sqy = m_V[1]*m_V[1];
          double sqz = m_V[2]*m_V[2];
+         */
 		 
 		 double m11 = 2.0*m_R*m_R + 2.0*m_V[0]*m_V[0] - 1.0;
 		 double m12 = 2.0*m_V[0]*m_V[1] + 2.0*m_R*m_V[2];

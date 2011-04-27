@@ -544,7 +544,7 @@ TString MFile::RelativeFileName(TString RelFileName, TString AbsFileName)
   MFile::ExpandFileName(RelFileName);
   MFile::ExpandFileName(AbsFileName);
 
-  int MinLength = min(RelFileName.Last('/'), AbsFileName.Last('/'));
+  int MinLength = std::min(RelFileName.Last('/'), AbsFileName.Last('/'));
   
   int PreviousSlash = -1;
   for (int i = 0; i <= MinLength; ++i) {

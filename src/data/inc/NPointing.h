@@ -51,6 +51,8 @@ class NPointing
 
   //! Set right ascension and declination (do automatic conversion to quaternion)
   void SetRaDecRoll(double Ra, double Dec, double Roll) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; m_Roll = Roll; RaDecToQuaternion(); }
+  //! Set a new roll
+  void SetRoll(double Roll);
   //! Set quaternion (do automatic conversion to quaternion)
   void SetQuaternion(const NQuaternion& Q) { m_Empty = false; m_Q = Q; QuaternionToRaDec(); }
   //! Set the time spent in this pointing

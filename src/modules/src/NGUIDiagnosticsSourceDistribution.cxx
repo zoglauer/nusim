@@ -109,6 +109,8 @@ void NGUIDiagnosticsSourceDistribution::AddOrigin(double Ra, double Dec)
 {
   //! Add data to the initial direction histogram 
 
+  //cout<<"Origin: "<<Ra<<":"<<Dec<<":"<<m_InitialRa<<":"<<m_InitialDec<<endl;
+
   m_Origin->Fill(Ra - m_InitialRa, Dec - m_InitialDec);
 }
 

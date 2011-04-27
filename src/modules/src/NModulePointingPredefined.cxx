@@ -84,6 +84,8 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
   m_InitialPointings.push_back(N);
   
   m_MotionPattern = c_MotionPatternNone;
+
+  m_ContinuousRollMode = true;
 }
 
 
@@ -148,7 +150,9 @@ bool NModulePointingPredefined::Initialize()
   //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
   //}
 
-
+  m_ContinousRollModeInitialRoll = m_SequencedInitialPointings.front().GetRoll();
+  m_ContinousRollModeRollPerSecond = 360*deg/year;
+  
   return true;
 }
 
@@ -271,6 +275,26 @@ NTime NModulePointingPredefined::GetPointingSlewTime(const NTime& First, const N
   
   return m_SequencedInitialPointings[IndexAfterFirst + SlewID].GetTime();
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+  
+
+void NModulePointingPredefined::StartNewOrbit(const NTime& TimeJump)
+{
+  //! Start a new orbit at the given time with the given time jump...
+
+  m_TimeWrapPointing += TimeJump;
+
+  // Reset the jitters to the new orbit
+  m_StartIndexPointingJitters = 0;
+  m_TimeWrapSequencedInitialPointings = TimeJump;
+  
+  //! Advance the pointing time:
+  for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
+    m_SequencedInitialPointings[p].SetTime(m_SequencedInitialPointings[p].GetTime() + TimeJump);
+  }
+}
   
   
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,6 +355,9 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
     if (m_MotionPattern == c_MotionPatternNone) {
       m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
+      if (m_ContinuousRollMode == true) {
+        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetSeconds()*m_ContinousRollModeRollPerSecond);
+      }
     } else if (m_MotionPattern == c_MotionPatternDB) {
       // Now apply the pointing jitter
       
@@ -357,7 +384,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
             m_StartIndexPointingJitters = NextIndex;      
           }
         } while (true);
-        // Start index is always smaller the the last one, except when they are identical, then rewind:
+        // Start index is always smaller than the last one, except when they are identical, then rewind:
         if (m_StartIndexPointingJitters == m_PointingJitters.size() - 1) m_StartIndexPointingJitters = 0; 
       } else {
         // If the time is lower than 0 we alwasy start with the first index, in order to have smooth start:
@@ -387,7 +414,11 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
       // Apply:
       //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].ToString()<<endl;
-      m_Pointing.SetQuaternion(m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion()*LatestPointingJitters.GetQuaternion());
+      m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
+      if (m_ContinuousRollMode == true) {
+        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetSeconds()*m_ContinousRollModeRollPerSecond);
+      }
+      m_Pointing.SetQuaternion(m_Pointing.GetQuaternion()*LatestPointingJitters.GetQuaternion());
       //m_Pointing.SetQuaternion(LatestPointingJitters.GetQuaternion()*m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion());
     
     } // jitter end
@@ -507,6 +538,11 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
     m_AbsoluteTime = AbsoluteTimeNode->GetValueAsBoolean();
   }
 
+  MXmlNode* ContinuousRollModeNode = Node->GetNode("ContinuousRollMode");
+  if (ContinuousRollModeNode != 0) {
+    m_ContinuousRollMode = ContinuousRollModeNode->GetValueAsBoolean();
+  }
+
   if (m_InitialPointings.size() == 0) {
     NPointing N;
     N.SetRaDecRoll(180.0*60, 0.0, 180.0*60);
@@ -533,7 +569,8 @@ MXmlNode* NModulePointingPredefined::CreateXmlConfiguration()
   }
   new MXmlNode(Node, "PointingJitterDBFileName", CleanPath(m_PointingJitterDBFileName));
   new MXmlNode(Node, "AbsoluteTime", m_AbsoluteTime);
-
+  new MXmlNode(Node, "ContinuousRollMode", m_ContinuousRollMode);
+  
   return Node;
 }
 

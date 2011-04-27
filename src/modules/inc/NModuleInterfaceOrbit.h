@@ -46,6 +46,16 @@ class NModuleInterfaceOrbit
   //! Get the optics orientation at time t
   virtual NOrbit GetOrbit(NTime t) { return NOrbit(); }
 
+  //! Get the start time of the next black-out
+  virtual NTime StartOfNextBlackout(NTime t) { return NTime(0); }
+  //! Get the end time of the next black-out
+  virtual NTime EndOfNextBlackout(NTime t) { return NTime(0); }
+  //! Return true if we are within blackout
+  virtual bool IsBlackout(NTime t) { return false; }
+  //! Get the number of blackouts in between
+  virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return 0; }
+
+  //! CalculateNextOrbit
 
   // protected methods:
  protected:
@@ -61,7 +71,6 @@ class NModuleInterfaceOrbit
 
   // private members:
  private:
-
 
 
 

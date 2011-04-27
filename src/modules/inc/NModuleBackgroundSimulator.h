@@ -81,6 +81,9 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   //! Set the file name of the shield hit distribution
   void SetShieldHitSpectrum(const TString FileName) { m_ShieldHitSpectrum = FileName; }
 
+  //! Perform a time jump:
+  virtual void PerformTimeJump(const NTime& TimeJump);
+
 
   // protected methods:
  protected:

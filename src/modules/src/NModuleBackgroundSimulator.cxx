@@ -187,7 +187,7 @@ bool NModuleBackgroundSimulator::AnalyzeEvent(NEvent& Event)
   bool Return = m_NextComponent->AnalyzeEvent(Event);
 
   if (Return == true) {
-    if ( m_NextComponent == m_ShieldOnly) {
+    if (m_NextComponent == m_ShieldOnly) {
       ++m_NShieldOnlyHits;
     } else if (m_NextComponent == m_Aperture) {
       ++m_NApertureHits;
@@ -199,6 +199,20 @@ bool NModuleBackgroundSimulator::AnalyzeEvent(NEvent& Event)
   DetermineNext();
 
   return Return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NModuleBackgroundSimulator::PerformTimeJump(const NTime& TimeJump)
+{
+  //! Perform a time jump:
+
+  m_ShieldOnly->PerformTimeJump(TimeJump);
+  m_Aperture->PerformTimeJump(TimeJump);
+  m_DataBase->PerformTimeJump(TimeJump);
+
+  m_Time += TimeJump;
 }
 
 

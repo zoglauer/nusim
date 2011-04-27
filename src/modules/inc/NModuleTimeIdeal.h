@@ -53,9 +53,15 @@ class NModuleTimeIdeal : public NModule, public NModuleInterfaceTime
   virtual void SetTimeIdeal(const NTime& Ideal) { m_Ideal = Ideal; }
   //! Advance the ideal time
   virtual void AdvanceTimeIdeal(const NTime& Ideal) { m_Ideal += Ideal; }
-
   //! Get the ideal time
   virtual NTime GetTimeIdeal() { return m_Ideal; }
+
+
+  //! Set the effective observation time
+  virtual void SetEffectiveObservationTime(const NTime& Time) { m_EffectiveObservationTime = Time; }
+  //! Get the effective observation time
+  virtual NTime GetEffectiveObservationTime() { return m_EffectiveObservationTime; }
+
 
   //! Get the time as measured by the instrument
   virtual NTime GetTimeSatelliteBus();
@@ -90,9 +96,10 @@ class NModuleTimeIdeal : public NModule, public NModuleInterfaceTime
 
   // private members:
  private:
+  //! The absolute time
   NTime m_Ideal;
-
-
+  //! The effective observation time;
+  NTime m_EffectiveObservationTime;
 
 #ifdef ___CINT___
  public:

@@ -99,6 +99,8 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleObservatoryLoader.o \
 	$(LB)/NModuleObservatorySaver.o \
 	$(LB)/NModuleOrbitStationary.o \
+	$(LB)/NModuleOrbitEngine.o \
+	$(LB)/NGUIOptionsOrbitEngine.o \
 	$(LB)/NGUIOptionsSinglePointing.o \
 	$(LB)/NGUIOptionsPointingPredefined.o \
 	$(LB)/NModulePointingPredefined.o \

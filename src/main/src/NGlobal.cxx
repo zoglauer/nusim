@@ -93,12 +93,21 @@ const double arcmin = 1.0;  // default unit for angles
 const double arcsec = 1.0/60.0;
 const double rad = 180.0/c_Pi * 60.0;
 
-extern const double m = 1000.0;
-extern const double cm = 10.0;
-extern const double mm = 1.0;
+const double m = 1000.0;
+const double cm = 10.0;
+const double mm = 1.0;
 
-extern const double cm2 = 100.0;
-extern const double mm2 = 1.0;
+const double cm2 = 100.0;
+const double mm2 = 1.0;
+
+const double ns       = 0.000000001;
+const double us       = 0.000001;
+const double ms       = 0.001;
+const double s        = 1.0;
+const double minute   = 60.0;
+const double hour     = 3600.0;
+const double day      = 24.0*hour;
+const double year      = 365.24*day;
 
 NGlobal g_Global;
 

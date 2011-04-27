@@ -85,9 +85,16 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
   //! Be the facade for the modules, i.e. implement all interfaces
 
-  //! Get the optics orientation at time t
+  //! Get the orbit at time t
   virtual NOrbit GetOrbit(const NTime& t) { return m_Orbit->GetOrbit(t); }
-
+  //! Get the start time of the next black-out
+  virtual NTime StartOfNextBlackout(NTime t) { return m_Orbit->StartOfNextBlackout(t); }
+  //! Get the end time of the next black-out
+  virtual NTime EndOfNextBlackout(NTime t) { return m_Orbit->EndOfNextBlackout(t); }
+  //! Return true if we are within blackout
+  virtual bool IsBlackout(NTime t) { return m_Orbit->IsBlackout(t); }
+  //! Get the number of blackouts in between
+  virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return m_Orbit->GetBlackoutDuration(t1, t2); }
 
   //! Get all orientations
   virtual NAlignmentsDBEntry GetAllAlignments(const NTime& t) { return m_Orientations->GetAllAlignments(t); }
@@ -255,11 +262,13 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual void SetTimeIdeal(const NTime& Ideal) { m_Time->SetTimeIdeal(Ideal); }
   //! Advance the ideal time
   virtual void AdvanceTimeIdeal(const NTime& Time) { m_Time->AdvanceTimeIdeal(Time); }
-
-
-
   //! Get the ideal time
   virtual NTime GetTimeIdeal() { return m_Time->GetTimeIdeal(); }
+
+  //! Set the effective observation time
+  virtual void SetEffectiveObservationTime(const NTime& Time) { m_Time->SetEffectiveObservationTime(Time); }
+  //! Get the effective observation time
+  virtual NTime GetEffectiveObservationTime() { return m_Time->GetEffectiveObservationTime(); }
 
   //! Get the time as measured by the instrument
   virtual NTime GetTimeSatelliteBus() { return m_Time->GetTimeSatelliteBus(); }

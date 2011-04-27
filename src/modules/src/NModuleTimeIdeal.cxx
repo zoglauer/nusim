@@ -83,7 +83,8 @@ bool NModuleTimeIdeal::Initialize()
   // Initialize the module 
 
   m_Ideal = 0;
-
+  m_EffectiveObservationTime = 0;
+  
   return true;
 }
 

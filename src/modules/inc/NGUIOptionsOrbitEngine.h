@@ -1,5 +1,5 @@
 /*
- * NGUIOptionsPointingPredefined.h
+ * NGUIOptionsOrbitEngine.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NGUIOptionsPointingPredefined__
-#define __NGUIOptionsPointingPredefined__
+#ifndef __NGUIOptionsOrbitEngine__
+#define __NGUIOptionsOrbitEngine__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,6 @@
 #include <TGButton.h>
 #include <TString.h>
 #include <TGClient.h>
-#include <TGTab.h>
-#include <TGCanvas.h>
 
 // MEGAlib libs:
 #include "NGlobal.h"
@@ -34,8 +32,6 @@
 // NuSTAR libs
 #include "NModule.h"
 #include "NGUIOptions.h"
-#include "NGUIOptionsSource.h"
-#include "NGUIOptionsSinglePointing.h"
 
 // Forward declarations:
 
@@ -43,14 +39,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NGUIOptionsPointingPredefined : public NGUIOptions
+class NGUIOptionsOrbitEngine : public NGUIOptions
 {
   // public Session:
  public:
   //! Default constructor
-  NGUIOptionsPointingPredefined(NModule* Module);
+  NGUIOptionsOrbitEngine(NModule* Module);
   //! Default destructor
-  virtual ~NGUIOptionsPointingPredefined();
+  virtual ~NGUIOptionsOrbitEngine();
 
   //! Process all button, etc. messages
   virtual bool ProcessMessage(long Message, long Parameter1, long Parameter2);
@@ -58,48 +54,27 @@ class NGUIOptionsPointingPredefined : public NGUIOptions
   //! The creation part which gets overwritten
   virtual void Create();
 
-  static const int c_Import;
-  static const int c_Absolute;
-  static const int c_Roll;
-
-  
   // protected methods:
  protected:
 
   //! Actions after the Apply or OK button has been pressed
 	virtual bool OnApply();
 
-  //! Import a pointing list
-  bool OnImport();
-  
-  //! Update the poitning viewer
-  void UpdateViewer();
 
   // protected members:
  protected:
+  MGUIEEntry* m_OrbitDuration;
+  MGUIEEntry* m_BlackoutDuration;
+
+
 
   // private members:
  private:
-  //! The pointing viewer
-  TGCanvas* m_PointingViewer;
-   
-  //! The single pointing GUIs
-  vector<NGUIOptionsSinglePointing*> m_SinglePointings;
-
-  //! Are the times absolute or relative
-  TGCheckButton* m_AbsoluteTime;
-  //! The continous roll of the space craft in celestial coordinates
-  TGCheckButton* m_TurnOffContinuousRoll;
-  
-  //! Pointing jitter DB selector
-  MGUIEFileSelector* m_PointingJitterDB;
-
-
 
 
 #ifdef ___CINT___
  public:
-  ClassDef(NGUIOptionsPointingPredefined, 1) // basic class for dialog windows
+  ClassDef(NGUIOptionsOrbitEngine, 1) // basic class for dialog windows
 #endif
 
 };

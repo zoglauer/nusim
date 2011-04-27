@@ -53,9 +53,12 @@ class NModuleInterfacePointing
   virtual unsigned int GetNPointingSlews(NTime First, NTime Second) { return 0; }
   
   //! Return the time of the given pointing slew between the two times. 
-  //! If multiple slews occur between the time, use ID to access the first , second, etc slew time
+  //! If multiple slews occur between the time, use ID to access the first, second, etc slew time
   //! Counting starts at 0!
   virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0) { return NTime(0); }
+
+  //! Start a new orbit at the given time with the given time jump...
+  virtual void StartNewOrbit(const NTime& TimeJump) {}
 
   // protected methods:
  protected:
