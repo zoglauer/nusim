@@ -87,6 +87,8 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
   //! Get the orbit at time t
   virtual NOrbit GetOrbit(const NTime& t) { return m_Orbit->GetOrbit(t); }
+  //! Get the orbit duration
+  NTime GetOrbitDuration() const { return m_Orbit->GetOrbitDuration(); }
   //! Get the start time of the next black-out
   virtual NTime StartOfNextBlackout(NTime t) { return m_Orbit->StartOfNextBlackout(t); }
   //! Get the end time of the next black-out

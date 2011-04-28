@@ -98,7 +98,7 @@ void NGUIDiagnosticsMain::Create()
     m_MainTab->AddTab(m_DiagnosticTabs[d]->GetTabTitle(), m_DiagnosticTabs[d]);
   }
 
-  m_ObservationTime = new TGLabel(this, "Passed observation time: 0 sec");
+  m_ObservationTime = new TGLabel(this, "Passed time: total observation time: 0 sec - effective observation time: 0 sec");
   TGLayoutHints* ObservationTimeLayout =  
     new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsCenterX, 10, 10, 20, 0);
   AddFrame(m_ObservationTime, ObservationTimeLayout);
@@ -165,7 +165,7 @@ void NGUIDiagnosticsMain::Update()
   //! Update all tabs
 
   ostringstream ObsText;
-  ObsText<<"Passed observation time: "<<m_Satellite.GetTimeIdeal();
+  ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTimeIdeal()<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime();
   double Elapsed = m_Timer.GetElapsed();
   if (Elapsed < 3) {
     ObsText<<"   (You are updating this window very fast (dT="<<Elapsed<<" sec) --- this is very CPU consuming...)";

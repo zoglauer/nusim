@@ -508,11 +508,11 @@ bool NSupervisor::Run()
     // Take care of blackouts:
     if (m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), TimeOfNextEvent) != NTime(0)) {
       NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
-      cout<<"Blackout detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<endl;
+      cout<<"Blackout detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<"("<<m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), TimeOfNextEvent)<<", "<<m_Satellite.GetTimeIdeal()<<")"<<endl;
       BlackoutTime += BlackoutDuration;
       if (SourceStart != 0) SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
       if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(BlackoutDuration + 100*ns);
-      Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
+      Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent), BlackoutDuration);
       m_Satellite.SetTimeIdeal(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
       
       StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);

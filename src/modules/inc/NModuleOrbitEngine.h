@@ -49,14 +49,14 @@ class NModuleOrbitEngine : public NModule, public NModuleInterfaceOrbit
   virtual NOrbit GetOrbit(NTime Time);
 
   //! Get the orbit duration
-  NTime GetOrbitDuration() const { return m_OrbitDuration; }
+  virtual NTime GetOrbitDuration() const { return m_OrbitDuration; }
   //! Set the orbit duration
-  void SetOrbitDuration(const NTime& Time) { m_OrbitDuration = Time; }
+  virtual void SetOrbitDuration(const NTime& Time) { m_OrbitDuration = Time; }
 
   //! Get the blackout duration
-  NTime GetBlackoutDuration() const { return m_BlackoutDuration; }
+  virtual NTime GetBlackoutDuration() const { return m_BlackoutDuration; }
   //! Set the blackout duration
-  void SetBlackoutDuration(const NTime& Time) { m_BlackoutDuration = Time; }
+  virtual void SetBlackoutDuration(const NTime& Time) { m_BlackoutDuration = Time; }
 
   
   //! Get the start time of the next black-out

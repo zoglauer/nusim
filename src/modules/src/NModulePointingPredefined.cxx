@@ -111,6 +111,8 @@ bool NModulePointingPredefined::Initialize()
   m_StartIndexPointingJitters = 0;
   m_TimeWrapPointingJitters = 0.0;
 
+  m_BlackoutTime.SetSeconds(0);
+  
   if (m_MotionPattern == c_MotionPatternDB) {
     if (MFile::Exists(m_PointingJitterDBFileName) == false) {
       mgui<<"Calibrated metrology DB does not exist!"<<error;
@@ -146,6 +148,10 @@ bool NModulePointingPredefined::Initialize()
     }
   }
   
+  
+  for (unsigned int j = 0; j < m_PointingJitters.size(); ++j) {
+    m_PointingJitters[j].SetTime(NTime(j*m_Satellite.GetOrbitDuration().GetSeconds()/m_PointingJitters.size()));
+  }
   //for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
   //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
   //}
@@ -280,20 +286,11 @@ NTime NModulePointingPredefined::GetPointingSlewTime(const NTime& First, const N
 ////////////////////////////////////////////////////////////////////////////////
   
 
-void NModulePointingPredefined::StartNewOrbit(const NTime& TimeJump)
+void NModulePointingPredefined::StartNewOrbit(const NTime& RestartTime, const NTime& TimeJump)
 {
   //! Start a new orbit at the given time with the given time jump...
 
-  m_TimeWrapPointing += TimeJump;
-
-  // Reset the jitters to the new orbit
-  m_StartIndexPointingJitters = 0;
-  m_TimeWrapSequencedInitialPointings = TimeJump;
-  
-  //! Advance the pointing time:
-  for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
-    m_SequencedInitialPointings[p].SetTime(m_SequencedInitialPointings[p].GetTime() + TimeJump);
-  }
+  m_BlackoutTime += TimeJump;
 }
   
   
@@ -304,6 +301,9 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
 { 
   // Return the pointing of the satellite at a given time
 
+  // Correct for blackouts :)
+  NTime PointingTime = t - m_BlackoutTime;
+  
   if (m_Time != t) {
     bool Interpolate = false;
 
@@ -313,9 +313,9 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     // PART 1: Find the initial pointing:
     
     if (t.GetSeconds() >= 0 && m_SequencedInitialPointings.size() > 1) {
-      if (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > t) {
+      if (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
         m_StartIndexSequencedInitialPointings = 0;
-        while (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > t) {
+        while (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
           m_TimeWrapSequencedInitialPointings -= m_SequencedInitialPointings.back().GetTime();
         }
       }
@@ -329,7 +329,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
           NextIndex = 0;
           m_TimeWrapSequencedInitialPointings += m_SequencedInitialPointings.back().GetTime();
         }
-        if (m_SequencedInitialPointings[NextIndex].GetTime() + m_TimeWrapSequencedInitialPointings > t) {
+        if (m_SequencedInitialPointings[NextIndex].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
           break;
         } else {
           m_StartIndexSequencedInitialPointings = NextIndex;      
@@ -348,8 +348,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       m_StartIndexPointingJitters = 0;
     }
     
-    
-    
+   
     
     // PART 2: Move!
     
@@ -361,13 +360,14 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     } else if (m_MotionPattern == c_MotionPatternDB) {
       // Now apply the pointing jitter
       
+      // Normalize time to within [0.. max jitter time]
+      NTime JitterTime = t - m_PointingJitters.back().GetTime()*int(t/m_PointingJitters.back().GetTime());
+      
       // Retrieve latest perturbed alignments
-      if (t.GetSeconds() >= 0 && m_PointingJitters.size() > 1) {
-        if (m_PointingJitters[m_StartIndexPointingJitters].GetTime() + m_TimeWrapPointingJitters > t) {
+      if (JitterTime.GetSeconds() >= 0 && m_PointingJitters.size() > 1) {
+        // Start search from the beginning --- should happen rarely
+        if (m_PointingJitters[m_StartIndexPointingJitters].GetTime() > JitterTime) {
           m_StartIndexPointingJitters = 0;
-          while (m_PointingJitters[m_StartIndexPointingJitters].GetTime() + m_TimeWrapPointingJitters > t) {
-            m_TimeWrapPointingJitters -= m_PointingJitters.back().GetTime();
-          }
         }
 
         unsigned int NextIndex = 0;
@@ -376,14 +376,15 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
           // If we reached the end of the array, rewind
           if (NextIndex >= m_PointingJitters.size()) {
             NextIndex = 0;
-            m_TimeWrapPointingJitters += m_PointingJitters.back().GetTime();
+            cout<<"Jittering: We tried to go beyond the last index without finding the correct jitter... jittertime: "<<JitterTime<<" last index time: "<<m_PointingJitters.back().GetTime()<<endl;
           }
-          if (m_PointingJitters[NextIndex].GetTime() + m_TimeWrapPointingJitters > t) {
+          if (m_PointingJitters[NextIndex].GetTime() > JitterTime) {
             break;
           } else {
             m_StartIndexPointingJitters = NextIndex;      
           }
         } while (true);
+        
         // Start index is always smaller than the last one, except when they are identical, then rewind:
         if (m_StartIndexPointingJitters == m_PointingJitters.size() - 1) m_StartIndexPointingJitters = 0; 
       } else {
@@ -411,6 +412,8 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
           LatestPointingJitters = m_PointingJitters[m_StartIndexPointingJitters];
         }
       }
+    
+      //cout<<t<<" - JitterIndex: "<<m_StartIndexPointingJitters<<endl;
     
       // Apply:
       //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].ToString()<<endl;

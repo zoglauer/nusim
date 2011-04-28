@@ -58,7 +58,7 @@ class NModuleInterfacePointing
   virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0) { return NTime(0); }
 
   //! Start a new orbit at the given time with the given time jump...
-  virtual void StartNewOrbit(const NTime& TimeJump) {}
+  virtual void StartNewOrbit(const NTime& RestartTime, const NTime& TimeJump) {}
 
   // protected methods:
  protected:

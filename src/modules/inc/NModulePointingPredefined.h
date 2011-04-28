@@ -61,7 +61,7 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   virtual NTime GetPointingSlewTime(const NTime& First, const NTime& Second, unsigned int SlewID = 0);
 
   //! Start a new orbit at the given time with the given time jump...
-  virtual void StartNewOrbit(const NTime& TimeJump);
+  virtual void StartNewOrbit(const NTime& RestartTime, const NTime& TimeJump);
   
   //! Return a reference to the initial pointings
   vector<NPointing>& GetInitialPointingsByRef() { return m_InitialPointings; }
@@ -129,6 +129,8 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   unsigned int m_StartIndexSequencedInitialPointings;
   //! Time wrap for the perturbed alignments time index
   NTime m_TimeWrapSequencedInitialPointings;
+  //! The blackout time while we are poin ting towards Earth
+  NTime m_BlackoutTime;
   
   //! Time of the last calculated pointing
   NTime m_Time;

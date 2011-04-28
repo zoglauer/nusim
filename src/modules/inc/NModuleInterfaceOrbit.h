@@ -46,6 +46,9 @@ class NModuleInterfaceOrbit
   //! Get the optics orientation at time t
   virtual NOrbit GetOrbit(NTime t) { return NOrbit(); }
 
+  //! Get the orbit duration
+  virtual NTime GetOrbitDuration() const { return NTime(0); }
+
   //! Get the start time of the next black-out
   virtual NTime StartOfNextBlackout(NTime t) { return NTime(0); }
   //! Get the end time of the next black-out

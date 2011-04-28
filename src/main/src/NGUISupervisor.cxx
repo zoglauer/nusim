@@ -82,7 +82,7 @@ void NGUISupervisor::Create()
 
   TGLayoutHints* EntryLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX, 20, 20, 2, 2);
 
-  m_ObservationTime = new MGUIEEntry(this, "Observation time [s]:", false, m_Supervisor->GetObservationTime().GetSeconds());
+  m_ObservationTime = new MGUIEEntry(this, "Effective observation time [s]:", false, m_Supervisor->GetObservationTime().GetSeconds());
   AddFrame(m_ObservationTime, EntryLayout);
 
   m_UpdateInterval = new MGUIEEntry(this, "Update interval diagnostics window [events]:", false, m_Supervisor->GetUpdateInterval());
