@@ -228,15 +228,15 @@ out, etc. This module has 6 options:
        by an external software which simulates charge transport and
        induction in the CdZnTe detector based on the Shockley-Ramo theorem.
        These values are filled in a 3-d histogram with a volume of 3-by-3
-       pixels in the ROOT file
-       (\textbf{\${NUSIM}/resource/data/CIE\_500V.root}).
+       pixels in the ROOT file\\
+       (\textbf{\${NUSIM}/resource/data/CIE\_450V\_TypicalMuTau.root}).\\
        The ROOT file can be selected via the SciSimCIE GUI in
        Fig~\ref{DEESciSimCIEGUI}.
        At the moment, the detector is assumed to have uniform properties,
        that are temperature ($5{}^\circ\mathrm{C}$),
        electric field (500~V/2~mm), and mobility-lifetime products for
-       electrons ($5.0 \times 10^{-3}$~cm$^{2}$ V$^{-1}$)
-       and holes ($5.0 \times 10^{-6}$~cm$^{2}$ V$^{-1}$).
+       electrons ($1.0 \times 10^{-2}$~cm$^{2}$ V$^{-1}$)
+       and holes ($2.0 \times 10^{-5}$~cm$^{2}$ V$^{-1}$).
        The SciSimCIE module needs to be followed by the SciSim trigger
        engine and the SciSimCIE calibrator.
  \item \textbf{PixSim}.
@@ -312,9 +312,9 @@ a downlink. The following 4 modules are available.
 The task of the detector data calibrator is to calibrate the data
 produced from a detector effects engine and the following trigger
 engine, and generate a level 3 data.
-The main calibrations are the depth collection and the charge share
-events collection. However, there is no depth collection or cut at
-the moment. The following 5 modules are available.
+The main calibrations are the depth cut, depth collection, and
+the charge share events collection. The following 5 modules are
+available.
 \begin{itemize}
  \item \textbf{No module}.
        NuSIM can run without having a detector data calibrator.
@@ -332,7 +332,14 @@ the moment. The following 5 modules are available.
        parameters can be changed by the interface options GUI for the
        SciSimCIE calibrator in Fig~\ref{DCSciSimCIEGUI}, the default
        values are already optimized for the current CIE database.
-       They need to be updated if the CIE ROOT file changes.
+       They may need to be updated if the CIE ROOT file changes.
+       In addition, the module sets a flag for depth cut, which is
+       an event selection in a depth plot to improve a S/N ratio.
+       A boundary curve for depth cut is in a ROOT file,
+       \textbf{\${NUSIM}/resource/data/DepthCut.root}.
+       The module does not reject bad events, but just set the depth
+       cut flag. You can select cleaned events in the following
+       event selector module.
  \item \textbf{Ideal}.
        This module is a calibrator which goes with the ideal
        detector effects engine.
@@ -349,11 +356,11 @@ the moment. The following 5 modules are available.
 \end{figure}
 
 \subsection{Event selector}
-The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.Root" will produce a ROOT file format. Using any other appendix will produce the usual ascii NuSIM file format, and leaving it blank will not produce any file at all.
+The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.root" will produce a ROOT file format. Using any other appendix will produce the usual ascii NuSIM file format, and leaving it blank will not produce any file at all.
 
 An energy range can be entered to bound the range of the output. If there is no entry then the input range is used.
-
-A box allows the user to decide whether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.
+The top check box allows the user to decide whether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.
+The bottom two check boxes enable the users to decide whether they want to filter out events with depth information.
 
 \begin{figure}[tb]
 \begin{center}
