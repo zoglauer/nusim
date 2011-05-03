@@ -273,11 +273,16 @@ bool NModuleDetectorCalibratorSciSimCIE::AnalyzeEvent(NEvent& Event)
     // Set flag for bad depth calibration
     //====================================
 
+    H.SetBadDepthCalibration(false); // valid event
+
     for (unsigned int j = 0; j < Event.GetNInteractions(); ++j) {
+      if ( Event.GetInteraction(j).IsDetector() == false ) continue;
+
       double InteractionPositionZ = Event.GetInteraction(j).GetPosition().Z(); // Anode:-1 mm <--> Cathode:1 mm
       if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
 	   || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
 	H.SetBadDepthCalibration(true);
+	mdebug << "Bad depth cal flag is set for " << Event.GetInteraction(j).ToString() << show;
       }
     }
 
