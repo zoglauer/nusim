@@ -376,7 +376,7 @@ NPixelHit NEvent::GetPixelHit(unsigned int i)
     return m_PixelHits[i]; 
   }
 
-  merr<<"PixelHit index out of bounds!"<<show;
+  merr<<"PixelHit index out of bounds (max: "<<m_PixelHits.size()-1<<"): "<<i<<show;
 
   return NPixelHit();
 }
@@ -393,7 +393,7 @@ NPixelHit& NEvent::GetPixelHitRef(unsigned int i)
     return m_PixelHits[i]; 
   }
 
-  merr<<"PixelHit index out of bounds!"<<fatal;
+  merr<<"PixelHit index out of bounds (max: "<<m_PixelHits.size()-1<<"): "<<i<<fatal;
 
   return m_PixelHits[0];
 }
@@ -423,7 +423,7 @@ NShieldHit NEvent::GetShieldHit(unsigned int i)
     return m_ShieldHits[i]; 
   }
 
-  merr<<"ShieldHit index out of bounds!"<<show;
+  merr<<"ShieldHit index out of bounds (max: "<<m_ShieldHits.size()-1<<"): "<<i<<show;
 
   return NShieldHit();
 }
@@ -440,7 +440,7 @@ NShieldHit& NEvent::GetShieldHitRef(unsigned int i)
     return m_ShieldHits[i]; 
   }
 
-  merr<<"ShieldHit index out of bounds!"<<fatal;
+  merr<<"ShieldHit index out of bounds (max: "<<m_ShieldHits.size()-1<<"): "<<i<<fatal;
 
   return m_ShieldHits[0];
 }
@@ -470,7 +470,7 @@ NNinePixelHit NEvent::GetNinePixelHit(unsigned int i)
     return m_NinePixelHits[i]; 
   }
 
-  merr<<"NinePixelHit index out of bounds!"<<show;
+  merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<show;
 
   return NNinePixelHit();
 }
@@ -487,7 +487,7 @@ NNinePixelHit& NEvent::GetNinePixelHitRef(unsigned int i)
     return m_NinePixelHits[i]; 
   }
 
-  merr<<"NinePixelHit index out of bounds!"<<fatal;
+  merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<fatal;
 
   return m_NinePixelHits[0];
 }
@@ -517,7 +517,7 @@ NHit NEvent::GetHit(unsigned int i)
     return m_Hits[i]; 
   }
 
-  merr<<"Hit index out of bounds!"<<show;
+  merr<<"Hit index out of bounds (max: "<<m_Hits.size()-1<<"): "<<i<<show;
 
   return NHit();
 }
@@ -534,7 +534,7 @@ NHit& NEvent::GetHitRef(unsigned int i)
     return m_Hits[i]; 
   }
 
-  merr<<"Hit index out of bounds!"<<fatal;
+  merr<<"Hit index out of bounds (max: "<<m_Hits.size()-1<<"): "<<i<<fatal;
 
   return m_Hits[0];
 }
