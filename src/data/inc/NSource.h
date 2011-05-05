@@ -176,7 +176,7 @@ public:
   //! Return the intensity
   double GetFlux() const { return m_InputFlux; } 
 
-  //! Return true if the combined normalized energy=beam-flux-function could be set
+  //! Return true if the combined normalized energy-beam-flux-function could be set
   bool SetNormalizedEnergyPositionFluxFunction(TString FileName);
   //! Return the energy file name
   TString GetNormalizedEnergyPositionFluxFileName() { return m_NormalizedEnergyPositionFluxFileName; }
