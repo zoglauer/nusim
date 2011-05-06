@@ -98,6 +98,10 @@ bool NModuleEventSelector::Initialize()
 {
   // Initialize the module 
 
+  m_Counts5To10 = 0.0;
+  m_Counts10To20 = 0.0;
+  m_Counts20To60 = 0.0;
+
   if (m_FileName != "") {
     if (m_FileName.Last('.') == kNPOS) {
       mgui<<"Unknown file suffix: \""<<m_FileName<<"\". Not saving anything!"<<error;
@@ -218,6 +222,16 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     TotalEnergy += Event.GetHit(i).GetEnergy();
   }
 
+  if (TotalEnergy >= 5 && TotalEnergy < 10) {
+    m_Counts5To10++;
+  }
+  if (TotalEnergy >= 10 && TotalEnergy < 20) {
+    m_Counts10To20++;
+  }
+  if (TotalEnergy >= 20 && TotalEnergy <= 60) {
+    m_Counts20To60++;
+  }
+
   if (TotalEnergy > m_EnergyMax || TotalEnergy < m_EnergyMin || PatternRejection == true) {
     Event.SetEventCut(true);
     return true;
@@ -301,6 +315,14 @@ bool NModuleEventSelector::Finalize()
     }
   }
   
+  cout<<endl;
+  cout<<"Event selector:";
+  cout<<endl;
+  cout<<"Counts in bands before selections: "<<endl;
+  cout<<" 5 - 10 keV: "<<m_Counts5To10<<endl;
+  cout<<"10 - 20 keV: "<<m_Counts10To20<<endl;
+  cout<<"20 - 60 keV: "<<m_Counts20To60<<endl;
+
   return true;
 }
 
