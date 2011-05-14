@@ -90,6 +90,8 @@ class NModuleInterfaceEventSaverLevel2Fits
   vector<double> m_Energy;
   vector<double> m_Time;
   vector<double> m_Origin;
+  vector<double> m_PI;
+  vector<double> m_Grade;
 
 
 #ifdef ___CINT___

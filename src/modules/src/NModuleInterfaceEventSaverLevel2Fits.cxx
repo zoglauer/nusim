@@ -93,10 +93,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //char *ttype[] = {"X","Y","PHA","Time","grade","opticX","opticY","OpticZ","opticVx","opticVy","opticVz"};
   //char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
   //char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
-  int tfield = 5;
-  char* ttype[] = {"X","Y","PHA","Time","grade"};
-  char* tform[] = {"1E","1E","1E","1E","1I"};
-  char* tunit[] = {"pixel","pixel","keV","s","grade"};
+  int tfield = 7;
+  char* ttype[] = {"X","Y","PI","E","Time","grade","phottype"};
+  char* tform[] = {"1E","1E","1I","1E","1E","1I","1I"};
+  char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -111,7 +111,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   m_Energy.clear();
   m_Time.clear();
   m_Origin.clear();
-
+  m_Grade.clear();
 
   return true;
 }
@@ -125,11 +125,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   //! Main data analysis routine, which updates the event to a new level 
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
-	  m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
+	m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
     m_Time.push_back(float(Event.GetTime().GetSeconds()));
-	  m_Origin.push_back(Event.GetOrigin());
+	m_Origin.push_back(Event.GetOrigin());
+	m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
   }
     
   return true;
@@ -307,23 +308,29 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float* fDec = new float[m_Ra.size()];
   float* fEnergy = new float[m_Ra.size()];
   float* fTime = new float[m_Ra.size()];
+  float* fGrade = new float[m_Ra.size()];
   float* fOrigin = new float[m_Ra.size()];
+  float* fPI = new float[m_Ra.size()];
 
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
     float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecMin/rad);
     fRa[i] = (RaMax-Ra)/PixelSize;
     fDec[i] = (m_Dec[i]-DecMin)/PixelSize;
-    fEnergy[i] = m_Energy[i];
+    fPI[i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
+	fEnergy[i] = m_Energy[i];
     fTime[i] = m_Time[i];
     fOrigin[i] = m_Origin[i];
+	fGrade[i] = m_Grade[i];
   }
   
   fits_write_col(m_File, TFLOAT, 1, 1, 1, m_Ra.size(), fRa, &Status);
   fits_write_col(m_File, TFLOAT, 2, 1, 1, m_Ra.size(), fDec, &Status); 
-  fits_write_col(m_File, TFLOAT, 3, 1, 1, m_Ra.size(), fEnergy, &Status);
-  fits_write_col(m_File, TFLOAT, 4, 1, 1, m_Ra.size(), fTime, &Status);
-  fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fOrigin, &Status);
+  fits_write_col(m_File, TFLOAT, 3, 1, 1, m_Ra.size(), fPI, &Status); 
+  fits_write_col(m_File, TFLOAT, 4, 1, 1, m_Ra.size(), fEnergy, &Status);
+  fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fTime, &Status);
+  fits_write_col(m_File, TFLOAT, 6, 1, 1, m_Ra.size(), fGrade, &Status);
+  fits_write_col(m_File, TFLOAT, 7, 1, 1, m_Ra.size(), fOrigin, &Status);
 
   if (Status != 0) {
     mgui<<"Error writing event table!"<<endl;
@@ -337,6 +344,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   delete [] fEnergy;
   delete [] fTime;
   delete [] fOrigin;
+  delete [] fPI;
+  delete [] fGrade;
 
 
   float tlmin1 = 0;
