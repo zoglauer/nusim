@@ -95,7 +95,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
   int tfield = 7;
   char* ttype[] = {"X","Y","PI","E","Time","grade","phottype"};
-  char* tform[] = {"1E","1E","1I","1E","1E","1I","1I"};
+  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I"};
   char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
@@ -125,12 +125,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   //! Main data analysis routine, which updates the event to a new level 
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
-	m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
+    m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
     m_Time.push_back(float(Event.GetTime().GetSeconds()));
-	m_Origin.push_back(Event.GetOrigin());
-	m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
+    m_Origin.push_back(Event.GetOrigin());
+    m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
   }
     
   return true;
@@ -304,33 +304,84 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
 
   // We have to use pointers here to prevent a stack overflow for large data sets!
-  float* fRa = new float[m_Ra.size()];
-  float* fDec = new float[m_Ra.size()];
+  float* fRa     = new float[m_Ra.size()];
+  float* fDec    = new float[m_Ra.size()];
   float* fEnergy = new float[m_Ra.size()];
-  float* fTime = new float[m_Ra.size()];
-  float* fGrade = new float[m_Ra.size()];
-  float* fOrigin = new float[m_Ra.size()];
-  float* fPI = new float[m_Ra.size()];
+  float* fTime   = new float[m_Ra.size()];
+  short* fGrade  = new short[m_Ra.size()];
+  short* fOrigin = new short[m_Ra.size()];
+  int*   fPI     = new int  [m_Ra.size()];
 
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
     float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecMin/rad);
-    fRa[i] = (RaMax-Ra)/PixelSize;
-    fDec[i] = (m_Dec[i]-DecMin)/PixelSize;
-    fPI[i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
-	fEnergy[i] = m_Energy[i];
-    fTime[i] = m_Time[i];
-    fOrigin[i] = m_Origin[i];
-	fGrade[i] = m_Grade[i];
+    fRa    [i] = (RaMax-Ra)/PixelSize;
+    fDec   [i] = (m_Dec[i]-DecMin)/PixelSize;
+    fPI    [i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
+    fEnergy[i] = m_Energy[i];
+    fTime  [i] = m_Time[i];
+    fOrigin[i] = (short) m_Origin[i];
+    fGrade [i] = (short) m_Grade[i];
   }
   
+  char Words[30];
+
   fits_write_col(m_File, TFLOAT, 1, 1, 1, m_Ra.size(), fRa, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('RA') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
   fits_write_col(m_File, TFLOAT, 2, 1, 1, m_Ra.size(), fDec, &Status); 
-  fits_write_col(m_File, TFLOAT, 3, 1, 1, m_Ra.size(), fPI, &Status); 
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('DEC') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+  fits_write_col(m_File, TINT, 3, 1, 1, m_Ra.size(), fPI, &Status); 
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('PI') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
   fits_write_col(m_File, TFLOAT, 4, 1, 1, m_Ra.size(), fEnergy, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Energy') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
   fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fTime, &Status);
-  fits_write_col(m_File, TFLOAT, 6, 1, 1, m_Ra.size(), fGrade, &Status);
-  fits_write_col(m_File, TFLOAT, 7, 1, 1, m_Ra.size(), fOrigin, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Time') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+  fits_write_col(m_File, TSHORT, 6, 1, 1, m_Ra.size(), fGrade, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Grade') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+  fits_write_col(m_File, TSHORT, 7, 1, 1, m_Ra.size(), fOrigin, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('PhotType') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
 
   if (Status != 0) {
     mgui<<"Error writing event table!"<<endl;
