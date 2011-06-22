@@ -130,13 +130,14 @@ bool NGlobal::Initialize()
 #ifndef ___MACOSX___
   //gEnv->SetValue("X11.UseXft", "true");
 #endif
-
+  
   // Set a common ROOT style for all programs:
   gStyle->SetTitleBorderSize(0);
   gStyle->SetTitleFillColor(0);
 
-  gStyle->SetTitleX(0.1);
-  gStyle->SetTitleW(0.8);
+  gStyle->SetTitleAlign(13);
+  gStyle->SetTitleX(0.15);
+  gStyle->SetTitleW(0.7);
   gStyle->SetTitleY(0.95);
   gStyle->SetTitleFont(72, "");
 
@@ -167,6 +168,8 @@ bool NGlobal::Initialize()
 
   gStyle->SetPalette(1, 0);
 
+  
+  
   // Ignore ROOT messages up to kError
   gErrorIgnoreLevel = kError;
   // Abort on errors

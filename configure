@@ -48,7 +48,7 @@ echo "=================================================="
 # Test if an architecture is given
 if [ $# -lt 1 ] ; then
     echo ""
-    echo "Error: You must specify an architecture";
+    echo "ERROR: You must at least specify an architecture";
     confhelp; 
     exit 0;
 fi
@@ -179,21 +179,24 @@ case $1 in
 -h|--help) 
     confhelp; 
     exit 0 ;;
--linux|-linuxgcc|-softlinux) 
+-linux|-linuxgcc|-softlinux|--linux) 
     echo "Configuring for Linux with gcc 3.x or higher compiler..."
     cp config/Makefile.softlinux config/Makefile.config;;
 -linuxicc|-softlinuxicc) 
     echo "Configuring for Linux with icc 8.x or higher compiler..."
     cp config/Makefile.softlinuxicc config/Makefile.config;;
--macosx|-softmacosx) 
+-macosx|-softmacosx|--macosx) 
     echo "Configuring for MaxOSX with gcc compiler..."
     cp config/Makefile.softmacosx config/Makefile.config;;
--macosx32) 
+-macosx32|--macosx32) 
     echo "Configuring for MaxOSX (32 bit) with gcc compiler..."
     cp config/Makefile.softmacosx32 config/Makefile.config;;
 *) 
-    confhelp; 
-    exit 0;;
+    echo " "
+    echo "ERROR: Found unknown configuration option: $1"
+    echo "       See \"./configure --help\" for a list of options"
+    echo " "
+    exit 1;;
 esac
 
 
@@ -210,9 +213,9 @@ if [ $# -gt 0 ]; then
             --help|-h) 
                 confhelp;   
                 exit 0;;
-            -optimized) 
+            -optimized|-optimize|--optimize|--optimized) 
                 OPT=${OPT}"-O2 -DNDEBUG ";;
-            -debug)
+            -debug|--debug)
                 G4DEBUG="G4DEBUG = 1"
                 if ([ $ARCH = "-solaris" ] || [ $ARCH = "-softsol28" ] || [ $ARCH = "-hardsol28" ] || [ $ARCH = "-hardsol25" ]); then
                     OPT=${OPT}"-g -xs ";
@@ -220,10 +223,10 @@ if [ $# -gt 0 ]; then
                     OPT=${OPT}"-g ";
                 fi;;
             *) 
-                echo ""
-                echo "Error: Invalid option $1!";
-                echo "See $0 --help for a list of all options!";
-                echo "";
+                echo " "
+                echo "ERROR: Found unknown configuration option: $1"
+                echo "       See \"./configure --help\" for a list of options"
+                echo " "
                 exit 1;;
         esac
    shift
