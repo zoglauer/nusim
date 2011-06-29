@@ -45,7 +45,7 @@ ClassImp(NModuleMetrologyEngine)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceMetrology(), NModuleInterfaceEntry()
+NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceMetrology(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceMetrologySaverLevel1Fits()
 {
   // Construct an instance of NModuleMetrologyEngine
 
@@ -72,6 +72,7 @@ NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(
 
   m_UpdateInterval = 0.01;
   m_BlurEnabled = true;
+  m_SaveAsFits = false;
   
   m_PositionShiftFileName = "$(NUSIM)/resource/data/metcal_pert_002.dat";
 }
@@ -146,7 +147,11 @@ bool NModuleMetrologyEngine::Initialize()
     return false;
   }
 
-  ShowDetectorShifts();
+  //ShowDetectorShifts();
+
+  if (m_SaveAsFits == true) {
+    if (OpenLevel1FitsFile(NModuleInterfaceIO::GetBaseFileName() + ".metrology.fits") == false) return false;
+  }
   
   return true;
 }
@@ -449,6 +454,27 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
 
   //cout<<"ME-Time: "<<m_Time<<endl;
 
+  if (m_SaveAsFits == true) {
+    if (SaveAsLevel1Fits(Data) == false) return false;
+  }
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleMetrologyEngine::Finalize()
+{
+  // Initialize the module
+
+  if (m_SaveAsFits == true) {
+    if (IsLevel1FitsFileOpen() == true) {
+      if (CloseLevel1FitsFile() == false) return false;
+    }
+  }
+
   return true;
 }
 
@@ -485,6 +511,10 @@ bool NModuleMetrologyEngine::ReadXmlConfiguration(MXmlNode* Node)
   if (BlurEnabledNode != 0) {
     m_BlurEnabled = BlurEnabledNode->GetValueAsBoolean();
   }
+  MXmlNode* SaveAsFitsNode = Node->GetNode("SaveAsFits");
+  if (SaveAsFitsNode != 0) {
+    m_SaveAsFits = SaveAsFitsNode->GetValueAsBoolean();
+  }
 
   return true;
 }
@@ -501,6 +531,7 @@ MXmlNode* NModuleMetrologyEngine::CreateXmlConfiguration()
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Node, "PositionShiftFileName", CleanPath(m_PositionShiftFileName));
   new MXmlNode(Node, "BlurEnabled", m_BlurEnabled);
+  new MXmlNode(Node, "SaveAsFits", m_SaveAsFits);
 
   return Node;
 }

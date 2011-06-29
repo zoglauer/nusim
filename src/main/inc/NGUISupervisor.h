@@ -27,6 +27,7 @@
 // MEGAlib libs:
 #include "NGlobal.h"
 #include "MGUIEEntry.h"
+#include "MGUIEFileSelector.h"
 
 // NuSTAR lib:
 #include "NSupervisor.h"
@@ -85,6 +86,8 @@ class NGUISupervisor : public TGTransientFrame
   //! Update frequency of the diagnostics window 
   MGUIEEntry* m_UpdateInterval;
 
+  //! Set a basic file name
+  MGUIEFileSelector* m_BaseFileName;
 
 #ifdef ___CINT___
  public:

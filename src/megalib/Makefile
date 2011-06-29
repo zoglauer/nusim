@@ -21,6 +21,7 @@ LOBJS = $(LB)/MAssert.o \
 	$(LB)/MGUIEEntryList.o \
 	$(LB)/MGUIEFileSelector.o \
 	$(LB)/MGUIERBList.o \
+	$(LB)/MGUIECBList.o \
 	$(LB)/MGUIEText.o \
 	$(LB)/MGUIProgressBar.o \
 	$(LB)/MStreamBuffer.o \

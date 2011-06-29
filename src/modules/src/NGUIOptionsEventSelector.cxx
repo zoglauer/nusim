@@ -62,14 +62,16 @@ void NGUIOptionsEventSelector::Create()
 {
   PreCreate();
 
-  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 20, 5);
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 20, 20, 20, 5);
 
-  m_FileName = new MGUIEFileSelector(this, "Save events before or after the event selection to the file:\nSuffix = *.fits: FITS, *.root: ROOT, *.dat: ASCII\nIf empty, don't save anything", 
-                                     dynamic_cast<NModuleInterfaceIO*>(m_Module)->GetFileName());
-  m_FileName->SetFileType("Event file", "*.dat");
-  m_FileName->SetFileType("Event file", "*.fits");
-  m_FileName->SetFileType("Event file", "*.root");
-  AddFrame(m_FileName, FileLayout);
+  m_FileOptions = new MGUIECBList(this, "Choose how to save the output file (you can choose none or multiple):", true);
+  m_FileOptions->Add("Events in FITS format (*.events.fits)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits());
+  m_FileOptions->Add("Events in ASCII format (*.events.dat)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsDat());
+  m_FileOptions->Add("Events in ROOT format (*.events.root)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsROOT());
+  m_FileOptions->Add("Spectral response in ROOT format (*.energyresponse.root)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEnergyResponseAsROOT());
+  m_FileOptions->Create();
+  m_FileOptions->Associate(this);
+  AddFrame(m_FileOptions, FileLayout);
 
   TGLayoutHints* SaveBeforeSelectionsLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 15);
   m_SaveBeforeSelections = new TGCheckButton(this, "Save events before selections (otherwise after)");
@@ -154,18 +156,13 @@ bool NGUIOptionsEventSelector::ProcessMessage(long Message, long Parameter1, lon
 
 bool NGUIOptionsEventSelector::OnApply()
 {
-	// Modify this to store the data in the module!
+  // Modify this to store the data in the module!
 
-  TString Name = m_FileName->GetFileName();
-  if (Name != "") {
-    TString FileSuffix = Name(Name.Last('.'), Name.Length() - Name.Last('.'));
-    if (FileSuffix.Contains("fits") == false && FileSuffix.Contains("root") == false && FileSuffix.Contains("dat") == false) {
-      mgui<<"Unknown file suffix: \""<<Name<<"\". Please use either dat, root, or fits!"<<show;   
-      return false;
-    }
-  }
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsFits(m_FileOptions->IsSelected(0));
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsDat(m_FileOptions->IsSelected(1));
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsROOT(m_FileOptions->IsSelected(2));
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEnergyResponseAsROOT(m_FileOptions->IsSelected(3));
 
-  dynamic_cast<NModuleInterfaceIO*>(m_Module)->SetFileName(m_FileName->GetFileName());
   if (m_SaveBeforeSelections->GetState() == kButtonDown) {
     dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
   } else {

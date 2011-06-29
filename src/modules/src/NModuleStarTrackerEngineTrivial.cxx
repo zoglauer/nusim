@@ -41,7 +41,7 @@ ClassImp(NModuleStarTrackerEngineTrivial)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceStarTracker(), NModuleInterfaceEntry()
+NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceStarTracker(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceStarTrackerSaverLevel1Fits()
 {
   // Construct an instance of NModuleStarTrackerEngineTrivial
 
@@ -68,6 +68,7 @@ NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Sat
 
   m_UpdateInterval = 10;
   m_BlurEnabled = true;
+  m_SaveAsFits = false;
 }
 
 
@@ -88,6 +89,10 @@ bool NModuleStarTrackerEngineTrivial::Initialize()
   // Initialize the module 
 
   m_Time = -10*m_UpdateInterval;
+
+  if (m_SaveAsFits == true) {
+    if (OpenLevel1FitsFile(NModuleInterfaceIO::GetBaseFileName() + ".startracker.fits") == false) return false;
+  }
 
   return true;
 }
@@ -207,9 +212,29 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
   cout<<"ErrorDCMOrientationStarTrackerRelOpticalBench 4: "<<m_Satellite.GetErrorDCMOrientationStarTrackerRelOpticalBench(4)<<endl;
   */
 
+  if (m_SaveAsFits == true) {
+    if (SaveAsLevel1Fits(Data) == false) return false;
+  }
+
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleStarTrackerEngineTrivial::Finalize()
+{
+  // Initialize the module
+
+  if (m_SaveAsFits == true) {
+    if (IsLevel1FitsFileOpen() == true) {
+      if (CloseLevel1FitsFile() == false) return false;
+    }
+  }
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -239,6 +264,10 @@ bool NModuleStarTrackerEngineTrivial::ReadXmlConfiguration(MXmlNode* Node)
   if (BlurEnabledNode != 0) {
     m_BlurEnabled = BlurEnabledNode->GetValueAsBoolean();
   }
+  MXmlNode* SaveAsFitsNode = Node->GetNode("SaveAsFits");
+  if (SaveAsFitsNode != 0) {
+    m_SaveAsFits = SaveAsFitsNode->GetValueAsBoolean();
+  }
 
   return true;
 }
@@ -255,6 +284,7 @@ MXmlNode* NModuleStarTrackerEngineTrivial::CreateXmlConfiguration()
   
   new MXmlNode(Node, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Node, "BlurEnabled", m_BlurEnabled);
+  new MXmlNode(Node, "SaveAsFits", m_SaveAsFits);
 
   return Node;
 }

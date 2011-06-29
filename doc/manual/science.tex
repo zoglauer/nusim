@@ -113,10 +113,10 @@ This will generate a text file with different pointings which will cover the are
 \item The event selector:
 The event selector has two tasks, to store the simulated events to file and to perform event cuts.
 Currently only energy cuts are implemented.
-The events can be stored in three formats, a fits file containing an event list which can be used with the standard fits tools, a ROOT file, or an ASCII file.
+The events can be stored in three formats, a fits file containing an event list which can be used with the standard fits tools, a ROOT file, or an ASCII file. Name and path of the file is given in the supervisor UI.
 The user can also choose to store the events before or after the event cuts.
 \item The supervisor:
-In the supervisor you give the total observation time. 
+In the supervisor you give the total observation time and the name and path of the files you want to save to.
 If you have set absolute times in the pointing module, the simulation will be stopped if the last pointing is finished, or earlier if the observation time is over. 
 \end{itemize}
 The options of all others modules should be left at the standard settings --- unless you are really sure what you are doing.

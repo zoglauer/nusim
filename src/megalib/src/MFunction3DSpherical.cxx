@@ -257,17 +257,17 @@ bool MFunction3DSpherical::Set(const TString FileName, const TString KeyWord,
 
         if (xPosition < 0 || xPosition > (int) m_X.size()) {
           mout<<"In the function defined by: "<<FileName<<endl;
-          mout<<"Phi-axis out of bounds!"<<endl;
+          mout<<"Phi-axis out of bounds: "<<xPosition<<" (max: "<<m_X.size()-1<<")"<<endl;
           return false;
         }
         if (yPosition < 0 || yPosition > (int) m_Y.size()) {
           mout<<"In the function defined by: "<<FileName<<endl;
-          mout<<"Theta-axis out of bounds!"<<endl;
+          mout<<"Theta-axis out of bounds!"<<yPosition<<" (max: "<<m_Y.size()-1<<")"<<endl;
           return false;
         }
         if (zPosition < 0 || zPosition > (int) m_Z.size()) {
           mout<<"In the function defined by: "<<FileName<<endl;
-          mout<<"Energy-axis out of bounds!"<<endl;
+          mout<<"Energy-axis out of bounds!"<<zPosition<<" (max: "<<m_Z.size()-1<<")"<<endl;
           return false;
         }
 
@@ -293,6 +293,16 @@ bool MFunction3DSpherical::Set(const TString FileName, const TString KeyWord,
     m_Y.push_back(0);
     m_Z.push_back(0);
   }
+
+  /*
+  cout<<"HACK FOR FRYER: FIX RA FOR CAS A"<<endl;
+  for (unsigned int x = 0; x < m_X.size(); ++x) {
+    cout<<m_X[x]<<" --> ";
+    m_X[x] = (m_X[x] - m_X[m_X.size()/2])/cos(m_Y[m_Y.size()/2]*c_Rad)/cos(m_Y[m_Y.size()/2]*c_Rad) + m_X[m_X.size()/2];
+    cout<<m_X[x]<<endl;
+  }
+  */
+
 
   // Clean up:
   m_Maximum = g_DoubleNotDefined;

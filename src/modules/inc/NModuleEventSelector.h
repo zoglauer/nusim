@@ -26,6 +26,7 @@
 #include "NModuleInterfaceEventSaverAscii.h"
 #include "NModuleInterfaceEventSaverLevel2Fits.h"
 #include "NModuleInterfaceEventSaverROOTTree.h"
+#include "NModuleInterfaceEventSaverROOTEnergyResponse.h"
 
 // Forward declarations:
 
@@ -36,7 +37,8 @@
 class NModuleEventSelector : public NModule, public NModuleInterfaceEvent, 
   public NModuleInterfaceIO, public NModuleInterfaceEventSaverAscii,
   public NModuleInterfaceEventSaverLevel2Fits,
-  public NModuleInterfaceEventSaverROOTTree
+  public NModuleInterfaceEventSaverROOTTree,
+  public NModuleInterfaceEventSaverROOTEnergyResponse
 {
   // public interface:
  public:
@@ -69,10 +71,30 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   //! Get the event selecton flag by depth cut
   bool GetSelectByDepthCut() const { return m_SelectByDepthCut; }
 
-  //! Save before the event selctions
+  //! Set if we should save the events as fits file
+  void SetSaveEventsAsFits(const bool SaveAsFits) { m_SaveAsFits = SaveAsFits; }
+  //! Return true, if we should save the events as fits file
+  bool GetSaveEventsAsFits() const { return m_SaveAsFits; }
+
+  //! Set if we should save the events as dat file
+  void SetSaveEventsAsDat(const bool SaveAsDat) { m_SaveAsDat = SaveAsDat; }
+  //! Return true, if we should save the events as dat file
+  bool GetSaveEventsAsDat() const { return m_SaveAsDat; }
+
+  //! Set if we should save the events as ROOT file
+  void SetSaveEventsAsROOT(const bool SaveAsROOT) { m_SaveAsROOT = SaveAsROOT; }
+  //! Return true, if we should save the events as ROOT file
+  bool GetSaveEventsAsROOT() const { return m_SaveAsROOT; }
+
+  //! Set if we should save the energy response as ROOT file
+  void SetSaveEnergyResponseAsROOT(const bool SaveAsResponseROOT) { m_SaveAsResponseROOT = SaveAsResponseROOT; }
+  //! Return true, if we should save the energy response as ROOT file
+  bool GetSaveEnergyResponseAsROOT() const { return m_SaveAsResponseROOT; }
+
+  //! Save before the event selections
   void SetSaveBeforeSelections(const bool SaveBeforeSelections) { m_SaveBeforeSelections = SaveBeforeSelections; }
   //! Return if we should save before event selections
-  double GetSaveBeforeSelections() const { return m_SaveBeforeSelections; }
+  bool GetSaveBeforeSelections() const { return m_SaveBeforeSelections; }
   
   //! Initialize the module
   virtual bool Initialize();

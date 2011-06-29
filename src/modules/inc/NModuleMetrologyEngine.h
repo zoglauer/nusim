@@ -25,6 +25,8 @@
 #include "NModuleInterfaceEntry.h"
 #include "NModuleInterfaceMetrology.h"
 #include "NModuleInterfacePhotonPropagation.h"
+#include "NModuleInterfaceIO.h"
+#include "NModuleInterfaceMetrologySaverLevel1Fits.h"
 
 // Forward declarations:
 
@@ -33,8 +35,10 @@
 
 
 class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology, 
-                                      public NModuleInterfaceEntry,
-                                      public NModuleInterfacePhotonPropagation
+                               public NModuleInterfaceEntry,
+                               public NModuleInterfacePhotonPropagation,
+                               public NModuleInterfaceIO,
+                               public NModuleInterfaceMetrologySaverLevel1Fits
 {
   // public interface:
  public:
@@ -46,8 +50,11 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   //! Initialize the module
   virtual bool Initialize();
 
-  // Main data analysis routine, which updates the star tracker data
+  //! Main data analysis routine, which updates the metrology data
   virtual bool AnalyzeMetrologyData(NMetrologyData& Data);
+
+  //! Finalize the module
+  virtual bool Finalize();
 
   //! Show the options GUI
   virtual void ShowOptionsGUI();
@@ -66,6 +73,11 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   void EnableBlur(bool BlurEnabled = true) { m_BlurEnabled = BlurEnabled; }
   //! Enable the blur
   bool IsBlurEnabled() const { return m_BlurEnabled; }
+
+  //! Enable saving the file as fits
+  void SetSaveAsFits(bool SaveAsFits = true) { m_SaveAsFits = SaveAsFits; }
+  //! Enable saving the file as fits
+  bool GetSaveAsFits() const { return m_SaveAsFits; }
 
   //! Set the detector shifts
   void SetPositionShiftFileName(TString PositionShiftFileName) { m_PositionShiftFileName = PositionShiftFileName; }
@@ -100,6 +112,10 @@ class NModuleMetrologyEngine : public NModule, public NModuleInterfaceMetrology,
   //! Flag indicating whether of not to use the blur
   bool m_BlurEnabled;
 
+  //! Flag indicating whether of not to save the data
+  bool m_SaveAsFits;
+
+  
 #ifdef ___CINT___
  public:
   ClassDef(NModuleMetrologyEngine, 0) // no description

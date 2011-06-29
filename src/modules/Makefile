@@ -28,7 +28,10 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceEventSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverLevel2Fits.o \
 	$(LB)/NModuleInterfaceEventSaverROOTTree.o \
+	$(LB)/NModuleInterfaceEventSaverROOTEnergyResponse.o \
 	$(LB)/NModuleInterfaceStopCriterion.o \
+	$(LB)/NModuleInterfaceMetrologySaverLevel1Fits.o \
+	$(LB)/NModuleInterfaceStarTrackerSaverLevel1Fits.o \
 	$(LB)/NModuleInterfaceDeadTime.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
 	$(LB)/NModuleTemplate.o \

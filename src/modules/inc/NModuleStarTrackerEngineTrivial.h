@@ -23,6 +23,8 @@
 #include "NModule.h"
 #include "NModuleInterfaceEntry.h"
 #include "NModuleInterfaceStarTracker.h"
+#include "NModuleInterfaceIO.h"
+#include "NModuleInterfaceStarTrackerSaverLevel1Fits.h"
 
 // Forward declarations:
 
@@ -30,7 +32,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceStarTracker, public NModuleInterfaceEntry
+class NModuleStarTrackerEngineTrivial : public NModule,
+                                        public NModuleInterfaceStarTracker,
+                                        public NModuleInterfaceEntry,
+                                        public NModuleInterfaceIO,
+                                        public NModuleInterfaceStarTrackerSaverLevel1Fits
+
 {
   // public interface:
  public:
@@ -48,6 +55,9 @@ class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceS
   //! Show the options GUI
   virtual void ShowOptionsGUI();
 
+  //! Finalize the module
+  virtual bool Finalize();
+
   //! Read the configuration data from an XML node
   virtual bool ReadXmlConfiguration(MXmlNode* Node);
   //! Create an XML node tree from the configuration
@@ -62,6 +72,11 @@ class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceS
   void EnableBlur(bool BlurEnabled = true) { m_BlurEnabled = BlurEnabled; }
   //! Enable the blur
   bool IsBlurEnabled() const { return m_BlurEnabled; }
+
+  //! Enable saving the file as fits
+  void SetSaveAsFits(bool SaveAsFits = true) { m_SaveAsFits = SaveAsFits; }
+  //! Enable saving the file as fits
+  bool GetSaveAsFits() const { return m_SaveAsFits; }
 
   // protected methods:
  protected:
@@ -78,6 +93,9 @@ class NModuleStarTrackerEngineTrivial : public NModule, public NModuleInterfaceS
 
   //! Flag indicating whether of not to use the blur
   bool m_BlurEnabled;
+
+  //! Flag indicating whether of not to save the data
+  bool m_SaveAsFits;
 
   // private members:
  private:

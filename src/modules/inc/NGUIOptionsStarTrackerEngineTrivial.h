@@ -64,6 +64,7 @@ class NGUIOptionsStarTrackerEngineTrivial : public NGUIOptions
  protected:
   MGUIEEntry* m_UpdateInterval;
   TGCheckButton* m_EnableBlur;
+  TGCheckButton* m_SaveAsFits;
 
   // private members:
  private:

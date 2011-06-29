@@ -27,6 +27,7 @@
 
 // NuSTAR libs:
 #include "NSupervisor.h"
+#include "NModuleInterfaceIO.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,19 +91,26 @@ void NGUISupervisor::Create()
 
 
 
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 10, 2);
+
+  m_BaseFileName = new MGUIEFileSelector(this, "Use this path and base file name for all saved files (e.g. \"$(NUSIM)/MySims\"):",
+                                        m_Supervisor->GetBaseFileName());
+  m_BaseFileName->SetFileType("Base file name", "*");
+  AddFrame(m_BaseFileName, FileLayout);
+
   // OK and cancel buttons
-	// Frame around the buttons:
-	TGHorizontalFrame* ButtonFrame = new TGHorizontalFrame(this, 150, 25);
-	TGLayoutHints* ButtonFrameLayout =	new TGLayoutHints(kLHintsBottom | kLHintsExpandX | kLHintsCenterX, 10, 10, 10, 10);
-	AddFrame(ButtonFrame, ButtonFrameLayout);
-	
+  // Frame around the buttons:
+  TGHorizontalFrame* ButtonFrame = new TGHorizontalFrame(this, 150, 25);
+  TGLayoutHints* ButtonFrameLayout =  new TGLayoutHints(kLHintsBottom | kLHintsExpandX | kLHintsCenterX, 10, 10, 10, 10);
+  AddFrame(ButtonFrame, ButtonFrameLayout);
+
   // The buttons itself
-	TGTextButton*	OKButton = new TGTextButton(ButtonFrame, "OK", e_Ok); 
+  TGTextButton* OKButton = new TGTextButton(ButtonFrame, "OK", e_Ok);
   OKButton->Associate(this);
   TGLayoutHints* OKButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 20, 0, 0, 0);
-	ButtonFrame->AddFrame(OKButton, OKButtonLayout);
-	
-	TGTextButton* CancelButton = new TGTextButton(ButtonFrame, "     Cancel     ", e_Cancel); 
+  ButtonFrame->AddFrame(OKButton, OKButtonLayout);
+
+  TGTextButton* CancelButton = new TGTextButton(ButtonFrame, "     Cancel     ", e_Cancel);
   CancelButton->Associate(this);
   TGLayoutHints* CancelButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 0, 0);
   ButtonFrame->AddFrame(CancelButton, CancelButtonLayout);
@@ -210,6 +218,7 @@ bool NGUISupervisor::OnApply()
 
   m_Supervisor->SetObservationTime(NTime(m_ObservationTime->GetAsDouble()));
   m_Supervisor->SetUpdateInterval(m_UpdateInterval->GetAsInt());
+  m_Supervisor->SetBaseFileName(m_BaseFileName->GetFileName());
 
 	return true;
 }

@@ -356,7 +356,7 @@ available.
 \end{figure}
 
 \subsection{Event selector}
-The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first box is for the name of the output file. Appending the name with ".fits" will produce a simple level 2 fits file that can be loaded into DS9. Appending it with "*.root" will produce a ROOT file format. Using any other appendix will produce the usual ascii NuSIM file format, and leaving it blank will not produce any file at all.
+The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first section gives you options to store the events --- the file name and path are set in the supervisor GUI. Saving as FITS file will produce a simple level 2 fits file that can be loaded into DS9. Saving as ROOT will produce a ROOT file format, and saving as ASCII will prodice the human readable dat file format. In addition, you can create an energy response (incident vs. measured energy) in ROOT file format.
 
 An energy range can be entered to bound the range of the output. If there is no entry then the input range is used.
 The top check box allows the user to decide whether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.

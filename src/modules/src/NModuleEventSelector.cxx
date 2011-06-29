@@ -42,7 +42,8 @@ ClassImp(NModuleEventSelector)
 NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), 
   NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(),
   NModuleInterfaceEventSaverLevel2Fits(Satellite),
-  NModuleInterfaceEventSaverROOTTree(Satellite)
+  NModuleInterfaceEventSaverROOTTree(Satellite),
+  NModuleInterfaceEventSaverROOTEnergyResponse(Satellite)
 {
   // Construct an instance of NModuleEventSelector
 
@@ -101,54 +102,19 @@ bool NModuleEventSelector::Initialize()
   m_Counts5To10 = 0.0;
   m_Counts10To20 = 0.0;
   m_Counts20To60 = 0.0;
-
-  if (m_FileName != "") {
-    if (m_FileName.Last('.') == kNPOS) {
-      mgui<<"Unknown file suffix: \""<<m_FileName<<"\". Not saving anything!"<<error;
-      return true;
-    }
-
-    TString FileBase = m_FileName(0, m_FileName.Last('.'));
-    TString FileSuffix = m_FileName(m_FileName.Last('.'), m_FileName.Length() - m_FileName.Last('.'));
-
-    if (FileSuffix.Contains("fits") == false && FileSuffix.Contains(".root") == false && FileSuffix.Contains(".dat") == false) {
-      mgui<<"Unknown file suffix: \""<<m_FileName<<"\". Not saving anything!"<<error;   
-      return true;
-    }
-
-    if (FileSuffix.Contains("fits") == true) {
-      m_SaveAsFits = true;
-    } else {
-      m_SaveAsFits = false;
-    }
-    
-    if (FileSuffix.Contains("root") == true) {
-      m_SaveAsROOT = true;
-      if  (FileBase.Contains("response", TString::kIgnoreCase) == true) {
-	m_SaveAsResponseROOT = true;
-      } else {
-	m_SaveAsResponseROOT = false;
-      }
-    } else {
-      m_SaveAsROOT = false;
-    }
-    
-    if (FileSuffix.Contains("dat") == true) {
-      m_SaveAsDat = true;
-    } else {
-      m_SaveAsDat = false;
-    }
      
 
-    if (m_SaveAsFits == true) {
-      if (OpenLevel2FitsFile(FileBase + ".fits") == false) return false;
-    } 
-    if (m_SaveAsROOT == true) {
-      if (OpenROOTFile(FileBase + ".root") == false) return false;
-    } 
-    if (m_SaveAsDat == true) {
-      if (OpenAsciiFile(FileBase + ".dat", m_ChosenType) == false) return false;
-    }
+  if (m_SaveAsFits == true) {
+    if (OpenLevel2FitsFile(NModuleInterfaceIO::GetBaseFileName() + ".events.fits") == false) return false;
+  }
+  if (m_SaveAsROOT == true) {
+    if (OpenROOTFile(NModuleInterfaceIO::GetBaseFileName() + ".events.root") == false) return false;
+  }
+  if (m_SaveAsResponseROOT == true) {
+    if (OpenEnergyResponseROOTFile(NModuleInterfaceIO::GetBaseFileName() + ".energyresponse.root") == false) return false;
+  }
+  if (m_SaveAsDat == true) {
+    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".events.dat", m_ChosenType) == false) return false;
   }
   
   return true;
@@ -177,12 +143,13 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     }
     if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	if ( m_SaveAsResponseROOT == false ) {
-	  if (SaveEventTree(Event) == false) return false;
-	} else {
-	  if (SaveResponse(Event) == false) return false;
-	}
-      }  
+        if (SaveEventTree(Event) == false) return false;
+      }
+    }
+    if (m_SaveAsResponseROOT == true) {
+      if (IsEnergyResponseROOTFileOpen() == true) {
+        if (SaveEnergyResponse(Event) == false) return false;
+      }
     }
     if (m_SaveAsDat == true) {
       if (IsAsciiFileOpen() == true) {
@@ -274,12 +241,13 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     }
     if (m_SaveAsROOT == true) {
       if (IsROOTFileOpen() == true) {
-	if ( m_SaveAsResponseROOT == false ) {
-	  if (SaveEventTree(Event) == false) return false;
-	} else {
-	  if (SaveResponse(Event) == false) return false;
-	}
+        if (SaveEventTree(Event) == false) return false;
       }  
+    }
+    if (m_SaveAsResponseROOT == true) {
+      if (IsEnergyResponseROOTFileOpen() == true) {
+        if (SaveEnergyResponse(Event) == false) return false;
+      }
     }
     if (m_SaveAsDat == true) {
       if (IsAsciiFileOpen() == true) {
@@ -354,10 +322,26 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  MXmlNode* FileNameNode = Node->GetNode("FileName");
-  if (FileNameNode != 0) {
-    m_FileName = FileNameNode->GetValue();
-  }  
+  MXmlNode* SaveEventsAsFitsNode = Node->GetNode("SaveEventsAsFits");
+  if (SaveEventsAsFitsNode != 0) {
+    m_SaveAsFits = SaveEventsAsFitsNode->GetValueAsBoolean();
+  }
+  MXmlNode* SaveEventsAsDatNode = Node->GetNode("SaveEventsAsDat");
+  if (SaveEventsAsDatNode != 0) {
+    m_SaveAsDat = SaveEventsAsDatNode->GetValueAsBoolean();
+  }
+  MXmlNode* SaveEventsAsROOTNode = Node->GetNode("SaveEventsAsROOT");
+  if (SaveEventsAsROOTNode != 0) {
+    m_SaveAsROOT = SaveEventsAsROOTNode->GetValueAsBoolean();
+  }
+  MXmlNode* SaveEnergyResponseAsROOTNode = Node->GetNode("SaveEnergyResponseAsROOT");
+  if (SaveEnergyResponseAsROOTNode != 0) {
+    m_SaveAsResponseROOT = SaveEnergyResponseAsROOTNode->GetValueAsBoolean();
+  }
+  MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
+  if (SaveBeforeSelectionsNode != 0) {
+    m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsBoolean();
+  }
   MXmlNode* EnergyMinNode = Node->GetNode("EnergyMin");
   if (EnergyMinNode != 0) {
     m_EnergyMin = EnergyMinNode->GetValueAsDouble();
@@ -378,10 +362,6 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   if (SelectByDepthCutNode != 0) {
     m_SelectByDepthCut = SelectByDepthCutNode->GetValueAsBoolean();
   }
-  MXmlNode* SaveBeforeSelectionsNode = Node->GetNode("SaveBeforeSelections");
-  if (SaveBeforeSelectionsNode != 0) {
-    m_SaveBeforeSelections = SaveBeforeSelectionsNode->GetValueAsBoolean();
-  }
 
   return true;
 }
@@ -395,13 +375,16 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  new MXmlNode(Node, "FileName", CleanPath(m_FileName));
+  new MXmlNode(Node, "SaveEventsAsFits", m_SaveAsFits);
+  new MXmlNode(Node, "SaveEventsAsDat", m_SaveAsFits);
+  new MXmlNode(Node, "SaveEventsAsROOT", m_SaveAsROOT);
+  new MXmlNode(Node, "SaveEnergyResponseAsROOT", m_SaveAsResponseROOT);
+  new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
   new MXmlNode(Node, "EnergyMin", m_EnergyMin);
   new MXmlNode(Node, "EnergyMax", m_EnergyMax);
   new MXmlNode(Node, "DepthMax",  m_DepthMax);
   new MXmlNode(Node, "SelectByBadDepthCal", m_SelectByBadDepthCal);
   new MXmlNode(Node, "SelectByDepthCut",    m_SelectByDepthCut);
-  new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
 
   return Node;
 }

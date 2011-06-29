@@ -43,6 +43,7 @@ using namespace std;
 #include "NModuleInterfacePointing.h"
 #include "NModuleInterfaceOrientations.h"
 #include "NModuleInterfaceTime.h"
+#include "NModuleInterfaceIO.h"
 #include "NModuleInterfaceGeometryAndDetectorProperties.h"
 
 #include "NModuleSourceDistribution.h"
@@ -288,6 +289,7 @@ void NSupervisor::Clear()
 
   m_ObservationTime = 1000.0; //s
   m_UpdateInterval = 10000;
+  m_BaseFileName = "$(NUSIM)/MySims";
   
   // Don't reset astrophysics mode!
 }
@@ -309,6 +311,13 @@ bool NSupervisor::Run()
   m_Interrupt = false;
   m_ToggleDiagnostics = false;
 
+  // Set the base file name to the IO modules
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceIO*>((*Iter).second) != 0) {
+      dynamic_cast<NModuleInterfaceIO*>((*Iter).second)->SetBaseFileName(m_BaseFileName);
+    }
+  }
+  
   // Initialize the satellite data
 
   // Pointing modules need the observation time:
@@ -1490,6 +1499,10 @@ bool NSupervisor::Load(TString FileName)
     SetUpdateInterval(Node->GetValueAsInt());
   }
 
+  if ((Node = Document->GetNode("BaseFileName")) != 0) {
+    SetBaseFileName(Node->GetValueAsString());
+  }
+
   RemoveAllActiveModules();
   if ((Node = Document->GetNode("ActiveModuleSequence")) != 0) {
     for (unsigned int m = 0; m < Node->GetNNodes(); ++m) {
@@ -1613,6 +1626,7 @@ bool NSupervisor::Save(TString FileName)
 
   new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetSeconds());
   new MXmlNode(Document, "UpdateInterval", m_UpdateInterval);
+  new MXmlNode(Document, "BaseFileName", NModule::CleanPath(m_BaseFileName));
 
   MXmlNode* ActiveModuleSequence = new MXmlNode(Document, "ActiveModuleSequence");
   map<int, NModule*>::iterator Iter;

@@ -1,5 +1,5 @@
 /*
- * NModuleInterfaceEventSaverROOTTree.h
+ * NModuleInterfaceEventSaverROOTEnergyResponse.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NModuleInterfaceEventSaverROOTTree__
-#define __NModuleInterfaceEventSaverROOTTree__
+#ifndef __NModuleInterfaceEventSaverROOTEnergyResponse__
+#define __NModuleInterfaceEventSaverROOTEnergyResponse__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,27 +46,25 @@
 //! This interface represents a module interface representing modules with the
 //! capability to save to a ROOT Tree file.
 
-class NModuleInterfaceEventSaverROOTTree
+class NModuleInterfaceEventSaverROOTEnergyResponse
 {
   // public interface:
  public:
   //! Default constructor
-  NModuleInterfaceEventSaverROOTTree(NSatellite& Satellite);
+  NModuleInterfaceEventSaverROOTEnergyResponse(NSatellite& Satellite);
   //! Default destructor
-  virtual ~NModuleInterfaceEventSaverROOTTree();
+  virtual ~NModuleInterfaceEventSaverROOTEnergyResponse();
 
   //! Load and initialize the file
-  virtual bool OpenROOTFile(TString FileName);
+  virtual bool OpenEnergyResponseROOTFile(TString FileName);
 
   //! Return true if the ASCII file is open
-  virtual bool IsROOTFileOpen() { if (m_File != 0) return true; else return false; }
+  virtual bool IsEnergyResponseROOTFileOpen() { if (m_File != 0) return true; else return false; }
 
-  //! Main data analysis routine, which updates the event to a new level
-  //! WhatToStream: see NEvent::Stream
-  virtual bool SaveEventTree(NEvent& Event);
+  virtual bool SaveEnergyResponse(NEvent& Event);
 
   //! Close the file
-  virtual bool CloseROOTFile();
+  virtual bool CloseEnergyResponseROOTFile();
 
 
   // protected methods:
@@ -88,28 +86,13 @@ class NModuleInterfaceEventSaverROOTTree
   //! Reference to the satellite module
   NSatellite& m_Satellite;
 
-  float Reference_Ra;
-  float Reference_Dec;
-  float Pixsize;
-
-  //! Event list in ROOT TTree class
-  TTree* m_EventTree;
-
-  double   m_Time;
-  int      m_Origin;
-  double   m_PrimaryEnergy;
-  TVector3 m_PrimaryPosition, m_PrimaryDirection;
-  double   m_RA, m_Dec;
-  double   m_XPix, m_YPix;
-  int      m_TelID, m_DetID, m_Column, m_Row;
-  bool     m_BadDepthCal;
-  bool     m_DepthCut;
-  int      m_NTrigs, m_Grade;
-  double   m_TrigEnergy, m_NonTrigEnergy, m_ReconstructedEnergy, m_Energies[9];
+  //! Detector response in ROOT TH2 class
+  TH2D*  m_Response;
+  
 
 #ifdef ___CINT___
  public:
-  ClassDef(NModuleInterfaceEventSaverROOTTree, 0) // no descriptEventSaverLevel2Fitsn
+  ClassDef(NModuleInterfaceEventSaverROOTEnergyResponse, 0) // no descriptEventSaverLevel2Fitsn
 #endif
 
 };

@@ -53,6 +53,11 @@ class NModuleInterfaceIO
   //! Get the file name
   TString GetFileName() const { return m_FileName; }
 
+  //! Set the base file name
+  void SetBaseFileName(TString BaseFileName) { m_BaseFileName = BaseFileName; }
+  //! Get the base file name
+  TString GetBaseFileName() { return m_BaseFileName; }
+
 
   // protected methods:
  protected:
@@ -67,6 +72,8 @@ class NModuleInterfaceIO
  protected:
   //! The output file name
   TString m_FileName;
+  //! The base file name
+  TString m_BaseFileName;
   //! The module position as the module type
   int m_ChosenType;
 

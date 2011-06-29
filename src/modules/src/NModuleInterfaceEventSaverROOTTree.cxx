@@ -114,16 +114,6 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
   m_EventTree->Branch("ReconstructedEnergy",  &m_ReconstructedEnergy, "ReconstructedEnergy/D");
   m_EventTree->Branch("Energies",              m_Energies,            "Energies[9]/D");
 
-  m_Response = new TH2D("Response",
-			Form("Detector Response Produced by NuSim ver. %s (SVN rev. %d)",
-			     g_Version.Data(), g_SVNRevision),
-			820, 2.95, 84.95,  // ARF
-			820, 2.95, 84.95); // RMF Ebounds
-
-  m_Response->SetXTitle("Primary Energy (keV)");
-  m_Response->SetYTitle("Observed Energy (keV)");
-  m_Response->SetZTitle("Counts");
-
   gDirectory = OrgDirectory;
 
   return true;
@@ -197,29 +187,6 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverROOTTree::SaveResponse(NEvent& Event)
-{
-  //! Main data analysis routine, which updates the event to a new level
-
-  // cout<<"SaveROOT"<<endl;
-
-  // from NHits
-  int NHits = Event.GetNHits();
-  if      ( NHits == 0 ) return true;
-  else if ( NHits > 1 ) mout << "Warning: NHits (" << NHits << ")> 1" << endl;
-
-  m_ReconstructedEnergy = Event.GetHit(0).GetEnergy();
-  m_PrimaryEnergy       = Event.GetOriginalPhoton().GetEnergy();
-
-  m_Response->Fill(m_PrimaryEnergy, m_ReconstructedEnergy);
-
-  return true;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
 bool NModuleInterfaceEventSaverROOTTree::CloseROOTFile()
 {
   //! Close the file
@@ -229,7 +196,6 @@ bool NModuleInterfaceEventSaverROOTTree::CloseROOTFile()
 
   m_File->cd();
   if ( m_EventTree->GetEntries() > 0 ) m_EventTree->Write();
-  if ( m_Response ->GetEntries() > 0 ) m_Response ->Write();
   m_File->Close();
 
   m_File = 0;

@@ -28,6 +28,7 @@
 // MEGAlib libs:
 #include "NGlobal.h"
 #include "MGUIEEntry.h"
+#include "MGUIECBList.h"
 #include "MGUIEMinMaxEntry.h"
 
 // NuSTAR libs
@@ -71,7 +72,7 @@ class NGUIOptionsEventSelector : public NGUIOptions
   // private members:
  private:
   //! Choose a file to save the data to:
-  MGUIEFileSelector* m_FileName;
+  MGUIECBList* m_FileOptions;
   //! Choose if the saving should be applied before or after the selections
   TGCheckButton* m_SaveBeforeSelections;
 

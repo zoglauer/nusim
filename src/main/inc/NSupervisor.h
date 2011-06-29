@@ -115,6 +115,11 @@ class NSupervisor
   //! Set the update interval in started events
   void SetUpdateInterval(int UpdateInterval) { m_UpdateInterval = UpdateInterval; }
 
+  //! Return the path and the base name of all saved files
+  TString GetBaseFileName() const { return m_BaseFileName; }
+  //! Set the path and the base name of all saved files
+  void SetBaseFileName(TString BaseFileName) { m_BaseFileName = BaseFileName; }
+
   //! Get highest analysis level
   int GetHighestAnalysisLevel() const;
 
@@ -184,6 +189,9 @@ class NSupervisor
 
   //! Update frequency of the diagnostics window in started events
   int m_UpdateInterval;
+
+  //! The base file name for all saved files
+  TString m_BaseFileName;
 
 
   //! List of all available modules

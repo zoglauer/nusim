@@ -74,6 +74,16 @@ void NGUIOptionsStarTrackerEngineTrivial::Create()
   }
   AddFrame(m_EnableBlur, LabelLayout);
 
+
+  m_SaveAsFits = new TGCheckButton(this, "Save as Level 1 FITS file");
+  m_SaveAsFits->Associate(this);
+  if (dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->GetSaveAsFits() == true) {
+    m_SaveAsFits->SetState(kButtonDown);
+  } else {
+    m_SaveAsFits->SetState(kButtonUp);
+  }
+  AddFrame(m_SaveAsFits, LabelLayout);
+
   PostCreate();
 }
 
@@ -122,6 +132,12 @@ bool NGUIOptionsStarTrackerEngineTrivial::OnApply()
     dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->EnableBlur(true);
   } else {
     dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->EnableBlur(false);    
+  }
+
+  if (m_SaveAsFits->GetState() == kButtonDown) {
+    dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->SetSaveAsFits(true);
+  } else {
+    dynamic_cast<NModuleStarTrackerEngineTrivial*>(m_Module)->SetSaveAsFits(false);
   }
 
 	return true;

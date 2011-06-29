@@ -79,9 +79,19 @@ void NGUIOptionsMetrologyEngine::Create()
   if (dynamic_cast<NModuleMetrologyEngine*>(m_Module)->IsBlurEnabled() == true) {
     m_EnableBlur->SetState(kButtonDown);
   } else {
-    m_EnableBlur->SetState(kButtonUp);    
+    m_EnableBlur->SetState(kButtonUp);
   }
   AddFrame(m_EnableBlur, LabelLayout);
+
+
+  m_SaveAsFits = new TGCheckButton(this, "Save as Level 1 FITS file");
+  m_SaveAsFits->Associate(this);
+  if (dynamic_cast<NModuleMetrologyEngine*>(m_Module)->GetSaveAsFits() == true) {
+    m_SaveAsFits->SetState(kButtonDown);
+  } else {
+    m_SaveAsFits->SetState(kButtonUp);
+  }
+  AddFrame(m_SaveAsFits, LabelLayout);
 
 
   PostCreate();
@@ -132,7 +142,13 @@ bool NGUIOptionsMetrologyEngine::OnApply()
   if (m_EnableBlur->GetState() == kButtonDown) {
     dynamic_cast<NModuleMetrologyEngine*>(m_Module)->EnableBlur(true);
   } else {
-    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->EnableBlur(false);    
+    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->EnableBlur(false);
+  }
+
+  if (m_SaveAsFits->GetState() == kButtonDown) {
+    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetSaveAsFits(true);
+  } else {
+    dynamic_cast<NModuleMetrologyEngine*>(m_Module)->SetSaveAsFits(false);
   }
 
 	return true;
