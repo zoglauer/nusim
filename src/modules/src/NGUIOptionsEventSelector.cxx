@@ -62,7 +62,11 @@ void NGUIOptionsEventSelector::Create()
 {
   PreCreate();
 
-  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 20, 20, 20, 5);
+  TGLayoutHints* FileLabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 15, 10);
+  TGLabel* FileLabel = new TGLabel(this, "Event saving options:");
+  AddFrame(FileLabel, FileLabelLayout);
+
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 20, 20, 10, 5);
 
   m_FileOptions = new MGUIECBList(this, "Choose how to save the output file (you can choose none or multiple):", true);
   m_FileOptions->Add("Events in FITS format (*.events.fits)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits());
@@ -83,11 +87,11 @@ void NGUIOptionsEventSelector::Create()
   AddFrame(m_SaveBeforeSelections, SaveBeforeSelectionsLayout);
 
   TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 15, 10);
-  TGLabel* SelectionsLabel = new TGLabel(this, "Event selections:");
+  TGLabel* SelectionsLabel = new TGLabel(this, "Event selection options:");
   AddFrame(SelectionsLabel, LabelLayout);
   
   
-  TGLayoutHints* MinMaxLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 10, 20);
+  TGLayoutHints* MinMaxLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 10, 5);
   
   m_Energies = new MGUIEMinMaxEntry(this, "Energy window [keV]", false,
                                     dynamic_cast<NModuleEventSelector*>(m_Module)->GetEnergyMin(),
@@ -105,7 +109,7 @@ void NGUIOptionsEventSelector::Create()
   } else {
     m_SelectByBadDepthCal->SetState(kButtonUp);
   }
-  AddFrame(m_SelectByBadDepthCal, LabelLayout);
+  AddFrame(m_SelectByBadDepthCal, MinMaxLayout);
 
   m_SelectByDepthCut = new TGCheckButton(this, "Enable event selection by depth cut");
   m_SelectByDepthCut->Associate(this);
@@ -114,7 +118,7 @@ void NGUIOptionsEventSelector::Create()
   } else {
     m_SelectByDepthCut->SetState(kButtonUp);
   }
-  AddFrame(m_SelectByDepthCut, LabelLayout);
+  AddFrame(m_SelectByDepthCut, MinMaxLayout);
 
   PostCreate();
 }
