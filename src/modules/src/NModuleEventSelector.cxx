@@ -277,6 +277,11 @@ bool NModuleEventSelector::Finalize()
       if (CloseROOTFile() == false) return false;
     } 
   }
+  if (m_SaveAsResponseROOT == true) {
+    if (IsEnergyResponseROOTFileOpen() == true) {
+      if (CloseEnergyResponseROOTFile() == false) return false;
+    }
+  }
   if (m_SaveAsDat == true) {
     if (IsAsciiFileOpen() == true) {
       if (CloseAsciiFile() == false) return false;
