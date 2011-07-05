@@ -105,7 +105,7 @@ bool NModuleStarTrackerEngineTrivial::AnalyzeStarTrackerData(NStarTrackerData& D
 {
   // Main data analysis routine, which updates the event to a new level 
   
-  NOrientation OS4 = m_Satellite.GetOrientationStarTracker(m_Time, 4);
+  //NOrientation OS4 = m_Satellite.GetOrientationStarTracker(m_Time, 4);
   NOrientation S4 = m_Satellite.GetOrientationStarTrackerRelOpticalBench(m_Time,4);
   NOrientation OB = m_Satellite.GetOrientationOpticalBench(m_Time);
   NQuaternion Qfbst = OB.GetRotationQuaternion()*S4.GetRotationQuaternion(); 

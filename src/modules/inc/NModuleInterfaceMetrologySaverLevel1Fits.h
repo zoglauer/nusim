@@ -59,7 +59,8 @@ class NModuleInterfaceMetrologySaverLevel1Fits
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
   virtual bool SaveAsLevel1Fits(NMetrologyData& Data);
- 
+  //! Save a chunk of data
+  virtual bool SaveData();
   //! Close the file
   virtual bool CloseLevel1FitsFile();
 
@@ -80,6 +81,13 @@ class NModuleInterfaceMetrologySaverLevel1Fits
 
   // private members:
  private:
+  vector<double> Time; 
+  vector<double> m_xpsd0;
+  vector<double> m_ypsd0;
+  vector<double> m_xpsd1;
+  vector<double> m_ypsd1;
+  
+  long m_counter;
 
 
 #ifdef ___CINT___

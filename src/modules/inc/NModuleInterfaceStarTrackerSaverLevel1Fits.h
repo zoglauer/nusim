@@ -63,16 +63,6 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits
   //! Close the file
   virtual bool CloseLevel1FitsFile();
 
-
-  // protected methods:
- protected:
-
-
-  // private methods:
- private:
-
-
-
   // protected members:
  protected:
   //! The output stream
@@ -80,6 +70,12 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits
 
   // private members:
  private:
+
+  vector<double> Time; 
+  vector<double> m_X;
+  vector<double> m_Y;
+  vector<double> m_Z;
+  vector<double> m_R;
 
 
 #ifdef ___CINT___
