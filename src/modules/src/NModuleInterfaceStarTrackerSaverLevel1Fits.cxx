@@ -142,6 +142,8 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   char version[10];
   char creator[10],telescop[10];
   strcpy(version,g_Version);
+  strcpy(creator,"NuSIM");
+  strcpy(telescop,"NuSTAR");
 
   fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);  
   fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
@@ -170,7 +172,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   fits_write_col(m_File, TDOUBLE, 1, 1, 1, Time.size(), dTime, &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('Time') failed (" << Words << ")" << endl;
+    cerr << "Error L1CHU4: fits_write_col('Time') failed (" << Words << ")" << endl;
     fits_close_file(m_File, &Status);
     m_File = 0;
     return false;

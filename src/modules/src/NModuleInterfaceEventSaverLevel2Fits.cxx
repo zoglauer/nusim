@@ -88,15 +88,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
   long nrow = 0;
-  // Deactivating the direction and origin of photon to save space since the precollimator has been scrapped.
-  //int tfield = 11;
-  //char *ttype[] = {"X","Y","PHA","Time","grade","opticX","opticY","OpticZ","opticVx","opticVy","opticVz"};
-  //char *tform[] = {"1E","1E","1E","1E","1I","1E","1E","1E","1E","1E","1E"};
-  //char *tunit[] = {"pixel","pixel","keV","s","grade","mm","mm","mm","unit","unit","unit"};
-  int tfield = 7;
-  char* ttype[] = {"X","Y","PI","E","Time","grade","phottype"};
-  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I"};
-  char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type"};
+  int tfield = 14;
+  char* ttype[] = {"X","Y","PI","E","Time","grade","phottype","Qx","Qy","Qz","Qr","Tx","Ty","Tz"};
+  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I","1E","1E","1E","1E","1E","1E","1E"};
+  char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type","unit","unit","unit","unit","mm","mm","mm"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -112,6 +107,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   m_Time.clear();
   m_Origin.clear();
   m_Grade.clear();
+  m_Qfbob.clear();
+  m_Tfbob.clear();
 
   return true;
 }
@@ -131,6 +128,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Time.push_back(float(Event.GetTime().GetSeconds()));
     m_Origin.push_back(Event.GetOrigin());
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
+	m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
+	m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
   }
     
   return true;
@@ -311,6 +310,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   short* fGrade  = new short[m_Ra.size()];
   short* fOrigin = new short[m_Ra.size()];
   int*   fPI     = new int  [m_Ra.size()];
+  float* fQx     = new float[m_Ra.size()];
+  float* fQy     = new float[m_Ra.size()];
+  float* fQz     = new float[m_Ra.size()];
+  float* fQr     = new float[m_Ra.size()];
+  float* fTx     = new float[m_Ra.size()];
+  float* fTy     = new float[m_Ra.size()];
+  float* fTz     = new float[m_Ra.size()];
 
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
@@ -322,6 +328,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     fTime  [i] = m_Time[i];
     fOrigin[i] = (short) m_Origin[i];
     fGrade [i] = (short) m_Grade[i];
+	fQx    [i] = (float) m_Qfbob[i].m_V[0];
+	fQy    [i] = (float) m_Qfbob[i].m_V[1];
+	fQz    [i] = (float) m_Qfbob[i].m_V[2];
+	fQr    [i] = (float) m_Qfbob[i].m_R;
+	fTx    [i] = (float) m_Tfbob[i][0];
+	fTy    [i] = (float) m_Tfbob[i][1];
+	fTz    [i] = (float) m_Tfbob[1][2];
   }
   
   char Words[30];
@@ -361,7 +374,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fTime, &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('Time') failed (" << Words << ")" << endl;
+    cerr << "Error L2: fits_write_col('Time') failed (" << Words << ")" << endl;
     fits_close_file(m_File, &Status);
     m_File = 0;
     return false;
@@ -382,6 +395,63 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
+ fits_write_col(m_File, TFLOAT, 8, 1, 1, m_Ra.size(), fQx, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 9, 1, 1, m_Ra.size(), fQy, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qy') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 10, 1, 1, m_Ra.size(), fQz, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qz') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 11, 1, 1, m_Ra.size(), fQr, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qr') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+   fits_write_col(m_File, TFLOAT, 12, 1, 1, m_Ra.size(), fTx, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Tx') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 13, 1, 1, m_Ra.size(), fTy, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Ty') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 14, 1, 1, m_Ra.size(), fTz, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Tz') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+
 
   if (Status != 0) {
     mgui<<"Error writing event table!"<<endl;
@@ -397,7 +467,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   delete [] fOrigin;
   delete [] fPI;
   delete [] fGrade;
-
+  delete [] fQx;
+  delete [] fQy;
+  delete [] fQz;
+  delete [] fQr;
+  delete [] fTx;
+  delete [] fTy;
+  delete [] fTz;
 
   float tlmin1 = 0;
   float tlmin2 = 0;

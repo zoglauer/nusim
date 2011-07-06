@@ -166,7 +166,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
     fits_write_col(m_File, TDOUBLE, 1, m_counter, 1, Time.size(), dTime, &Status);
     if (Status != 0) {
       fits_get_errstatus(Status, Words);
-      cerr << "Error: fits_write_col('Time') failed (" << Words << ")" << endl;
+      cerr << "Error L1MET: fits_write_col('Time') failed (" << Words << ")" << endl;
       fits_close_file(m_File, &Status);
       m_File = 0;
       return false;

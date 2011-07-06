@@ -84,7 +84,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   //! Reference to the satellite module 
   NSatellite& m_Satellite; 
    
-  //! fields for fits file. Saving in chunks of 1000 photons
+  //! fields for fits file.
   vector<double> m_Ra; 
   vector<double> m_Dec;
   vector<double> m_Energy;
@@ -92,7 +92,8 @@ class NModuleInterfaceEventSaverLevel2Fits
   vector<int>    m_Origin;
   vector<int>    m_PI;
   vector<int>    m_Grade;
-
+  vector<NQuaternion> m_Qfbob;
+  vector<MVector> m_Tfbob;
 
 #ifdef ___CINT___
  public:
