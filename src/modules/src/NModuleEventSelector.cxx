@@ -381,7 +381,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   new MXmlNode(Node, "SaveEventsAsFits", m_SaveAsFits);
-  new MXmlNode(Node, "SaveEventsAsDat", m_SaveAsFits);
+  new MXmlNode(Node, "SaveEventsAsDat", m_SaveAsDat);
   new MXmlNode(Node, "SaveEventsAsROOT", m_SaveAsROOT);
   new MXmlNode(Node, "SaveEnergyResponseAsROOT", m_SaveAsResponseROOT);
   new MXmlNode(Node, "SaveBeforeSelections", m_SaveBeforeSelections);
