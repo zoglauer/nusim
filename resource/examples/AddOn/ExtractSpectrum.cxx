@@ -1,5 +1,5 @@
 /* 
- * ConcatDat.cxx
+ * ExtractSpectrum.cxx
  *
  *
  * Copyright (C) by Andreas Zoglauer.
@@ -46,13 +46,13 @@ using namespace std;
 
 /******************************************************************************/
 
-class ConcatDat
+class ExtractSpectrum
 {
 public:
   /// Default constructor
-  ConcatDat();
+  ExtractSpectrum();
   /// Default destructor
-  ~ConcatDat();
+  ~ExtractSpectrum();
   
   /// Parse the command line
   bool ParseCommandLine(int argc, char** argv);
@@ -67,10 +67,16 @@ private:
   bool m_Interrupt;
 
   /// Input file names
-  vector<TString> m_InputFileNames;
+  TString m_InputFileName;
  
-  /// Output file name
-  TString m_OutputFileName;
+  //! RA
+  vector<double> m_RAs; //deg
+  //! DEC
+  vector<double> m_DECs; // deg
+  //! Radius
+  vector<double> m_Radii; // deg
+  //! Direction
+  vector<MVector> m_Directions; // deg
 };
 
 /******************************************************************************/
@@ -79,7 +85,7 @@ private:
 /******************************************************************************
  * Default constructor
  */
-ConcatDat::ConcatDat() : m_Interrupt(false)
+ExtractSpectrum::ExtractSpectrum() : m_Interrupt(false)
 {
   gStyle->SetPalette(1, 0);
 }
@@ -88,7 +94,7 @@ ConcatDat::ConcatDat() : m_Interrupt(false)
 /******************************************************************************
  * Default destructor
  */
-ConcatDat::~ConcatDat()
+ExtractSpectrum::~ExtractSpectrum()
 {
   // Intentionally left blanck
 }
@@ -97,14 +103,14 @@ ConcatDat::~ConcatDat()
 /******************************************************************************
  * Parse the command line
  */
-bool ConcatDat::ParseCommandLine(int argc, char** argv)
+bool ExtractSpectrum::ParseCommandLine(int argc, char** argv)
 {
   ostringstream Usage;
   Usage<<endl;
-  Usage<<"  Usage: ConcatDat <options>"<<endl;
+  Usage<<"  Usage: ExtractSpectrum <options>"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"         -i:   Input file name"<<endl;
-  Usage<<"         -o:   Output file name"<<endl;
+  Usage<<"         -p:   Position: RA, DEC, Radius"<<endl;
   Usage<<"         -h:   print this help"<<endl;
   Usage<<endl;
 
@@ -125,29 +131,36 @@ bool ConcatDat::ParseCommandLine(int argc, char** argv)
 
 		// First check if each option has sufficient arguments:
 		// Single argument
-    if (Option == "-i" || Option == "-o") {
+    if (Option == "-i") {
 			if (!((argc > i+1) && argv[i+1][0] != '-')){
 				cout<<"Error: Option "<<argv[i][1]<<" needs a second argument!"<<endl;
 				cout<<Usage.str()<<endl;
 				return false;
 			}
 		} 
+		/*
 		// Multiple arguments_
-		//else if (Option == "-??") {
-		//	if (!((argc > i+2) && argv[i+1][0] != '-' && argv[i+2][0] != '-')){
-		//		cout<<"Error: Option "<<argv[i][1]<<" needs two arguments!"<<endl;
-		//		cout<<Usage.str()<<endl;
-		//		return false;
-		//	}
-		//}
-
+		else if (Option == "-p") {
+			if (!((argc > i+3) && argv[i+1][0] != '-' && argv[i+2][0] != '-' && argv[i+3][0] != '-')) {
+				cout<<"Error: Option "<<argv[i][1]<<" needs three arguments!"<<endl;
+				cout<<Usage.str()<<endl;
+				return false;
+			}
+		}
+    */
+    
 		// Then fulfill the options:
     if (Option == "-i") {
-      m_InputFileNames.push_back(argv[++i]);
-			cout<<"Accepting input file name: "<<m_InputFileNames.back()<<endl;
-    } else if (Option == "-o") {
-      m_OutputFileName = argv[++i];
-			cout<<"Accepting output file name: "<<m_OutputFileName<<endl;
+      m_InputFileName = argv[++i];
+			cout<<"Accepting input file name: "<<m_InputFileName<<endl;
+    } else if (Option == "-p") {
+      m_RAs.push_back(atof(argv[++i]));
+      m_DECs.push_back(atof(argv[++i]));
+      MVector Dir;
+      Dir.SetMagThetaPhi(1.0, m_RAs.back()*c_Rad, m_DECs.back()*c_Rad+c_Pi/2);
+      m_Directions.push_back(Dir);
+      m_Radii.push_back(atof(argv[++i]));
+			cout<<"Accepting position: "<<m_RAs.back()<<", "<<m_DECs.back()<<", "<<m_Radii.back()<<endl;
     } else {
 			cout<<"Error: Unknown option \""<<Option<<"\"!"<<endl;
 			cout<<Usage.str()<<endl;
@@ -155,19 +168,10 @@ bool ConcatDat::ParseCommandLine(int argc, char** argv)
 		}
   }
 
-  if (m_OutputFileName == "") {
-	  cout<<"Error: Empty output file name!"<<endl;
+
+  if (m_InputFileName == "" || MFile::Exists(m_InputFileName) == false) {
+	  cout<<"Error: You need to give a valid input file names!"<<endl;
     return false;
-  }
-  if (m_InputFileNames.size() == 0) {
-	  cout<<"Error: You need to give some input file names!"<<endl;
-    return false;
-  }
-  for (unsigned int f = 0; f < m_InputFileNames.size(); ++f) {
-    if (MFile::Exists(m_InputFileNames[f]) == false) {
-	    cout<<"Error: File does not exist: "<<m_InputFileNames[f]<<endl;
-      return false;
-    }
   }
 
   return true;
@@ -177,46 +181,73 @@ bool ConcatDat::ParseCommandLine(int argc, char** argv)
 /******************************************************************************
  * Do whatever analysis is necessary
  */
-bool ConcatDat::Analyze()
+bool ExtractSpectrum::Analyze()
 {
+  TH1D* GeneralEnergyHist = new TH1D("GeneralEnergyHist", "GeneralEnergyHist", 200, 0, 100);
+  
+  vector<TH1D*> SelectedHists;
+  for (unsigned int i = 0; i < m_RAs.size(); ++i) {
+    ostringstream Name;
+    Name<<"Sel ("<<m_RAs[i]<<", "<<m_DECs[i]<<", "<<m_Radii[i]<<")";
+    TH1D* Hist = new TH1D(Name.str().c_str(), Name.str().c_str(), 200, 0, 100);
+    Hist->SetMinimum(0);
+    SelectedHists.push_back(Hist);
+  }
+  
   NSatellite Sat;
   
-  NModuleEventSaver Saver(Sat);
-  Saver.SetFileName(m_OutputFileName);
-  if (Saver.Initialize() == false) return false;
-
-  NTime TimeOffset(0);
-  unsigned long IDOffset = 0;
-  for (unsigned int f = 0; f < m_InputFileNames.size(); ++f) {
-    NModuleEventLoader Loader(Sat);
-    Loader.SetFileName(m_InputFileNames[f]);
-    if (Loader.Initialize() == false) return false;
+  NModuleEventLoader Loader(Sat);
+  Loader.SetFileName(m_InputFileName);
+  if (Loader.Initialize() == false) return false;
     
-    NEvent Event;
-    NTime LatestTime(0);
-    unsigned long LatestID = 0;
-    while (Loader.AnalyzeEvent(Event) == true) {
-      if (Event.IsEmpty() == true) break; 
-      
-      LatestTime = Event.GetTime();
-      LatestID = Event.GetID();
-      Event.SetTime(Event.GetTime() + TimeOffset);
-      Event.SetID(Event.GetID() + IDOffset);
-      Saver.AnalyzeEvent(Event);
-    }
-    TimeOffset += LatestTime;
-    IDOffset += LatestID; 
-    Loader.Finalize();
-  }
-  Saver.Finalize();
+  NEvent Event;
 
+  NTime LastTime;
+  while (Loader.AnalyzeEvent(Event) == true) {
+    if (Event.IsEmpty() == true) break; 
+      
+    for (unsigned int h = 0; h < Event.GetNHits(); ++h) {
+      NHit& Hit = Event.GetHitRef(h);
+      LastTime = Event.GetTime();
+      GeneralEnergyHist->Fill(Hit.GetEnergy());
+      for (unsigned int i = 0; i < m_RAs.size(); ++i) {
+        MVector DirPhoton;
+        DirPhoton.SetMagThetaPhi(1.0, Hit.GetObservatoryData().GetRa()/rad, Hit.GetObservatoryData().GetDec()/rad + c_Pi/2);
+        if (DirPhoton.Angle(m_Directions[i]) <= m_Radii[i]*c_Rad) {
+          SelectedHists[i]->Fill(Hit.GetEnergy());
+        }
+      }
+    }
+  }
+
+  for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
+    GeneralEnergyHist->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth());
+  }
+
+  TCanvas* GeneralEnergyCanvas = new TCanvas();
+  GeneralEnergyCanvas->cd();
+  GeneralEnergyHist->Draw();
+  GeneralEnergyCanvas->Update();
+
+  
+  
+  for (unsigned int i = 0; i < m_RAs.size(); ++i) {
+    for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
+      SelectedHists[i]->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth());
+    }
+    TCanvas* Canvas = new TCanvas();
+    Canvas->cd();
+    SelectedHists[i]->Draw();
+    Canvas->Update();
+  }
+  
   return true;
 }
 
 
 /******************************************************************************/
 
-ConcatDat* g_Prg = 0;
+ExtractSpectrum* g_Prg = 0;
 
 /******************************************************************************/
 
@@ -245,9 +276,9 @@ int main(int argc, char** argv)
   //(void) signal(SIGINT, CatchSignal);
 
 
-  TApplication ConcatDatApp("ConcatDatApp", 0, 0);
+  TApplication ExtractSpectrumApp("ExtractSpectrumApp", 0, 0);
 
-  g_Prg = new ConcatDat();
+  g_Prg = new ExtractSpectrum();
 
   if (g_Prg->ParseCommandLine(argc, argv) == false) {
     cerr<<"Error during parsing of command line!"<<endl;
@@ -258,7 +289,7 @@ int main(int argc, char** argv)
     return -2;
   } 
 
-  ConcatDatApp.Run();
+  ExtractSpectrumApp.Run();
 
   cout<<"Program exited normally!"<<endl;
 
