@@ -45,7 +45,8 @@ NSatellite::NSatellite()
   m_Orbit = 0;
   m_Orientations = 0;
   m_Time = 0;
-
+  m_GeometryAndDetectorProperties = 0;
+  
   Clear();
 }
 
@@ -86,6 +87,11 @@ bool NSatellite::Initialize()
     return false;
   }
   //if (m_Time->Initialize() == false) return false;
+  if (m_GeometryAndDetectorProperties == 0) {
+    mgui<<"You have no geometry and detector properties module defined for your satellite!"<<error;
+    return false;
+  }
+  //if (m_GeometryAndDetectorProperties->Initialize() == false) return false;
 
   return true;
 }
