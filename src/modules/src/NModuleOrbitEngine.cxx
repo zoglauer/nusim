@@ -63,8 +63,8 @@ NModuleOrbitEngine::NModuleOrbitEngine(NSatellite& Satellite) : NModule(Satellit
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsOrbitPosition();
 
-  m_OrbitDuration.SetSeconds(96.3*minute);
-  m_BlackoutDuration.SetSeconds(36.5*minute);
+  m_OrbitDuration.Set(96.3*minute);
+  m_BlackoutDuration.Set(36.5*minute);
 }
 
 
@@ -221,11 +221,11 @@ bool NModuleOrbitEngine::ReadXmlConfiguration(MXmlNode* Node)
 
   MXmlNode* OrbitDurationNode = Node->GetNode("OrbitDuration");
   if (OrbitDurationNode != 0) {
-    m_OrbitDuration.SetSeconds(OrbitDurationNode->GetValueAsDouble());
+    m_OrbitDuration.Set(OrbitDurationNode->GetValueAsDouble());
   }
   MXmlNode* BlackoutDurationNode = Node->GetNode("BlackoutDuration");
   if (BlackoutDurationNode != 0) {
-    m_BlackoutDuration.SetSeconds(BlackoutDurationNode->GetValueAsDouble());
+    m_BlackoutDuration.Set(BlackoutDurationNode->GetValueAsDouble());
   }
 
   return true;
@@ -241,8 +241,8 @@ MXmlNode* NModuleOrbitEngine::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
 
-  new MXmlNode(Node, "OrbitDuration", m_OrbitDuration.GetSeconds());
-  new MXmlNode(Node, "BlackoutDuration", m_BlackoutDuration.GetSeconds());
+  new MXmlNode(Node, "OrbitDuration", m_OrbitDuration.GetAsSeconds());
+  new MXmlNode(Node, "BlackoutDuration", m_BlackoutDuration.GetAsSeconds());
 
   return Node;
 }

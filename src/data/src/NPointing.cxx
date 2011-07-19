@@ -64,7 +64,7 @@ void NPointing::Clear()
   m_Ra = 0.0;
   m_Dec = 0.0;
   m_Roll = 180*60;
-  m_Time.SetSeconds(0.0);
+  m_Time.Set(0.0);
   RaDecToQuaternion();
 
   m_Empty = true;
@@ -186,9 +186,9 @@ TString NPointing::ToString() const
   T += " deg, Roll=";
   T += m_Roll/60;
   T += " deg";
-  if (m_Time.GetSeconds() > 0.0) {
+  if (m_Time.GetAsSeconds() > 0.0) {
     T += ", Time=";
-    T += m_Time.GetSeconds();
+    T += m_Time.GetAsSeconds();
     T += " sec";
   }
 
@@ -227,7 +227,7 @@ bool NPointing::Parse(TString& Line)
   }
   
   RaDecToQuaternion();
-  m_Time.SetSeconds(Time);
+  m_Time.Set(Time);
 
   m_Empty = false;
 
@@ -258,7 +258,7 @@ bool NPointing::ReadXmlConfiguration(MXmlNode* Node)
   }
   MXmlNode* TimeNode = Node->GetNode("Time");
   if (TimeNode != 0) {
-    m_Time.SetSeconds(TimeNode->GetValueAsDouble());
+    m_Time.Set(TimeNode->GetValueAsDouble());
   }
 
   // Do an official "set" to initialize all the other variables:
@@ -280,7 +280,7 @@ MXmlNode* NPointing::CreateXmlConfiguration()
   new MXmlNode(Node, "RA", m_Ra);
   new MXmlNode(Node, "DEC", m_Dec);
   new MXmlNode(Node, "Roll", m_Roll);
-  new MXmlNode(Node, "Time", m_Time.GetSeconds());
+  new MXmlNode(Node, "Time", m_Time.GetAsSeconds());
 
   return Node;
 }

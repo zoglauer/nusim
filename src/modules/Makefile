@@ -25,6 +25,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfacePhotonPropagation.o \
 	$(LB)/NModuleInterfaceTime.o \
 	$(LB)/NModuleInterfaceIO.o \
+	$(LB)/NModuleInterfacePhotonSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverLevel2Fits.o \
 	$(LB)/NModuleInterfaceEventSaverROOTTree.o \
@@ -111,6 +112,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleOrientationsDatabase.o \
 	$(LB)/NGUIOptionsOrientationsDatabase.o \
 	$(LB)/NModuleTimeIdeal.o \
+	$(LB)/NGUIOptionsTimeEngine.o \
 	$(LB)/NModuleGeometryAndDetectorProperties.o \
 	$(LB)/NGUIDiagnostics.o \
 	$(LB)/NGUIDiagnosticsMain.o \

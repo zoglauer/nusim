@@ -60,10 +60,10 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_BinSizeRa = PixelSize/60;
   
   m_Area = 0;
-  m_Time.SetSeconds(0);
+  m_Time.Set(0.0);
 
   // Add all histograms and canvases below
-  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T_{eff} = ") + m_Time.ToString(), 
+  m_Backprojection = new TH2D("Backprojection", TString("Backprojected hits after T_{eff} = ") + m_Time.GetString(3), 
                               int(m_BinSizeRa*(m_MaxRa-m_MinRa)), m_MinRa, m_MaxRa, 
                               int(m_BinSizeDec*(m_MaxDec-m_MinDec)), m_MinDec, m_MaxDec);
   m_Backprojection->SetXTitle("RA [deg]");
@@ -339,19 +339,19 @@ void NGUIDiagnosticsBackprojector::Update()
         m_Backprojection->Fill(m_Ra[i], m_Dec[i]);
       }
     }
-    m_Backprojection->SetTitle(TString("Backprojected hits after T_{eff} = ") + m_Time.ToString());
+    m_Backprojection->SetTitle(TString("Backprojected hits after T_{eff} = ") + m_Time.GetString(3));
     m_BackprojectionCanvas->GetCanvas()->Modified();
     m_BackprojectionCanvas->GetCanvas()->Update();
     gSystem->ProcessEvents();
   }
 
   if (m_EnergyCanvas != 0) {
-    if (m_EnergyWidth != 0.0 && m_Area != 0.0 && m_Time.GetSeconds() != 0.0) {
+    if (m_EnergyWidth != 0.0 && m_Area != 0.0 && m_Time.GetAsSeconds() != 0.0) {
       int counts = 0;
 
       for (int b = 1; b <= m_NormalizedEnergy->GetNbinsX(); ++b) {
         counts += m_Energy->GetBinContent(b);
-        m_NormalizedEnergy->SetBinContent(b, m_Energy->GetBinContent(b)/m_Energy->GetBinWidth(b)/(m_Area/100)/m_Time.GetSeconds());
+        m_NormalizedEnergy->SetBinContent(b, m_Energy->GetBinContent(b)/m_Energy->GetBinWidth(b)/(m_Area/100)/m_Time.GetAsSeconds());
       }
 
       /*
@@ -382,9 +382,9 @@ void NGUIDiagnosticsBackprojector::Update()
       */
       
 //       cout<<"Counts: "<<counts<<endl; 
-//       cout<<"Counts/sec: "<<counts/m_Time.GetSeconds()<<" --> "<<m_Time.GetSeconds()<<" s"<<endl; 
-//       cout<<"Counts/sec/cm2: "<<counts/m_Time.GetSeconds()/(m_Area/100)<<" --> "<<m_Area/100<<" cm2"<<endl; 
-//       cout<<"Counts/sec/cm2/keV: "<<counts/m_Time.GetSeconds()/(m_Area/100)/m_EnergyWidth<<" --> "<<m_EnergyWidth<<" keV"<<endl; 
+//       cout<<"Counts/sec: "<<counts/m_Time.GetAsSeconds()<<" --> "<<m_Time.GetAsSeconds()<<" s"<<endl; 
+//       cout<<"Counts/sec/cm2: "<<counts/m_Time.GetAsSeconds()/(m_Area/100)<<" --> "<<m_Area/100<<" cm2"<<endl; 
+//       cout<<"Counts/sec/cm2/keV: "<<counts/m_Time.GetAsSeconds()/(m_Area/100)/m_EnergyWidth<<" --> "<<m_EnergyWidth<<" keV"<<endl; 
 //     } else {
 //       cout<<"Cannot show normalized energy histogram. "<<endl;
     }

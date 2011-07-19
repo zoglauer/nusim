@@ -120,7 +120,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveAsLevel1Fits(NStarTrackerDa
 
   NQuaternion Q = Data.GetStarTrackerDataSet4().GetMeasuredTransformation();
 
-  Time.push_back(float(Data.GetTime().GetSeconds()));
+  Time.push_back(float(Data.GetTime().GetAsSeconds()));
   m_X.push_back(Q.m_V[0]);
   m_Y.push_back(Q.m_V[1]);
   m_Z.push_back(Q.m_V[2]);

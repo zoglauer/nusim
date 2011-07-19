@@ -95,7 +95,7 @@ bool NPhoton::Stream(ofstream& S, TString Keyword)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPhoton::Parse(TString& Line)
+bool NPhoton::Parse(const TString& Line)
 {
   //! Stream the content from a line of an ASCII file  
 

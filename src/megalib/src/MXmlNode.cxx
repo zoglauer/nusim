@@ -97,6 +97,19 @@ MXmlNode::MXmlNode(MXmlNode* MotherNode, TString Name, int Value) : MXmlData(Nam
 ////////////////////////////////////////////////////////////////////////////////
 
 
+MXmlNode::MXmlNode(MXmlNode* MotherNode, TString Name, long Value) : MXmlData(Name, Value)
+{
+  //! Constructor
+
+  if (MotherNode != 0) {
+    MotherNode->AddNode(this);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 MXmlNode::MXmlNode(MXmlNode* MotherNode, TString Name, unsigned int Value) : MXmlData(Name, Value)
 {
   //! Constructor

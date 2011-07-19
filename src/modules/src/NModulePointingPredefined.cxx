@@ -111,7 +111,7 @@ bool NModulePointingPredefined::Initialize()
   m_StartIndexPointingJitters = 0;
   m_TimeWrapPointingJitters = 0.0;
 
-  m_BlackoutTime.SetSeconds(0);
+  m_BlackoutTime.Set(0.0);
   
   if (m_MotionPattern == c_MotionPatternDB) {
     if (MFile::Exists(m_PointingJitterDBFileName) == false) {
@@ -142,7 +142,7 @@ bool NModulePointingPredefined::Initialize()
   
   if (m_AbsoluteTime == false) {
     // Scale
-    double Scaler = m_ObservationTime.GetSeconds()/T.GetSeconds();
+    double Scaler = m_ObservationTime.GetAsSeconds()/T.GetAsSeconds();
     for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
       m_SequencedInitialPointings[p].SetTime(m_SequencedInitialPointings[p].GetTime()*Scaler);
     }
@@ -150,7 +150,7 @@ bool NModulePointingPredefined::Initialize()
   
   
   for (unsigned int j = 0; j < m_PointingJitters.size(); ++j) {
-    m_PointingJitters[j].SetTime(NTime(j*m_Satellite.GetOrbitDuration().GetSeconds()/m_PointingJitters.size()));
+    m_PointingJitters[j].SetTime(NTime(j*m_Satellite.GetOrbitDuration().GetAsSeconds()/m_PointingJitters.size()));
   }
   //for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
   //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
@@ -312,7 +312,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
     // PART 1: Find the initial pointing:
     
-    if (t.GetSeconds() >= 0 && m_SequencedInitialPointings.size() > 1) {
+    if (t.GetAsSeconds() >= 0 && m_SequencedInitialPointings.size() > 1) {
       if (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
         m_StartIndexSequencedInitialPointings = 0;
         while (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
@@ -355,7 +355,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     if (m_MotionPattern == c_MotionPatternNone) {
       m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
       if (m_ContinuousRollMode == true) {
-        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetSeconds()*m_ContinousRollModeRollPerSecond);
+        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetAsSeconds()*m_ContinousRollModeRollPerSecond);
       }
     } else if (m_MotionPattern == c_MotionPatternDB) {
       // Now apply the pointing jitter
@@ -364,7 +364,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       NTime JitterTime = t - m_PointingJitters.back().GetTime()*int(t/m_PointingJitters.back().GetTime());
       
       // Retrieve latest perturbed alignments
-      if (JitterTime.GetSeconds() >= 0 && m_PointingJitters.size() > 1) {
+      if (JitterTime.GetAsSeconds() >= 0 && m_PointingJitters.size() > 1) {
         // Start search from the beginning --- should happen rarely
         if (m_PointingJitters[m_StartIndexPointingJitters].GetTime() > JitterTime) {
           m_StartIndexPointingJitters = 0;
@@ -398,8 +398,8 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       } else {
         // We should do interpolations here...
         if (Interpolate == true) {
-          double Fraction = (t.GetSeconds() - m_TimeWrapPointingJitters.GetSeconds() - m_PointingJitters[m_StartIndexPointingJitters].GetTime().GetSeconds())/
-            (m_PointingJitters[m_StartIndexPointingJitters+1].GetTime().GetSeconds() - m_PointingJitters[m_StartIndexPointingJitters].GetTime().GetSeconds());
+          double Fraction = (t.GetAsSeconds() - m_TimeWrapPointingJitters.GetAsSeconds() - m_PointingJitters[m_StartIndexPointingJitters].GetTime().GetAsSeconds())/
+            (m_PointingJitters[m_StartIndexPointingJitters+1].GetTime().GetAsSeconds() - m_PointingJitters[m_StartIndexPointingJitters].GetTime().GetAsSeconds());
         
           if (Fraction > 1) {
             merr<<"Time fraction for data base interpolation larger than 1!"<<show;
@@ -419,7 +419,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].ToString()<<endl;
       m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
       if (m_ContinuousRollMode == true) {
-        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetSeconds()*m_ContinousRollModeRollPerSecond);
+        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetAsSeconds()*m_ContinousRollModeRollPerSecond);
       }
       m_Pointing.SetQuaternion(m_Pointing.GetQuaternion()*LatestPointingJitters.GetQuaternion());
       //m_Pointing.SetQuaternion(LatestPointingJitters.GetQuaternion()*m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion());

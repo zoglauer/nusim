@@ -949,10 +949,10 @@ bool NSource::CalculateNextEmission(NTime Time)
   // random arrival times of the photons (Poisson Arrival Model)
   NextEmission = gRandom->Exp(1.0/m_Flux);
   
-  m_NextEmission.SetSeconds(NextEmission);
+  m_NextEmission.Set(NextEmission);
   m_NextEmission += Time;
   
-  if (m_NextEmission.GetSeconds() < 0) {
+  if (m_NextEmission.GetAsSeconds() < 0) {
     merr<<m_Name<<": CalculateNextEmission: Next emission time is in the past: "<<m_NextEmission<<endl;
     return false;
   }

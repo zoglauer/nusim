@@ -85,8 +85,8 @@ bool NObservatoryReconstructor::Reconstruct(NHit& Hit)
   //cout<<"met interp ="<<MetrologyInterp.GetMetrologyDataSet2().GetCalibratedLaserHit()<<endl;
 
   // Interpolate the Star Tracker data
-  double Fraction = (m_Time.GetSeconds()-m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetTime().GetSeconds())/
-    (m_StarTrackerDataUpperBound.GetStarTrackerDataSet4().GetTime().GetSeconds()-m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetTime().GetSeconds());
+  double Fraction = (m_Time.GetAsSeconds()-m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetTime().GetAsSeconds())/
+    (m_StarTrackerDataUpperBound.GetStarTrackerDataSet4().GetTime().GetAsSeconds()-m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetTime().GetAsSeconds());
   NQuaternion Rstin;
   Rstin.SetInterpolated(m_StarTrackerDataLowerBound.GetStarTrackerDataSet4().GetMeasuredTransformation(),
                         m_StarTrackerDataUpperBound.GetStarTrackerDataSet4().GetMeasuredTransformation(), Fraction);

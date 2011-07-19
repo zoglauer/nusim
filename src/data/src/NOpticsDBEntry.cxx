@@ -119,7 +119,7 @@ bool NOpticsDBEntry::Stream(ofstream& S)
   S.precision(12);
 
   S<<"MU ";
-  S<<m_Time.GetSeconds()<<" ";
+  S<<m_Time.GetAsSeconds()<<" ";
   S<<m_BoreSight1RelOM[0]<<" "<<m_BoreSight1RelOM[1]<<" "<<m_BoreSight1RelOM[2]<<" ";
   S<<m_BoreSight2RelOM[0]<<" "<<m_BoreSight2RelOM[1]<<" "<<m_BoreSight2RelOM[2]<<" ";
   S<<endl;
@@ -139,7 +139,7 @@ TString NOpticsDBEntry::ToString() const
  TString Text;
  Text += "MU: ";
  Text += "Time: ";
- Text += m_Time.GetSeconds();
+ Text += m_Time.GetAsSeconds();
  Text += ", bore sight optics 1: ";
  Text += m_BoreSight1RelOM.ToString();
  Text += ", bore sight optics 2: ";
@@ -162,7 +162,7 @@ bool NOpticsDBEntry::Parse(TString& Line)
     merr<<"Not enough tokens in string for parsing ("<<T.GetNTokens()<<" vs. "<<4<<")"<<show;
   }
   
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(1));
+  m_Time.Set(T.GetTokenAtAsDouble(1));
   m_BoreSight1RelOM.SetXYZ(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4));
   m_BoreSight2RelOM.SetXYZ(T.GetTokenAtAsDouble(5), T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7));
  
@@ -190,7 +190,7 @@ bool NOpticsDBEntry::ParseDB(TString Line)
     return false;
   }
 
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_Time.Set(T.GetTokenAtAsDouble(0));
   
   m_BoreSight1RelOM[0] = T.GetTokenAtAsDouble(2);
   m_BoreSight1RelOM[1] = T.GetTokenAtAsDouble(3);

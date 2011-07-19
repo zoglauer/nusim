@@ -88,7 +88,7 @@ bool NMetrologyDataSet::Stream(ofstream& S, TString Keyword)
   if (m_Empty == true) {
     S<<Keyword<<" -"<<endl;
   } else {
-    S<<Keyword<<" "<<m_Time.GetSeconds()<<" "<<m_OriginalLaserHit.X()<<" "<<m_OriginalLaserHit.Y()<<" "<<m_OriginalLaserHit.Z()<<" "
+    S<<Keyword<<" "<<m_Time.GetAsSeconds()<<" "<<m_OriginalLaserHit.X()<<" "<<m_OriginalLaserHit.Y()<<" "<<m_OriginalLaserHit.Z()<<" "
      <<m_CurrentNorth<<" "<<m_CurrentSouth<<" "<<m_CurrentEast<<" "<<m_CurrentWest<<" "
      <<m_CalibratedLaserHit.X()<<" "<<m_CalibratedLaserHit.Y()<<" "<<m_CalibratedLaserHit.Z()<<endl;
   }
@@ -116,7 +116,7 @@ bool NMetrologyDataSet::Parse(TString& Line)
              Key, &S, &xP, &yP, &zP, &m_CurrentNorth, &m_CurrentSouth, &m_CurrentEast, &m_CurrentWest, &xO, &yO, &zO) != 12) {
     return false;
   }
-  m_Time.SetSeconds(S);
+  m_Time.Set(S);
   m_OriginalLaserHit.SetXYZ(xP, yP, zP);
   m_CalibratedLaserHit.SetXYZ(xO, yO, zO);
 
@@ -131,8 +131,8 @@ void NMetrologyDataSet::Interpolate(NMetrologyDataSet A, NMetrologyDataSet B, NT
   MVector p2=B.GetCalibratedLaserHit();
   MVector pNew;
   
-  pNew[0] = p1[0] + (p2[0] - p1[0])*(t.GetSeconds() - A.GetTime().GetSeconds())/(B.GetTime().GetSeconds() - A.GetTime().GetSeconds());
-  pNew[1] = p1[1] + (p2[1] - p1[1])*(t.GetSeconds() - A.GetTime().GetSeconds())/(B.GetTime().GetSeconds() - A.GetTime().GetSeconds());
+  pNew[0] = p1[0] + (p2[0] - p1[0])*(t.GetAsSeconds() - A.GetTime().GetAsSeconds())/(B.GetTime().GetAsSeconds() - A.GetTime().GetAsSeconds());
+  pNew[1] = p1[1] + (p2[1] - p1[1])*(t.GetAsSeconds() - A.GetTime().GetAsSeconds())/(B.GetTime().GetAsSeconds() - A.GetTime().GetAsSeconds());
   pNew[2] = p1[2];
   
   m_CalibratedLaserHit = pNew;

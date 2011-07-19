@@ -40,7 +40,7 @@ ClassImp(NModuleEventSaver)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleEventSaver::NModuleEventSaver(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceExit(), NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii()
+NModuleEventSaver::NModuleEventSaver(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), NModuleInterfaceExit(), NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(Satellite)
 {
   // Construct an instance of NModuleEventSaver
 

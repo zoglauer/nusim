@@ -282,6 +282,16 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual NTime GetTimeDetector2() { return m_Time->GetTimeDetector2(); }
 
 
+  //! Set the absolute observation start time
+  virtual void SetAbsoluteObservationStartTime(const NTime& Time) { m_Time->SetAbsoluteObservationStartTime(Time); }
+  //! Get the absolute observation start time
+  virtual NTime GetAbsoluteObservationStartTime() { return m_Time->GetAbsoluteObservationStartTime(); }
+
+  //! Set the absolute observation end time
+  virtual void SetAbsoluteObservationEndTime(const NTime& Time) { m_Time->SetAbsoluteObservationEndTime(Time); }
+  //! Get the absolute observation end time
+  virtual NTime GetAbsoluteObservationEndTime() { return m_Time->GetAbsoluteObservationEndTime(); }
+
 
   //! Get the half dimensions of the detectors (active material only)
   virtual MVector GetDetectorHalfDimension() { return m_GeometryAndDetectorProperties->GetDetectorHalfDimension(); }

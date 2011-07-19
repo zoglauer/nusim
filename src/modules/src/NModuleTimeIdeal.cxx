@@ -25,7 +25,7 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
-#include "NGUIOptions.h"
+#include "NGUIOptionsTimeEngine.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,9 @@ NModuleTimeIdeal::NModuleTimeIdeal(NSatellite& Satellite) : NModule(Satellite), 
   m_HasDiagnosticsGUI = false;
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsPointing)
   // and implement all your GUI options
-  //m_Diagnostics = new MGUIDiognosticsPointing();
+  //m_Diagnostics = new MGUIDiagnosticsPointing();
+
+  m_AbsoluteObservationStartTime.Set(2012, 2, 3, 18, 12, 30);
 }
 
 
@@ -130,17 +132,9 @@ NTime NModuleTimeIdeal::GetTimeDetector2()
 
 void NModuleTimeIdeal::ShowOptionsGUI()
 {
-  //! Show the options GUI --- has to be overwritten!
+  //! Show the options GUI 
 
-  // The default behaviour is to show the base class telling the user 
-  // that there are no options to select.
-  // If you want your own option dialog derive one from NGUIOptions
-  // (probably you might want to use the template) and replace the following line
-
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsTemplate* Options = new NGUIOptionsTemplate(this);
+  NGUIOptionsTimeEngine* Options = new NGUIOptionsTimeEngine(this);
 
   // this stays always the same:
   Options->Create();
@@ -155,12 +149,10 @@ bool NModuleTimeIdeal::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode.GetValue();
+  MXmlNode* AbsoluteObservationStartTimeNode = Node->GetNode("AbsoluteObservationStartTimeSeconds");
+  if (AbsoluteObservationStartTimeNode != 0) {
+    m_AbsoluteObservationStartTime.Set(AbsoluteObservationStartTimeNode->GetValueAsLong(), 0);
   }
-  */
 
   return true;
 }
@@ -175,9 +167,7 @@ MXmlNode* NModuleTimeIdeal::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "AbsoluteObservationStartTimeSeconds", (long) m_AbsoluteObservationStartTime.GetAsSeconds());
 
   return Node;
 }

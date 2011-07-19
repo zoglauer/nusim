@@ -222,8 +222,8 @@ bool MTime::Now()
 
 
 bool MTime::Set(unsigned int Year, unsigned int Month, unsigned int Day, 
-                  unsigned int Hour, unsigned int Minute, unsigned int Second, 
-                  unsigned int NanoSecond)
+                unsigned int Hour, unsigned int Minute, unsigned int Second, 
+                unsigned int NanoSecond)
 {
   // Format:
   // Year: 1970...2030 or 70 ... 130 or 70..99, 0, 1, 2, ... 30

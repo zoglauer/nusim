@@ -156,7 +156,7 @@ bool NObservatoryData::Stream(ofstream& S, bool Compact)
     if (m_Empty == true) {
       S<<"OD -"<<endl;
     } else {
-      S<<"OD "<<m_Time.GetSeconds()<<" "
+      S<<"OD "<<m_Time.GetAsSeconds()<<" "
        <<m_DirectionOpticalAxisInIS[0]<<" "<<m_DirectionOpticalAxisInIS[1]<<" "<<m_DirectionOpticalAxisInIS[2]<<" "
        <<m_DirectionEventInIS[0]<<" "<<m_DirectionEventInIS[1]<<" "<<m_DirectionEventInIS[2]<<" "
        <<m_OrientationFocalPlaneToOB.GetTranslation()[0]<<" "<<m_OrientationFocalPlaneToOB.GetTranslation()[1]<<" "<<m_OrientationFocalPlaneToOB.GetTranslation()[2]<<" "
@@ -168,7 +168,7 @@ bool NObservatoryData::Stream(ofstream& S, bool Compact)
     if (m_Empty == true) {
       S<<"-"<<endl;
     } else {
-      S<<m_Time.GetSeconds()<<" "
+      S<<m_Time.GetAsSeconds()<<" "
        <<m_DirectionOpticalAxisInIS[0]<<" "<<m_DirectionOpticalAxisInIS[1]<<" "<<m_DirectionOpticalAxisInIS[2]<<" "
        <<m_DirectionEventInIS[0]<<" "<<m_DirectionEventInIS[1]<<" "<<m_DirectionEventInIS[2]<<" "
        <<m_OrientationFocalPlaneToOB.GetTranslation()[0]<<" "<<m_OrientationFocalPlaneToOB.GetTranslation()[1]<<" "<<m_OrientationFocalPlaneToOB.GetTranslation()[2]<<" "
@@ -213,7 +213,7 @@ bool NObservatoryData::Parse(TString& Line, bool Compact)
     }    
   }
   
-  m_Time.SetSeconds(t);
+  m_Time.Set(t);
   m_DirectionOpticalAxisInIS.SetXYZ(xO, yO, zO);
   m_DirectionEventInIS.SetXYZ(xE, yE, zE);
   m_OrientationFocalPlaneToOB.SetTranslation(xF, yF, zF);

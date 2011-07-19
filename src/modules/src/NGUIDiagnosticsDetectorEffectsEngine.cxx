@@ -106,8 +106,6 @@ void NGUIDiagnosticsDetectorEffectsEngine::SetDetectorParameters(const MVector& 
 {
   //! Set the detector parameters for improved display
   
-  cout<<Center<<":"<<Size<<":"<<NPixelsX<<":"<<NPixelsY<<endl;
-  
   double xCenter = fabs(Center.X());
   double xPixelSize = Size.X()/(0.5*NPixelsX);
   vector<double> xAxis;
@@ -122,7 +120,7 @@ void NGUIDiagnosticsDetectorEffectsEngine::SetDetectorParameters(const MVector& 
     xAxis.push_back(xAxis.back() + xPixelSize);
   }
   xAxis.push_back(2*xCenter);
-	
+
   double yCenter = fabs(Center.Y());
   double yPixelSize = Size.Y()/(0.5*NPixelsY);
   vector<double> yAxis;
@@ -139,6 +137,7 @@ void NGUIDiagnosticsDetectorEffectsEngine::SetDetectorParameters(const MVector& 
   yAxis.push_back(2*yCenter);
  
   delete m_PositionsAfter;
+   
   m_PositionsAfter = new TH2D("PositionsAfterDEE", "Positions after (1 bin = 1 pixel)", xAxis.size()-1, &xAxis[0], yAxis.size()-1, &yAxis[0]);
   m_PositionsAfter->SetXTitle("[mm]");
   m_PositionsAfter->SetYTitle("[mm]");

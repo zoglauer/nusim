@@ -58,9 +58,9 @@ bool NModuleInterfaceDeadTime::Initialize()
 {
   //! Initialize
 
-  m_DeadTimeEndTelescope1.SetSeconds(0.0);
-  m_DeadTimeEndTelescope2.SetSeconds(0.0);
-  m_DetectorDeadTime.SetSeconds(0.0025);
+  m_DeadTimeEndTelescope1.Set(0.0);
+  m_DeadTimeEndTelescope2.Set(0.0);
+  m_DetectorDeadTime.Set(0.0025);
 
   m_DeadTimeCouter1 = 0;
   m_DeadTimeCouter2 = 0;

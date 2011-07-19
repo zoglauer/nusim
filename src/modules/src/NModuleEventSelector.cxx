@@ -40,7 +40,7 @@ ClassImp(NModuleEventSelector)
 
 
 NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceEvent(), 
-  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(),
+  NModuleInterfaceIO(), NModuleInterfaceEventSaverAscii(Satellite),
   NModuleInterfaceEventSaverLevel2Fits(Satellite),
   NModuleInterfaceEventSaverROOTTree(Satellite),
   NModuleInterfaceEventSaverROOTEnergyResponse(Satellite)

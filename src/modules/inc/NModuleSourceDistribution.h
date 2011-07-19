@@ -25,6 +25,8 @@ using namespace std;
 #include "NModule.h"
 #include "NModuleInterfaceEvent.h"
 #include "NModuleInterfaceEntry.h"
+#include "NModuleInterfaceIO.h"
+#include "NModuleInterfacePhotonSaverAscii.h"
 #include "NSource.h"
 
 // Forward declarations:
@@ -37,7 +39,7 @@ using namespace std;
  * event above the optics.
  */
 
-class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceEntry
+class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceEntry, public NModuleInterfacePhotonSaverAscii, public NModuleInterfaceIO
 {
   // public interface:
  public:
@@ -142,6 +144,10 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   double m_DecMin;
   //! Maximum DEC of all started photons
   double m_DecMax;
+
+  //! If true store the initial photon parameters in a file
+  bool m_StoreInitialPhoton; 
+
 
 #ifdef ___CINT___
  public:

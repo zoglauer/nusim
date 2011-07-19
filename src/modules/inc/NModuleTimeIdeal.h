@@ -62,6 +62,16 @@ class NModuleTimeIdeal : public NModule, public NModuleInterfaceTime
   //! Get the effective observation time
   virtual NTime GetEffectiveObservationTime() { return m_EffectiveObservationTime; }
 
+  //! Set the absolute observation start time
+  virtual void SetAbsoluteObservationStartTime(const NTime& Time) { m_AbsoluteObservationStartTime = Time; }
+  //! Get the absolute observation start time
+  virtual NTime GetAbsoluteObservationStartTime() { return m_AbsoluteObservationStartTime; }
+
+  //! Set the absolute observation end time
+  virtual void SetAbsoluteObservationEndTime(const NTime& Time) { m_AbsoluteObservationEndTime = Time; }
+  //! Get the absolute observation end time
+  virtual NTime GetAbsoluteObservationEndTime() { return m_AbsoluteObservationEndTime; }
+
 
   //! Get the time as measured by the instrument
   virtual NTime GetTimeSatelliteBus();
@@ -96,11 +106,17 @@ class NModuleTimeIdeal : public NModule, public NModuleInterfaceTime
 
   // private members:
  private:
+  //! The start time of the observations
+  NTime m_AbsoluteObservationStartTime;
+  //! The end time of the observations
+  NTime m_AbsoluteObservationEndTime;
+  
   //! The absolute time
   NTime m_Ideal;
   //! The effective observation time;
   NTime m_EffectiveObservationTime;
 
+  
 #ifdef ___CINT___
  public:
   ClassDef(NModuleTimeIdealPosition, 0) // no description

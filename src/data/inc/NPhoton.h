@@ -73,7 +73,7 @@ class NPhoton
   bool Stream(ofstream& S, TString Keyword = "OP");
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(const TString& Line);
 
 
   // protected methods:

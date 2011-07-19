@@ -123,7 +123,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveAsLevel1Fits(NMetrologyData& 
   MVector m1 = Data.GetMetrologyDataSet1().GetCalibratedLaserHit();
   MVector m2 = Data.GetMetrologyDataSet2().GetCalibratedLaserHit();
   
-  Time.push_back(float(nt.GetSeconds()));
+  Time.push_back(float(nt.GetAsSeconds()));
   m_xpsd0.push_back(m1[0]);
   m_ypsd0.push_back(m1[1]);
   m_xpsd1.push_back(m2[0]);

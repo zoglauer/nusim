@@ -43,6 +43,15 @@ class NTime
   NTime(const NTime& Time);
   //! Default constructor with double
   NTime(double Seconds);
+  //! Default constructor with two long's
+  NTime(long Seconds, long NanoSeconds = 0);
+  //! Default constructor with two int's
+  NTime(int Seconds, int NanoSeconds = 0);
+  //! Default constructor with two unsigned int's
+  NTime(unsigned int Seconds, unsigned int NanoSeconds = 0);
+  //! Set everything explictly
+  NTime(unsigned int m_Year, unsigned int m_Month, unsigned int m_Day, unsigned int m_Hour = 0, 
+        unsigned int m_Minute = 0, unsigned int m_Second = 0, unsigned int m_NanoSecond = 0);
   //! Default destructor
   virtual ~NTime();
 
@@ -53,13 +62,38 @@ class NTime
   bool IsEmpty() const { return m_Empty; }
 
   //! Set the seconds
-  void SetSeconds(double Seconds) { m_Empty = false; m_Seconds = Seconds; }
-  //! Return content as seconds
-  double GetSeconds() const { return m_Seconds; }
+  bool Set(double Seconds);
+  //! Set all values explictly
+  bool Set(unsigned int m_Year, unsigned int m_Month, unsigned int m_Day, unsigned int m_Hour = 0, 
+           unsigned int m_Minute = 0, unsigned int m_Second = 0, unsigned int m_NanoSecond = 0);
+  //! Set as two longs
+  bool Set(const long Seconds, const long NanoSeconds = 0);
+  //! Set as two doubles
+  bool Set(const double Seconds, const double NanoSeconds);
 
-  //! The asignment operator
+  //! Return content as seconds
+  double GetAsSeconds() const;
+  //! Return the content as seconds
+  //operator double() const { return GetAsSeconds(); }
+
+  //! Return the nanoseconds (0..999999999)
+  unsigned int GetNanoSeconds();
+  //! Return the seconds (0..59)
+  unsigned int GetSeconds();
+  //! Return the minutes
+  unsigned int GetMinutes();
+  //! Return the hours
+  unsigned int GetHours();
+  //! Return the days
+  unsigned int GetDays();
+  //! Return the months
+  unsigned int GetMonths();
+  //! Return the years
+  unsigned int GetYears();
+  
+  //! The assignment operator
   NTime& operator=(const NTime& Time);
-  //! The asignment operator with a double
+  //! The assignment operator with a double
   NTime& operator=(const double& Time);
 
   //! The += operator
@@ -114,6 +148,9 @@ class NTime
   //NTime() {};
   //NTime(const NTime& NCTHit) {};
 
+  //! Make sure there are not more than 999999999 nanoseconds, and that they are positive.
+  void Normalize();
+  
   // private methods:
  private:
 
@@ -128,9 +165,12 @@ class NTime
   //! True if this event is still empty, which is set during Clear()
   bool m_Empty;
 
-  //! The internal time representation --- currently a double in seconds
-  double m_Seconds;
-
+  // The internal time representation
+  //! The seconds
+  long m_Seconds;
+  //! The nanoseconds
+  long m_NanoSeconds; 
+  
 #ifdef ___CINT___
  public:
   ClassDef(NTime, 0) // no description

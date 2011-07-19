@@ -43,6 +43,8 @@ class MXmlData
   MXmlData(TString Name, TString Value);
   //! Constructor -- content is integer
   MXmlData(TString Name, int Value);
+  //! Constructor -- content is integer
+  MXmlData(TString Name, long Value);
   //! Constructor -- content is unsigned integer
   MXmlData(TString Name, unsigned int Value);
   //! Constructor -- content is double
@@ -69,6 +71,8 @@ class MXmlData
   TString GetValueAsString() const { return m_Value; }
   //! Return the value of the node as int
   int GetValueAsInt() const { return atoi(m_Value); }
+  //! Return the value of the node as long
+  long GetValueAsLong() const { return atol(m_Value); }
   //! Return the value of the node as unsigned int
   unsigned int GetValueAsUnsignedInt() const { return atoi(m_Value); }
   //! Return the value of the node as double

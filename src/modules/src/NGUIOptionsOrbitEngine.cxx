@@ -69,10 +69,10 @@ void NGUIOptionsOrbitEngine::Create()
 
   TGLayoutHints* DefaultLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 5);
   
-  m_OrbitDuration = new MGUIEEntry(this, "Duration of one orbit (minutes):", false, dynamic_cast<NModuleOrbitEngine*>(m_Module)->GetOrbitDuration().GetSeconds()/minute);
+  m_OrbitDuration = new MGUIEEntry(this, "Duration of one orbit (minutes):", false, dynamic_cast<NModuleOrbitEngine*>(m_Module)->GetOrbitDuration().GetAsSeconds()/minute);
 	AddFrame(m_OrbitDuration, DefaultLayout);
 
-  m_BlackoutDuration = new MGUIEEntry(this, "Duration of the blackout due to occultation (minutes):", false, dynamic_cast<NModuleOrbitEngine*>(m_Module)->GetBlackoutDuration().GetSeconds()/minute);
+  m_BlackoutDuration = new MGUIEEntry(this, "Duration of the blackout due to occultation (minutes):", false, dynamic_cast<NModuleOrbitEngine*>(m_Module)->GetBlackoutDuration().GetAsSeconds()/minute);
 	AddFrame(m_BlackoutDuration, DefaultLayout);
 
 

@@ -213,7 +213,7 @@ bool NMetrologyDBEntry::Stream(ofstream& S)
   S.precision(12);
 
   S<<"MU ";
-  S<<m_Time.GetSeconds()<<" ";
+  S<<m_Time.GetAsSeconds()<<" ";
   S<<m_PointingErrorStarTracker4<<" ";
   S<<m_OriginMetrologyLaser1RelML1[0]<<" "<<m_OriginMetrologyLaser1RelML1[1]<<" "<<m_OriginMetrologyLaser1RelML1[2]<<" ";
   S<<m_PointingMetrologyLaser1RelML1[0]<<" "<<m_PointingMetrologyLaser1RelML1[1]<<" "<<m_PointingMetrologyLaser1RelML1[2]<<" ";
@@ -239,7 +239,7 @@ TString NMetrologyDBEntry::ToString() const
  TString Text;
  Text += "MU: ";
  Text += "Time: ";
- Text += m_Time.GetSeconds();
+ Text += m_Time.GetAsSeconds();
  Text += ", Pointing error: ";
  Text += m_PointingErrorStarTracker4;
  Text += ", Origin ML1 REL ML1: ";
@@ -273,7 +273,7 @@ bool NMetrologyDBEntry::Parse(TString& Line)
     merr<<"Not enough tokens in string for parsing!"<<show;
   }
   
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_Time.Set(T.GetTokenAtAsDouble(0));
   m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(1);
   m_OriginMetrologyLaser1RelML1.SetXYZ(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4));
   m_PointingMetrologyLaser1RelML1.SetXYZ(T.GetTokenAtAsDouble(5), T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7));
@@ -306,7 +306,7 @@ bool NMetrologyDBEntry::ParseDB(TString Line)
     return false;
   }
 
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_Time.Set(T.GetTokenAtAsDouble(0));
   
   m_PointingErrorStarTracker4 = T.GetTokenAtAsDouble(2);
   

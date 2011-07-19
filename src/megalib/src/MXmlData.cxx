@@ -93,6 +93,18 @@ MXmlData::MXmlData(TString Name, int Value)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+MXmlData::MXmlData(TString Name, long Value)
+{
+  //! Constructor
+
+  m_Name = Name;
+  m_Value += TString::Format("%li", Value).Strip(TString::kBoth);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 MXmlData::MXmlData(TString Name, unsigned int Value)
 {
   //! Constructor

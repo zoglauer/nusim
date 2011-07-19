@@ -1,5 +1,5 @@
 /*
- * NModuleInterfaceEventSaverAscii.cxx
+ * NModuleInterfacePhotonSaverAscii.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NModuleInterfaceEventSaverAscii
+// NModuleInterfacePhotonSaverAscii
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NModuleInterfaceEventSaverAscii.h"
+#include "NModuleInterfacePhotonSaverAscii.h"
 
 // Standard libs:
 
@@ -31,32 +31,32 @@
 
 
 #ifdef ___CINT___
-ClassImp(NModuleInterfaceEventSaverAscii)
+ClassImp(NModuleInterfacePhotonSaverAscii)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceEventSaverAscii::NModuleInterfaceEventSaverAscii(NSatellite& Satellite) : m_Satellite(Satellite)
+NModuleInterfacePhotonSaverAscii::NModuleInterfacePhotonSaverAscii()
 {
-  // Construct an instance of NModuleInterfaceEventSaverAscii
+  // Construct an instance of NModuleInterfacePhotonSaverAscii
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceEventSaverAscii::~NModuleInterfaceEventSaverAscii()
+NModuleInterfacePhotonSaverAscii::~NModuleInterfacePhotonSaverAscii()
 {
-  // Delete this instance of NModuleInterfaceEventSaverAscii
+  // Delete this instance of NModuleInterfacePhotonSaverAscii
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int ModuleType)
+bool NModuleInterfacePhotonSaverAscii::OpenAsciiFile(TString FileName)
 {  
   //! Load and initialize the file
 
@@ -67,21 +67,14 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
     return false;
   }
 
-  m_Out<<"# NuSIM event file"<<endl;
+  m_Out<<"# NuSIM photon file"<<endl;
   m_Out<<endl;
   m_Out<<"# NuSIM version:"<<endl;
   m_Out<<"VE "<<g_Version<<endl;
   m_Out<<"# NuSIM revision:"<<endl;
   m_Out<<"RV "<<g_SVNRevision<<endl;
   m_Out<<endl;
-  m_Out<<"# Stored after the following module type: "<<endl;
-  m_Out<<"CM "<<ModuleType<<endl;
-  m_Out<<endl;
   m_Out<<"# Start data..."<<endl;
-  m_Out<<endl;
-  NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
-  m_Out<<"OBSSTART "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<" "<<Start.GetHours()<<"-"<<Start.GetMinutes()<<"-"<<Start.GetSeconds()<<endl;
-  m_Out<<endl;
   
   return true;
 }
@@ -90,7 +83,7 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToStream)
+bool NModuleInterfacePhotonSaverAscii::SavePhotonAscii(NPhoton& Photon)
 {
   //! Main data analysis routine, which updates the event to a new level 
 
@@ -99,7 +92,7 @@ bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToSt
     return false;
   }
 
-  Event.Stream(m_Out, WhatToStream);
+  Photon.Stream(m_Out);
   
   return true;
 }
@@ -108,17 +101,12 @@ bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToSt
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverAscii::CloseAsciiFile()
+bool NModuleInterfacePhotonSaverAscii::CloseAsciiFile()
 {
   //! Close the file    
 
   if (m_Out.is_open() == true) {
     m_Out<<"EN"<<endl;
-    m_Out<<endl;
-    NTime End = m_Satellite.GetAbsoluteObservationEndTime();
-    m_Out<<"OBSEND "<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<" "<<End.GetHours()<<"-"<<End.GetMinutes()<<"-"<<End.GetSeconds()<<endl;
-    m_Out<<endl;
-
     m_Out.close();
   }
   
@@ -126,5 +114,5 @@ bool NModuleInterfaceEventSaverAscii::CloseAsciiFile()
 }
 
 
-// NModuleInterfaceEventSaverAscii.cxx: the end...
+// NModuleInterfacePhotonSaverAscii.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

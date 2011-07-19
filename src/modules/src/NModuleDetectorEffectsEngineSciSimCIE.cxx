@@ -94,6 +94,7 @@ NModuleDetectorEffectsEngineSciSimCIE::~NModuleDetectorEffectsEngineSciSimCIE()
 bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
 {
   // Initialize the module
+  
   delete m_Diagnostics;
   m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
   dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>

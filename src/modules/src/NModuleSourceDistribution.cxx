@@ -74,6 +74,8 @@ NModuleSourceDistribution::NModuleSourceDistribution(NSatellite& Satellite) : NM
   m_DistanceBetweenPointings = 7.3;
   m_MaxAllowedDistanceForAcceptance = 3.0;
   m_Roll = 180.0*60.0;
+  
+  m_StoreInitialPhoton = false;
 }
 
 
@@ -118,6 +120,10 @@ bool NModuleSourceDistribution::Initialize()
 
   //return GeneratePointingPattern();
 
+  if (m_StoreInitialPhoton == true) {
+    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".photon.dat") == false) return false;
+  }
+
   return true;
 }
 
@@ -131,7 +137,7 @@ void NModuleSourceDistribution::DetermineNext()
   m_NextComponent = 0;
   m_Time = numeric_limits<double>::max();
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
-    if (m_Sources[s]->GetNextEmission().GetSeconds() < 0.0) {
+    if (m_Sources[s]->GetNextEmission().GetAsSeconds() < 0.0) {
       cerr<<"Source has negative time: "<<m_Sources[s]->GetName()<<endl;
     }
     if (m_Sources[s]->GetNextEmission() < m_Time) {
@@ -244,6 +250,13 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   Event.SetOriginalPhoton(Photon);
   Event.SetOrigin(NEvent::c_OriginSource);
 
+  if (m_StoreInitialPhoton == true) {
+    if (IsAsciiFileOpen() == true) {
+      if (SavePhotonAscii(Photon) == false) return false;
+    }
+  }
+
+
   // Step 3: Since this is an ENTRY module, set the time when the NEXT event is
   //         started
 
@@ -270,6 +283,12 @@ bool NModuleSourceDistribution::Finalize()
   cout<<"  Photon emission directions: "<<endl;
   cout<<"    DEC (min/max): "<<m_DecMin/60<<" to "<<m_DecMax/60<<endl;
   cout<<"    RA (min/max):  "<<m_RaMin/60<<" to "<<m_RaMax/60<<endl;
+
+  if (m_StoreInitialPhoton == true) {
+    if (IsAsciiFileOpen() == true) {
+      if (CloseAsciiFile() == false) return false;
+    }
+  }
   
   return true;
 }

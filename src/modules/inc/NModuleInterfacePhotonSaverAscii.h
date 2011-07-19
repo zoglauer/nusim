@@ -1,5 +1,5 @@
 /*
- * NModuleInterfaceEventSaverAscii.h
+ * NModuleInterfacePhotonSaverAscii.h
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NModuleInterfaceEventSaverAscii__
-#define __NModuleInterfaceEventSaverAscii__
+#ifndef __NModuleInterfacePhotonSaverAscii__
+#define __NModuleInterfacePhotonSaverAscii__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,37 +25,36 @@ using namespace std;
 
 // NuSTAR libs:
 #include "NEvent.h"
-#include "NSatellite.h"
 #include "NModuleInterfaceIO.h"
 
-// Forward declaratEventSaverAsciins:
+// Forward declaratPhotonSaverAsciins:
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//! \brief This interface is used for all modules which provide to save the event as ASCII
-//! This interface represents a module interface representing modules with the ASCII event saver
+//! \brief This interface is used for all modules which provide to save the photon as ASCII
+//! This interface represents a module interface representing modules with the ASCII photon saver
 //! capability. 
 
-class NModuleInterfaceEventSaverAscii
+class NModuleInterfacePhotonSaverAscii
 {
   // public interface:
  public:
   //! Default constructor
-  NModuleInterfaceEventSaverAscii(NSatellite& Satellite);
+  NModuleInterfacePhotonSaverAscii();
   //! Default destructor
-  virtual ~NModuleInterfaceEventSaverAscii();
+  virtual ~NModuleInterfacePhotonSaverAscii();
   
   //! Load and initialize the file
-  virtual bool OpenAsciiFile(TString FileName, int ModuleType);
+  virtual bool OpenAsciiFile(TString FileName);
   
   //! Return true if the ASCII file is open
   virtual bool IsAsciiFileOpen() { return m_Out.is_open(); }
 
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
-  virtual bool SaveEventAscii(NEvent& Event, int WhatToStream = 0);
+  virtual bool SavePhotonAscii(NPhoton& Photon);
  
   //! Close the file
   virtual bool CloseAsciiFile();
@@ -72,9 +71,6 @@ class NModuleInterfaceEventSaverAscii
 
   // protected members:
  protected:
-  //! Reference to the satellite module 
-  NSatellite& m_Satellite; 
-  
   //! The output stream
   ofstream m_Out;
 
@@ -85,7 +81,7 @@ class NModuleInterfaceEventSaverAscii
 
 #ifdef ___CINT___
  public:
-  ClassDef(NModuleInterfaceEventSaverAscii, 0) // no descriptEventSaverAsciin
+  ClassDef(NModuleInterfacePhotonSaverAscii, 0) // no descriptPhotonSaverAsciin
 #endif
 
 };

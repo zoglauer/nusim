@@ -155,6 +155,8 @@ bool NModuleOrientationsDatabase::Initialize()
   //}
   //cout<<"N perturbed entries: "<<m_PerturbedAlignments.size()<<endl;
 
+  m_Time = -99999; // Any value < 0 will do... 
+  
   return true;
 }
 
@@ -521,7 +523,7 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   bool Interpolate = true;
 
   // Retrieve latest perturbed alignments
-  if (t.GetSeconds() >= 0 && m_PerturbedAlignments.size() > 1) {
+  if (t.GetAsSeconds() >= 0 && m_PerturbedAlignments.size() > 1) {
     if (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
       m_StartIndexPerturbedAlignments = 0;
       while (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
@@ -555,8 +557,8 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   } else {
     // We should do interpolations here...
     if (Interpolate == true) {
-      double Fraction = (t.GetSeconds() - m_TimeWrapPerturbedAlignments.GetSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetSeconds())/
-        (m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1].GetTime().GetSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetSeconds());
+      double Fraction = (t.GetAsSeconds() - m_TimeWrapPerturbedAlignments.GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds())/
+        (m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1].GetTime().GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds());
         
       if (Fraction > 1) {
         merr<<"Time fraction for data base interpolation larger than 1!"<<show;
@@ -573,7 +575,7 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
 
 
   // Retrieve latest metrology uncertainties
-  if (t.GetSeconds() >= 0 && m_PerturbedMetrologyUncertainties.size() > 1) {
+  if (t.GetAsSeconds() >= 0 && m_PerturbedMetrologyUncertainties.size() > 1) {
     if (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime() + m_TimeWrapPerturbedMetrologyUncertainties > t) {
       m_StartIndexPerturbedMetrologyUncertainties = 0;
       while (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime() + m_TimeWrapPerturbedMetrologyUncertainties > t) {
@@ -607,8 +609,8 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   } else {
     // We should do interpolations here...
     if (Interpolate == true) {
-      double Fraction = (t.GetSeconds() - m_TimeWrapPerturbedMetrologyUncertainties.GetSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetSeconds())/
-        (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties+1].GetTime().GetSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetSeconds());
+      double Fraction = (t.GetAsSeconds() - m_TimeWrapPerturbedMetrologyUncertainties.GetAsSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetAsSeconds())/
+        (m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties+1].GetTime().GetAsSeconds() - m_PerturbedMetrologyUncertainties[m_StartIndexPerturbedMetrologyUncertainties].GetTime().GetAsSeconds());
         
       if (Fraction > 1) {
         merr<<"Time fraction for data base interpolation larger than 1!"<<show;
@@ -626,7 +628,7 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
 
 
   // Retrieve latest perturbed alignments
-  if (t.GetSeconds() >= 0 && m_PerturbedOpticsUncertainties.size() > 1) {
+  if (t.GetAsSeconds() >= 0 && m_PerturbedOpticsUncertainties.size() > 1) {
     if (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime() + m_TimeWrapPerturbedOpticsUncertainties > t) {
       m_StartIndexPerturbedOpticsUncertainties = 0;
       while (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime() + m_TimeWrapPerturbedOpticsUncertainties > t) {
@@ -660,8 +662,8 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   } else {
     // We should do interpolations here...
     if (Interpolate == true) {
-      double Fraction = (t.GetSeconds() - m_TimeWrapPerturbedOpticsUncertainties.GetSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetSeconds())/
-        (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties+1].GetTime().GetSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetSeconds());
+      double Fraction = (t.GetAsSeconds() - m_TimeWrapPerturbedOpticsUncertainties.GetAsSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetAsSeconds())/
+        (m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties+1].GetTime().GetAsSeconds() - m_PerturbedOpticsUncertainties[m_StartIndexPerturbedOpticsUncertainties].GetTime().GetAsSeconds());
         
       if (Fraction > 1) {
         merr<<"Time fraction for data base interpolation larger than 1!"<<show;

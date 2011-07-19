@@ -140,7 +140,7 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_BadDepthCal         = Hit.GetBadDepthCalibration();
   m_DepthCut            = Hit.GetDepthCut();
 
-  m_Time   = Event.GetTime().GetSeconds();
+  m_Time   = Event.GetTime().GetAsSeconds();
   m_Origin = Event.GetOrigin();
   m_Dec    = Hit.GetObservatoryData().GetDec();
   m_RA     = Hit.GetObservatoryData().GetRaScaled();

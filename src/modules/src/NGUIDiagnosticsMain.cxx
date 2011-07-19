@@ -11,6 +11,8 @@
 #include "NGUIDiagnosticsMain.h"
 
 // Standard libs:
+#include <iomanip>
+using namespace std;
 
 // ROOT libs:
 #include <KeySymbols.h>
@@ -165,10 +167,10 @@ void NGUIDiagnosticsMain::Update()
   //! Update all tabs
 
   ostringstream ObsText;
-  ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTimeIdeal()<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime();
+  ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTimeIdeal().GetString(3)<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetString(3);
   double Elapsed = m_Timer.GetElapsed();
   if (Elapsed < 3) {
-    ObsText<<"   (You are updating this window very fast (dT="<<Elapsed<<" sec) --- this is very CPU consuming...)";
+    ObsText<<"   (You are updating this window very fast (dT="<<setprecision(3)<<Elapsed<<" sec) --- this is very CPU consuming...)";
   }
   m_ObservationTime->ChangeText(ObsText.str().c_str());
 

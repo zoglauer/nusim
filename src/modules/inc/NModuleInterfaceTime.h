@@ -43,17 +43,27 @@ class NModuleInterfaceTime
   //! Default destructor
   virtual ~NModuleInterfaceTime();
 
-  //! Set the ideal time
+  //! Set the ideal time - relative to start of observations
   virtual void SetTimeIdeal(const NTime& Ideal) {}
   //! Advance the ideal time
   virtual void AdvanceTimeIdeal(const NTime& Time) {}
-  //! Get the ideal time
+  //! Get the ideal time - relative to start of observations
   virtual NTime GetTimeIdeal() { return NTime(); }
 
   //! Set the effective observation time
   virtual void SetEffectiveObservationTime(const NTime& Time) { }
   //! Get the effective observation time
   virtual NTime GetEffectiveObservationTime() { return NTime(); }
+
+  //! Set the absolute observation start time
+  virtual void SetAbsoluteObservationStartTime(const NTime& Time) { }
+  //! Get the absolute observation start time
+  virtual NTime GetAbsoluteObservationStartTime() { return NTime(); }
+
+  //! Set the absolute observation end time
+  virtual void SetAbsoluteObservationEndTime(const NTime& Time) { }
+  //! Get the absolute observation end time
+  virtual NTime GetAbsoluteObservationEndTime() { return NTime(); }
 
 
   //! Get the time as measured by the instrument

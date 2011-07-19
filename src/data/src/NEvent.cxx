@@ -198,7 +198,7 @@ bool NEvent::Parse(TString& Line)
     if (sscanf(Data, "TI %lf", &Seconds) != 1) {
       Error = true;
     } else {
-      m_Time.SetSeconds(Seconds);
+      m_Time.Set(Seconds);
     }
   } else if (Data[0] == 'I' && Data[1] == 'D') {
     if (sscanf(Data, "ID %lu", &m_ID) != 1) {

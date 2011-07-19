@@ -110,7 +110,7 @@ TString NPointingJitterDBEntry::ToString() const
  TString Text;
  Text += "PJ: ";
  Text += "Time: ";
- Text += m_Time.GetSeconds();
+ Text += m_Time.GetAsSeconds();
  Text += ", Quaternoin: r=";
  Text += m_Quaternion.m_R;
  Text += ", x/y/z=";
@@ -138,7 +138,7 @@ bool NPointingJitterDBEntry::ParseDB(TString Line)
     return false;
   }
 
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_Time.Set(T.GetTokenAtAsDouble(0));
   
   m_Quaternion.SetRXYZ(T.GetTokenAtAsDouble(4), T.GetTokenAtAsDouble(1), T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3));
 

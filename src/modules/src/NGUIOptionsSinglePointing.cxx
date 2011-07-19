@@ -103,7 +103,7 @@ void NGUIOptionsSinglePointing::Create()
   m_Roll = new MGUIEEntry(HFrame, "Roll [deg]:", false, m_Pointing->GetRoll()/60.0, true, 0.0, 360.0);
   HFrame->AddFrame(m_Roll, LabelLayout);
   
-  m_Time = new MGUIEEntry(HFrame, "Time [sec or a.u.]:", false, m_Pointing->GetTime().GetSeconds(), true, 0.0);
+  m_Time = new MGUIEEntry(HFrame, "Time [sec or a.u.]:", false, m_Pointing->GetTime().GetAsSeconds(), true, 0.0);
   HFrame->AddFrame(m_Time, LabelLayout);
   
   m_AddAfterButton = new TGTextButton(HFrame, "Add new after", c_AddAfter);

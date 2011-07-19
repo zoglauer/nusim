@@ -83,7 +83,7 @@ bool NStarTrackerDataSet::Stream(ofstream& S, TString Keyword)
   if (m_Empty == true) {
     S<<"-"<<endl;
   } else {
-    S<<m_Time.GetSeconds()<<" "<<m_OriginalPointing.GetRa()<<" "<<m_OriginalPointing.GetDec()<<" "<<m_OriginalPointing.GetRoll()<<endl;
+    S<<m_Time.GetAsSeconds()<<" "<<m_OriginalPointing.GetRa()<<" "<<m_OriginalPointing.GetDec()<<" "<<m_OriginalPointing.GetRoll()<<endl;
   }
 
   return true;
@@ -110,7 +110,7 @@ bool NStarTrackerDataSet::Parse(TString& Line)
       return false;
     }
   }
-  m_Time.SetSeconds(T);
+  m_Time.Set(T);
   m_OriginalPointing.SetRaDecRoll(Ra, Dec, Roll);
 
   m_Empty = false;

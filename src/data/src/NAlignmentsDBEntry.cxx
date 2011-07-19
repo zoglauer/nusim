@@ -529,7 +529,7 @@ bool NAlignmentsDBEntry::ParseDB(TString Positions, TString Rotations)
     return false;
   }
 
-  m_Time.SetSeconds(T.GetTokenAtAsDouble(0));
+  m_Time.Set(T.GetTokenAtAsDouble(0));
   
   m_SpaceCraftRelInertial.SetTranslation(T.GetTokenAtAsDouble(2), T.GetTokenAtAsDouble(3), T.GetTokenAtAsDouble(4));
   m_FocalPlaneRelSC.SetTranslation(T.GetTokenAtAsDouble(6), T.GetTokenAtAsDouble(7), T.GetTokenAtAsDouble(8));
@@ -606,7 +606,7 @@ TString NAlignmentsDBEntry::ToString() const
   
   ostringstream out;
   
-  out<<"Orientations at t="<<m_Time.GetSeconds()<<" sec:"<<endl;
+  out<<"Orientations at t="<<m_Time.GetAsSeconds()<<" sec:"<<endl;
   out<<"Focal plane module 1:"<<endl;
   out<<m_FocalPlaneModule1.ToString()<<endl;
   out<<"Focal plane module 2:"<<endl;

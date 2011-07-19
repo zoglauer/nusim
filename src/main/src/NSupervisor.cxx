@@ -534,6 +534,7 @@ bool NSupervisor::Run()
     if (TimeOfNextEvent - BlackoutTime > m_ObservationTime) {
       m_Satellite.SetTimeIdeal(m_ObservationTime + BlackoutTime);
       m_Satellite.SetEffectiveObservationTime(m_ObservationTime);
+      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + m_ObservationTime);
       mout<<"Supervisor: Observation time exceeded."<<endl;
       break;
     }
@@ -541,6 +542,8 @@ bool NSupervisor::Run()
     // Set the current time:
     m_Satellite.SetTimeIdeal(TimeOfNextEvent);
     m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime);
+    m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent);
+    
 
     if (HasSourcePipe == true || HasBackgroundPipe == true) {
       // Check if we have enough data in the star tracker & metrology stream
@@ -767,15 +770,15 @@ bool NSupervisor::Run()
   cout<<"Supervisor summary:"<<endl;
   cout<<endl;
   cout<<"  CPU Timer:                  "<<Timer.GetElapsed()<<" sec"<<endl;
-  cout<<"  Observation time:           "<<m_Satellite.GetTimeIdeal().GetSeconds()<<" sec"<<endl;
-  cout<<"  Effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetSeconds()<<" sec"<<endl;
+  cout<<"  Observation time:           "<<m_Satellite.GetTimeIdeal().GetAsSeconds()<<" sec"<<endl;
+  cout<<"  Effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" sec"<<endl;
   cout<<endl;
   cout<<"  Started events:             "<<setw(9)<<EventID+1<<endl;
-  cout<<"  Blocked events:             "<<setw(9)<<NBlockedEvents<<" "<<setw(9)<<NBlockedEvents/m_Satellite.GetEffectiveObservationTime().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Lost in dead time events:   "<<setw(9)<<NLostInDeadTimeEvents<<" "<<setw(9)<<NLostInDeadTimeEvents/m_Satellite.GetEffectiveObservationTime().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Vetoed events:              "<<setw(9)<<NVetoedEvents<<" "<<setw(9)<<NVetoedEvents/m_Satellite.GetEffectiveObservationTime().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Cut events:                 "<<setw(9)<<NCutEvents<<" "<<setw(9)<<NCutEvents/m_Satellite.GetEffectiveObservationTime().GetSeconds()/2<<" cts/sec/mod"<<endl;
-  cout<<"  Passed events:              "<<setw(9)<<NPassedEvents<<" "<<setw(9)<<NPassedEvents/m_Satellite.GetEffectiveObservationTime().GetSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Blocked events:             "<<setw(9)<<NBlockedEvents<<" "<<setw(9)<<NBlockedEvents/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Lost in dead time events:   "<<setw(9)<<NLostInDeadTimeEvents<<" "<<setw(9)<<NLostInDeadTimeEvents/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Vetoed events:              "<<setw(9)<<NVetoedEvents<<" "<<setw(9)<<NVetoedEvents/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Cut events:                 "<<setw(9)<<NCutEvents<<" "<<setw(9)<<NCutEvents/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()/2<<" cts/sec/mod"<<endl;
+  cout<<"  Passed events:              "<<setw(9)<<NPassedEvents<<" "<<setw(9)<<NPassedEvents/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()/2<<" cts/sec/mod"<<endl;
   cout<<endl;
 
   m_Running = false;
@@ -1624,7 +1627,7 @@ bool NSupervisor::Save(TString FileName)
   new MXmlNode(Document, "Version", 2);
   new MXmlNode(Document, "NuSIMRevision", g_SVNRevision);
 
-  new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetSeconds());
+  new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetAsSeconds());
   new MXmlNode(Document, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Document, "BaseFileName", NModule::CleanPath(m_BaseFileName));
 
