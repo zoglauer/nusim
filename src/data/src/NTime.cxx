@@ -645,7 +645,7 @@ TString NTime::GetString(unsigned int Precision) const
   if (Precision > 9) Precision = 9;
   
   long Nanos = m_NanoSeconds;
-  Nanos /= pow(10, 9-Precision);
+  Nanos /= pow(10.0, 9.0-Precision);
   
   ostringstream out;
   out<<((Nanos < 0 && m_Seconds == 0) ? "-" : "")<<m_Seconds;
