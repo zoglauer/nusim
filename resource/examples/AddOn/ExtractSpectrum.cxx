@@ -68,6 +68,8 @@ private:
 
   /// Input file names
   TString m_InputFileName;
+  /// Output file names
+  TString m_OutputFileName;
  
   //! RA
   vector<double> m_RAs; //deg
@@ -110,7 +112,8 @@ bool ExtractSpectrum::ParseCommandLine(int argc, char** argv)
   Usage<<"  Usage: ExtractSpectrum <options>"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"         -i:   Input file name"<<endl;
-  Usage<<"         -p:   Position: RA, DEC, Radius"<<endl;
+  Usage<<"         -p:   Position: RA, DEC, Radius (all in deg)"<<endl;
+  Usage<<"         -o:   Write a spectrum to this file (don't add a suffix)"<<endl;
   Usage<<"         -h:   print this help"<<endl;
   Usage<<endl;
 
@@ -152,7 +155,10 @@ bool ExtractSpectrum::ParseCommandLine(int argc, char** argv)
 		// Then fulfill the options:
     if (Option == "-i") {
       m_InputFileName = argv[++i];
-			cout<<"Accepting input file name: "<<m_InputFileName<<endl;
+      cout<<"Accepting input file name: "<<m_InputFileName<<endl;
+    } else if (Option == "-o") {
+      m_OutputFileName = argv[++i];
+      cout<<"Accepting output file name: "<<m_OutputFileName<<endl;
     } else if (Option == "-p") {
       m_RAs.push_back(atof(argv[++i]));
       m_DECs.push_back(atof(argv[++i]));
@@ -184,6 +190,8 @@ bool ExtractSpectrum::ParseCommandLine(int argc, char** argv)
 bool ExtractSpectrum::Analyze()
 {
   TH1D* GeneralEnergyHist = new TH1D("GeneralEnergyHist", "GeneralEnergyHist", 200, 0, 100);
+  GeneralEnergyHist->SetXTitle("keV");
+  GeneralEnergyHist->SetYTitle("cts/keV/sec");
   
   vector<TH1D*> SelectedHists;
   for (unsigned int i = 0; i < m_RAs.size(); ++i) {
@@ -191,6 +199,9 @@ bool ExtractSpectrum::Analyze()
     Name<<"Sel ("<<m_RAs[i]<<", "<<m_DECs[i]<<", "<<m_Radii[i]<<")";
     TH1D* Hist = new TH1D(Name.str().c_str(), Name.str().c_str(), 200, 0, 100);
     Hist->SetMinimum(0);
+    Hist->SetXTitle("keV");
+    Hist->SetYTitle("cts/keV/sec");
+
     SelectedHists.push_back(Hist);
   }
   
@@ -213,6 +224,7 @@ bool ExtractSpectrum::Analyze()
       for (unsigned int i = 0; i < m_RAs.size(); ++i) {
         MVector DirPhoton;
         DirPhoton.SetMagThetaPhi(1.0, Hit.GetObservatoryData().GetRa()/rad, Hit.GetObservatoryData().GetDec()/rad + c_Pi/2);
+        cout<<Hit.GetObservatoryData().GetRa()/deg<<":"<<Hit.GetObservatoryData().GetDec()/deg<<endl;
         if (DirPhoton.Angle(m_Directions[i]) <= m_Radii[i]*c_Rad) {
           SelectedHists[i]->Fill(Hit.GetEnergy());
         }
@@ -221,7 +233,7 @@ bool ExtractSpectrum::Analyze()
   }
 
   for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
-    GeneralEnergyHist->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth());
+    GeneralEnergyHist->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
   }
 
   TCanvas* GeneralEnergyCanvas = new TCanvas();
@@ -233,12 +245,27 @@ bool ExtractSpectrum::Analyze()
   
   for (unsigned int i = 0; i < m_RAs.size(); ++i) {
     for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
-      SelectedHists[i]->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth());
+      SelectedHists[i]->SetBinContent(b, SelectedHists[i]->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
     }
     TCanvas* Canvas = new TCanvas();
     Canvas->cd();
     SelectedHists[i]->Draw();
     Canvas->Update();
+    
+    if (m_OutputFileName != "") {
+      TString Name = m_OutputFileName;
+      Name += ".RA=";
+      Name += m_RAs[i];
+      Name += ".DEC=";
+      Name += m_DECs[i];
+      Name += ".csv";
+      ofstream out;
+      out.open(Name.Data());
+      for (int b = 1; b <= SelectedHists[i]->GetXaxis()->GetNbins(); ++b) {
+        out<<SelectedHists[i]->GetXaxis()->GetBinCenter(b)<<" "<<SelectedHists[i]->GetBinContent(b)<<endl;
+      }
+      out.close();
+    }
   }
   
   return true;
