@@ -60,9 +60,41 @@ NOrientation::NOrientation()
 ////////////////////////////////////////////////////////////////////////////////
 
 
+NOrientation::NOrientation(const NOrientation& O) 
+{ 
+  // Copy constructor
+  
+  m_Rotation.ResizeTo(3,3);
+  Clear();
+  
+  SetTranslation(O.m_Translation); 
+  SetRotation(O.m_Q); 
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 NOrientation::~NOrientation()
 {
   // Delete this instance of NOrientation
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NOrientation& NOrientation::operator=(const NOrientation& O)
+{ 
+  // Copy constructor
+  
+  m_Rotation.ResizeTo(3,3);
+  Clear();
+  
+  SetTranslation(O.m_Translation); 
+  SetRotation(O.m_Q);
+  
+  return *this;
 }
 
 
@@ -198,6 +230,8 @@ void NOrientation::SetRotation(NQuaternion Q)
   m_Empty = false; 
   m_IsRotated = true;
 
+  //cout<<Q<<endl;
+  
   m_Q=Q;
 
   MVector X(1, 0, 0);

@@ -44,8 +44,13 @@ class NOrientation
  public:
   //! Standard constructor
   NOrientation();
+  //! Copy constructor
+  NOrientation(const NOrientation& Orientation);
   //! Default destructor
   virtual ~NOrientation();
+
+  //! The asignment operator
+  NOrientation& operator=(const NOrientation& Orientation);
 
   //! Resets all data to default values
   virtual void Clear();
