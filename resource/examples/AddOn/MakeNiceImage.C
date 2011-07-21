@@ -10,8 +10,9 @@ void MakeNiceImage() {
   gStyle->SetTitleBorderSize(0);
   gStyle->SetTitleFillColor(0);
 
-  gStyle->SetTitleX(0.1);
-  gStyle->SetTitleW(0.8);
+  gStyle->SetTitleAlign(13);
+  gStyle->SetTitleX(0.15);
+  gStyle->SetTitleW(0.7);
   gStyle->SetTitleY(0.95);
   gStyle->SetTitleFont(72, "");
 
@@ -40,7 +41,23 @@ void MakeNiceImage() {
   
   gStyle->SetOptStat(0);
 
-  gStyle->SetPalette(1, 0);
+  //gStyle->SetPalette(1, 0);
+  const unsigned int Number = 8;
+  double Red[Number]   = { 0.0000, 0.2500, 0.5000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000 };
+  double Green[Number] = { 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 1.0000, 1.0000, 1.0000 };
+  double Blue[Number]  = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.7500 };
+  double Stops[Number] = { 0.0000, 0.0000, 0.1000, 0.3000, 0.5000,  0.700, 0.9000, 1.0000 };
+    
+  // Arithmetic-mean for nice black'n'white prints:
+  double Min = (Red[0]+Green[0]+Blue[0])/3.0;
+  double Max = (Red[Number-1]+Green[Number-1]+Blue[Number-1])/3.0;
+  Stops[0] = 0.0;
+  Stops[Number-1] = 1.0;
+  for (unsigned int i = 1; i < Number-1; ++i) {
+    double Value = ((Red[i]+Green[i]+Blue[i])/3.0-Min)/(Max-Min);
+    Stops[i] = Value; 
+  }
+  TColor::CreateGradientColorTable(Number, Stops, Red, Green, Blue, 100);
   
   TCanvas* MainCanvas = new TCanvas("Image", "Image", 750, 750);
   MainCanvas->cd();
