@@ -233,7 +233,7 @@ bool ExtractSpectrum::Analyze()
   }
 
   for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
-    GeneralEnergyHist->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
+    GeneralEnergyHist->SetBinContent(b, GeneralEnergyHist->GetBinContent(b)/LastTime.GetAsSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
   }
 
   TCanvas* GeneralEnergyCanvas = new TCanvas();
@@ -245,7 +245,7 @@ bool ExtractSpectrum::Analyze()
   
   for (unsigned int i = 0; i < m_RAs.size(); ++i) {
     for (int b = 1; b <= GeneralEnergyHist->GetXaxis()->GetNbins(); ++b) {
-      SelectedHists[i]->SetBinContent(b, SelectedHists[i]->GetBinContent(b)/LastTime.GetSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
+      SelectedHists[i]->SetBinContent(b, SelectedHists[i]->GetBinContent(b)/LastTime.GetAsSeconds()/GeneralEnergyHist->GetXaxis()->GetBinWidth(b));
     }
     TCanvas* Canvas = new TCanvas();
     Canvas->cd();
