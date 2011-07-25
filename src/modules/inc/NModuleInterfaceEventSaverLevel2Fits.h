@@ -94,6 +94,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   vector<int>    m_Grade;
   vector<NQuaternion> m_Qfbob;
   vector<MVector> m_Tfbob;
+  vector<NQuaternion> m_Qstar;
 
 #ifdef ___CINT___
  public:

@@ -88,10 +88,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
   long nrow = 0;
-  int tfield = 14;
-  char* ttype[] = {"X","Y","PI","E","Time","grade","phottype","Qx","Qy","Qz","Qr","Tx","Ty","Tz"};
-  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I","1E","1E","1E","1E","1E","1E","1E"};
-  char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type","unit","unit","unit","unit","mm","mm","mm"};
+  int tfield = 18;
+  char* ttype[] = {"X","Y","PI","E","Time","grade","phottype","Qx","Qy","Qz","Qr","Tx","Ty","Tz","QSx","QSy","QSz","QSr"};
+  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
+  char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type","unit","unit","unit","unit","mm","mm","mm","unit","unit","unit","unit"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -109,6 +109,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   m_Grade.clear();
   m_Qfbob.clear();
   m_Tfbob.clear();
+  m_Qstar.clear();
 
   return true;
 }
@@ -130,6 +131,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
+	m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
   }
     
   return true;
@@ -317,6 +319,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float* fTx     = new float[m_Ra.size()];
   float* fTy     = new float[m_Ra.size()];
   float* fTz     = new float[m_Ra.size()];
+  float* fQSx     = new float[m_Ra.size()];
+  float* fQSy     = new float[m_Ra.size()];
+  float* fQSz     = new float[m_Ra.size()];
+  float* fQSr     = new float[m_Ra.size()];
 
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
@@ -335,6 +341,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 	fTx    [i] = (float) m_Tfbob[i][0];
 	fTy    [i] = (float) m_Tfbob[i][1];
 	fTz    [i] = (float) m_Tfbob[1][2];
+	fQSx   [i] = (float) m_Qstar[i].m_V[0];
+	fQSy   [i] = (float) m_Qstar[i].m_V[1];
+	fQSz   [i] = (float) m_Qstar[i].m_V[2];
+	fQSr   [i] = (float) m_Qstar[i].m_R;
   }
   
   char Words[30];
@@ -451,6 +461,38 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
+ fits_write_col(m_File, TFLOAT, 15, 1, 1, m_Ra.size(), fQSx, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 16, 1, 1, m_Ra.size(), fQSy, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qy') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 17, 1, 1, m_Ra.size(), fQSz, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qz') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 18, 1, 1, m_Ra.size(), fQSr, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qr') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
 
 
   if (Status != 0) {
@@ -474,7 +516,11 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   delete [] fTx;
   delete [] fTy;
   delete [] fTz;
-
+  delete [] fQSx;
+  delete [] fQSy;
+  delete [] fQSz;
+  delete [] fQSr;
+  
   float tlmin1 = 0;
   float tlmin2 = 0;
   float tlmin3 = 0;
