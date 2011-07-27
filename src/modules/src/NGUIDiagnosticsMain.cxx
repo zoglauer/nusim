@@ -49,8 +49,6 @@ ClassImp(NGUIDiagnosticsMain)
 
 NGUIDiagnosticsMain::NGUIDiagnosticsMain(NSatellite& Satellite) : MGUIDialog(gClient->GetRoot(), gClient->GetRoot()), m_Satellite(Satellite)
 {
-  gStyle->SetPalette(1, 0);
-
   // No deep clean-up allowed in this function!
   SetCleanup(kNoCleanup);
 

@@ -339,6 +339,16 @@ void NGUIDiagnosticsBackprojector::Update()
         m_Backprojection->Fill(m_Ra[i], m_Dec[i]);
       }
     }
+    // Add a miniscule value to empty bins to ensure a non-white background color
+    for (int x = 1; x <= m_Backprojection->GetXaxis()->GetNbins(); ++x) {
+      for (int y = 1; y <= m_Backprojection->GetYaxis()->GetNbins(); ++y) {
+        if (m_Backprojection->GetBinContent(x, y) == 0) {
+          m_Backprojection->SetBinContent(x, y, 1E-10);
+        }
+      }
+    }
+    m_Backprojection->SetContour(50);
+    
     m_Backprojection->SetTitle(TString("Backprojected hits after T_{eff} = ") + m_Time.GetString(3));
     m_BackprojectionCanvas->GetCanvas()->Modified();
     m_BackprojectionCanvas->GetCanvas()->Update();
