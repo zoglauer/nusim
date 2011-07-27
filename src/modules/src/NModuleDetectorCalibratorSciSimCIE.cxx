@@ -138,7 +138,7 @@ bool NModuleDetectorCalibratorSciSimCIE::LoadDepthCutSpline()
 
   if ( m_DepthCutROOTFile != 0 ) {
     if ( m_DepthCutROOTFile->GetName() == m_DepthCutFileName ) {
-      mout << "ROOT file name for depth cut is the same. Skip to load ROOT file for depth cut." << show;
+      mout << "SciSimCIE calibrator: Depth cut file already loaded." << endl;
       return true;
     } else {
       m_DepthCutROOTFile->Close();
