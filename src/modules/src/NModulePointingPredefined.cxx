@@ -219,7 +219,7 @@ bool NModulePointingPredefined::StopCriterionFullFilled()
   //! Check if stop criterion is fullfilled
   
   if (m_AbsoluteTime == true) {
-    if (m_Satellite.GetTimeIdeal() >= m_SequencedInitialPointings.back().GetTime()) {
+    if (m_Satellite.GetTime() >= m_SequencedInitialPointings.back().GetTime()) {
       return true;
     }
   }

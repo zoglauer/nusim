@@ -124,7 +124,7 @@ bool NModuleBackgroundSimulatorShieldOnly::AnalyzeEvent(NEvent& Event)
   // Determine a random telescope
   Event.SetTelescope(gRandom->Integer(2)+1);
 
-  Event.SetTime(m_Satellite.GetTimeIdeal());
+  Event.SetTime(m_Satellite.GetTime());
 
   NInteraction I;
   I.SetIsDetector(false);

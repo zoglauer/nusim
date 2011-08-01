@@ -42,6 +42,11 @@ class NModuleEventLoader : public NModule, public NModuleInterfaceEvent, public 
   //! Default destructor
   virtual ~NModuleEventLoader();
 
+  // Get absolute observation start time
+  virtual NTime GetAbsoluteObservationStartTime() const { return m_AbsoluteObservationStartTime; }
+  // Get absolute observation start time
+  virtual NTime GetAbsoluteObservationEndTime() const { return m_AbsoluteObservationEndTime; }
+
   //! Initialize the module
   virtual bool Initialize();
 
@@ -79,7 +84,10 @@ class NModuleEventLoader : public NModule, public NModuleInterfaceEvent, public 
   //! We buffer one event, since we must know the next event time
   NEvent m_Event;
 
-
+  //! The absolute observation start time
+  NTime m_AbsoluteObservationStartTime;
+  //! The absolute observation end time
+  NTime m_AbsoluteObservationEndTime;
 
 
 

@@ -37,6 +37,8 @@ ClassImp(NModuleInterfaceTime)
 NModuleInterfaceTime::NModuleInterfaceTime()
 {
   // Construct an instance of NModuleInterfaceTime
+  
+  m_Epoch.Set(2010, 1, 1, 0, 0, 0);
 }
 
 

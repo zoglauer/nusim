@@ -82,7 +82,7 @@ bool NModuleBackgroundSimulatorTrivial::Initialize()
 {
   // Initialize the module - since this is an entry module determine the time of the first event
 
-  m_Time = m_Satellite.GetTimeIdeal() + 0.5*gRandom->Rndm()+10;
+  m_Time = m_Satellite.GetTime() + 0.5*gRandom->Rndm()+10;
 
   return true;
 }
@@ -98,17 +98,13 @@ bool NModuleBackgroundSimulatorTrivial::AnalyzeEvent(NEvent& Event)
   // This is an entry module: In a simulation starting from the beginning
 
   // Since this is an entry module, we start our work only if the time <= m_Time:
-  if (m_Satellite.GetTimeIdeal() < m_Time) { 
+  if (m_Satellite.GetTime() < m_Time) { 
     return true;
   }
 
   Event.SetOrigin(NEvent::c_OriginBackground);
   Event.SetTelescope((gRandom->Rndm() > 0.5) ? 1 : 2);
-  if (Event.GetTelescope() == 1) {
-    Event.SetTime(m_Satellite.GetTimeDetector1());
-  } else {
-    Event.SetTime(m_Satellite.GetTimeDetector2());
-  }
+  Event.SetTime(m_Satellite.GetTime());
 
   NInteraction I;
   I.SetIsDetector(true);
@@ -121,7 +117,7 @@ bool NModuleBackgroundSimulatorTrivial::AnalyzeEvent(NEvent& Event)
 
   Event.AddInteraction(I);
 
-  m_Time = m_Satellite.GetTimeIdeal() + 0.5*gRandom->Rndm();
+  m_Time = m_Satellite.GetTime() + 0.5*gRandom->Rndm();
 
   return true;
 }

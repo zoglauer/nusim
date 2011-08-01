@@ -72,6 +72,9 @@ class NSupervisor
   //! Get the astrophysics mode
   bool GetAstrophysicsMode() const { return m_AstrophysicsMode; } 
 
+  //! Set the partial observation start time
+  void SetObservationStartStopTime(const NTime& Start, const NTime& Stop) { m_UseObservationStartStopTime = true; m_ObservationStartTime = Start; m_ObservationStopTime = Stop; }
+
   //! Load all data from a file
   bool Load(TString FileName);
   //! Save all data to a file
@@ -186,6 +189,13 @@ class NSupervisor
 
   //! The observation time which shall be simulated in seconds
   NTime m_ObservationTime;
+  
+  //! Use observation start stop time
+  bool m_UseObservationStartStopTime;
+  //! The simulation start time if not all of the observation time should be simulate
+  NTime m_ObservationStartTime;
+  //! The simulation stop time if not all of the observation time should be simulated
+  NTime m_ObservationStopTime;
 
   //! Update frequency of the diagnostics window in started events
   int m_UpdateInterval;

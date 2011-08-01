@@ -26,6 +26,9 @@ modules:
 data:
 	@$(MAKE) -C data
 
+addon:
+	@$(MAKE) -C addon
+
 
 
 #------------------------------------------------------------------------------
@@ -42,12 +45,14 @@ all:
 	@$(MAKE) -C modules
 	@$(MAKE) -C data
 	@$(MAKE) -C main
+	@$(MAKE) -C addon
 
 clean:
 	@$(MAKE) clean -C megalib
 	@$(MAKE) clean -C main
 	@$(MAKE) clean -C modules
 	@$(MAKE) clean -C data
+	@$(MAKE) clean -C addon
 	@rm -f *~
 	@rm -f \#*
 

@@ -21,6 +21,7 @@
 
 // ROOT libs:
 #include "TGClient.h"
+#include "TObjString.h"
 
 // MEGAlib libs:
 #include "MAssert.h"
@@ -95,6 +96,9 @@ bool NModuleEventLoader::Initialize()
 {
   // Initialize the module 
 
+  m_AbsoluteObservationStartTime.Set(0l, 0l);
+  m_AbsoluteObservationEndTime.Set(0l, 0l);
+
   MFile::ExpandFileName(m_FileName);
   m_In.open(m_FileName);
   if (m_In.is_open() == false) {
@@ -113,13 +117,70 @@ bool NModuleEventLoader::Initialize()
         return false;
       }
       m_ChosenType = T.GetTokenAtAsInt(1);
+    } else if (Line.BeginsWith("OBSSTART") == true) {
+      TObjArray* Tokens = Line.Tokenize(" -");
+      if (Tokens->GetEntries() != 7) {
+        mgui<<"Cannot parse file "<<m_FileName<<" correctly: OBSSTART-keyword is not OK!"<<show;
+        return false;
+      }
+      m_AbsoluteObservationStartTime.Set(atoi(dynamic_cast<TObjString*>(Tokens->At(1))->GetString().Data()),
+                                         atoi(dynamic_cast<TObjString*>(Tokens->At(2))->GetString().Data()),
+                                         atoi(dynamic_cast<TObjString*>(Tokens->At(3))->GetString().Data()),
+                                         atoi(dynamic_cast<TObjString*>(Tokens->At(4))->GetString().Data()),
+                                         atoi(dynamic_cast<TObjString*>(Tokens->At(5))->GetString().Data()),
+                                         atoi(dynamic_cast<TObjString*>(Tokens->At(6))->GetString().Data()), 0);
+      cout<<"OBSSTART: "<<m_AbsoluteObservationStartTime<<" vs "<<Line<<endl;                              
     } else if (Line.BeginsWith("SE") == true) {
       break;
     }
   }
+  
+  // Store the position
+  streampos Intermediate = m_In.tellg();
+  
+  // Jump close to the end and look for the observation end time
+  m_In.seekg(0, ios::end);
+  streampos FileLength = m_In.tellg();
+  if (FileLength > streampos(1000)) {
+    m_In.seekg(FileLength - streampos(1000));
+  } else {
+    m_In.seekg(Intermediate);
+  }
+  while(!m_In.eof()) {
+    Line.ReadLine(m_In);
+    if (Line.BeginsWith("OBSEND") == true) {
+      TObjArray* Tokens = Line.Tokenize(" -");
+      if (Tokens->GetEntries() != 7) {
+        mgui<<"Error: Cannot parse file "<<m_FileName<<" correctly: OBSEND-keyword is not OK!"<<show;
+        return false;
+      }
+      m_AbsoluteObservationEndTime.Set(atoi(dynamic_cast<TObjString*>(Tokens->At(1))->GetString().Data()),
+                                       atoi(dynamic_cast<TObjString*>(Tokens->At(2))->GetString().Data()),
+                                       atoi(dynamic_cast<TObjString*>(Tokens->At(3))->GetString().Data()),
+                                       atoi(dynamic_cast<TObjString*>(Tokens->At(4))->GetString().Data()),
+                                       atoi(dynamic_cast<TObjString*>(Tokens->At(5))->GetString().Data()),
+                                       atoi(dynamic_cast<TObjString*>(Tokens->At(6))->GetString().Data()), 0);
+       cout<<"OBSEND: "<<m_AbsoluteObservationEndTime<<" vs "<<Line<<endl;
+       break;                      
+    }
+  }
+  
+  // Jump back to original position
+  m_In.seekg(Intermediate);
+  
 
   if (m_ChosenType == NModule::c_Unknown) {
-    mgui<<"Cannot find the original module type for saved events in file : "<<m_FileName<<"!"<<show;
+    mgui<<"Error: Cannot find the original module type for saved events in file : "<<m_FileName<<"!"<<show;
+    return false;
+  }
+  
+  if (m_AbsoluteObservationStartTime == NTime(0l, 0l)) {
+    mgui<<"Error: Cannot find the absolute observation start time in file: "<<m_FileName<<"!"<<show;
+    return false;
+  }
+  
+  if (m_AbsoluteObservationEndTime == NTime(0l, 0l)) {
+    mgui<<"Error: Cannot find the absolute observation end time in file: "<<m_FileName<<"!"<<show;
     return false;
   }
   

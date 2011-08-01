@@ -30,7 +30,7 @@
 
 // NuSTAR libs:
 #include "NModule.h"
-#include "NModuleTimeIdeal.h"
+#include "NModuleTimeEngine.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ void NGUIOptionsTimeEngine::Create()
   TGLabel* DateLabel = new TGLabel(DateFrame, "Start date (DD/MM/YYYY): ");
   DateFrame->AddFrame(DateLabel, LabelLayout);
 
-  NTime Time = dynamic_cast<NModuleTimeIdeal*>(m_Module)->GetAbsoluteObservationStartTime();
+  NTime Time = dynamic_cast<NModuleTimeEngine*>(m_Module)->GetAbsoluteObservationStartTime();
   
   m_Date = new TGNumberEntry(DateFrame, 03022012, 8, -1, TGNumberEntry::kNESDayMYear);
   m_Date->SetDate(Time.GetYears(), Time.GetMonths(), Time.GetDays());
@@ -143,7 +143,7 @@ bool NGUIOptionsTimeEngine::OnApply()
   m_Time->GetTime(Hour, Minute, Second);
   NTime Time(Year, Month, Day, Hour, Minute, Second);
   cout<<"H:"<<Hour<<":"<<Time.GetHours()<<endl;
-  dynamic_cast<NModuleTimeIdeal*>(m_Module)->SetAbsoluteObservationStartTime(Time);
+  dynamic_cast<NModuleTimeEngine*>(m_Module)->SetAbsoluteObservationStartTime(Time);
 
 	return true;
 }

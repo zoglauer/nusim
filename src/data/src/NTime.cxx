@@ -29,6 +29,7 @@ using namespace std;
 // MEGAlib libs:
 #include "MAssert.h"
 #include "MStreams.h"
+#include "MTokenizer.h"
 
 // NuSTAR libs:
 
@@ -181,6 +182,47 @@ bool NTime::Set(const long Seconds, const long NanoSeconds)
   Normalize();
 
   return false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NTime::Set(const TString& String)
+{
+  if (String.BeginsWith("TI") == true) {
+    long Seconds = 0;
+    long NanoSeconds = 0;
+    TString NewString = String;
+    NewString.ReplaceAll("TI", "");
+    MTokenizer T('.', true);
+    T.Analyze(NewString);
+    if (T.GetNTokens() == 1) {
+      Seconds = T.GetTokenAtAsLong(0);
+    } else if (T.GetNTokens() == 2) {
+      Seconds = T.GetTokenAtAsLong(0);
+      NanoSeconds = T.GetTokenAtAsLong(1);
+      // Find digits:
+      int Digits = T.GetTokenAt(1).Length();
+      if (Digits < 9) {
+        NanoSeconds *= int(pow(10.0, 9.0 - Digits));
+      } else if (Digits > 9) {
+        NanoSeconds /= int(pow(10.0, Digits - 9.0));   
+      }
+    } else {
+      mout<<"NTime: TI not correct ("<<T.GetNTokens()<<" tokens): "<<String<<endl;
+      return false;       
+    }
+    Set(Seconds, NanoSeconds);
+  } else {
+    mout<<"NTime: String does not start with TI"<<endl;
+    return false;
+  }
+
+  m_Empty = false;
+  Normalize();
+
+  return true;
 }
 
 

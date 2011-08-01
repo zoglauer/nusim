@@ -28,7 +28,7 @@ using namespace std;
 #include <TString.h>
 #include <TSystem.h>
 
-// MEGAlib libs:
+// NuSIM libs:
 #include "NGlobal.h"
 #include "NInterface.h"
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 {
   // Main function... the beginning...
 
-  // Initialize global MEGALIB variables, especially mgui, etc.
+  // Initialize global NuSIM variables, especially mgui, etc.
   NGlobal::Initialize();
 
 	TApplication* AppNuclearizer = new TApplication("Nuclearizer", 0, 0);

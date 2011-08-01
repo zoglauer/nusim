@@ -84,7 +84,7 @@ bool NModuleOrbitEngine::Initialize()
 {
   // Initialize the module 
 
-  cout<<"Orbit avg. duration: "<<m_OrbitDuration<<" & avg. blackout:"<<m_BlackoutDuration<<endl;
+  //cout<<"Orbit avg. duration: "<<m_OrbitDuration<<" & avg. blackout:"<<m_BlackoutDuration<<endl;
 
   return true;
 }
@@ -189,6 +189,22 @@ int NModuleOrbitEngine::GetNOrbitChanges(NTime t1, NTime t2)
   //! Return the number of orbit chnages:
 
   return int(t2/m_OrbitDuration) - int(t1/m_OrbitDuration);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NModuleOrbitEngine::FindIdealTime(NTime ObservationTime)
+{
+  //! Get the ideal time as a function of observation time
+
+  int Orbits = ObservationTime/(m_OrbitDuration - m_BlackoutDuration);
+  NTime RestTime = ObservationTime - (m_OrbitDuration - m_BlackoutDuration)*Orbits;
+  
+  //cout<<ObservationTime<<":"<<Orbits<<":"<<RestTime<<endl;
+  
+  return m_OrbitDuration*Orbits + RestTime;
 }
 
 

@@ -40,6 +40,7 @@ using namespace std;
 #include "MFunction2D.h"
 #include "NModuleEventLoader.h"
 #include "NModuleEventSaver.h"
+#include "NModuleTimeEngine.h"
 #include "NTime.h"
 #include "NSatellite.h"
 
@@ -180,12 +181,29 @@ bool ConcatDat::ParseCommandLine(int argc, char** argv)
 bool ConcatDat::Analyze()
 {
   NSatellite Sat;
+  Sat.SetTimeModule(new NModuleTimeEngine(Sat));
   
+  // Retrieve the observation start and end times:
+  NModuleEventLoader LoaderStart(Sat);
+  LoaderStart.SetFileName(m_InputFileNames[0]);
+  if (LoaderStart.Initialize() == false) return false;
+  Sat.SetAbsoluteObservationStartTime(LoaderStart.GetAbsoluteObservationStartTime());
+  int ChosenType = LoaderStart.GetChosenModuleType();
+  LoaderStart.Finalize();
+  
+  NModuleEventLoader LoaderEnd(Sat);
+  LoaderEnd.SetFileName(m_InputFileNames.back());
+  if (LoaderEnd.Initialize() == false) return false;
+  Sat.SetAbsoluteObservationEndTime(LoaderEnd.GetAbsoluteObservationEndTime());
+  LoaderEnd.Finalize();
+  
+  // Set up the saver
   NModuleEventSaver Saver(Sat);
   Saver.SetFileName(m_OutputFileName);
+  Saver.SetChosenModuleType(ChosenType);
   if (Saver.Initialize() == false) return false;
 
-  NTime TimeOffset(0);
+  // Loop over all files, extrcat and save the events into the new file
   unsigned long IDOffset = 0;
   for (unsigned int f = 0; f < m_InputFileNames.size(); ++f) {
     NModuleEventLoader Loader(Sat);
@@ -193,18 +211,14 @@ bool ConcatDat::Analyze()
     if (Loader.Initialize() == false) return false;
     
     NEvent Event;
-    NTime LatestTime(0);
     unsigned long LatestID = 0;
     while (Loader.AnalyzeEvent(Event) == true) {
       if (Event.IsEmpty() == true) break; 
-      
-      LatestTime = Event.GetTime();
+     
       LatestID = Event.GetID();
-      Event.SetTime(Event.GetTime() + TimeOffset);
       Event.SetID(Event.GetID() + IDOffset);
       Saver.AnalyzeEvent(Event);
     }
-    TimeOffset += LatestTime;
     IDOffset += LatestID; 
     Loader.Finalize();
   }
@@ -244,6 +258,8 @@ int main(int argc, char** argv)
 	//handler = CatchSignal;
   //(void) signal(SIGINT, CatchSignal);
 
+  // Initialize global NuSIM variables, especially mgui, etc.
+  NGlobal::Initialize();
 
   TApplication ConcatDatApp("ConcatDatApp", 0, 0);
 
@@ -258,7 +274,7 @@ int main(int argc, char** argv)
     return -2;
   } 
 
-  ConcatDatApp.Run();
+  //ConcatDatApp.Run();
 
   cout<<"Program exited normally!"<<endl;
 

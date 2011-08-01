@@ -108,7 +108,7 @@ bool NModuleSourceDistribution::Initialize()
 
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
-    m_Sources[s]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
+    m_Sources[s]->CalculateNextEmission(m_Satellite.GetTime());
   }
 
   DetermineNext();
@@ -241,11 +241,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   
   // (d) Store all the data:
   Event.SetTelescope(Telescope);
-  if (Telescope == 1) {
-    Event.SetTime(m_Satellite.GetTimeDetector1());
-  } else {
-    Event.SetTime(m_Satellite.GetTimeDetector2());
-  }
+  Event.SetTime(m_Satellite.GetTime());
 
   Event.SetOriginalPhoton(Photon);
   Event.SetOrigin(NEvent::c_OriginSource);
@@ -260,7 +256,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   // Step 3: Since this is an ENTRY module, set the time when the NEXT event is
   //         started
 
-  m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTimeIdeal());
+  m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTime());
   DetermineNext();
 
   dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra, Dec);

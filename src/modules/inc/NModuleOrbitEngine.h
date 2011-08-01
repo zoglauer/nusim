@@ -72,6 +72,9 @@ class NModuleOrbitEngine : public NModule, public NModuleInterfaceOrbit
   virtual int GetNOrbitChanges(NTime t1, NTime t2);
   //! Get the start time of the next black-out
   virtual NTime StartOfPreviousBlackout(NTime t) { return StartOfNextBlackout(t) - m_OrbitDuration; }
+  //! Get the ideal time as a function of observation time
+  virtual NTime FindIdealTime(NTime ObservationTime);
+  
 
 
   //! Show the options GUI

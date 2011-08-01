@@ -111,7 +111,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModulePointingDatabase.o \
 	$(LB)/NModuleOrientationsDatabase.o \
 	$(LB)/NGUIOptionsOrientationsDatabase.o \
-	$(LB)/NModuleTimeIdeal.o \
+	$(LB)/NModuleTimeEngine.o \
 	$(LB)/NGUIOptionsTimeEngine.o \
 	$(LB)/NModuleGeometryAndDetectorProperties.o \
 	$(LB)/NGUIDiagnostics.o \

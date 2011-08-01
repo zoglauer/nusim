@@ -140,7 +140,7 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_BadDepthCal         = Hit.GetBadDepthCalibration();
   m_DepthCut            = Hit.GetDepthCut();
 
-  m_Time   = Event.GetTime().GetAsSeconds();
+  m_Time   = m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds();
   m_Origin = Event.GetOrigin();
   m_Dec    = Hit.GetObservatoryData().GetDec();
   m_RA     = Hit.GetObservatoryData().GetRaScaled();
@@ -156,7 +156,11 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
 
   // from NNinePixelHist
   int NNinePixelHits = Event.GetNNinePixelHits();
-  if ( NNinePixelHits > 1 ) mout << "Warning: NNinePixelHits (" << NNinePixelHits << ")> 1" << endl;
+  if (NNinePixelHits > 1) mout << "Warning: NNinePixelHits (" << NNinePixelHits << ")> 1" << endl;
+  if (NNinePixelHits == 0) {
+    mout << "Warning: No NNinePixelHits!" << endl;
+    return true;
+  }
   NNinePixelHit& Niner = Event.GetNinePixelHitRef(0);
 
   m_TelID  = Niner.GetTelescope();

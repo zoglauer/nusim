@@ -105,6 +105,9 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   Usage<<"             Automatically start analysis without GUI"<<endl;
   Usage<<"      -s --seed <integer>:"<<endl;
   Usage<<"             Set the seed for the random number generator (zero results in a random seed)"<<endl;
+  Usage<<"         --start-stop-time <double> <double>:"<<endl;
+  Usage<<"             Set an observation start and stop time within the limits of the given observation time"<<endl;
+  Usage<<"             This is mainly used for parallel simulations with pnusim!"<<endl;
   Usage<<"      -p --mode-astrophysics:"<<endl;
   Usage<<"             Use a restricted mode which only enables modules relevant for astrophysics"<<endl;
   Usage<<"      -h --help:"<<endl;
@@ -128,13 +131,22 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
     Option = argv[i];
 
     // Single argument
-    if (Option == "-c" || Option == "--configuration") {
+    if (Option == "-c" || Option == "--configuration" ||
+        Option == "-s" || Option == "--seed") {
       if (!((argc > i+1) && argv[i+1][0] != '-')){
         cout<<"Error: Option "<<argv[i][1]<<" needs a second argument!"<<endl;
         cout<<Usage.str()<<endl;
         return false;
       }
-    }		
+    } 
+    // Double argument
+    if (Option == "--start-stop-time") {
+      if (!((argc > i+2) && argv[i+1][0] != '-' && argv[i+2][0] != '-')){
+         cout<<"Error: Option "<<argv[i][1]<<" needs a second argument!"<<endl;
+         cout<<Usage.str()<<endl;
+         return false;
+       }
+    }
   }
     
   // First parse all high level options
@@ -156,6 +168,11 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
     } else if (Option == "--seed" || Option == "-s") {
       gRandom->SetSeed(atoi(argv[++i]));
       cout<<"Command-line parser: Setting seed to "<<argv[i]<<endl;
+    } else if (Option == "--start-stop-time") {
+      double Start = atof(argv[++i]);
+      double Stop = atof(argv[++i]);
+      m_Supervisor->SetObservationStartStopTime(Start, Stop);
+      cout<<"Command-line parser: Enabling observation start and stop time for parallel simulations"<<endl;
     } else if (Option == "--mode-astrophysics" || Option == "-p") {
       m_Supervisor->SetAstrophysicsMode(true);
       cout<<"Command-line parser: Enabling astrophysics mode"<<endl;

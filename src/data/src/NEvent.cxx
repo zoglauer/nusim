@@ -194,12 +194,7 @@ bool NEvent::Parse(TString& Line)
 
   const char* Data = Line.Data();
   if (Data[0] == 'T' && Data[1] == 'I') {
-    double Seconds = 0.0;
-    if (sscanf(Data, "TI %lf", &Seconds) != 1) {
-      Error = true;
-    } else {
-      m_Time.Set(Seconds);
-    }
+    m_Time.Set(Data);
   } else if (Data[0] == 'I' && Data[1] == 'D') {
     if (sscanf(Data, "ID %lu", &m_ID) != 1) {
       Error = true;

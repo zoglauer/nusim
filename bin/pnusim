@@ -1,0 +1,201 @@
+#! /bin/bash
+
+
+help() {
+    echo ""
+    echo "pnusim - parallel nusim";
+    echo "(C) by Andreas Zoglauer"
+    echo "";
+    echo "Usage:";
+    echo "    pnusim -c <nusim configuration file>";
+    echo "";
+    echo "Options:";
+    echo "    -t <threads>: The number of threads as an integer (default: number of cores)"
+    echo "";
+    echo "Example:";
+    echo "    pnusim -t 2 -c Crab.cfg";
+    echo "";
+    echo "This script launches multiple instances of nusim with the same configuration file";
+    echo "and merges the data afterwards. It is GUI-less!"
+    echo "";
+}
+
+
+THREADS=1;
+if ( `test -f /usr/sbin/sysctl` ); then
+    THREADS=`sysctl -n hw.logicalcpu_max`
+elif ( `test -f /proc/cpuinfo` ); then 
+    THREADS=`grep processor /proc/cpuinfo | wc -l`
+fi
+CFG="!@#$";
+Nice=0;
+
+
+# Check if nusim exists
+if (`test ! -f ${NUSIM}/bin/nusim`); then
+    echo " "
+    echo "ERROR: The nusim executable does not exist. Try to (re-)compile NuSIM."
+    echo " "
+    exit 1;
+fi
+
+
+
+# Verify the input:
+if [ $# -eq 0 ] ; then
+    echo " "
+    echo "Error: You need to give at least a configuration file";
+    echo "       For details see mcosima -- help"
+    echo " "
+    exit 0;
+fi;
+
+while [ $# -gt 0 ] ; do
+    Found=0;
+    case $1 in
+    -h|--help) 
+        help; 
+        exit 0;;
+    -p|-t)
+        shift;
+        if [ $# -eq 0 ]; then
+            echo " "
+            echo "Error: Options -p and -t need an argument";
+            echo "       For details see mcosima -- help"
+            echo " "
+            exit 0;
+        fi
+        Found=1;
+        THREADS=$1;
+        #echo "Using ${THREADS} threads";
+        ;;
+    -c)
+        shift;
+        if [ $# -eq 0 ]; then
+            echo " "
+            echo "Error: Option -n needs an argument";
+            echo "       For details see mcosima -- help"
+            echo " "
+            exit 0;
+        fi
+        CFG=$1
+        ;;
+      *)
+        ;;
+    esac
+    shift
+done
+
+if [ "${CFG}" == "!@#$" ]; then
+    echo " "
+    echo "Error: You need to give a configuration file";
+    echo "       For details see nusim -- help"
+    echo " "
+    exit 1;
+fi
+
+if echo ${THREADS} | grep "^[0-9]*$" > /tmp/aux
+then
+    rm /tmp/aux
+else
+    echo " "
+    echo "Error: The value behind parallel must be a number";
+    echo "       For details see nusim -- help"
+    echo " "
+    rm /tmp/aux
+    exit 1;
+fi
+
+# Extract the simulation time
+OBSTIME=`cat ${CFG} | grep "ObservationTime" | awk -F">" '{ print $2 }' | awk -F"<" '{print $1 }'`
+OBSTIME=`echo ${OBSTIME} | sed 's/E/\\*10\\^/' | sed 's/+//'`
+SPLITTIME=`echo ${OBSTIME}/${THREADS} | bc`
+
+echo " "
+echo "Launching pnusim"
+echo " "
+echo "Number of threads to use: ${THREADS}" 
+echo "Configuration file: ${CFG}" 
+
+
+# Start the sending nusim thread
+BASEFILENAME=`cat ${CFG} | grep "BaseFileName" | awk -F">" '{ print $2 }' | awk -F"<" '{print $1 }'`
+
+for C in `seq 0 $(( ${THREADS} - 1))`; do
+  sed "s|${BASEFILENAME}|${BASEFILENAME}.${C}|g" ${CFG} > ${CFG}.${C}.cfg
+  START=`echo "${C}*${SPLITTIME}" | bc`
+  STOP=`echo "(${C}+1) * ${SPLITTIME}" | bc`
+  nusim -a -c ${CFG}.${C}.cfg --start-stop-time ${START} ${STOP} > nusim.${C}.log &
+  NUSIMPID[${C}]=$!
+  sleep 5
+done
+
+# Wait until all nusim's have finished...
+# Create a kill script
+KILLER="KillScript.sh"
+rm -f ${KILLER}
+echo "#!/bin/bash " >> ${KILLER}
+echo " " >> ${KILLER}
+for C in `seq 0 $(( ${THREADS} - 1))`; do
+  echo "kill "${NUSIMPID[${C}]} >> ${KILLER}
+done
+echo " " >> ${KILLER}
+
+
+# Wait until all cosima simulations have finished
+while true; do 
+
+  found=0
+  for C in `seq 0 $(( ${THREADS} - 1))`; do
+    search=$(ps --pid ${NUSIMPID[${C}]} -o comm=)
+    if [ "${search}" == "nusim" ]; then
+      found=$((${found} + 1))
+    fi
+  done
+
+  if [ $found -eq 0 ]; then
+    break;
+  fi
+
+  echo "Waiting for sims to finish... ${found} simulation processes still running at "`date`
+  sleep 10; 
+done
+
+# Merge...
+BASEFILENAME=`echo ${BASEFILENAME} | sed "s|\\$NUSIM|${NUSIM}|g"`
+if (`test -f ${BASEFILENAME}.0.events.fits`); then
+  List=""
+  for C in `seq 0 $(( ${THREADS} - 1))`; do
+    List="${List} ${BASEFILENAME}.${C}.events.fits" 
+  done
+  rm -f ${BASEFILENAME}.events.fits
+  ftmerge "${List}" ${BASEFILENAME}.events.fits
+fi
+if (`test -f ${BASEFILENAME}.0.metrology.fits`); then
+  List=""
+  for C in `seq 0 $(( ${THREADS} - 1))`; do
+    List="${List} ${BASEFILENAME}.${C}.metrology.fits" 
+  done
+  rm -f ${BASEFILENAME}.metrology.fits
+  ftmerge "${List}" ${BASEFILENAME}.metrology.fits
+fi
+if (`test -f ${BASEFILENAME}.0.startracker.fits`); then
+  List=""
+  for C in `seq 0 $(( ${THREADS} - 1))`; do
+    List="${List} ${BASEFILENAME}.${C}.startracker.fits" 
+  done
+  rm -f ${BASEFILENAME}.startracker.fits
+  ftmerge "${List}" ${BASEFILENAME}.startracker.fits
+fi
+if (`test -f ${BASEFILENAME}.0.events.dat`); then
+  List=""
+  for C in `seq 0 $(( ${THREADS} - 1))`; do
+    List="${List} -i ${BASEFILENAME}.${C}.events.dat" 
+  done
+  rm -f ${BASEFILENAME}.events.dat
+  ConcatDat ${List} -o ${BASEFILENAME}.events.dat
+fi
+  
+  
+
+exit 0

@@ -136,11 +136,7 @@ bool NModuleBackgroundSimulatorDataBase::AnalyzeEvent(NEvent& Event)
     return false;
   }
 
-  if (SelectedTelescope == 1) {
-    Event.SetTime(m_Satellite.GetTimeDetector1());
-  } else {
-    Event.SetTime(m_Satellite.GetTimeDetector2());
-  }
+  Event.SetTime(m_Satellite.GetTime());
   Event.SetTelescope(SelectedTelescope);
 
   for (unsigned int i = 0; i < m_Interactions.size(); ++i) {

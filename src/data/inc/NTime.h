@@ -70,6 +70,8 @@ class NTime
   bool Set(const long Seconds, const long NanoSeconds = 0);
   //! Set as two doubles
   bool Set(const double Seconds, const double NanoSeconds);
+  //! Set as TI string: "TI 2376547.23487"
+  bool Set(const TString& String);
 
   //! Return content as seconds
   double GetAsSeconds() const;

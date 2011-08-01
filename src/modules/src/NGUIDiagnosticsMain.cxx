@@ -165,7 +165,7 @@ void NGUIDiagnosticsMain::Update()
   //! Update all tabs
 
   ostringstream ObsText;
-  ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTimeIdeal().GetString(3)<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetString(3);
+  ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTime().GetString(3)<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetString(3);
   double Elapsed = m_Timer.GetElapsed();
   if (Elapsed < 3) {
     ObsText<<"   (You are updating this window very fast (dT="<<setprecision(3)<<Elapsed<<" sec) --- this is very CPU consuming...)";

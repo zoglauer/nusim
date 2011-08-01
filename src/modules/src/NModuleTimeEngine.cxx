@@ -1,5 +1,5 @@
 /*
- * NModuleTimeIdeal.cxx
+ * NModuleTimeEngine.cxx
  *
  * Copyright (C) 2009-2009 by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NModuleTimeIdeal
+// NModuleTimeEngine
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NModuleTimeIdeal.h"
+#include "NModuleTimeEngine.h"
 
 // Standard libs:
 
@@ -32,16 +32,16 @@
 
 
 #ifdef ___CINT___
-ClassImp(NModuleTimeIdeal)
+ClassImp(NModuleTimeEngine)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleTimeIdeal::NModuleTimeIdeal(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceTime()
+NModuleTimeEngine::NModuleTimeEngine(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceTime()
 {
-  // Construct an instance of NModuleTimeIdeal
+  // Construct an instance of NModuleTimeEngine
 
   // Set all module relevant information
 
@@ -53,7 +53,7 @@ NModuleTimeIdeal::NModuleTimeIdeal(NSatellite& Satellite) : NModule(Satellite), 
 
   // Set the tool tip text
   m_ToolTip = "This module keeps takes care of measured times in the instrument."
-    "Since this is an ideal module all times are ideal.";
+    "The times are ideal, i.e. not noised.";
 
   // Set all types this modules handles
   m_ModuleType = c_TimeEngine;
@@ -71,21 +71,23 @@ NModuleTimeIdeal::NModuleTimeIdeal(NSatellite& Satellite) : NModule(Satellite), 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleTimeIdeal::~NModuleTimeIdeal()
+NModuleTimeEngine::~NModuleTimeEngine()
 {
-  // Delete this instance of NModuleTimeIdeal
+  // Delete this instance of NModuleTimeEngine
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleTimeIdeal::Initialize()
+bool NModuleTimeEngine::Initialize()
 {
   // Initialize the module 
 
-  m_Ideal = 0;
+  m_Time = 0;
   m_EffectiveObservationTime = 0;
+  // m_AbsoluteObservationEndTime is set by the supervisor
+  m_AbsoluteObservationEndTime = 0;
   
   return true;
 }
@@ -94,43 +96,7 @@ bool NModuleTimeIdeal::Initialize()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NModuleTimeIdeal::GetTimeSatelliteBus() 
-{ 
-  // Get the time as measured by the instrument
-  // Since this is an ideal module - we just return the ideal time
-
-  return m_Ideal; 
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-NTime NModuleTimeIdeal::GetTimeDetector1() 
-{ 
-  // Get the time as measured by detector 1
-  // Since this is an ideal module - we just return the ideal time
-
-  return m_Ideal;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-NTime NModuleTimeIdeal::GetTimeDetector2() 
-{ 
-  // Get the time as measured by detector 2
-  // Since this is an ideal module - we just return the ideal time
-
-  return m_Ideal; 
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-void NModuleTimeIdeal::ShowOptionsGUI()
+void NModuleTimeEngine::ShowOptionsGUI()
 {
   //! Show the options GUI 
 
@@ -145,7 +111,7 @@ void NModuleTimeIdeal::ShowOptionsGUI()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleTimeIdeal::ReadXmlConfiguration(MXmlNode* Node)
+bool NModuleTimeEngine::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
@@ -161,7 +127,7 @@ bool NModuleTimeIdeal::ReadXmlConfiguration(MXmlNode* Node)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-MXmlNode* NModuleTimeIdeal::CreateXmlConfiguration() 
+MXmlNode* NModuleTimeEngine::CreateXmlConfiguration() 
 {
   //! Create an XML node tree from the configuration
 
@@ -173,5 +139,5 @@ MXmlNode* NModuleTimeIdeal::CreateXmlConfiguration()
 }
 
 
-// NModuleTimeIdeal.cxx: the end...
+// NModuleTimeEngine.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ NModuleEventSaver::NModuleEventSaver(NSatellite& Satellite) : NModule(Satellite)
   m_HasDiagnosticsGUI = false;
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsEventSaverDummy)
   // and implement all your GUI options
-  //m_Diagnostics = new MGUIDiognosticsEventSaverDummy();
+  //m_Diagnostics = new MGUIDiagnosticsEventSaverDummy();
 
   m_FileName = "Dummy.dat";
 }

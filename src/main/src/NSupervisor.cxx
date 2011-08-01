@@ -104,7 +104,7 @@ using namespace std;
 #include "NModuleEventSaver.h"
 #include "NModuleEventSaverCompressedEventFormat.h"
 
-#include "NModuleTimeIdeal.h"
+#include "NModuleTimeEngine.h"
 #include "NModuleOrbitStationary.h"
 #include "NModuleOrbitEngine.h"
 #include "NModulePointingPredefined.h"
@@ -136,7 +136,7 @@ NSupervisor::NSupervisor()
   // Add in this list all available modules:
 
   // Satellite modules
-  m_AvailableModules.push_back(new NModuleTimeIdeal(m_Satellite));
+  m_AvailableModules.push_back(new NModuleTimeEngine(m_Satellite));
   m_AvailableModules.push_back(new NModuleOrbitStationary(m_Satellite));
   m_AvailableModules.push_back(new NModuleOrbitEngine(m_Satellite));
   m_AvailableModules.push_back(new NModulePointingPredefined(m_Satellite));
@@ -246,6 +246,10 @@ NSupervisor::NSupervisor()
   m_DiagnosticsGUI = 0;
   
   m_AstrophysicsMode = false;
+  
+  m_UseObservationStartStopTime = false;
+  m_ObservationStartTime.Set(0.0);
+  m_ObservationStopTime.Set(1000000000.0);
 }
 
 
@@ -340,6 +344,9 @@ bool NSupervisor::Run()
       return false;
     }
   }
+  
+
+
 
   // Set up the diagnostics GUI
   delete m_DiagnosticsGUI; // we do not delete but just unmap the GUI when pressing X or cancel
@@ -402,7 +409,41 @@ bool NSupervisor::Run()
 
   bool StarTrackerNext = false;
   bool MetrologyNext = false;
+  
+  bool HasSourceEngine = false;
+  if (HasSourcePipe == true && dynamic_cast<NModule*>(m_PipelineModules[0])->GetModuleType() == NModule::c_SourceGenerator) {
+    HasSourceEngine = true;
+  }
+  if (HasSourceEngine == false && m_UseObservationStartStopTime == true) {
+    cerr<<"Parallel simulations only for full simulations starting with a source engine  - aborting..."<<endl;
+    return false;
+  }
 
+  // Advance the time for parallel simulations
+  NTime BlackoutTime = 0;
+  if (HasSourceEngine == true && m_UseObservationStartStopTime == true) {
+    cout<<"StartStopTime correction: "<<m_ObservationStartTime<<":"<<m_ObservationStopTime<<endl;
+    NTime IdealTime = m_Satellite.FindIdealTime(m_ObservationStartTime);
+    cout<<"Ideal time: "<<IdealTime<<endl;
+    
+    BlackoutTime = m_Satellite.GetBlackoutDuration(0, IdealTime);
+    NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(0.0, IdealTime);
+    if (SourceStart != 0) SourceStart->PerformTimeJump(IdealTime);
+    if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(IdealTime);
+    Pointing->StartNewOrbit(IdealTime, BlackoutDuration); // IdealTime not used!
+    
+    if (HasStarTrackerPipe == true) {
+      StarTrackerStart->ForceTimeOfNextEvent(IdealTime - 1*ns);
+    }
+    if (HasMetrologyPipe == true) {
+      MetrologyStart->ForceTimeOfNextEvent(IdealTime - 1*ns);
+    }
+
+    m_Satellite.SetTime(IdealTime);
+    m_Satellite.SetAbsoluteObservationStartTime(m_Satellite.GetAbsoluteObservationStartTime() + m_Satellite.FindIdealTime(m_ObservationStartTime));
+  }
+  
+  cout<<"Start Time: "<<m_Satellite.GetTime()<<endl;
 
   // Do the pipeline
   NEvent Event;
@@ -436,8 +477,8 @@ bool NSupervisor::Run()
   // Keep track of the star tracker time, since we might have to do intermediate times to take care of pointing slews
   NTime LastStarTrackerTime(-100);
 
-  NTime BlackoutTime(0);
-  while (m_Satellite.GetTimeIdeal()-BlackoutTime < m_ObservationTime) {
+  while (m_Satellite.GetTime()-BlackoutTime < m_ObservationTime && 
+         m_Satellite.GetTime()-BlackoutTime < m_ObservationStopTime) {
 
     // Check if stop criteria are fullfilled:
     bool StopCriterionFullFilled = false;
@@ -515,33 +556,37 @@ bool NSupervisor::Run()
     }
     
     // Take care of blackouts:
-    if (m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), TimeOfNextEvent) != NTime(0)) {
-      NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
-      cout<<"Blackout detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<"("<<m_Satellite.GetBlackoutDuration(m_Satellite.GetTimeIdeal(), TimeOfNextEvent)<<", "<<m_Satellite.GetTimeIdeal()<<")"<<endl;
+    if (HasSourceEngine == true && m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
+      NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
+      cout<<"Blackout detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<"("<<m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent)<<", "<<m_Satellite.GetTime()<<")"<<endl;
       BlackoutTime += BlackoutDuration;
       if (SourceStart != 0) SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
       if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(BlackoutDuration + 100*ns);
       Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent), BlackoutDuration);
-      m_Satellite.SetTimeIdeal(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
+      m_Satellite.SetTime(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
       
-      StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
-      MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
+      if (HasStarTrackerPipe == true) {
+        StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
+      }
+      if (HasMetrologyPipe == true) {
+        MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
+      }
       
       continue; // We continue, so that we get the next event beyond the timeout
     }
     
     
     if (TimeOfNextEvent - BlackoutTime > m_ObservationTime) {
-      m_Satellite.SetTimeIdeal(m_ObservationTime + BlackoutTime);
-      m_Satellite.SetEffectiveObservationTime(m_ObservationTime);
-      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + m_ObservationTime);
+      m_Satellite.SetTime(m_ObservationTime + BlackoutTime);
+      m_Satellite.SetEffectiveObservationTime(m_ObservationTime - m_ObservationStartTime);
+      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + m_ObservationTime + BlackoutTime);
       mout<<"Supervisor: Observation time exceeded."<<endl;
       break;
     }
     
     // Set the current time:
-    m_Satellite.SetTimeIdeal(TimeOfNextEvent);
-    m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime);
+    m_Satellite.SetTime(TimeOfNextEvent);
+    m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime - m_ObservationStartTime);
     m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent);
     
 
@@ -750,6 +795,7 @@ bool NSupervisor::Run()
     if (m_Interrupt == true) break;
   }
 
+
   // Finalize the module data:
   cout<<endl;
   cout<<"  Summary"<<endl;
@@ -770,7 +816,7 @@ bool NSupervisor::Run()
   cout<<"Supervisor summary:"<<endl;
   cout<<endl;
   cout<<"  CPU Timer:                  "<<Timer.GetElapsed()<<" sec"<<endl;
-  cout<<"  Observation time:           "<<m_Satellite.GetTimeIdeal().GetAsSeconds()<<" sec"<<endl;
+  cout<<"  Observation time:           "<<m_Satellite.GetTime().GetAsSeconds()<<" sec"<<endl;
   cout<<"  Effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" sec"<<endl;
   cout<<endl;
   cout<<"  Started events:             "<<setw(9)<<EventID+1<<endl;

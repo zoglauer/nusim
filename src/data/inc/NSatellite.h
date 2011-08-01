@@ -97,6 +97,8 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual bool IsBlackout(NTime t) { return m_Orbit->IsBlackout(t); }
   //! Get the number of blackouts in between
   virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return m_Orbit->GetBlackoutDuration(t1, t2); }
+  //! Get the ideal time as a function of observation time
+  virtual NTime FindIdealTime(NTime ObservationTime) { return m_Orbit->FindIdealTime(ObservationTime); }
 
   //! Get all orientations
   virtual NAlignmentsDBEntry GetAllAlignments(const NTime& t) { return m_Orientations->GetAllAlignments(t); }
@@ -259,27 +261,24 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual NPointing GetPointing(const NTime& t) { return m_Pointing->GetPointing(t); }
 
 
+  // The time interface:
 
   //! Set the ideal time
-  virtual void SetTimeIdeal(const NTime& Ideal) { m_Time->SetTimeIdeal(Ideal); }
+  virtual void SetTime(const NTime& Ideal) { m_Time->SetTime(Ideal); }
   //! Advance the ideal time
-  virtual void AdvanceTimeIdeal(const NTime& Time) { m_Time->AdvanceTimeIdeal(Time); }
+  virtual void AdvanceTime(const NTime& Time) { m_Time->AdvanceTime(Time); }
   //! Get the ideal time
-  virtual NTime GetTimeIdeal() { return m_Time->GetTimeIdeal(); }
+  virtual NTime GetTime() { return m_Time->GetTime(); }
+
+  //! Get the NuSIM time as time since Epoch
+  virtual NTime GetTimeSinceEpoch() { return m_Time->GetTimeSinceEpoch(); }  
+  //! Get the absolute time
+  virtual NTime GetAbsoluteTime() { return m_Time->GetAbsoluteTime(); }
 
   //! Set the effective observation time
   virtual void SetEffectiveObservationTime(const NTime& Time) { m_Time->SetEffectiveObservationTime(Time); }
   //! Get the effective observation time
   virtual NTime GetEffectiveObservationTime() { return m_Time->GetEffectiveObservationTime(); }
-
-  //! Get the time as measured by the instrument
-  virtual NTime GetTimeSatelliteBus() { return m_Time->GetTimeSatelliteBus(); }
-
-  //! Get the time as measured by detector 1
-  virtual NTime GetTimeDetector1() { return m_Time->GetTimeDetector1(); }
-
-  //! Get the time as measured by detector 2
-  virtual NTime GetTimeDetector2() { return m_Time->GetTimeDetector2(); }
 
 
   //! Set the absolute observation start time
@@ -292,6 +291,18 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   //! Get the absolute observation end time
   virtual NTime GetAbsoluteObservationEndTime() { return m_Time->GetAbsoluteObservationEndTime(); }
 
+  //! Convert from NuSIM time to time since Epoch
+  virtual NTime ConvertToTimeSinceEpoch(const NTime& Time) { return m_Time->ConvertToTimeSinceEpoch(Time); }
+  //! Convert to NuSIM time from time since Epoch
+  virtual NTime ConvertFromTimeSinceEpoch(const NTime& Time) { return m_Time->ConvertFromTimeSinceEpoch(Time); }
+  //! Convert from NuSIM time to absolute time
+  virtual NTime ConvertToAbsoluteTime(const NTime& Time) { return m_Time->ConvertToAbsoluteTime(Time); }
+  //! Convert to NuSIM time from absolute time
+  virtual NTime ConvertFromAbsoluteTime(const NTime& Time) { return m_Time->ConvertFromAbsoluteTime(Time); }
+  
+  
+
+  // The detector and geometry properties interface:
 
   //! Get the half dimensions of the detectors (active material only)
   virtual MVector GetDetectorHalfDimension() { return m_GeometryAndDetectorProperties->GetDetectorHalfDimension(); }

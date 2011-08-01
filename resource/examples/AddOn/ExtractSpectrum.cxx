@@ -34,6 +34,7 @@ using namespace std;
 #include <TCanvas.h>
 #include <TMarker.h>
 #include <TString.h>
+#include <TRandom.h>
 
 // NuSIM
 #include "NExtractFitsImage.h"
@@ -189,7 +190,11 @@ bool ExtractSpectrum::ParseCommandLine(int argc, char** argv)
  */
 bool ExtractSpectrum::Analyze()
 {
-  TH1D* GeneralEnergyHist = new TH1D("GeneralEnergyHist", "GeneralEnergyHist", 200, 0, 100);
+  double Emin = 0;
+  double Emax = 80;
+  double Ebins = 80;
+
+  TH1D* GeneralEnergyHist = new TH1D("GeneralEnergyHist", "GeneralEnergyHist", Ebins, Emin, Emax);
   GeneralEnergyHist->SetXTitle("keV");
   GeneralEnergyHist->SetYTitle("cts/keV/sec");
   
@@ -197,7 +202,7 @@ bool ExtractSpectrum::Analyze()
   for (unsigned int i = 0; i < m_RAs.size(); ++i) {
     ostringstream Name;
     Name<<"Sel ("<<m_RAs[i]<<", "<<m_DECs[i]<<", "<<m_Radii[i]<<")";
-    TH1D* Hist = new TH1D(Name.str().c_str(), Name.str().c_str(), 200, 0, 100);
+    TH1D* Hist = new TH1D(Name.str().c_str(), Name.str().c_str(), Ebins, Emin, Emax);
     Hist->SetMinimum(0);
     Hist->SetXTitle("keV");
     Hist->SetYTitle("cts/keV/sec");
@@ -211,6 +216,10 @@ bool ExtractSpectrum::Analyze()
   Loader.SetFileName(m_InputFileName);
   if (Loader.Initialize() == false) return false;
     
+  unsigned int NEvents = 0;
+  unsigned int NPassedEvents = 0;  
+  vector<unsigned int> NSelectedEvents(m_RAs.size(), 0);
+    
   NEvent Event;
 
   NTime LastTime;
@@ -218,14 +227,36 @@ bool ExtractSpectrum::Analyze()
     if (Event.IsEmpty() == true) break; 
       
     for (unsigned int h = 0; h < Event.GetNHits(); ++h) {
+      NEvents++;
       NHit& Hit = Event.GetHitRef(h);
       LastTime = Event.GetTime();
+      // Apply bas effective area fix
+      if (Hit.GetEnergy() < 20) {
+        if (gRandom->Rndm() < 0.1) {
+          cout<<"Attention: Applied effective are reduction hack!"<<endl;
+          continue;
+        }
+      } else if (Hit.GetEnergy() < 60) {
+        if (gRandom->Rndm() < 0.25) {
+          cout<<"Attention: Applied effective are reduction hack!"<<endl;
+          continue;
+        }
+      } else if (Hit.GetEnergy() < 80) {
+        if (gRandom->Rndm() < 0.4) {
+          cout<<"Attention: Applied effective are reduction hack!"<<endl;
+          continue;
+        }
+      } 
+      NPassedEvents++;
       GeneralEnergyHist->Fill(Hit.GetEnergy());
+      
       for (unsigned int i = 0; i < m_RAs.size(); ++i) {
         MVector DirPhoton;
         DirPhoton.SetMagThetaPhi(1.0, Hit.GetObservatoryData().GetRa()/rad, Hit.GetObservatoryData().GetDec()/rad + c_Pi/2);
         cout<<Hit.GetObservatoryData().GetRa()/deg<<":"<<Hit.GetObservatoryData().GetDec()/deg<<endl;
         if (DirPhoton.Angle(m_Directions[i]) <= m_Radii[i]*c_Rad) {
+          cout<<"Selected!"<<endl;
+          NSelectedEvents[i]++;
           SelectedHists[i]->Fill(Hit.GetEnergy());
         }
       }
@@ -266,6 +297,12 @@ bool ExtractSpectrum::Analyze()
       }
       out.close();
     }
+  }
+  
+  cout<<"Input events: "<<NEvents<<endl;
+  cout<<"Passed events: "<<NPassedEvents<<endl;
+  for (unsigned int i = 0; i < m_RAs.size(); ++i) {
+    cout<<"Selected events: "<<NSelectedEvents[i]<<endl;
   }
   
   return true;
