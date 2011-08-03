@@ -30,6 +30,8 @@ using namespace std;
 #include "NObservatoryData.h"
 #include "NOrientation.h"
 #include "NModuleInterfacePhotonPropagation.h"
+#include <TMatrixD.h>
+
 
 // Forward declarations:
 
@@ -146,6 +148,7 @@ class NObservatoryReconstructor: public NModuleInterfacePhotonPropagation
   MVector FindOpticalAxisInSky(NOrientation Rstin, const int module);
   //! Return intersection of Optical Axis in detector coordinates
   MVector FindOpticalAxisAtDet(NOrientation Rfbob, NOrientation FP, const int module);
+  NOrientation Q2TangentPlaneTransform(NOrientation Rdelta,MVector Vnew,MVector Vold, const double PlateScale) const;
 
 
   // private methods:

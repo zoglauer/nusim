@@ -46,7 +46,7 @@ class NModuleInterfaceMetrologySaverLevel1Fits
   // public interface:
  public:
   //! Default constructor
-  NModuleInterfaceMetrologySaverLevel1Fits();
+  NModuleInterfaceMetrologySaverLevel1Fits(NSatellite& Satellite);
   //! Default destructor
   virtual ~NModuleInterfaceMetrologySaverLevel1Fits();
   
@@ -78,6 +78,7 @@ class NModuleInterfaceMetrologySaverLevel1Fits
  protected:
   //! The output stream
   fitsfile* m_File; 
+  NSatellite& m_Sat;
 
   // private members:
  private:

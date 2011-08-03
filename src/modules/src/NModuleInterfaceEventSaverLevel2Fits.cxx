@@ -20,6 +20,9 @@
 // Standard libs:
 #include <cmath>
 #include <cstdio>
+#include <sstream>
+#include <iostream>
+#include <string>
 using namespace std;
 
 // HEAsoft
@@ -248,13 +251,17 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 
   //! Write WCS header keywords   
   char degree[10], tctyp1[10], tctyp2[10],radesys[10],object[10];
-  char instrume[10], mission[10], telescope[10];
+  char instrume[10], mission[10], telescope[10], timeunit[10];
   float tcrvl1=RaMax/deg;
   float tcrvl2=DecMin/deg;
   float tcdlt1=-PixelSize/deg;
   float tcdlt2=-tcdlt1;
   float tcrpx1=0.0, tcrpx2=0.0;
+  long MDJREFI = 55197;
+  float MDJREFF =7.6601852000000E-04; 
+  ostringstream out1;
   
+  strcpy(timeunit, "s");
   strcpy(degree,"deg");
   strcpy(tctyp1,"RA---TAN");
   strcpy(tctyp2,"DEC--TAN");
@@ -264,19 +271,27 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   strcpy(mission,"NuSim");
   strcpy(telescope,"NuSim");
   
-  float Time_Start[] = { 0.0 };
-  float Time_End[] = { 0.0 };
+  double tstart = m_Satellite.GetAbsoluteObservationStartTime().GetAsSeconds();
+  double tend = m_Satellite.GetAbsoluteObservationEndTime().GetAsSeconds();
+  NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
+  NTime End = m_Satellite.GetAbsoluteObservationEndTime();
 
-  if (m_Time.size() > 0) {
-    Time_Start[0] = m_Time[0];
-    Time_End[0] = m_Time[m_Ra.size()-1];
-  }
   
   fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
   fits_write_key(m_File, TSTRING, "MISSION", mission, " ", &Status); 	  
   fits_write_key(m_File, TSTRING, "TELESCOP", telescope, " ", &Status); 
-  fits_write_key(m_File, TFLOAT, "TSTART", Time_Start, "start time", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TSTOP", Time_End, "end time", &Status); 	  	  
+  fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
+  fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status);
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status); 
+  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, "start time", &Status); 	  
+  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	  
+  out1<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds();
+  char* DateObs = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
+  out1.str("");
+  out1<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<"T"<<End.GetHours()<<":"<<End.GetMinutes()<<":"<<End.GetSeconds();
+  char* DateEnd = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);	  
   fits_write_key(m_File, TFLOAT, "TCDLT1", &tcdlt1, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCDLT2", &tcdlt2, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRVL1", &tcrvl1, "Transform to celestrial coords", &Status); 	  
@@ -534,11 +549,11 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TFLOAT, "TLMIN1", &tlmin1, "Min value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMIN2", &tlmin2, "Min value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMIN3", &tlmin3, "Min value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMIN4", &tlmin5, "Min value", &Status); 	   
+  fits_write_key(m_File, TFLOAT, "TLMIN5", &tlmin5, "Min value", &Status); 	   
   fits_write_key(m_File, TFLOAT, "TLMAX1", &tlmax1, "Max value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMAX2", &tlmax2, "Max value", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TLMAX3", &tlmax3, "Max value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMAX4", &tlmax5, "Max value", &Status); 	   
+  fits_write_key(m_File, TFLOAT, "TLMAX5", &tlmax5, "Max value", &Status); 	   
    
   if (Status != 0) {
     mgui<<"Error writing event table header: TLInfo!"<<endl;
@@ -552,7 +567,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   int tfield = 2;
   long nrow = 0;
   char* ttype[] = {"Start","Stop"};
-  char* tform[] = {"1E","1E"};
+  char* tform[] = {"1D","1D"};
   char* tunit[] = {"s","s"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
@@ -567,11 +582,11 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
   fits_write_key(m_File, TSTRING, "MISSION", mission, " ", &Status); 	  
   fits_write_key(m_File, TSTRING, "TELESCOP", telescope, " ", &Status); 	
-  fits_write_key(m_File, TFLOAT, "TSTART", Time_Start, "start time", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TSTOP", Time_End, "end time", &Status); 	  	  
+  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, "start time", &Status); 	  
+  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	  	  
   
-  fits_write_col(m_File, TFLOAT, 1, 1, 1, 1, Time_Start, &Status);
-  fits_write_col(m_File, TFLOAT, 2, 1, 1, 1, Time_End, &Status);
+  fits_write_col(m_File, TDOUBLE, 1, 1, 1, 1, &tstart, &Status);
+  fits_write_col(m_File, TDOUBLE, 2, 1, 1, 1, &tend, &Status);
    
   fits_close_file(m_File, &Status);
   

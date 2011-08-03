@@ -45,7 +45,7 @@ ClassImp(NModuleMetrologyEngine)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceMetrology(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceMetrologySaverLevel1Fits()
+NModuleMetrologyEngine::NModuleMetrologyEngine(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceMetrology(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceMetrologySaverLevel1Fits(Satellite)
 {
   // Construct an instance of NModuleMetrologyEngine
 
@@ -392,8 +392,6 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
 {
   // Main data analysis routine, which updates the metrology data to a new level 
 
-  // We probably need to retrieve the current alignments from the satellite module
-
   NOrientation OML1 = m_Satellite.GetOrientationMetrologyLaser(m_Time, 1);
   NOrientation OML2 = m_Satellite.GetOrientationMetrologyLaser(m_Time, 2);
 
@@ -409,8 +407,6 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   double MD2Err = m_Satellite.GetCentroidingErrorMetrologyDetector(m_Time, 2);
   double Err;
 
-  // ... and do something with them to generate to generate all three initial metrology data sets as measured
-
   NPhoton Laser;  // laser in ML coordinate frame
   MVector MDplane(0.0, 0.0, 0.0); // Plane in MD coordinate system
   MVector MDplaneNormal(0.0, 0.0, 1.0);
@@ -422,12 +418,14 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   OMD1.TransformIn(Laser); // Transforms from global to MD system
   PropagateToPlane(Laser, MDplane, MDplaneNormal); // where laser intersects MD plane
   MVector P1 = Laser.GetPosition(); // get new laser intersection in the MD coordinates
-   Set1.SetOriginalLaserHit(P1); // updates the metrology set1 module with coordinates
+  Set1.SetOriginalLaserHit(P1); // updates the metrology set1 module with coordinates
   Set1.SetTime(m_Time); 
   Err = gRandom->Gaus(0,MD1Err);
   if (m_BlurEnabled) P1[0] = P1[0]-Err;
   Err = gRandom->Gaus(0,MD1Err);
   if (m_BlurEnabled) P1[1] = P1[1]-Err;
+  MVector newP1=InterpolateShift(P1)+P1;
+  //cout<<P1<<newP1<<endl;
   Set1.SetCalibratedLaserHit(P1); 
   
   NMetrologyDataSet Set2;
@@ -443,9 +441,12 @@ bool NModuleMetrologyEngine::AnalyzeMetrologyData(NMetrologyData& Data)
   if (m_BlurEnabled) P2[0] = P2[0]-Err;
   Err = gRandom->Gaus(0,MD2Err);
   if (m_BlurEnabled) P2[1] = P2[1]-Err;
+  MVector newP2=InterpolateShift(P2)+P2;
+  //cout<<P2<<newP2<<endl;
   Set2.SetCalibratedLaserHit(P2); 
   // Done!
-
+  
+  //cout<<m_time<<P1<<P2<<endl;
   // Finally update all data sets
   Data.SetMetrologyDataSet1(Set1);
   Data.SetMetrologyDataSet2(Set2);

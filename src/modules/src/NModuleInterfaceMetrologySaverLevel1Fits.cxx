@@ -20,6 +20,9 @@
 // Standard libs:
 #include <cmath>
 #include <cstdio>
+#include <sstream>
+#include <iostream>
+#include <string>
 using namespace std;
 
 // HEAsoft
@@ -44,7 +47,7 @@ ClassImp(NModuleInterfaceMetrologySaverLevel1Fits)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceMetrologySaverLevel1Fits::NModuleInterfaceMetrologySaverLevel1Fits()
+NModuleInterfaceMetrologySaverLevel1Fits::NModuleInterfaceMetrologySaverLevel1Fits(NSatellite& Satellite):m_Sat(Satellite) 
 {
   // Construct an instance of NModuleInterfaceMetrologySaverLevel1Fits
   
@@ -123,7 +126,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveAsLevel1Fits(NMetrologyData& 
   MVector m1 = Data.GetMetrologyDataSet1().GetCalibratedLaserHit();
   MVector m2 = Data.GetMetrologyDataSet2().GetCalibratedLaserHit();
   
-  Time.push_back(float(nt.GetAsSeconds()));
+  Time.push_back(double(nt.GetAsSeconds())+m_Sat.GetAbsoluteObservationStartTime().GetAsSeconds());
   m_xpsd0.push_back(m1[0]);
   m_ypsd0.push_back(m1[1]);
   m_xpsd1.push_back(m2[0]);
@@ -232,16 +235,45 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   int Status = 0;
    
   //! Write NuSim header keywords
-  char version[10];
-  char creator[10],telescop[10];
+  char version[10], targ_id[10], obs_id[10];
+  char creator[10],telescop[10], TT[10], timeunit[10];
   strcpy(version,g_Version);
   strcpy(creator,"NuSIM");
   strcpy(telescop,"NuSTAR");
-
+  strcpy(TT, "TT");
+  strcpy(timeunit, "s");
+  strcpy(obs_id,"DC0");
+  strcpy(targ_id," ");
+  float timepixr = 0.0;
+  long MDJREFI = 55197;
+  float MDJREFF =7.6601852000000E-04;
+  double tstart = m_Sat.GetAbsoluteObservationStartTime().GetAsSeconds();
+  double tend = m_Sat.GetAbsoluteObservationEndTime().GetAsSeconds();
+  NTime Start = m_Sat.GetAbsoluteObservationStartTime();
+  NTime End = m_Sat.GetAbsoluteObservationEndTime();
+  ostringstream out1;
+  
+  fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "TARG_ID", targ_id, " ", &Status);  
   fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
   fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);
+  fits_write_key(m_File, TFLOAT, "TIMEPIXR", &timepixr, "Bin time beginning=0 middle=0.5 end=1", &Status);
+  fits_write_key(m_File, TSTRING, "TIEMSYS", TT, "Terrestrial Time", &Status);
+  fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
+  fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status); 
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, " ", &Status);
+  out1<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds();
+  char* DateObs = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
+  out1.str("");
+  out1<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<"T"<<End.GetHours()<<":"<<End.GetMinutes()<<":"<<End.GetSeconds();
+  char* DateEnd = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);
+
 
   SaveData();
  
