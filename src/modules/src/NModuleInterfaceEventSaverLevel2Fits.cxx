@@ -93,7 +93,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   long nrow = 0;
   int tfield = 18;
   char* ttype[] = {"X","Y","PI","E","Time","grade","phottype","Qx","Qy","Qz","Qr","Tx","Ty","Tz","QSx","QSy","QSz","QSr"};
-  char* tform[] = {"1E","1E","1J","1E","1E","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
+  char* tform[] = {"1E","1E","1J","1E","1D","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
   char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type","unit","unit","unit","unit","mm","mm","mm","unit","unit","unit","unit"};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
@@ -129,12 +129,12 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
-    m_Time.push_back(float(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds()));
+    m_Time.push_back(double(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds()));
     m_Origin.push_back(Event.GetOrigin());
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
-	  m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
+	m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
   }
     
   return true;
@@ -271,8 +271,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   strcpy(mission,"NuSim");
   strcpy(telescope,"NuSim");
   
-  double tstart = m_Satellite.GetAbsoluteObservationStartTime().GetAsSeconds();
-  double tend = m_Satellite.GetAbsoluteObservationEndTime().GetAsSeconds();
+  double tstart = m_Satellite.GetEpochObservationStartTime().GetAsSeconds();
+  double tend = m_Satellite.GetEpochObservationEndTime().GetAsSeconds();
   NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
   NTime End = m_Satellite.GetAbsoluteObservationEndTime();
 
@@ -323,7 +323,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float* fRa     = new float[m_Ra.size()];
   float* fDec    = new float[m_Ra.size()];
   float* fEnergy = new float[m_Ra.size()];
-  float* fTime   = new float[m_Ra.size()];
+  double* dTime   = new double[m_Ra.size()];
   short* fGrade  = new short[m_Ra.size()];
   short* fOrigin = new short[m_Ra.size()];
   int*   fPI     = new int  [m_Ra.size()];
@@ -346,7 +346,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     fDec   [i] = (m_Dec[i]-DecMin)/PixelSize;
     fPI    [i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
     fEnergy[i] = m_Energy[i];
-    fTime  [i] = m_Time[i];
+    dTime  [i] = m_Time[i];
     fOrigin[i] = (short) m_Origin[i];
     fGrade [i] = (short) m_Grade[i];
 	fQx    [i] = (float) m_Qfbob[i].m_V[0];
@@ -396,7 +396,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
-  fits_write_col(m_File, TFLOAT, 5, 1, 1, m_Ra.size(), fTime, &Status);
+  fits_write_col(m_File, TDOUBLE, 5, 1, 1, m_Ra.size(), dTime, &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error L2: fits_write_col('Time') failed (" << Words << ")" << endl;
@@ -520,7 +520,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   delete [] fRa;
   delete [] fDec;
   delete [] fEnergy;
-  delete [] fTime;
+  delete [] dTime;
   delete [] fOrigin;
   delete [] fPI;
   delete [] fGrade;

@@ -69,11 +69,13 @@ class NModuleInterfaceTime
   virtual void SetAbsoluteObservationStartTime(const NTime& Time) { m_AbsoluteObservationStartTime = Time; }
   //! Get the absolute observation start time
   virtual NTime GetAbsoluteObservationStartTime() { return m_AbsoluteObservationStartTime; }
+  virtual NTime GetEpochObservationStartTime() { return m_AbsoluteObservationStartTime - m_Epoch; }
 
   //! Set the absolute observation end time
   virtual void SetAbsoluteObservationEndTime(const NTime& Time) { m_AbsoluteObservationEndTime = Time; }
   //! Get the absolute observation end time
   virtual NTime GetAbsoluteObservationEndTime() { return m_AbsoluteObservationEndTime; }
+  virtual NTime GetEpochObservationEndTime() { return m_AbsoluteObservationEndTime - m_Epoch; }
 
   //! Convert from NuSIM time to time since Epoch
   virtual NTime ConvertToTimeSinceEpoch(const NTime& Time) { return Time + m_AbsoluteObservationStartTime - m_Epoch; }

@@ -122,11 +122,10 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveAsLevel1Fits(NMetrologyData& 
 {
   // Copy relevant data to the fits file
   
-  NTime nt = Data.GetTime();
   MVector m1 = Data.GetMetrologyDataSet1().GetCalibratedLaserHit();
   MVector m2 = Data.GetMetrologyDataSet2().GetCalibratedLaserHit();
   
-  Time.push_back(double(nt.GetAsSeconds())+m_Sat.GetAbsoluteObservationStartTime().GetAsSeconds());
+  Time.push_back(double(m_Sat.ConvertToTimeSinceEpoch(Data.GetTime()).GetAsSeconds()));
   m_xpsd0.push_back(m1[0]);
   m_ypsd0.push_back(m1[1]);
   m_xpsd1.push_back(m2[0]);
@@ -247,8 +246,8 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   float timepixr = 0.0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
-  double tstart = m_Sat.GetAbsoluteObservationStartTime().GetAsSeconds();
-  double tend = m_Sat.GetAbsoluteObservationEndTime().GetAsSeconds();
+  double tstart = m_Sat.GetEpochObservationStartTime().GetAsSeconds();
+  double tend = m_Sat.GetEpochObservationEndTime().GetAsSeconds();
   NTime Start = m_Sat.GetAbsoluteObservationStartTime();
   NTime End = m_Sat.GetAbsoluteObservationEndTime();
   ostringstream out1;
