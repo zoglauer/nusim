@@ -224,6 +224,7 @@ bool NGUISupervisor::OnApply()
 
   m_Supervisor->SetTargetName(m_TargetName->GetAsString());
   m_Supervisor->SetObservationID(m_ObservationID->GetAsString());
+  m_Supervisor->SetObservationTime(NTime(m_ObservationTime->GetAsDouble()));
   m_Supervisor->SetUpdateInterval(m_UpdateInterval->GetAsInt());
   m_Supervisor->SetBaseFileName(m_BaseFileName->GetFileName());
 
