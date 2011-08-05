@@ -44,7 +44,7 @@ ClassImp(NModuleInterfaceStarTrackerSaverLevel1Fits)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceStarTrackerSaverLevel1Fits::NModuleInterfaceStarTrackerSaverLevel1Fits()
+NModuleInterfaceStarTrackerSaverLevel1Fits::NModuleInterfaceStarTrackerSaverLevel1Fits(NSatellite& Satellite):m_Sat(Satellite) 
 {
   // Construct an instance of NModuleInterfaceStarTrackerSaverLevel1Fits
   
@@ -85,12 +85,12 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::OpenLevel1FitsFile(TString File
     return false;
   }
   //! create binary table extension
-  char ExtensionName[] = "CHU4";
+  char ExtensionName[] = "ATTITUDE";
   long nrow = 0;
-  int tfield = 5;
-  char* ttype[] = {"time","X","Y","Z","R"};
-  char* tform[] = {"1E","1E","1E","1E","1E"};
-  char* tunit[] = {"s","x","y","z","r"};
+  int tfield = 4;
+  char* ttype[] = {"TIME","QPARAM","POINTIMG","SOURCE"};
+  char* tform[] = {"1D","4D","3D","1B"};
+  char* tunit[] = {"s","","deg",""};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -120,7 +120,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveAsLevel1Fits(NStarTrackerDa
 
   NQuaternion Q = Data.GetStarTrackerDataSet4().GetMeasuredTransformation();
 
-  Time.push_back(float(Data.GetTime().GetAsSeconds()));
+  Time.push_back(double(m_Sat.ConvertToTimeSinceEpoch(Data.GetTime()).GetAsSeconds()));
   m_X.push_back(Q.m_V[0]);
   m_Y.push_back(Q.m_V[1]);
   m_Z.push_back(Q.m_V[2]);
@@ -138,6 +138,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   // Close the file    
 
   int Status = 0;
+  int hdutype;
   
   char version[10];
   char creator[10],telescop[10];
@@ -152,18 +153,21 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
 
   // We have to use pointers here to prevent a stack overflow for large data sets!
   double* dTime = new double[Time.size()];
-  float* fX = new float[Time.size()];
-  float* fY = new float[Time.size()];
-  float* fZ = new float[Time.size()];
-  float* fR = new float[Time.size()];
-
+  double* dQ = new double[Time.size()*4];
+  double* dP = new double[Time.size()*3];
+  int* isrc = new int[Time.size()];
+  
    //! save the data before closing  
   for (unsigned int i = 0; i < Time.size(); ++i) {
     dTime  [i] = Time[i];
-    fX     [i] = m_X[i];
-    fY     [i] = m_Y[i];
-    fZ     [i] = m_Z[i];
-    fR     [i] = m_R[i];
+    dQ     [i*4] = m_X[i];
+    dQ     [i*4+1] = m_Y[i];
+    dQ     [i*4+2] = m_Z[i];
+    dQ     [i*4+3] = m_R[i];
+    dP     [i*3] = 99;
+    dP     [i*3+1] = 99;
+    dP     [i*3+2] = 99;
+	isrc   [i] = 1;
   }
 
 
@@ -177,7 +181,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
     m_File = 0;
     return false;
   }
-  fits_write_col(m_File, TFLOAT, 2, 1, 1, Time.size(), fX, &Status);
+  fits_write_col(m_File, TDOUBLE, 2, 1, 1, Time.size()*4, dQ, &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
@@ -185,37 +189,37 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
     m_File = 0;
     return false;
   }
-  fits_write_col(m_File, TFLOAT, 3, 1, 1, Time.size(), fY, &Status);
+    fits_write_col(m_File, TDOUBLE, 3, 1, 1, Time.size()*3, dP, &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('Y') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-  fits_write_col(m_File, TFLOAT, 4, 1, 1, Time.size(), fZ, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('Z') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-  fits_write_col(m_File, TFLOAT, 5, 1, 1, Time.size(), fR, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('R') failed (" << Words << ")" << endl;
+    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
     fits_close_file(m_File, &Status);
     m_File = 0;
     return false;
   }
 
- if (Status != 0) {
+  fits_write_col(m_File, TINT, 4, 1, 1, Time.size(), isrc, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+
+   if (Status != 0) {
     mgui<<"Error writing event table!"<<endl;
     fits_close_file(m_File, &Status);
     m_File = 0;
     return false;
   }
+
+  
+  WriteHDR();   
+    //! Move to primary hdr and write hdr again
+  fits_movabs_hdu(m_File, 1, &hdutype, &Status);
+  WriteHDR();
+
   
    
   fits_close_file(m_File, &Status);
@@ -223,14 +227,63 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   m_File = 0;
   
   delete [] dTime;
-  delete [] fX;
-  delete [] fY;
-  delete [] fZ;
-  delete [] fR;
+  delete [] dQ;
   
   return true;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+bool NModuleInterfaceStarTrackerSaverLevel1Fits::WriteHDR()
+{
+  // Close the file    
+
+  int Status = 0;
+   
+  //! Write NuSim header keywords
+  char version[10], obs_id[10];
+  char creator[10],telescop[10], TT[10], timeunit[10];
+  strcpy(version,g_Version);
+  strcpy(creator,"NuSIM");
+  strcpy(telescop,"NuSTAR");
+  strcpy(TT, "TT");
+  strcpy(timeunit, "s");
+  strcpy(obs_id,"DC0");
+  long targ_id = 0;
+  long MDJREFI = 55197;
+  float MDJREFF =7.6601852000000E-04;
+  double tstart = m_Sat.GetEpochObservationStartTime().GetAsSeconds();
+  double tend = m_Sat.GetEpochObservationEndTime().GetAsSeconds();
+  NTime Start = m_Sat.GetAbsoluteObservationStartTime();
+  NTime End = m_Sat.GetAbsoluteObservationEndTime();
+  ostringstream out1;
+  
+  fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
+  fits_write_key(m_File, TLONG, "TARG_ID", &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);
+  fits_write_key(m_File, TSTRING, "TIEMSYS", TT, "Terrestrial Time", &Status);
+  fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
+  fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status); 
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, " ", &Status);
+  out1<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds();
+  char* DateObs = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
+  out1.str("");
+  out1<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<"T"<<End.GetHours()<<":"<<End.GetMinutes()<<":"<<End.GetSeconds();
+  char* DateEnd = (char*) out1.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);
+
+  return true;
+
+}
+
+///////////////////////////////////////////////////
 
 // NModuleInterfaceStarTrackerSaverLevel1Fits.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

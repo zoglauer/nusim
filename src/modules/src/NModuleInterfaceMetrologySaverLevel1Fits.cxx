@@ -227,14 +227,14 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
+bool NModuleInterfaceMetrologySaverLevel1Fits::WriteHDR()
 {
   // Close the file    
 
   int Status = 0;
    
   //! Write NuSim header keywords
-  char version[10], targ_id[10], obs_id[10];
+  char version[10], obs_id[10];
   char creator[10],telescop[10], TT[10], timeunit[10];
   strcpy(version,g_Version);
   strcpy(creator,"NuSIM");
@@ -242,7 +242,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   strcpy(TT, "TT");
   strcpy(timeunit, "s");
   strcpy(obs_id,"DC0");
-  strcpy(targ_id," ");
+  long targ_id = 0;
   float timepixr = 0.0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
@@ -253,7 +253,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   ostringstream out1;
   
   fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "TARG_ID", targ_id, " ", &Status);  
+  fits_write_key(m_File, TLONG, "TARG_ID", &targ_id, " ", &Status);  
   fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
@@ -273,9 +273,28 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   char* DateEnd = (char*) out1.str().c_str();
   fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);
 
+  return true;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
+{
+  // Close the file    
+
+  int Status = 0;
+  int hdutype;
+   
+  //! Write NuSim header keywords
+  WriteHDR();  
 
   SaveData();
- 
+
+   //! Move to primary hdr and write hdr again
+  fits_movabs_hdu(m_File, 1, &hdutype, &Status);
+  WriteHDR();
+
   fits_close_file(m_File, &Status);
   
   m_File = 0;

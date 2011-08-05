@@ -285,11 +285,15 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual void SetAbsoluteObservationStartTime(const NTime& Time) { m_Time->SetAbsoluteObservationStartTime(Time); }
   //! Get the absolute observation start time
   virtual NTime GetAbsoluteObservationStartTime() { return m_Time->GetAbsoluteObservationStartTime(); }
-
+  //! Get the epoch observation start time
+  virtual NTime GetEpochObservationStartTime() { return m_Time->GetEpochObservationStartTime(); }
+  
   //! Set the absolute observation end time
   virtual void SetAbsoluteObservationEndTime(const NTime& Time) { m_Time->SetAbsoluteObservationEndTime(Time); }
   //! Get the absolute observation end time
   virtual NTime GetAbsoluteObservationEndTime() { return m_Time->GetAbsoluteObservationEndTime(); }
+  //! Get the epoch observation end time
+  virtual NTime GetEpochObservationEndTime() { return m_Time->GetEpochObservationEndTime(); }
 
   //! Convert from NuSIM time to time since Epoch
   virtual NTime ConvertToTimeSinceEpoch(const NTime& Time) { return m_Time->ConvertToTimeSinceEpoch(Time); }

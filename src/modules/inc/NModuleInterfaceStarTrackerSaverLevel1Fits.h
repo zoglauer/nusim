@@ -46,12 +46,15 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits
   // public interface:
  public:
   //! Default constructor
-  NModuleInterfaceStarTrackerSaverLevel1Fits();
+  NModuleInterfaceStarTrackerSaverLevel1Fits(NSatellite& Satellite);
   //! Default destructor
   virtual ~NModuleInterfaceStarTrackerSaverLevel1Fits();
   
   //! Load and initialize the file
   virtual bool OpenLevel1FitsFile(TString FileName);
+  
+  //! Write hdu header
+  virtual bool WriteHDR();
   
   //! Return true if the ASCII file is open
   virtual bool IsLevel1FitsFileOpen() { if (m_File != 0) return true; else return false; }
@@ -67,6 +70,7 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits
  protected:
   //! The output stream
   fitsfile* m_File; 
+  NSatellite& m_Sat;
 
   // private members:
  private:

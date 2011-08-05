@@ -41,7 +41,7 @@ ClassImp(NModuleStarTrackerEngineTrivial)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceStarTracker(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceStarTrackerSaverLevel1Fits()
+NModuleStarTrackerEngineTrivial::NModuleStarTrackerEngineTrivial(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceStarTracker(), NModuleInterfaceEntry(), NModuleInterfaceIO(), NModuleInterfaceStarTrackerSaverLevel1Fits(Satellite)
 {
   // Construct an instance of NModuleStarTrackerEngineTrivial
 

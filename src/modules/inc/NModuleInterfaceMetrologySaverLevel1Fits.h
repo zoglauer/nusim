@@ -61,6 +61,8 @@ class NModuleInterfaceMetrologySaverLevel1Fits
   virtual bool SaveAsLevel1Fits(NMetrologyData& Data);
   //! Save a chunk of data
   virtual bool SaveData();
+  //! Write Header
+  virtual bool WriteHDR();
   //! Close the file
   virtual bool CloseLevel1FitsFile();
 
