@@ -74,6 +74,14 @@ class NSupervisor
 
   //! Set the partial observation start time
   void SetObservationStartStopTime(const NTime& Start, const NTime& Stop) { m_UseObservationStartStopTime = true; m_ObservationStartTime = Start; m_ObservationStopTime = Stop; }
+  //! Set the target name
+  void SetTargetName (const TString& TargetName) { m_TargetName = TargetName; }
+  //! Get the target name
+  TString GetTargetName () const { return m_TargetName; }
+  //! Set the observation ID
+  void SetObservationID(const TString& ObservationID) { m_ObservationID = ObservationID; } 
+  //! Get the observation ID
+  TString GetObservationID() const { return m_ObservationID; } 
 
   //! Load all data from a file
   bool Load(TString FileName);
@@ -187,6 +195,10 @@ class NSupervisor
   //! True if the restricted astrophysics mode is on
   bool m_AstrophysicsMode;
 
+  //! The target name of the observation
+  TString m_TargetName;
+  //! The observation ID
+  TString m_ObservationID;
   //! The observation time which shall be simulated in seconds
   NTime m_ObservationTime;
   

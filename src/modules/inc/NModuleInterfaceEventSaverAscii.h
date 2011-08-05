@@ -27,6 +27,7 @@ using namespace std;
 #include "NEvent.h"
 #include "NSatellite.h"
 #include "NModuleInterfaceIO.h"
+#include "NModuleInterfaceObservation.h"
 
 // Forward declaratEventSaverAsciins:
 
@@ -38,7 +39,7 @@ using namespace std;
 //! This interface represents a module interface representing modules with the ASCII event saver
 //! capability. 
 
-class NModuleInterfaceEventSaverAscii
+class NModuleInterfaceEventSaverAscii : public NModuleInterfaceObservation
 {
   // public interface:
  public:

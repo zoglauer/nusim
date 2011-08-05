@@ -250,6 +250,9 @@ NSupervisor::NSupervisor()
   m_UseObservationStartStopTime = false;
   m_ObservationStartTime.Set(0.0);
   m_ObservationStopTime.Set(1000000000.0);
+  
+  m_TargetName = "Target";
+  m_ObservationID = "0001";
 }
 
 
@@ -321,6 +324,15 @@ bool NSupervisor::Run()
       dynamic_cast<NModuleInterfaceIO*>((*Iter).second)->SetBaseFileName(m_BaseFileName);
     }
   }
+
+  // Set observation ID target name
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceObservation*>((*Iter).second) != 0) {
+      dynamic_cast<NModuleInterfaceObservation*>((*Iter).second)->SetTargetName(m_TargetName);
+      dynamic_cast<NModuleInterfaceObservation*>((*Iter).second)->SetObservationID(m_ObservationID);
+    }
+  }
+  
   
   // Initialize the satellite data
 
@@ -1540,6 +1552,14 @@ bool NSupervisor::Load(TString FileName)
     Version = Node->GetValueAsInt();
   }
 
+  if ((Node = Document->GetNode("TargetName")) != 0) {
+    SetTargetName(Node->GetValueAsString());
+  }
+
+  if ((Node = Document->GetNode("ObservationID")) != 0) {
+    SetObservationID(Node->GetValueAsString());
+  }
+
   if ((Node = Document->GetNode("ObservationTime")) != 0) {
     SetObservationTime(NTime(Node->GetValueAsDouble()));
   }
@@ -1673,6 +1693,8 @@ bool NSupervisor::Save(TString FileName)
   new MXmlNode(Document, "Version", 2);
   new MXmlNode(Document, "NuSIMRevision", g_SVNRevision);
 
+  new MXmlNode(Document, "TargetName", m_TargetName);
+  new MXmlNode(Document, "ObservationID", m_ObservationID);
   new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetAsSeconds());
   new MXmlNode(Document, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Document, "BaseFileName", NModule::CleanPath(m_BaseFileName));

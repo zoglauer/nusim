@@ -83,6 +83,12 @@ void NGUISupervisor::Create()
 
   TGLayoutHints* EntryLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX, 20, 20, 2, 2);
 
+  m_TargetName = new MGUIEEntry(this, "Target name:", false, m_Supervisor->GetTargetName());
+  AddFrame(m_TargetName, EntryLayout);
+
+  m_ObservationID = new MGUIEEntry(this, "Observation ID:", false, m_Supervisor->GetObservationID());
+  AddFrame(m_ObservationID, EntryLayout);
+
   m_ObservationTime = new MGUIEEntry(this, "Effective observation time [s]:", false, m_Supervisor->GetObservationTime().GetAsSeconds());
   AddFrame(m_ObservationTime, EntryLayout);
 
@@ -216,7 +222,8 @@ bool NGUISupervisor::OnApply()
 {
 	// The Apply button has been pressed
 
-  m_Supervisor->SetObservationTime(NTime(m_ObservationTime->GetAsDouble()));
+  m_Supervisor->SetTargetName(m_TargetName->GetAsString());
+  m_Supervisor->SetObservationID(m_ObservationID->GetAsString());
   m_Supervisor->SetUpdateInterval(m_UpdateInterval->GetAsInt());
   m_Supervisor->SetBaseFileName(m_BaseFileName->GetFileName());
 

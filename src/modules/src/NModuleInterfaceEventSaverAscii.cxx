@@ -38,7 +38,7 @@ ClassImp(NModuleInterfaceEventSaverAscii)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceEventSaverAscii::NModuleInterfaceEventSaverAscii(NSatellite& Satellite) : m_Satellite(Satellite)
+NModuleInterfaceEventSaverAscii::NModuleInterfaceEventSaverAscii(NSatellite& Satellite) : NModuleInterfaceObservation(), m_Satellite(Satellite)
 {
   // Construct an instance of NModuleInterfaceEventSaverAscii
 }
@@ -78,6 +78,10 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
   m_Out<<"CM "<<ModuleType<<endl;
   m_Out<<endl;
   m_Out<<"# Start data..."<<endl;
+  m_Out<<endl;
+  m_Out<<"TARGETNAME "<<m_TargetName<<endl;
+  m_Out<<endl;
+  m_Out<<"OBSID "<<m_ObservationID<<endl;
   m_Out<<endl;
   NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
   m_Out<<"OBSSTART "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<" "<<Start.GetHours()<<"-"<<Start.GetMinutes()<<"-"<<Start.GetSeconds()<<endl;

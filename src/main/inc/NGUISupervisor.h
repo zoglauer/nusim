@@ -81,6 +81,10 @@ class NGUISupervisor : public TGTransientFrame
   NSupervisor* m_Supervisor;
 
   //! Observation time widget
+  MGUIEEntry* m_TargetName;
+  //! Observation time widget
+  MGUIEEntry* m_ObservationID;
+  //! Observation time widget
   MGUIEEntry* m_ObservationTime;
   
   //! Update frequency of the diagnostics window 
