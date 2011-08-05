@@ -92,6 +92,8 @@ class NTime
   unsigned int GetMonths();
   //! Return the years
   unsigned int GetYears();
+  //! Return the date as a string
+  TString GetDateInString();
   
   //! The assignment operator
   NTime& operator=(const NTime& Time);

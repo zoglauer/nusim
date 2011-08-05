@@ -19,6 +19,8 @@
 
 // Standard libs:
 #include <sstream>
+#include <iostream>
+#include <string>
 #include <iomanip>
 #include <ctime>
 using namespace std;
@@ -422,9 +424,52 @@ unsigned int NTime::GetYears()
   return tp.tm_year+1900;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
+TString NTime::GetDateInString()
+{
+  ostringstream out;
 
+  out<<GetYears()<<"-";
+  
+  if (GetMonths() < 10){ 
+    out<<"0"<<GetMonths()<<"-";
+  }	
+  else {
+    out<<GetMonths()<<"-";
+  }
+  
+  if (GetDays() < 10) {
+    out<<"0"<<GetDays()<<"T";
+  }
+  else {
+    out<<GetDays()<<"T";
+  }
+    
+  if (GetHours() < 10) {
+    out<<"0"<<GetHours()<<":"; 
+  }
+  else {
+    out<<GetHours()<<":";
+  }
+  	 
+  if (GetMinutes() < 10) {
+    out<<"0"<<GetMinutes()<<":";
+  }
+  else {
+    out<<GetMinutes()<<":";
+  }
+  	
+  if (GetSeconds() < 10) {
+    out<<"0"<<GetSeconds();
+  }
+  else {
+    out<<GetSeconds();
+  }
+   
+  return TString(out.str().c_str());
+  
+}
+////////////////////////////////////////////////////////////////////////////////
 
 NTime& NTime::operator=(const NTime& T)
 {

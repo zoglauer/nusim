@@ -242,25 +242,25 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::WriteHDR()
   int Status = 0;
    
   //! Write NuSim header keywords
-  char version[10], obs_id[10];
+  char version[10], obs_id[10], object[20];;
   char creator[10],telescop[10], TT[10], timeunit[10];
   strcpy(version,g_Version);
   strcpy(creator,"NuSIM");
   strcpy(telescop,"NuSTAR");
   strcpy(TT, "TT");
-  strcpy(timeunit, "s");
-  strcpy(obs_id,"DC0");
+  strcpy(timeunit, "s");  
+  strcpy(obs_id,m_ObservationID);
+  strcpy(object,m_TargetName);
   long targ_id = 0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
   double tstart = m_Sat.GetEpochObservationStartTime().GetAsSeconds();
   double tend = m_Sat.GetEpochObservationEndTime().GetAsSeconds();
-  NTime Start = m_Sat.GetAbsoluteObservationStartTime();
-  NTime End = m_Sat.GetAbsoluteObservationEndTime();
-  ostringstream out1;
-  
+  ostringstream out;
+   
   fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
   fits_write_key(m_File, TLONG, "TARG_ID", &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "OBJECT", object, " ", &Status); 
   fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
@@ -271,13 +271,13 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::WriteHDR()
   fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status);
   fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, " ", &Status);
   fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, " ", &Status);
-  out1<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds();
-  char* DateObs = (char*) out1.str().c_str();
+  out<<m_Sat.GetAbsoluteObservationStartTime().GetDateInString();
+  char* DateObs = (char*) out.str().c_str();
   fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
-  out1.str("");
-  out1<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<"T"<<End.GetHours()<<":"<<End.GetMinutes()<<":"<<End.GetSeconds();
-  char* DateEnd = (char*) out1.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);
+  out.str("");
+  out<<m_Sat.GetAbsoluteObservationEndTime().GetDateInString();
+  char* DateEnd = (char*) out.str().c_str();
+  fits_write_key(m_File, TSTRING, "DATE-END",DateEnd, " ", &Status);
 
   return true;
 

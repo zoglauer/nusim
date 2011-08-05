@@ -30,6 +30,7 @@ using namespace std;
 #include "NStarTrackerData.h"
 #include "NSatellite.h"
 #include "NModule.h"
+#include "NModuleInterfaceObservation.h"
 
 // Forward declaratStarTrackerSaverLevel1Fitsns:
 
@@ -41,7 +42,7 @@ using namespace std;
 //! This interface represents a module interface representing modules with the 
 //! capability to save to a level 1 fits file.
 
-class NModuleInterfaceStarTrackerSaverLevel1Fits
+class NModuleInterfaceStarTrackerSaverLevel1Fits : public NModuleInterfaceObservation
 {
   // public interface:
  public:
