@@ -90,6 +90,7 @@ class NModuleInterfaceEventSaverLevel2Fits
   vector<double> m_Energy;
   vector<double> m_Time;
   vector<int>    m_Origin;
+  vector<int>    m_Reject;
   vector<int>    m_PI;
   vector<int>    m_Grade;
   vector<NQuaternion> m_Qfbob;
