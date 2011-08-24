@@ -130,8 +130,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
     m_Time.push_back(double(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds()));
-	//If there was a depth cut then assign 4 to phottype.
-    if (Event.GetHit(i).GetDepthCut()==true) m_Origin.push_back(4);
+	//If there was a depth cut then assign +3 to phottype.
+    if (Event.GetHit(i).GetDepthCut()==true) m_Origin.push_back(Event.GetOrigin()+3);
     else m_Origin.push_back(Event.GetOrigin());
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
