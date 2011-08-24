@@ -130,7 +130,9 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
     m_Time.push_back(double(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds()));
-    m_Origin.push_back(Event.GetOrigin());
+	//If there was a depth cut then assign 4 to phottype.
+    if (Event.GetHit(i).GetDepthCut()==true) m_Origin.push_back(4);
+    else m_Origin.push_back(Event.GetOrigin());
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
@@ -341,7 +343,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
 
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
-    float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecMin/rad);
+    float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecAvg/rad);
     fRa    [i] = (RaMax-Ra)/PixelSize;
     fDec   [i] = (m_Dec[i]-DecMin)/PixelSize;
     fPI    [i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
