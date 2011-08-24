@@ -1,0 +1,6 @@
+This is a simple python script to parse a Vizier table of sources
+and output a file that can be input to NuSim.  
+Type "python vizier2nusim.py" for a help screen.
+
+Example:
+python vizier2nusim.py M33_nusim_srcs.dat M33_Pietsch_XMM_catalog_clean.tsv RAJ2000 DEJ2000 CFlux 3.79e+07 6.0 80.0 PowerLaw 1.80
