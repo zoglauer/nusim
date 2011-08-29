@@ -31,6 +31,7 @@ using namespace std;
 #include "NSatellite.h"
 #include "NModuleInterfaceIO.h"
 #include "NModule.h"
+#include "NExposureMap.h"
 
 // Forward declaratEventSaverLevel2Fitsns:
 
@@ -84,11 +85,14 @@ class NModuleInterfaceEventSaverLevel2Fits
   //! Reference to the satellite module 
   NSatellite& m_Satellite; 
    
+  //! The exposure map
+  NExposureMap m_ExposureMap;
+   
   //! fields for fits file.
   vector<double> m_Ra; 
   vector<double> m_Dec;
   vector<double> m_Energy;
-  vector<double> m_Time;
+  vector<NTime> m_Time;
   vector<int>    m_Origin;
   vector<int>    m_Reject;
   vector<int>    m_PI;

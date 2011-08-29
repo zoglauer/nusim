@@ -97,6 +97,8 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual bool IsBlackout(NTime t) { return m_Orbit->IsBlackout(t); }
   //! Get the number of blackouts in between
   virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return m_Orbit->GetBlackoutDuration(t1, t2); }
+  //! Get the effective observation time in between times
+  virtual NTime GetEffectiveObservationTime(NTime t1, NTime t2) { return m_Orbit->GetEffectiveObservationTime(t1, t2); }
   //! Get the ideal time as a function of observation time
   virtual NTime FindIdealTime(NTime ObservationTime) { return m_Orbit->FindIdealTime(ObservationTime); }
 

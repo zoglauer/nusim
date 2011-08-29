@@ -37,6 +37,8 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NOpticsDBEntry.o \
 	$(LB)/NObservatoryData.o \
 	$(LB)/NExtractFitsImage.o \
+	$(LB)/NDetectorMap.o \
+	$(LB)/NExposureMap.o \
 
 
 SOBJ = $(LB)/libData.$(DLL)

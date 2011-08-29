@@ -67,7 +67,9 @@ class NModuleOrbitEngine : public NModule, public NModuleInterfaceOrbit
   virtual bool IsBlackout(NTime t);
   //! Get the duration of the sum of all blackouts between t1 and t2
   virtual NTime GetBlackoutDuration(NTime t1, NTime t2);
-  
+  //! Get the effective observation time between times
+  virtual NTime GetEffectiveObservationTime(NTime t1, NTime t2);
+
   //! Return the number of orbit chnages:
   virtual int GetNOrbitChanges(NTime t1, NTime t2);
   //! Get the start time of the next black-out

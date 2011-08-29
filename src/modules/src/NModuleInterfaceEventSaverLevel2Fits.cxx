@@ -35,6 +35,7 @@ using namespace std;
 
 // NuSIM libs:
 #include "NModule.h"
+#include "NExposureMap.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +48,7 @@ ClassImp(NModuleInterfaceEventSaverLevel2Fits)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceEventSaverLevel2Fits::NModuleInterfaceEventSaverLevel2Fits(NSatellite& Satellite) : m_Satellite(Satellite)
+NModuleInterfaceEventSaverLevel2Fits::NModuleInterfaceEventSaverLevel2Fits(NSatellite& Satellite) : m_Satellite(Satellite), m_ExposureMap(Satellite)
 {
   // Construct an instance of NModuleInterfaceEventSaverLevel2Fits
   
@@ -74,6 +75,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   // cout<<"OpenFits"<<endl;
 
   MFile::ExpandFileName(FileName);
+
+  TString ExposureFileNamePrefix = FileName;
+  ExposureFileNamePrefix.ReplaceAll(".events.fits", "");
+  m_ExposureMap.SetFileNamePrefix(ExposureFileNamePrefix);
   
   FileName = "!"+FileName; // To overwrite file
   
@@ -130,14 +135,14 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
-    m_Time.push_back(double(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds()));
+    m_Time.push_back(Event.GetTime());
 	m_Origin.push_back(Event.GetOrigin());
 	if (Event.GetHit(i).GetDepthCut()==false) m_Reject.push_back(0);
     if (Event.GetHit(i).GetDepthCut()==true) m_Reject.push_back(1);
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
-	m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
+	  m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
   }
     
   return true;
@@ -350,7 +355,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     fDec   [i] = (m_Dec[i]-DecMin)/PixelSize;
     fPI    [i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
     fEnergy[i] = m_Energy[i];
-    dTime  [i] = m_Time[i];
+    dTime  [i] = m_Satellite.ConvertToTimeSinceEpoch(m_Time[i]).GetAsSeconds();
     fOrigin[i] = (short) m_Origin[i];
     fReject[i] = (short) m_Reject[i];
     fGrade [i] = (short) m_Grade[i];
@@ -604,6 +609,17 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_close_file(m_File, &Status);
   
   m_File = 0;
+  
+  
+  // Save also the exposure map
+  
+
+  m_ExposureMap.SetImageParameters(tcrvl1, tcdlt1, tlmax1, tcrvl2, tcdlt2, tlmax2);
+  for (unsigned int i = 0; i < m_Ra.size(); ++i) {
+    m_ExposureMap.AddObservatoryData(m_Qfbob[i], m_Tfbob[i], m_Qstar[i], m_Time[i]);
+  }
+  m_ExposureMap.ExposeSky(1);
+  
   
   return true;
 }
