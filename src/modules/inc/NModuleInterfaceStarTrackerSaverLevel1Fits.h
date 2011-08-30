@@ -63,6 +63,7 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits : public NModuleInterfaceObserv
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
   virtual bool SaveAsLevel1Fits(NStarTrackerData& Data);
+  virtual bool SaveData();
  
   //! Close the file
   virtual bool CloseLevel1FitsFile();
@@ -76,6 +77,7 @@ class NModuleInterfaceStarTrackerSaverLevel1Fits : public NModuleInterfaceObserv
   // private members:
  private:
 
+  long m_counter;
   vector<double> Time; 
   vector<double> m_X;
   vector<double> m_Y;

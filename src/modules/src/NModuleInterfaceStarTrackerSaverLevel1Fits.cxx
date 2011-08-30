@@ -76,6 +76,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::OpenLevel1FitsFile(TString File
   
   int Status = 0;
   m_File = 0;
+  m_counter = 1;
   
   fits_create_file(&m_File, FileName, &Status);
   if (Status != 0) {
@@ -87,10 +88,10 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::OpenLevel1FitsFile(TString File
   //! create binary table extension
   char ExtensionName[] = "ATTITUDE";
   long nrow = 0;
-  int tfield = 4;
-  char* ttype[] = {"TIME","QPARAM","POINTIMG","SOURCE"};
-  char* tform[] = {"1D","4D","3D","1B"};
-  char* tunit[] = {"s","","deg",""};
+  int tfield = 2;
+  char* ttype[] = {"TIME","QPARAM"};
+  char* tform[] = {"1D","4D"};
+  char* tunit[] = {"s",""};
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
@@ -125,10 +126,75 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveAsLevel1Fits(NStarTrackerDa
   m_Y.push_back(Q.m_V[1]);
   m_Z.push_back(Q.m_V[2]);
   m_R.push_back(Q.m_R);
-    
+   
+  //! If there are 100000 metrology data points then save the chunk to file 
+  // and reset buffers
+  if (Time.size() == 1000) {
+    SaveData();
+  }
+	  
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveData()
+{
+
+  int Status = 0;
+  
+   // We have to use pointers here to prevent a stack overflow for large data sets!
+  double* dTime = new double[Time.size()];
+  double* dQ = new double[Time.size()*4];
+  
+   //! save the data before closing  
+  for (unsigned int i = 0; i < Time.size(); ++i) {
+    dTime  [i] = Time[i];
+    dQ     [i*4] = m_X[i];
+    dQ     [i*4+1] = m_Y[i];
+    dQ     [i*4+2] = m_Z[i];
+    dQ     [i*4+3] = m_R[i];
+   }
+
+
+  char Words[30];
+
+  fits_write_col(m_File, TDOUBLE, 1, m_counter, 1, Time.size(), dTime, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error L1CHU4: fits_write_col('Time') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+  fits_write_col(m_File, TDOUBLE, 2, m_counter, 1, Time.size()*4, dQ, &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ 
+  if (Status != 0) {
+    mgui<<"Error writing event table!"<<endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+  m_counter += 1000;
+
+  delete [] dTime;
+  delete [] dQ;
+  
+  Time.clear();
+  m_X.clear();
+  m_Y.clear();
+  m_Z.clear();
+  m_R.clear();
+  
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -151,83 +217,16 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
   fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
 
-  // We have to use pointers here to prevent a stack overflow for large data sets!
-  double* dTime = new double[Time.size()];
-  double* dQ = new double[Time.size()*4];
-  double* dP = new double[Time.size()*3];
-  int* isrc = new int[Time.size()];
-  
-   //! save the data before closing  
-  for (unsigned int i = 0; i < Time.size(); ++i) {
-    dTime  [i] = Time[i];
-    dQ     [i*4] = m_X[i];
-    dQ     [i*4+1] = m_Y[i];
-    dQ     [i*4+2] = m_Z[i];
-    dQ     [i*4+3] = m_R[i];
-    dP     [i*3] = 99;
-    dP     [i*3+1] = 99;
-    dP     [i*3+2] = 99;
-	isrc   [i] = 1;
-  }
-
-
-  char Words[30];
-
-  fits_write_col(m_File, TDOUBLE, 1, 1, 1, Time.size(), dTime, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error L1CHU4: fits_write_col('Time') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-  fits_write_col(m_File, TDOUBLE, 2, 1, 1, Time.size()*4, dQ, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-    fits_write_col(m_File, TDOUBLE, 3, 1, 1, Time.size()*3, dP, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-
-  fits_write_col(m_File, TINT, 4, 1, 1, Time.size(), isrc, &Status);
-  if (Status != 0) {
-    fits_get_errstatus(Status, Words);
-    cerr << "Error: fits_write_col('X') failed (" << Words << ")" << endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-
-   if (Status != 0) {
-    mgui<<"Error writing event table!"<<endl;
-    fits_close_file(m_File, &Status);
-    m_File = 0;
-    return false;
-  }
-
+  SaveData();
   
   WriteHDR();   
     //! Move to primary hdr and write hdr again
   fits_movabs_hdu(m_File, 1, &hdutype, &Status);
   WriteHDR();
-
-  
    
   fits_close_file(m_File, &Status);
   
   m_File = 0;
-  
-  delete [] dTime;
-  delete [] dQ;
   
   return true;
 }
