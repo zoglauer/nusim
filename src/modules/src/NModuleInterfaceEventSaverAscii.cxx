@@ -84,7 +84,8 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
   m_Out<<"OBSID "<<m_ObservationID<<endl;
   m_Out<<endl;
   NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
-  m_Out<<"OBSSTART "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<" "<<Start.GetHours()<<"-"<<Start.GetMinutes()<<"-"<<Start.GetSeconds()<<endl;
+  m_Out<<"DATE-OBS "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds()<<endl;
+  m_Out<<"TSTART "<<m_Satellite.GetEpochObservationStartTime().GetAsSeconds()<<endl;
   m_Out<<endl;
   
   return true;

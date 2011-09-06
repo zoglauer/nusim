@@ -101,6 +101,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   char* tform[] = {"1E","1E","1J","1E","1D","1I","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
   char* tunit[] = {"pixel","pixel","channel","keV","s","grade","photon type","rejection type","unit","unit","unit","unit","mm","mm","mm","unit","unit","unit","unit"};
   
+  
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
   if (Status != 0) {
     mgui<<"Error in creating extension: "<<ExtensionName<<endl;
@@ -142,7 +143,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
-	  m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
+	m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
   }
     
   return true;
