@@ -136,7 +136,9 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveAsLevel1Fits(NStarTrackerDa
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
+
 
 bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveData()
 {
@@ -196,6 +198,7 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveData()
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -206,17 +209,12 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
   int Status = 0;
   int hdutype;
   
-  char version[10];
-  char creator[10],telescop[10];
-  strcpy(version,g_Version);
-  strcpy(creator,"NuSIM");
-  strcpy(telescop,"NuSTAR");
-
-  fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
-  fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
-
+  fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSTAR"), " ", &Status);
+  fits_write_key(m_File, TSTRING, "CREATOR",  const_cast<char*>("NuSIM"), " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  
+  // Attention: The above header entries will show up twice!!
   SaveData();
   
   WriteHDR();   
@@ -234,55 +232,40 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::CloseLevel1FitsFile()
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+
 bool NModuleInterfaceStarTrackerSaverLevel1Fits::WriteHDR()
 {
   // Close the file    
 
   int Status = 0;
-   
+  
   //! Write NuSim header keywords
-  char version[10], obs_id[10], object[20];;
-  char creator[10],telescop[10], TT[10], timeunit[10];
-  strcpy(version,g_Version);
-  strcpy(creator,"NuSIM");
-  strcpy(telescop,"NuSTAR");
-  strcpy(TT, "TT");
-  strcpy(timeunit, "s");  
-  strcpy(obs_id,m_ObservationID);
-  strcpy(object,m_TargetName);
   long targ_id = 0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
   double tstart = m_Sat.GetEpochObservationStartTime().GetAsSeconds();
   double tend = m_Sat.GetEpochObservationEndTime().GetAsSeconds();
-  ostringstream out;
    
-  fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
-  fits_write_key(m_File, TLONG, "TARG_ID", &targ_id, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "OBJECT", object, " ", &Status); 
-  fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
-  fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
-  fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);
-  fits_write_key(m_File, TSTRING, "TIEMSYS", TT, "Terrestrial Time", &Status);
-  fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
-  fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status); 
-  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status);
-  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, " ", &Status);
-  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, " ", &Status);
-  out<<m_Sat.GetAbsoluteObservationStartTime().GetDateInString();
-  char* DateObs = (char*) out.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
-  out.str("");
-  out<<m_Sat.GetAbsoluteObservationEndTime().GetDateInString();
-  char* DateEnd = (char*) out.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-END",DateEnd, " ", &Status);
+  fits_write_key(m_File, TSTRING, "OBS_ID",   const_cast<char*>(m_ObservationID.Data()), " ", &Status);  
+  fits_write_key(m_File, TLONG,   "TARG_ID",  &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "OBJECT",   const_cast<char*>(m_TargetName.Data()), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "CREATOR",  const_cast<char*>("NuSIM"), " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSTAR"), " ", &Status);
+  fits_write_key(m_File, TSTRING, "TIEMSYS",  const_cast<char*>("TT"), "Terrestrial Time", &Status);
+  fits_write_key(m_File, TLONG,   "MJDREFI",  &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
+  fits_write_key(m_File, TFLOAT,  "MDJREFF",  &MDJREFF , "MJD reference", &Status); 
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", const_cast<char*>("s"), " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTART",   &tstart, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTOP",    &tend, " ", &Status);
+  fits_write_key(m_File, TSTRING, "DATE-OBS", const_cast<char*>(m_Sat.GetAbsoluteObservationStartTime().GetDateInString().Data()), " ", &Status);
+  fits_write_key(m_File, TSTRING, "DATE-END", const_cast<char*>(m_Sat.GetAbsoluteObservationEndTime().GetDateInString().Data()), " ", &Status);
 
   return true;
 
 }
 
-///////////////////////////////////////////////////
 
 // NModuleInterfaceStarTrackerSaverLevel1Fits.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

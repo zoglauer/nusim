@@ -140,7 +140,9 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveAsLevel1Fits(NMetrologyData& 
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
+
 
 bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
 {
@@ -157,10 +159,10 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
     //! save the data before closing  
     for (unsigned int i = 0; i < Time.size(); ++i) {
       dTime  [i] = Time[i];
-	  fxpsd0 [i] = m_xpsd0[i];
-	  fypsd0 [i] = m_ypsd0[i];
-	  fxpsd1 [i] = m_xpsd1[i];
-	  fypsd1 [i] = m_ypsd1[i];
+      fxpsd0 [i] = m_xpsd0[i];
+      fypsd0 [i] = m_ypsd0[i];
+      fxpsd1 [i] = m_xpsd1[i];
+      fypsd1 [i] = m_ypsd1[i];
     }
   
     char Words[30];
@@ -207,7 +209,7 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
     }
 
    m_counter += 100000;	
-	
+
    delete [] dTime;
    delete [] fxpsd0;
    delete [] fypsd0;
@@ -221,62 +223,48 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::SaveData()
    m_ypsd1.clear();
    
    return true;
-
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
 bool NModuleInterfaceMetrologySaverLevel1Fits::WriteHDR()
 {
-  // Close the file    
+  // Write NuSim header keywords
 
   int Status = 0;
    
-  //! Write NuSim header keywords
-  char version[10], obs_id[10], object[20];
-  char creator[10],telescop[10], TT[10], timeunit[10];
-  strcpy(version,g_Version);
-  strcpy(creator,"NuSIM");
-  strcpy(telescop,"NuSTAR");
-  strcpy(TT, "TT");
-  strcpy(timeunit, "s");
-  strcpy(obs_id,m_ObservationID);
-  strcpy(object,m_TargetName);
   long targ_id = 0;
   float timepixr = 0.0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
   double tstart = m_Sat.GetEpochObservationStartTime().GetAsSeconds();
   double tend = m_Sat.GetEpochObservationEndTime().GetAsSeconds();
-  ostringstream out;
+   
+  fits_write_key(m_File, TSTRING, "OBS_ID",   const_cast<char*>(m_ObservationID.Data()), " ", &Status);  
+  fits_write_key(m_File, TLONG,   "TARG_ID",  &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "OBJECT",   const_cast<char*>(m_TargetName.Data()), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "CREATOR",  const_cast<char*>("NuSIM"), " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSTAR"), " ", &Status);
+  fits_write_key(m_File, TFLOAT,  "TIMEPIXR", &timepixr, "Bin time beginning=0 middle=0.5 end=1", &Status);
+  fits_write_key(m_File, TSTRING, "TIEMSYS",  const_cast<char*>("TT"), "Terrestrial Time", &Status);
+  fits_write_key(m_File, TLONG,   "MJDREFI",  &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
+  fits_write_key(m_File, TFLOAT,  "MDJREFF",  &MDJREFF , "MJD reference", &Status); 
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", const_cast<char*>("s"), " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTART",   &tstart, " ", &Status);
+  fits_write_key(m_File, TDOUBLE, "TSTOP",    &tend, " ", &Status);
+  fits_write_key(m_File, TSTRING, "DATE-OBS", const_cast<char*>(m_Sat.GetAbsoluteObservationStartTime().GetDateInString().Data()), " ", &Status);
+  fits_write_key(m_File, TSTRING, "DATE-END", const_cast<char*>(m_Sat.GetAbsoluteObservationEndTime().GetDateInString().Data()), " ", &Status);
   
-  fits_write_key(m_File, TSTRING, "OBS_ID", obs_id, " ", &Status);  
-  fits_write_key(m_File, TLONG, "TARG_ID", &targ_id, " ", &Status); 
-  fits_write_key(m_File, TSTRING, "OBJECT", object, " ", &Status); 
-  fits_write_key(m_File, TSTRING, "CREATOR", creator, " ", &Status);  
-  fits_write_key(m_File, TSTRING, "NuSimVER", version, "NuSim version number", &Status);
-  fits_write_key(m_File, TLONG, "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
-  fits_write_key(m_File, TSTRING, "TELESCOP", telescop, " ", &Status);
-  fits_write_key(m_File, TFLOAT, "TIMEPIXR", &timepixr, "Bin time beginning=0 middle=0.5 end=1", &Status);
-  fits_write_key(m_File, TSTRING, "TIEMSYS", TT, "Terrestrial Time", &Status);
-  fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
-  fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status); 
-  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status);
-  fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, " ", &Status);
-  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, " ", &Status);
-  out<<m_Sat.GetAbsoluteObservationStartTime().GetDateInString();
-  char* DateObs = (char*) out.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
-  out.str("");
-  out<<m_Sat.GetAbsoluteObservationEndTime().GetDateInString();
-  char* DateEnd = (char*) out.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-END",DateEnd, " ", &Status);
   return true;
-
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
+
 
 bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
 {
@@ -285,12 +273,12 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::CloseLevel1FitsFile()
   int Status = 0;
   int hdutype;
    
-  //! Write NuSim header keywords
+  // Write NuSim header keywords
   WriteHDR();  
 
   SaveData();
 
-   //! Move to primary hdr and write hdr again
+  // Move to primary hdr and write hdr again
   fits_movabs_hdu(m_File, 1, &hdutype, &Status);
   WriteHDR();
 
