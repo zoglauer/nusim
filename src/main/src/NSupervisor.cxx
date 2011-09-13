@@ -489,8 +489,9 @@ bool NSupervisor::Run()
   // Keep track of the star tracker time, since we might have to do intermediate times to take care of pointing slews
   NTime LastStarTrackerTime(-100);
 
+  bool AnalysisFailed = false;
   while (m_Satellite.GetTime()-BlackoutTime < m_ObservationTime && 
-         m_Satellite.GetTime()-BlackoutTime < m_ObservationStopTime) {
+         m_Satellite.GetTime()-BlackoutTime < m_ObservationStopTime && AnalysisFailed == false) {
 
     // Check if stop criteria are fullfilled:
     bool StopCriterionFullFilled = false;
@@ -606,7 +607,7 @@ bool NSupervisor::Run()
       // Check if we have enough data in the star tracker & metrology stream
 
       if (OR != 0) {
-        while (OR->HasEnoughData(TimeOfNextEvent) == false) {
+        while (OR->HasEnoughData(TimeOfNextEvent) == false && AnalysisFailed == false) {
           NTime iTimeOfNextEvent;
           
           // Make sure we get the star tracker time also at the boundaries of the pointing slews 
@@ -658,6 +659,7 @@ bool NSupervisor::Run()
               // Do the analysis
               if (m_StarTrackerModules[s]->AnalyzeStarTrackerData(StarTrackerData) == false) {
                 mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_StarTrackerModules[s])->GetFullName()<<"\""<<endl;
+                AnalysisFailed = true;
                 break;
               }
             }
@@ -668,6 +670,7 @@ bool NSupervisor::Run()
               // Do the analysis
               if (m_MetrologyModules[s]->AnalyzeMetrologyData(MetrologyData) == false) {
                 mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_MetrologyModules[s])->GetFullName()<<"\""<<endl;
+                AnalysisFailed = true;
                 break;
               }
             }
@@ -693,6 +696,7 @@ bool NSupervisor::Run()
           // Do the analysis
           if (m_ObservatoryModules[s]->AnalyzeObservatoryData(ObservatoryData) == false) {
             mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_ObservatoryModules[s])->GetFullName()<<"\""<<endl;
+            AnalysisFailed = true;
             break;
           }
         }
@@ -732,6 +736,7 @@ bool NSupervisor::Run()
         //cout<<"Current pipe: "<<dynamic_cast<NModule*>(NextPipeline[m])->GetFullName()<<endl;
         if (NextPipeline[m]->AnalyzeEvent(Event) == false) {
           mout<<"Analysis failed for event "<<Event.GetID()<<" ("<<Event.GetOriginString()<<") in module \""<<dynamic_cast<NModule*>(NextPipeline[m])->GetFullName()<<"\""<<endl;
+          AnalysisFailed = true;
           break;
         }
         
@@ -753,6 +758,7 @@ bool NSupervisor::Run()
           // Do the analysis
           if (m_StarTrackerModules[s]->AnalyzeStarTrackerData(StarTrackerData) == false) {
             mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_StarTrackerModules[s])->GetFullName()<<"\""<<endl;
+            AnalysisFailed = true;
             break;
           }
         }
@@ -765,6 +771,7 @@ bool NSupervisor::Run()
           // Do the analysis
           if (m_MetrologyModules[s]->AnalyzeMetrologyData(MetrologyData) == false) {
             mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_MetrologyModules[s])->GetFullName()<<"\""<<endl;
+            AnalysisFailed = true;
             break;
           }
         }
@@ -776,6 +783,7 @@ bool NSupervisor::Run()
           // Do the analysis
           if (m_ObservatoryModules[s]->AnalyzeObservatoryData(ObservatoryData) == false) {
             mout<<"Analysis failed in module \""<<dynamic_cast<NModule*>(m_ObservatoryModules[s])->GetFullName()<<"\""<<endl;
+            AnalysisFailed = true;
             break;
           }
         }
