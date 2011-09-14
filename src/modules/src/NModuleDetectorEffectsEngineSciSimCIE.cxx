@@ -412,8 +412,8 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
       // Create 9 pixel hits
       for (int xp = xPixel-1; xp <= xPixel+1; ++xp) {
         for (int yp = yPixel-1; yp <= yPixel+1; ++yp) {
-          if (xp < 0 || xp > NPixelsX) continue;
-          if (yp < 0 || yp > NPixelsY) continue;
+          if (xp < 0 || xp >= NPixelsX) continue;
+          if (yp < 0 || yp >= NPixelsY) continue;
 
 	  DistanceXFromPixelCenter = Event.GetInteraction(i).GetPosition().X() - m_PixelCenterPositionX[xp];
 	  DistanceYFromPixelCenter = Event.GetInteraction(i).GetPosition().Y() - m_PixelCenterPositionY[yp];

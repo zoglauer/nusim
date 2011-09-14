@@ -340,8 +340,8 @@ bool NModuleDetectorEffectsEngineSciSim::AnalyzeEvent(NEvent& Event)
       for (int xp = xPixel-1; xp <= xPixel+1; ++xp) {
         for (int yp = yPixel-1; yp <= yPixel+1; ++yp) {
           if (xp == xPixel && yp == yPixel) continue;
-          if (xp < 0 || xp > NPixelsX) continue;
-          if (yp < 0 || yp > NPixelsY) continue;
+          if (xp < 0 || xp >= NPixelsX) continue;
+          if (yp < 0 || yp >= NPixelsY) continue;
           
           NPixelHit newP;
           newP.SetTelescope(Event.GetInteraction(i).GetTelescope());
