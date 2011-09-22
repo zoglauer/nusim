@@ -17,6 +17,7 @@
 
 PRGS = \
 	$(BN)/ConcatDat \
+	$(BN)/MakeARF \
 
 ALLLIBS = $(shell $(BN)/alllibs $(LB) $(DLL) )
 
