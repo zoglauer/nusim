@@ -77,9 +77,9 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   void SetAbsoluteTime(bool AbsoluteTime) { m_AbsoluteTime = AbsoluteTime; }
 
   //! Return true if we are in continous roll mode
-  bool GetContinuousRollMode() const { return m_ContinuousRollMode; }
+  bool GetContinuousYawMode() const { return m_ContinuousYawMode; }
   //! Set if we are in continous roll mode
-  void SetContinuousRollMode(bool ContinuousRollMode) { m_ContinuousRollMode = ContinuousRollMode; }
+  void SetContinuousYawMode(bool ContinuousYawMode) { m_ContinuousYawMode = ContinuousYawMode; }
 
   //! Import pointings
   bool ImportPointings(TString FileName);
@@ -161,11 +161,11 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
 
 
   //! True if we are in continous roll mode
-  bool m_ContinuousRollMode;
+  bool m_ContinuousYawMode;
   //! The inital roll in continuous roll mode
-  double m_ContinousRollModeInitialRoll;
+  double m_ContinousYawModeInitialYaw;
   //! The total roll per second in continuous roll mode
-  double m_ContinousRollModeRollPerSecond;
+  double m_ContinousYawModeYawPerSecond;
   
   /*
   //! The last pointing call for the random walk

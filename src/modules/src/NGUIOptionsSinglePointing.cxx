@@ -100,8 +100,8 @@ void NGUIOptionsSinglePointing::Create()
   m_Ra = new MGUIEEntry(HFrame, "RA [deg]:", false, m_Pointing->GetRa()/60.0, true, 0.0, 360.0);
   HFrame->AddFrame(m_Ra, LabelLayout);
   
-  m_Roll = new MGUIEEntry(HFrame, "Roll [deg]:", false, m_Pointing->GetRoll()/60.0, true, 0.0, 360.0);
-  HFrame->AddFrame(m_Roll, LabelLayout);
+  m_Yaw = new MGUIEEntry(HFrame, "Yaw [deg]:", false, m_Pointing->GetYaw()/60.0, true, 0.0, 360.0);
+  HFrame->AddFrame(m_Yaw, LabelLayout);
   
   m_Time = new MGUIEEntry(HFrame, "Time [sec or a.u.]:", false, m_Pointing->GetTime().GetAsSeconds(), true, 0.0);
   HFrame->AddFrame(m_Time, LabelLayout);
@@ -138,7 +138,7 @@ void NGUIOptionsSinglePointing::Update()
 {
   //! update the data
   
-  m_Pointing->SetRaDecRoll(m_Ra->GetAsDouble()*60, m_Dec->GetAsDouble()*60, m_Roll->GetAsDouble()*60);
+  m_Pointing->SetRaDecYaw(m_Ra->GetAsDouble()*60, m_Dec->GetAsDouble()*60, m_Yaw->GetAsDouble()*60);
   m_Pointing->SetTime(NTime(m_Time->GetAsDouble()));
 }
   

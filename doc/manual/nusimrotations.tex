@@ -131,9 +131,9 @@ q_x &=& -\sin(Ra/2)*\sin((\pi/2-Dec)/2) \\
 q_y &=& \cos(Ra/2)*\sin((\pi/2-Dec)/2) \\
 q_z &=& \sin(Ra/2)*\cos((\pi/2-Dec)/2) \;.
 \end{eqnarray}
-To account for a space craft roll, $\theta_z$, about the space craft observatory Z-axis we design a roll quaternion
+To account for a space craft yaw, $\theta_z$, about the space craft observatory Z-axis we design a yaw quaternion
 \begin{equation}
-Q_{roll} = \cos(\theta_z/2)+\mathbf{z}\sin(\theta_z/2)=[0,0,\sin(\theta_z/2),\cos(\theta_z/2)] \;.
+Q_{yaw} = \cos(\theta_z/2)+\mathbf{z}\sin(\theta_z/2)=[0,0,\sin(\theta_z/2),\cos(\theta_z/2)] \;.
 \end{equation}
 An important thing to note about these two quaternions is that they are designed for point rotations, and therefore in the frame rotation notation
 \begin{eqnarray}
@@ -141,7 +141,7 @@ Q_{INSC} = [q_x,g_y,q_z,q_r] \;.
 \end{eqnarray}
 To this we apply the space craft rotation quaternion from the right, because they are point rotations and in this scenario we first rotate the space craft bus around its Z-axis then apply the (Ra, Dec) move, to obtain the combined pointing quaternion:
 \begin{eqnarray}
-Q_{INSC} = Q_{INSC} * Q_{roll}\;.
+Q_{INSC} = Q_{INSC} * Q_{yaw}\;.
 \end{eqnarray}
 This quaternion must be inverted to obtain the transformation from space craft, SC, to inertial space, IN.
 

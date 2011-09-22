@@ -79,13 +79,13 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
 
   // Some default initilizations:
   NPointing N;
-  N.SetRaDecRoll(180*60, 0.0, 180.0*60.0);
+  N.SetRaDecYaw(180*60, 0.0, 180.0*60.0);
   N.SetTime(10000);
   m_InitialPointings.push_back(N);
   
   m_MotionPattern = c_MotionPatternNone;
 
-  m_ContinuousRollMode = true;
+  m_ContinuousYawMode = true;
 }
 
 
@@ -156,8 +156,8 @@ bool NModulePointingPredefined::Initialize()
   //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
   //}
 
-  m_ContinousRollModeInitialRoll = m_SequencedInitialPointings.front().GetRoll();
-  m_ContinousRollModeRollPerSecond = 360*deg/year;
+  m_ContinousYawModeInitialYaw = m_SequencedInitialPointings.front().GetYaw();
+  m_ContinousYawModeYawPerSecond = 360*deg/year;
   
   return true;
 }
@@ -354,8 +354,8 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
     if (m_MotionPattern == c_MotionPatternNone) {
       m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
-      if (m_ContinuousRollMode == true) {
-        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetAsSeconds()*m_ContinousRollModeRollPerSecond);
+      if (m_ContinuousYawMode == true) {
+        m_Pointing.SetYaw(m_ContinousYawModeInitialYaw + t.GetAsSeconds()*m_ContinousYawModeYawPerSecond);
       }
     } else if (m_MotionPattern == c_MotionPatternDB) {
       // Now apply the pointing jitter
@@ -418,8 +418,8 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       // Apply:
       //cout<<m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].ToString()<<endl;
       m_Pointing = m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings];
-      if (m_ContinuousRollMode == true) {
-        m_Pointing.SetRoll(m_ContinousRollModeInitialRoll + t.GetAsSeconds()*m_ContinousRollModeRollPerSecond);
+      if (m_ContinuousYawMode == true) {
+        m_Pointing.SetYaw(m_ContinousYawModeInitialYaw + t.GetAsSeconds()*m_ContinousYawModeYawPerSecond);
       }
       m_Pointing.SetQuaternion(m_Pointing.GetQuaternion()*LatestPointingJitters.GetQuaternion());
       //m_Pointing.SetQuaternion(LatestPointingJitters.GetQuaternion()*m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetQuaternion());
@@ -541,14 +541,14 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
     m_AbsoluteTime = AbsoluteTimeNode->GetValueAsBoolean();
   }
 
-  MXmlNode* ContinuousRollModeNode = Node->GetNode("ContinuousRollMode");
-  if (ContinuousRollModeNode != 0) {
-    m_ContinuousRollMode = ContinuousRollModeNode->GetValueAsBoolean();
+  MXmlNode* ContinuousYawModeNode = Node->GetNode("ContinuousRollMode");
+  if (ContinuousYawModeNode != 0) {
+    m_ContinuousYawMode = ContinuousYawModeNode->GetValueAsBoolean();
   }
 
   if (m_InitialPointings.size() == 0) {
     NPointing N;
-    N.SetRaDecRoll(180.0*60, 0.0, 180.0*60);
+    N.SetRaDecYaw(180.0*60, 0.0, 180.0*60);
     N.SetTime(10000);
     m_InitialPointings.push_back(N);
   }
@@ -572,7 +572,7 @@ MXmlNode* NModulePointingPredefined::CreateXmlConfiguration()
   }
   new MXmlNode(Node, "PointingJitterDBFileName", CleanPath(m_PointingJitterDBFileName));
   new MXmlNode(Node, "AbsoluteTime", m_AbsoluteTime);
-  new MXmlNode(Node, "ContinuousRollMode", m_ContinuousRollMode);
+  new MXmlNode(Node, "ContinuousRollMode", m_ContinuousYawMode);
   
   return Node;
 }

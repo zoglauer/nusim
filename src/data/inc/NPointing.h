@@ -50,9 +50,9 @@ class NPointing
   virtual void Clear();
 
   //! Set right ascension and declination (do automatic conversion to quaternion)
-  void SetRaDecRoll(double Ra, double Dec, double Roll) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; m_Roll = Roll; RaDecToQuaternion(); }
-  //! Set a new roll
-  void SetRoll(double Roll);
+  void SetRaDecYaw(double Ra, double Dec, double Yaw) { m_Empty = false; m_Ra = Ra; m_Dec = Dec; m_Yaw = Yaw; RaDecToQuaternion(); }
+  //! Set a new yaw
+  void SetYaw(double Yaw);
   //! Set quaternion (do automatic conversion to quaternion)
   void SetQuaternion(const NQuaternion& Q) { m_Empty = false; m_Q = Q; QuaternionToRaDec(); }
   //! Set the time spent in this pointing
@@ -63,7 +63,7 @@ class NPointing
   //! Get the declination
   double GetDec() const { return m_Dec; }
   //! Get the declination
-  double GetRoll() const { return m_Roll; }
+  double GetYaw() const { return m_Yaw; }
   //! Get the time to be spent at this pointing
   NTime GetTime() const { return m_Time; }
   
@@ -114,11 +114,11 @@ class NPointing
   double m_Ra;
   //! The declination in arcmin (!)
   double m_Dec;
-  //! The roll of the spacecraft in radians
-  double m_Roll;
+  //! The yaw of the spacecraft in radians
+  double m_Yaw;
   //! Representation of the pointing as a quaternion
   NQuaternion m_Q;
-  //! Representation of the roll quaternion of the spacecraft
+  //! Representation of the yaw quaternion of the spacecraft
   NQuaternion m_QR;
   //! The time to be spent at this pointing
   NTime m_Time;

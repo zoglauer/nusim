@@ -60,7 +60,7 @@ class NGUIOptionsPointingPredefined : public NGUIOptions
 
   static const int c_Import;
   static const int c_Absolute;
-  static const int c_Roll;
+  static const int c_Yaw;
 
   
   // protected methods:
@@ -88,8 +88,8 @@ class NGUIOptionsPointingPredefined : public NGUIOptions
 
   //! Are the times absolute or relative
   TGCheckButton* m_AbsoluteTime;
-  //! The continous roll of the space craft in celestial coordinates
-  TGCheckButton* m_TurnOffContinuousRoll;
+  //! The continous yaw of the space craft in celestial coordinates
+  TGCheckButton* m_TurnOffContinuousYaw;
   
   //! Pointing jitter DB selector
   MGUIEFileSelector* m_PointingJitterDB;

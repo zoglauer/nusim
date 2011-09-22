@@ -63,7 +63,7 @@ void NPointing::Clear()
 
   m_Ra = 0.0;
   m_Dec = 0.0;
-  m_Roll = 180*60;
+  m_Yaw = 180*60;
   m_Time.Set(0.0);
   RaDecToQuaternion();
 
@@ -74,12 +74,12 @@ void NPointing::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NPointing::SetRoll(double Roll)
+void NPointing::SetYaw(double Yaw)
 {  
-  //! Set a new roll
+  //! Set a new yaw
   
   m_Empty = false;
-  m_Roll = Roll;
+  m_Yaw = Yaw;
   RaDecToQuaternion();  
 }
 
@@ -98,19 +98,19 @@ void NPointing::QuaternionToRaDec()
   m_Ra = 60*c_Deg*atan2(Zhat[1],Zhat[0]);
   m_Dec = 60*c_Deg*asin(Zhat[2]);
   
-  // Next to find roll:
-  // Q.R = croll*cra*cdeg - sroll*sra*cdeg
-  //       = cdeg*cos(roll+ra)
-  // Q.V[2] = croll*sra*cdeg - sroll*cra*cdeg
-  //          = cdeg*sin(roll+ra)
-  // atan(Q.V[2]/Q.R) = croll/2+ra/2
+  // Next to find yaw:
+  // Q.R = cyaw*cra*cdeg - syaw*sra*cdeg
+  //       = cdeg*cos(yaw+ra)
+  // Q.V[2] = cyaw*sra*cdeg - syaw*cra*cdeg
+  //          = cdeg*sin(yaw+ra)
+  // atan(Q.V[2]/Q.R) = cyaw/2+ra/2
   
-  m_Roll = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
-  m_Roll -= m_Ra;
-  if (m_Roll < 0) m_Roll+=360.0*60.0;
+  m_Yaw = 60 * c_Deg * atan(m_Q.m_V[2]/m_Q.m_R)*2.;
+  m_Yaw -= m_Ra;
+  if (m_Yaw < 0) m_Yaw+=360.0*60.0;
   if (m_Ra < 0) m_Ra+=360.0*60.0;
 
-  //cout<<"RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Roll:"<<m_Roll/60.<<endl;
+  //cout<<"RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Yaw:"<<m_Yaw/60.<<endl;
     
  }
 
@@ -127,13 +127,13 @@ void NPointing::RaDecToQuaternion()
    //Important thing to remember here is that the Z-axis of the space craft is what
    //needs to be pointing at the proper ra/deg. 
    
-   double croll=cos(m_Roll/60*c_Rad/2.);
-   double sroll=sin(m_Roll/60*c_Rad/2.);
+   double cyaw=cos(m_Yaw/60*c_Rad/2.);
+   double syaw=sin(m_Yaw/60*c_Rad/2.);
    
-   m_QR.m_R = croll;
+   m_QR.m_R = cyaw;
    m_QR.m_V[0] = 0.0;
    m_QR.m_V[1] = 0.0; 
-   m_QR.m_V[2] = sroll;
+   m_QR.m_V[2] = syaw;
    
    double cr = cos(m_Ra/60*c_Rad/2.);
    double cd = cos((c_Pi/2.-m_Dec/60*c_Rad)/2.);
@@ -145,12 +145,12 @@ void NPointing::RaDecToQuaternion()
    m_Q.m_V[1] = cr*sd; 
    m_Q.m_V[2] = sr*cd;
    
-   // First apply Ra, Dec, then roll around new Z-axis (Z-Y-Z) rotation. Frame rotation!!
+   // First apply Ra, Dec, then yaw around new Z-axis (Z-Y-Z) rotation. Frame rotation!!
    m_Q = m_Q*m_QR;	 
    	 
    QuaternionToRaDec();
    //cout<<"m_q "<<m_Q<<endl;
-   //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Roll:"<<m_Roll/60.<<endl;
+   //cout<<"RA/DEC sanity check after: RA:"<<m_Ra/60.<<" DEC: "<<m_Dec/60.<<" Yaw:"<<m_Yaw/60.<<endl;
 }
 
 
@@ -183,8 +183,8 @@ TString NPointing::ToString() const
   T += m_Ra/60;
   T += " deg, DEC=";
   T += m_Dec/60;
-  T += " deg, Roll=";
-  T += m_Roll/60;
+  T += " deg, Yaw=";
+  T += m_Yaw/60;
   T += " deg";
   if (m_Time.GetAsSeconds() > 0.0) {
     T += ", Time=";
@@ -210,20 +210,20 @@ bool NPointing::Parse(TString& Line)
 
   char Key[2];
   double Time = 0;
-  if (sscanf(Line.Data(), "%s %lf %lf %lf %lf", Key, &m_Ra, &m_Dec, &m_Roll, &Time) != 5) {
+  if (sscanf(Line.Data(), "%s %lf %lf %lf %lf", Key, &m_Ra, &m_Dec, &m_Yaw, &Time) != 5) {
     if (sscanf(Line.Data(), "%s %lf %lf %lf", Key, &m_Ra, &m_Dec, &Time) != 4) {
       if (sscanf(Line.Data(), "%s %lf %lf", Key, &m_Ra, &m_Dec) != 3) {
         Clear();
         return false;
       }
     }
-    m_Roll = 180*60; 
+    m_Yaw = 180*60; 
     m_Ra *= 60;
     m_Dec *= 60;
   } else {
     m_Ra *= 60;
     m_Dec *= 60;
-    m_Roll *= 60;
+    m_Yaw *= 60;
   }
   
   RaDecToQuaternion();
@@ -252,9 +252,9 @@ bool NPointing::ReadXmlConfiguration(MXmlNode* Node)
   if (DecNode != 0) {
     m_Dec = DecNode->GetValueAsDouble();
   }
-  MXmlNode* RollNode = Node->GetNode("Roll");
-  if (RollNode != 0) {
-    m_Roll = RollNode->GetValueAsDouble();
+  MXmlNode* YawNode = Node->GetNode("Yaw");
+  if (YawNode != 0) {
+    m_Yaw = YawNode->GetValueAsDouble();
   }
   MXmlNode* TimeNode = Node->GetNode("Time");
   if (TimeNode != 0) {
@@ -262,7 +262,7 @@ bool NPointing::ReadXmlConfiguration(MXmlNode* Node)
   }
 
   // Do an official "set" to initialize all the other variables:
-  SetRaDecRoll(m_Ra, m_Dec, m_Roll);
+  SetRaDecYaw(m_Ra, m_Dec, m_Yaw);
 
   return true;
 }
@@ -279,7 +279,7 @@ MXmlNode* NPointing::CreateXmlConfiguration()
   
   new MXmlNode(Node, "RA", m_Ra);
   new MXmlNode(Node, "DEC", m_Dec);
-  new MXmlNode(Node, "Roll", m_Roll);
+  new MXmlNode(Node, "Yaw", m_Yaw);
   new MXmlNode(Node, "Time", m_Time.GetAsSeconds());
 
   return Node;

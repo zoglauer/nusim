@@ -43,7 +43,7 @@ ClassImp(NGUIOptionsPointingPredefined)
 
 const int NGUIOptionsPointingPredefined::c_Import   = 850;
 const int NGUIOptionsPointingPredefined::c_Absolute = 851;
-const int NGUIOptionsPointingPredefined::c_Roll     = 852;
+const int NGUIOptionsPointingPredefined::c_Yaw      = 852;
 
   
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,15 +87,15 @@ void NGUIOptionsPointingPredefined::Create()
   }
   AddFrame(m_AbsoluteTime, BasicLayout);
 
-  m_TurnOffContinuousRoll =
-    new TGCheckButton(this, "Turn off the continous roll of the spacecraft (for testing only). If this mode is on, only the FIRST roll in the below list is used, and this initial roll is modified at ~1 deg per day", c_Roll);
-  m_TurnOffContinuousRoll->Associate(this);
-  if (dynamic_cast<NModulePointingPredefined*>(m_Module)->GetContinuousRollMode() == true) {
-    m_TurnOffContinuousRoll->SetState(kButtonUp);
+  m_TurnOffContinuousYaw =
+    new TGCheckButton(this, "Turn off the continuous yaw (rotation around z-axis) of the spacecraft (for testing only). If it is on, only the FIRST yaw in the list is used, and the spacecraft rotates at ~1 deg per day.", c_Yaw);
+  m_TurnOffContinuousYaw->Associate(this);
+  if (dynamic_cast<NModulePointingPredefined*>(m_Module)->GetContinuousYawMode() == true) {
+    m_TurnOffContinuousYaw->SetState(kButtonUp);
   } else {
-    m_TurnOffContinuousRoll->SetState(kButtonDown);
+    m_TurnOffContinuousYaw->SetState(kButtonDown);
   }
-  AddFrame(m_TurnOffContinuousRoll, BasicLayout);
+  AddFrame(m_TurnOffContinuousYaw, BasicLayout);
 
  
   m_PointingViewer = new TGCanvas(this, 1200, 160);
@@ -303,10 +303,10 @@ bool NGUIOptionsPointingPredefined::OnApply()
   } else {
     dynamic_cast<NModulePointingPredefined*>(m_Module)->SetAbsoluteTime(false);
   }
-  if (m_TurnOffContinuousRoll->GetState() == kButtonDown) {
-    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousRollMode(false);
+  if (m_TurnOffContinuousYaw->GetState() == kButtonDown) {
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousYawMode(false);
   } else {
-    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousRollMode(true);
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousYawMode(true);
   }
   
 	return true;
