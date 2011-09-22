@@ -797,6 +797,27 @@ int main(int argc, char** argv)
 {
   // Main function... the beginning...
 
+  ostringstream Usage;
+  Usage<<endl;
+  Usage<<"  Usage: MakeARF <arg1> <arg2>"<<endl;
+  Usage<<"    arguments:"<<endl;
+  Usage<<"         arg1:   full path and name of nusim event fits file"<<endl;
+  Usage<<"         arg2:   full path and name of the ds9 region file"<<endl;
+  Usage<<endl;
+
+  string Option;
+
+  // Check for help
+  for (int i = 1; i < argc; i++) {
+    Option = argv[i];
+    if (Option == "-h" || Option == "--help" || Option == "?" || Option == "-?") {
+      cout<<Usage.str()<<endl;
+      return false;
+    }
+  }
+
+
+
   Target src;
   src.Initialize();
  
