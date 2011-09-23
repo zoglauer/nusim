@@ -38,7 +38,7 @@ using namespace std;
 
 // NuSIM
 #include <NQuaternion.h>
-#include <NObservatorydata.h>
+#include <NObservatoryData.h>
 #include <NOrientation.h>
 #include "NAlignmentsDBEntry.h"
 
