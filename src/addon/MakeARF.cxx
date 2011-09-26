@@ -944,7 +944,7 @@ bool Target::GenerateARF()
 	
   }
 
-  for (int j=0;j<DetIndex.size();j++) oaat_hist[oaa[j]] += TotalTime[j]*GetPSFFraction(regionAtDet, oaa[j]);
+  for (int j=0;j<DetIndex.size();j++) oaat_hist[int(oaa[j])] += TotalTime[j]*GetPSFFraction(regionAtDet, oaa[j]);
   
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
