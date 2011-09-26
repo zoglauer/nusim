@@ -73,7 +73,7 @@ public:
   bool SetTarget(MVector region);
   bool WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure);
   bool WriteARF(float* Elow, float* Ehigh, float* data);
-  float GetPSFFraction(float oaa, float oaa);
+  float GetPSFFraction(float region, float oaa);
   int GetDetIndex();
   NAlignmentsDBEntry IdealAlignments;
   NOrientation Rfbob;
