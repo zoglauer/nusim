@@ -105,11 +105,16 @@ using namespace std;
 #include "NModuleEventSaverCompressedEventFormat.h"
 
 #include "NModuleTimeEngine.h"
+
 #include "NModuleOrbitStationary.h"
 #include "NModuleOrbitEngine.h"
+#include "NModuleOrbitEngineTLE.h"
+
 #include "NModulePointingPredefined.h"
 #include "NModulePointingDatabase.h"
+
 #include "NModuleOrientationsDatabase.h"
+
 #include "NModuleGeometryAndDetectorProperties.h"
 
 #include "NGUIDiagnostics.h"
@@ -135,14 +140,15 @@ NSupervisor::NSupervisor()
 
   // Add in this list all available modules:
 
-  // Satellite modules
+  // Satellite modules - orbit must come last
   m_AvailableModules.push_back(new NModuleTimeEngine(m_Satellite));
-  m_AvailableModules.push_back(new NModuleOrbitStationary(m_Satellite));
-  m_AvailableModules.push_back(new NModuleOrbitEngine(m_Satellite));
   m_AvailableModules.push_back(new NModulePointingPredefined(m_Satellite));
   m_AvailableModules.push_back(new NModulePointingDatabase(m_Satellite));
   m_AvailableModules.push_back(new NModuleOrientationsDatabase(m_Satellite));
   m_AvailableModules.push_back(new NModuleGeometryAndDetectorProperties(m_Satellite));
+  m_AvailableModules.push_back(new NModuleOrbitStationary(m_Satellite));
+  m_AvailableModules.push_back(new NModuleOrbitEngine(m_Satellite));
+  m_AvailableModules.push_back(new NModuleOrbitEngineTLE(m_Satellite));
   
   // Pipeline modules
   m_AvailableModules.push_back(new NModuleSourceDistribution(m_Satellite));
@@ -314,6 +320,7 @@ bool NSupervisor::Run()
   }
 
   map<int, NModule*>::iterator Iter;
+  map<int, NModule*>::reverse_iterator RIter;
 
   m_Interrupt = false;
   m_ToggleDiagnostics = false;
@@ -349,14 +356,22 @@ bool NSupervisor::Run()
     cout<<"Unable to initialize the satellite - aborting..."<<endl;
     return false;
   }
-  // Initialize the module data:
+  // Initialize the module data. End with the orbit module
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceOrbit*>((*Iter).second) != 0) continue;
     if ((*Iter).second->Initialize() == false) {
       cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
       return false;
     }
   }
-  
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceOrbit*>((*Iter).second) != 0) {
+      if ((*Iter).second->Initialize() == false) {
+        cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
+        return false;
+      }
+    }
+  }  
 
 
 
@@ -372,9 +387,9 @@ bool NSupervisor::Run()
   }
   if (NDiagnostics > 0 && gROOT->IsBatch() == false) {
     m_DiagnosticsGUI = new NGUIDiagnosticsMain(m_Satellite);
-    for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
-      if ((*Iter).second->HasDiagnosticsGUI() == true) {
-        m_DiagnosticsGUI->AddDiagnostics((*Iter).second->GetDiagnosticsGUI());
+    for (RIter = m_ActiveModules.rbegin(); RIter != m_ActiveModules.rend(); ++RIter) {
+      if ((*RIter).second->HasDiagnosticsGUI() == true) {
+        m_DiagnosticsGUI->AddDiagnostics((*RIter).second->GetDiagnosticsGUI());
       }
     }
     m_DiagnosticsGUI->Create();
@@ -571,7 +586,7 @@ bool NSupervisor::Run()
     // Take care of blackouts:
     if (HasSourceEngine == true && m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
       NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
-      cout<<"Blackout detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<"("<<m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent)<<", "<<m_Satellite.GetTime()<<")"<<endl;
+      cout<<"Occultation detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<endl;
       BlackoutTime += BlackoutDuration;
       if (SourceStart != 0) SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
       if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(BlackoutDuration + 100*ns);

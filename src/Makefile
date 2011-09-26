@@ -26,6 +26,9 @@ modules:
 data:
 	@$(MAKE) -C data
 
+orbit:
+	@$(MAKE) -C orbit
+
 addon:
 	@$(MAKE) -C addon
 
@@ -39,11 +42,13 @@ link:
 	$(MAKE) link -C main
 	$(MAKE) link -C modules
 	$(MAKE) link -C data
+	$(MAKE) link -C orbit
 
 all:
+	@$(MAKE) -C orbit
 	@$(MAKE) -C megalib
-	@$(MAKE) -C modules
 	@$(MAKE) -C data
+	@$(MAKE) -C modules
 	@$(MAKE) -C main
 	@$(MAKE) -C addon
 
@@ -52,6 +57,7 @@ clean:
 	@$(MAKE) clean -C main
 	@$(MAKE) clean -C modules
 	@$(MAKE) clean -C data
+	@$(MAKE) clean -C orbit
 	@$(MAKE) clean -C addon
 	@rm -f *~
 	@rm -f \#*
