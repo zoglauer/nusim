@@ -43,6 +43,17 @@ using namespace std;
 #include "NAlignmentsDBEntry.h"
 
 /****************************************************************************/
+class PSF
+{
+public:
+  PSF();
+  ~PSF();
+  bool LoadPSF(int type);
+  
+  vector <float> oaa0;
+  vector <float> oaa1;
+   
+};
 /************************/
 class Target
 {
@@ -62,6 +73,8 @@ public:
   bool SetTarget(MVector region);
   bool WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure);
   bool WriteARF(float* Elow, float* Ehigh, float* data);
+  float GetPSFFraction(float oaa, float oaa);
+  int GetDetIndex();
   NAlignmentsDBEntry IdealAlignments;
   NOrientation Rfbob;
   NOrientation Rstar;  
@@ -78,6 +91,8 @@ protected:
 
   
 private:
+  
+  PSF psfimg;
  
   /// Simulation file name
   TString m_FitsFileName;
@@ -109,6 +124,21 @@ private:
 };
 /****************************************************************************/
 /****************************************************************************/
+/******************************************************************************
+ * Default constructor
+ */
+PSF::PSF() 
+{
+
+}
+
+/******************************************************************************
+ * Default destructor
+ */
+PSF::~PSF()
+{
+  // Intentionally left blanck
+}
 
 /******************************************************************************
  * Default constructor
@@ -136,11 +166,79 @@ bool Target::Initialize()
   LoadEffArea();
   LoadVignet();
   ReadCalibratedAlignmentsDB("/Users/kristin/data/nusim/nusim/resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
+  psfimg.LoadPSF(0);
+  psfimg.LoadPSF(1);
+  
+  //cout<<psfimg.oaa0[100*201+100]<<endl;
   
   return 0;
 
 }
 
+/******************************************************************************/
+bool PSF::LoadPSF(int oaa)
+{
+
+  TString FileName;
+  if (oaa == 0) FileName="resource/data/PSFoaa0.fits";
+  if (oaa == 1) FileName="resource/data/PSFoaa1.fits";
+
+  int Status = 0;
+  int AnyNull;
+  
+  fitsfile* File = 0; 
+  fits_open_file(&File, FileName, READONLY, &Status);
+  if (Status != 0) {
+    mgui<<"Unable to open file: "<<endl;
+    mgui<<FileName<<show;
+    return false;
+  }
+
+  // Switch to the right extension:
+  int HDUNumber = 1;
+  fits_movabs_hdu(File, HDUNumber, NULL, &Status);
+  if (Status != 0) {
+    mgui<<"HDU number "<<HDUNumber<<" not found in fits file!"<<show;
+    return false;
+  }
+
+  // Retrieve the dimensions and data type of the image:
+  int NDimensions;
+  int DataType;
+  long AxisDimension[2];  
+  fits_get_img_param(File, 2, &DataType, &NDimensions, AxisDimension, &Status);
+  if (Status != 0 || NDimensions == 0) {
+    mgui<<"The image in the fits file has no dimensions..."<<show;
+    return false;
+  }
+
+  // Create some dummy arrays
+  long StartPixel[2];
+  long NPixel = 1;
+  for (int dim = 0; dim < NDimensions; ++dim) {
+    NPixel *= AxisDimension[dim];
+    StartPixel[dim] = 1;
+  }
+
+  float FloatNullVal = 0;
+    float* FloatArray = new float[NPixel];
+    fits_read_pix(File, TFLOAT, StartPixel, NPixel, &FloatNullVal, FloatArray, &AnyNull, &Status);
+    if (Status != 0) {
+      mgui<<"Failed to read data from fits file: "<<Status<<show;
+      return false;
+    }
+
+    for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
+      for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
+        if (oaa == 0) oaa0.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+        if (oaa == 1) oaa1.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+      }
+    }
+    delete [] FloatArray;
+
+    return 0;
+	
+}
 /******************************************************************************/
 
 bool Target::LoadEffArea()
@@ -555,171 +653,6 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
 
 /****************************************************************************/
 
-bool Target::GenerateARF()
-{
-
-  OpenEvtFile();
-
-  int Status = 0;
-  float floatnull;
-  double doublenull;
-  int anynull;
-
-  double fT[axis2];
-  float fX[axis2];
-  float fY[axis2];
-  int iPHA[axis2];
-  int iType[axis2];
-  float fQx[axis2];
-  float fQy[axis2];
-  float fQz[axis2];
-  float fQr[axis2];
-  float fTx[axis2];
-  float fTy[axis2];
-  float fTz[axis2];
-  float fQSx[axis2];
-  float fQSy[axis2];
-  float fQSz[axis2];
-  float fQSr[axis2];
-  
-  fits_read_col(m_File, TFLOAT, 1, 1, 1, axis2, &floatnull, fX, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 2, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
-  fits_read_col(m_File, TINT, 3, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
-  fits_read_col(m_File, TDOUBLE, 5, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
-  fits_read_col(m_File, TINT, 7, 1, 1, axis2, &anynull, iType, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 9, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 10, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 11, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 12, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
-  
-  fits_close_file(m_File, &Status); 
-  
-  MVector region;
-  region = LoadDSRegion(DS9File);
-  
-  float exposure=0;
-  long* source = new long[820];
-  long* bkg = new long[820];
-  for (int i=0; i<820;i++) {
-    source[i] = 0;
-	bkg[i] = 0;
-  }
-  
-  for (int i=0;i<axis2-1;i++){
-    Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
-	Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
-    Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
-    float dt = fT[i+1]-fT[i];
-	exposure += dt;
-
-	SetTarget(region);
-	
-	// Check what effective area bin the event falls in 
-	// and add the PSF fraction to the other PSF fractions
-	// for the same bin.
-	// The idea here is that EA(t,alpha) can be devided into
-	// N*EA'(t,1) + M*EA'(t,2) + .... 
-	// and that 
-	// EA'(t,1) = EA(t,1)*(PSF(1)*i + PSF(2)*j + ....)*dt
-	// where PSF(n)*tn is PSF of shape n that appeared i times.
-	// We here assumed a constant time step which is ofcourse not the
-	// case. Instead we will factor in the duration the PSF fraction 
-	// so that PSF(1)*t1 and all the t = t1 + t2 + .... will add up to
-	// the total time spend at EA(t,1).
-	//cout<<m_oaa<<endl;
-	
-	//cout<<m_oaa<<endl;
-	if (m_oaa < 11.5) oaat_hist[int(floor(m_oaa*2))] += dt;
-	//GetPSFfraction();
-
-	//  In here add to the source spectrum and background spectrum. 
-	float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
-	if (rr < region[2] && iPHA[i] < 820) {
-	  source[iPHA[i]] += 1;
-	  if (iType[i] == 2) bkg[iPHA[i]] += 1;
-    }
-	
-  }
-
-  
-  for (int i=0; i<820;i++) {
-    for (int j=0; j<29; j++) {
-	  ARF[i] += AE[i]*vignet[j*820+i]*oaat_hist[j]/exposure;  
-	}
-  }
-
-  //cout<<ARF[0]<<" "<<ARF[100]<<endl;
-   
-  WriteFitsSpectrum(SourceOutFile, "source", source, exposure);
-  WriteFitsSpectrum(BkgFile, "bkg", bkg, exposure);
-  WriteARF(Elow,Ehigh,ARF);
-  
-  // We now have a histogram of dimensions offaxis angle that matches the loaded 
-  // effective area. And we have a cumulative PSF fraction with duration.
-  // Now we multiply the whole thing together and normalize.
-  
-  // Finally write out all files to FITS.
-  
-  return true;
-}
-
-/****************************************************************************/
-
-bool Target::SetTarget(MVector region)
-{  
-
-  // Transform to radians
-  m_Ra = (xCenterValue+region[0]*xDelta/cos(AvgDec/rad))/c_Deg;
-  m_Dec = (yCenterValue+region[1]*yDelta)/c_Deg;
-  m_R = region[2];
-  //cout<<m_Ra<<" "<<m_Dec<<endl;
-  
-  // turn into vector	  
-  Vsky[0]=cos(m_Dec)*cos(m_Ra);
-  Vsky[1]=cos(m_Dec)*sin(m_Ra);
-  Vsky[2]=sin(m_Dec);  
-  
-  Vob = Vsky.Unitize();
-  //cout<<Vsky<<endl;
-  //cout<<Rstar.ToString()<<endl;
-  Rstar.TransformOut(Vob);
-  m_oaa = acos(Vob[2])*c_Deg*60.;
-  //cout<<Vob<<m_oaa<<endl;
-  
-  // Calculate normalization to turn into pixel coordinates
-  MVector FPM = IdealAlignments.GetOrientationFocalPlaneModule(1).GetTranslation();
-  NOrientation Rfbfm = IdealAlignments.GetOrientationFocalPlaneModule(1);
-  MVector FM = IdealAlignments.GetOrientationOpticsRelOpticalBench(1).GetTranslation();
-  MVector FBOB = IdealAlignments.GetOrientationOpticalBench().GetTranslation();
-  float FL = FM[2]+(FBOB[2]-FPM[2]);
-
-  // reverse normalization
-  
-  //cout<<Vob<<endl;  
-  Vob = Vob*FL;
-  //cout<<Vob<<endl;
-  Vob = FM-Vob;
-  //cout<<Vob<<FL<<FM<<endl;
-  
-  Vdet=Vob;
-  Rfbob.TransformOut(Vdet);
-  //cout<<Vdet<<endl;
-  Rfbfm.TransformIn(Vdet);
-  //cout<<Vdet<<endl;
-  
-  return 0;
-  
-}
-
-/****************************************************************************/
-
 
 bool Target::ReadCalibratedAlignmentsDB(TString FileName)
 {
@@ -788,6 +721,250 @@ char Target::FindDelimeter(ifstream& in)
   in.seekg(0, ios::beg); // rewind
 
   return Delimeter;
+}
+
+/****************************************************************************/
+
+bool Target::SetTarget(MVector region)
+{  
+
+  // Transform to radians
+  m_Ra = (xCenterValue+region[0]*xDelta/cos(AvgDec/rad))/c_Deg;
+  m_Dec = (yCenterValue+region[1]*yDelta)/c_Deg;
+  m_R = region[2];
+  //cout<<m_Ra<<" "<<m_Dec<<endl;
+   
+  // turn into vector	  
+  Vsky[0]=cos(m_Dec)*cos(m_Ra);
+  Vsky[1]=cos(m_Dec)*sin(m_Ra);
+  Vsky[2]=sin(m_Dec);  
+  
+  Vob = Vsky.Unitize();
+  //cout<<Vsky<<endl;
+  //cout<<Rstar.ToString()<<endl;
+  Rstar.TransformOut(Vob);
+  m_oaa = acos(Vob[2])*c_Deg*60.;
+  //cout<<Vob<<m_oaa<<endl;
+  
+  // Calculate normalization to turn into pixel coordinates
+  MVector FPM = IdealAlignments.GetOrientationFocalPlaneModule(1).GetTranslation();
+  NOrientation Rfbfm = IdealAlignments.GetOrientationFocalPlaneModule(1);
+  MVector FM = IdealAlignments.GetOrientationOpticsRelOpticalBench(1).GetTranslation();
+  MVector FBOB = IdealAlignments.GetOrientationOpticalBench().GetTranslation();
+  float FL = FM[2]+(FBOB[2]-FPM[2]);
+
+  // reverse normalization
+  
+  //cout<<Vob<<endl;  
+  Vob = Vob*FL;
+  //cout<<Vob<<endl;
+  Vob = FM-Vob;
+  //cout<<Vob<<FL<<FM<<endl;
+  
+  Vdet=Vob;
+  Rfbob.TransformOut(Vdet);
+  //cout<<Vdet<<endl;
+  Rfbfm.TransformIn(Vdet);
+  //cout<<Vdet<<endl;
+  
+  
+  return 0;
+  
+}
+
+/****************************************************************************/
+int Target::GetDetIndex()
+{
+
+  int iX = floor((Vdet[0]+25)/0.2);
+  int iY = floor((Vdet[1]+25)/0.2);
+  
+  //cout<<Vdet<<endl;
+  //cout<<iX<<" "<<iY<<endl;
+  
+  return iY*250+iX;
+  
+}
+
+/****************************************************************************/
+float Target::GetPSFFraction(float region, float oaa)
+{
+
+  // one PSF image pixel is 0.2x0.2 mm
+
+  
+  float AccumulatedPSF=0;
+  
+  for (int i=0;i < 40401; i++) {
+    float pixX = floor(i/201); 
+	float pixY = i - pixX*201;
+  //cout<<i<<" "<<pixX<<" "<<pixY<<endl;
+	pixX = (pixX-100)*0.2; // mm
+	pixY = (pixY-100)*0.2; // mm
+	float rad = sqrt(pow(pixX,2)+pow(pixY,2));
+   //cout<<rad<<" "<<region<<endl;
+
+	if (rad > region) continue;
+	
+	//if (check for gap)
+    if (round(oaa) == 0) AccumulatedPSF += psfimg.oaa0[i];	
+    if (round(oaa) == 1) AccumulatedPSF += psfimg.oaa1[i];	
+  }
+  
+  //cout<<AccumulatedPSF<<endl;
+
+  return AccumulatedPSF;
+
+}	
+/****************************************************************************/
+
+bool Target::GenerateARF()
+{
+
+  OpenEvtFile();
+
+  int Status = 0;
+  float floatnull;
+  double doublenull;
+  int anynull;
+
+  double fT[axis2];
+  float fX[axis2];
+  float fY[axis2];
+  int iPHA[axis2];
+  int iType[axis2];
+  float fQx[axis2];
+  float fQy[axis2];
+  float fQz[axis2];
+  float fQr[axis2];
+  float fTx[axis2];
+  float fTy[axis2];
+  float fTz[axis2];
+  float fQSx[axis2];
+  float fQSy[axis2];
+  float fQSz[axis2];
+  float fQSr[axis2];
+  
+  fits_read_col(m_File, TFLOAT, 1, 1, 1, axis2, &floatnull, fX, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 2, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
+  fits_read_col(m_File, TINT, 3, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
+  fits_read_col(m_File, TDOUBLE, 5, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
+  fits_read_col(m_File, TINT, 7, 1, 1, axis2, &anynull, iType, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 9, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 10, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 11, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 12, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
+  
+  fits_close_file(m_File, &Status); 
+  
+  MVector region;
+  region = LoadDSRegion(DS9File);
+  float regionAtDet = region[2]*yDelta/c_Deg*10150.;
+  
+  float exposure=0;
+  long* source = new long[820];
+  long* bkg = new long[820];
+  for (int i=0; i<820;i++) {
+    source[i] = 0;
+	bkg[i] = 0;
+  }
+  
+  
+  vector <int> DetIndex;
+  vector <float> TotalTime;
+  vector <int> oaa;
+
+  int exists = 0;
+  
+  for (int i=0;i<axis2-1;i++){
+    Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
+	Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
+    Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
+    float dt = fT[i+1]-fT[i];
+	exposure += dt;
+
+	SetTarget(region);
+	
+	// Check what effective area bin the event falls in 
+	// and add the PSF fraction to the other PSF fractions
+	// for the same bin.
+	// The idea here is that EA(t,alpha) can be devided into
+	// N*EA'(t,1) + M*EA'(t,2) + .... 
+	// and that 
+	// EA'(t,1) = EA(t,1)*(PSF(1)*i + PSF(2)*j + ....)*dt
+	// where PSF(n)*tn is PSF of shape n that appeared i times.
+	// We here assumed a constant time step which is ofcourse not the
+	// case. Instead we will factor in the duration the PSF fraction 
+	// so that PSF(1)*t1 and all the t = t1 + t2 + .... will add up to
+	// the total time spend at EA(t,1).
+	//cout<<m_oaa<<endl;
+	
+	//cout<<m_oaa<<endl;
+	
+	if (m_oaa < 11.5) {
+
+	  // fill in first entry
+	  if (i==0){
+	    DetIndex.push_back(GetDetIndex());  // first index, using 0.02 resolution
+	    TotalTime.push_back(dt);
+		oaa.push_back(round(m_oaa));
+	    continue;
+	  }
+    
+      exists = 0;
+	  // Check that this pixel is already exposed and at what oaa
+	  for (int j=0;j < (int)DetIndex.size(); j++){
+		if (DetIndex[j] == GetDetIndex() && oaa[j] == round(m_oaa)) {
+		  exists = 1;
+		  TotalTime[j] += dt;
+	    }
+	  }	
+	  // And if it hasnt then add it to transform
+	  if (exists == 0) {
+	    DetIndex.push_back(GetDetIndex());  // first index occurance of transform
+	    TotalTime.push_back(dt);
+	    oaa.push_back(round(m_oaa));
+	  }
+    }
+
+	
+	//  In here add to the source spectrum and background spectrum. 
+	float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
+	if (rr < region[2] && iPHA[i] < 820) {
+	  source[iPHA[i]] += 1;
+	  if (iType[i] == 2) bkg[iPHA[i]] += 1;
+    }
+	
+  }
+
+  for (int j=0;j<DetIndex.size();j++) oaat_hist[oaa[j]] += TotalTime[j]*GetPSFFraction(regionAtDet, oaa[j]);
+  
+  for (int i=0; i<820;i++) {
+    for (int j=0; j<29; j++) {
+	  ARF[i] += AE[i]*vignet[j*820+i]*oaat_hist[j]/exposure;  
+	}
+  }
+
+  //cout<<ARF[0]<<" "<<ARF[100]<<endl;
+   
+  WriteFitsSpectrum(SourceOutFile, "source", source, exposure);
+  WriteFitsSpectrum(BkgFile, "bkg", bkg, exposure);
+  WriteARF(Elow,Ehigh,ARF);
+  
+  // We now have a histogram of dimensions offaxis angle that matches the loaded 
+  // effective area. And we have a cumulative PSF fraction with duration.
+  // Now we multiply the whole thing together and normalize.
+  
+  // Finally write out all files to FITS.
+  
+  return true;
 }
 
 /****************************************************************************/
