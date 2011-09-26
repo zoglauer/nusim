@@ -39,9 +39,9 @@ LDFLAGS     += -L$(LB)
 # Commands:
 
 #.NOPARALLEL:
-.EXPORT_ALL_VARIABLES: all main megalib modules data
+.EXPORT_ALL_VARIABLES: all main megalib modules data orbit
 .SILENT:
-.NOTPARALLEL: info main megalib modules data
+.NOTPARALLEL: info main megalib modules data orbit
 .SUFFIXES:
 .SUFFIXES: .cxx .h .o .so
 
@@ -53,25 +53,29 @@ NUSIMLIBS = \
 	-lMegalib \
 	-lMain \
 	-lModules \
+	-lOrbit \
 	-lData \
 
-all: info link modules data main megalib 
+all: info link modules data main megalib orbit
 	@$(MAKE) all -C src
 
 nusim: all
 	@$(BN)/nusim
 
-main: link megalib modules data
+main: link megalib modules data orbit
 	@$(MAKE) main -C src
 
 megalib: link
 	@$(MAKE) megalib -C src
 
-modules: link megalib
+modules: link megalib orbit
 	@$(MAKE) modules -C src
 
-data: link megalib
+data: link megalib orbit
 	@$(MAKE) data -C src
+
+orbit: link
+	@$(MAKE) orbit -C src
 
 debug: all
 	@gdb $(BN)/nusim -x resource/gdb.ini

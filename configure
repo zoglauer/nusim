@@ -172,6 +172,25 @@ else
 fi
 
 
+# Check for path to BOOST
+echo ""
+echo "(4) BOOST"
+echo ""
+
+
+if ( `test -d /usr/include/boost` || `test -d /usr/local/include/boost` ); then 
+    echo "Found BOOST headers!";
+else
+    echo "BOOST header files not found!";
+    echo ""
+    echo "BOOST is required for NuSIM."
+    echo "Boost comes as a standard package for all Linux distributions, "
+    echo "thus simply install the boost development package with your favorite package manager";
+    echo ""
+    exit 0;
+fi
+
+
 # Copy makefile:
 echo ""
 echo ""
