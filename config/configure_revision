@@ -11,6 +11,7 @@ if ( `test ! -d ${NUSIM}/.svn` ) && ( `test ! -d ${NUSIM}/config/revision.txt` )
   exit 0;
 fi
 
+echo "Checking NuSIM svn revision... This might take a moment..."
 NewRev=`svnversion`
 NewRev=$(echo $NewRev|sed 's/M/ /g'); 
 if [[ $NewRev == *:* ]]; then 
