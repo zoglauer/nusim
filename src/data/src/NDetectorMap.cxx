@@ -197,10 +197,10 @@ bool NDetectorMap::ToRaDeg(float& MaxRa, float& AvgDec)
 {
    for (int i=0; i<(int)fX.size();i++){
 	  fX[i] = atan2(fY[i],fX[i])*c_Deg;
-	  if (fX[i] < 0.0) fX[i] += 180.0;
+	  if (fX[i] < 0.0) fX[i] += 360.0;
 	  fX[i] = MaxRa+(fX[i]-MaxRa)*cos(AvgDec/rad);
 	  fY[i] = asin(fZ[i])*c_Deg;
-	  if (fY[i] < 0.0) fY[i] += 180.0;
+	  //if (fY[i] < 0.0) fY[i] += 180.0;
    }
    //cout<<fX[0]<<" "<<fY[0]<<endl;
    
