@@ -11,6 +11,7 @@
 
 #include "CelestialTarget.h"
 
+
 // solar mean longitude terms 
 const static double L0= (4.881627973);	        // constant term 
 const static double L1= (628.3319509);	        // linear term 
@@ -34,6 +35,10 @@ const static double JD1900= (2415020.0);     // Julian day number of 1/0.5/1900
   const static double DAYSPERCENTURY= (36525.0);  // Julian Century = 36525 ephemeris days
 
 typedef vecutil::CelestialTarget __V;
+
+// define the epoch of J2000 
+tmtc::TmTcTime __V::t2000=
+  tmtc::TmTcTime().setJd(2451545.0);
 
 // utility function -- make sure an anglie is between [0, TWOPI)
 double __V::reduceAngle(double ang) {
@@ -60,22 +65,25 @@ vecutil::Dirvector __V::getSun(const tmtc::TmTcTime& st) {
   double eccentricity=reduceAngle(ECC0 + t*(ECC1 + ECC2*t));
 
   // get true anomaly
-  double e0 = meanAnomaly;
+  double e0=meanAnomaly;
 
   double delta;
   while (fabs(delta=(meanAnomaly+eccentricity*sin(e0)-e0)/
 	      (1.0-eccentricity*cos(e0)))>=ACCURACY)
-    e0 += delta;
+    e0+=delta;
   
   double trueAnomaly=2.0*atan(tan(e0/2.0)*sqrt((1+eccentricity)/
 					       (1-eccentricity)));
 
   // get ecliptic-frame vector (lat=0.0)
-  Dirvector dv=Dirvector().
-    fromCelestial(reduceAngle(meanLong+trueAnomaly-meanAnomaly), 0.0);
+  Dirvector dv;
+  dv.fromCelestial(reduceAngle(meanLong+trueAnomaly-meanAnomaly), 0.0);
   
-  // convert to J2000 ECI
+  // convert to equatorial
   dv.ecl2equ();
+
+  // precess to 2000.0
+  dv.precess(st, t2000);
 
   return(dv);
   }
@@ -213,8 +221,14 @@ vecutil::Dirvector __V::getMoon(const tmtc::TmTcTime& st) {
   double dist=6378.14/sin(DEG2RAD(paralax));
   */
   
-  Dirvector dv=Dirvector().fromCelestial(lam,beta);
+  Dirvector dv;
+  dv.fromCelestial(lam,beta);
+
+  // convert to equatorial coordinates
   dv.ecl2equ();
+
+  // precess to 2000.0
+  dv.precess(st, t2000);
 
   return(dv);
   }

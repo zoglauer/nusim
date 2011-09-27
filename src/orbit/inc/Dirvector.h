@@ -5,8 +5,8 @@
  *  Created      : Wed Jul 19 08:38:00 PDT 2006
  *  Synopsis     : a direction vector class
  *
- *  $LastChangedDate: 2008-11-06 10:49:35 -0800 (Thu, 06 Nov 2008) $
- *  $LastChangedRevision: 3021 $
+ *  $LastChangedDate: 2011-09-26 22:45:51 -0700 (Mon, 26 Sep 2011) $
+ *  $LastChangedRevision: 6618 $
  *  $LastChangedBy: broberts $
  *
  *  Revisions
@@ -101,9 +101,19 @@ public:
   static double planeAngle(const Dirvector&, const Dirvector&, 
                            const Dirvector&);
 
+  // get a vector that lies on the edge of the cone defined by this
+  // vector and half-angle 'angle'
+  Dirvector edgeOfCone(double angle) const;
+
   /// find the cross product between this vector and an external one
   /// (e.g. this x o)
   Dirvector cross(const Dirvector& o) const;
+
+  /// convert this vector from ECI to ECEF for a given epoch
+  Dirvector eci2ecef(const tmtc::TmTcTime& t) const;
+
+  /// convert this vector from ECEF to ECI for a given epoch
+  Dirvector ecef2eci(const tmtc::TmTcTime& t) const;
 
   double& operator [] (unsigned i);
   double operator [] (unsigned i) const;

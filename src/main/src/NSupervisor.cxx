@@ -508,6 +508,8 @@ bool NSupervisor::Run()
   while (m_Satellite.GetTime()-BlackoutTime < m_ObservationTime && 
          m_Satellite.GetTime()-BlackoutTime < m_ObservationStopTime && AnalysisFailed == false) {
 
+    //cout<<"Orbit at "<<m_Satellite.GetTime()<<": "<<m_Satellite.GetOrbit(m_Satellite.GetTime())<<endl;
+    
     // Check if stop criteria are fullfilled:
     bool StopCriterionFullFilled = false;
     for (unsigned int m = 0; m < m_StopCriterionModules.size(); ++m) {

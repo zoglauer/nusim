@@ -72,6 +72,7 @@ extern const double arcmin;
 extern const double arcsec;
 extern const double rad;
 
+extern const double km;
 extern const double m;
 extern const double cm;
 extern const double mm;

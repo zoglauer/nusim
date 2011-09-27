@@ -5,8 +5,8 @@
  *  Created      : Wed Jul 19 08:38:00 PDT 2006
  *  Synopsis     : a direction vector class
  *
- *  $LastChangedDate: 2009-04-21 16:47:14 -0700 (Tue, 21 Apr 2009) $
- *  $LastChangedRevision: 3256 $
+ *  $LastChangedDate: 2011-09-26 22:45:51 -0700 (Mon, 26 Sep 2011) $
+ *  $LastChangedRevision: 6618 $
  *  $LastChangedBy: broberts $
  *
  *  Revisions
@@ -17,9 +17,15 @@
  */
 
 #include "Dirvector.h"
+#include "Quat.h"
 
 const static double OBLIQ2000=  (0.4090928);
 const static double JD2000=     (2451544.5);
+
+// JD of 1968 JAN 1 00h
+static const double JD1968=2439855.5;
+static const tmtc::TmTcTime t2000=
+  tmtc::TmTcTime().setJd(2451545.0);
 
 typedef vecutil::Dirvector __D;
 
@@ -268,12 +274,111 @@ double __D::planeAngle(const Dirvector& dvPole,
   return(atan2(dvCross.length()*SIGN(dvCross.dot(dvPole)), dv1.dot(dv2)));
   }
 
+// get a vector that lies on the edge of the cone defined by this
+// vector and half-angle 'angle'
+vecutil::Dirvector __D::edgeOfCone(double angle) const {
+  // find a vector perpendicular to this one
+  Dirvector d(*this);
+  if (x[0]!=0) 
+    d.x[0]*=-1;
+  else if (x[1]!=0) 
+    d.x[1]*=-1;
+  else if (x[2]!=0) 
+    d.x[2]*=-1;
+
+  if (d.x[0]==0 && d.x[1]!=0)
+    swap(d.x[0], d.x[1]);
+  else if (d.x[1]==0 && d.x[2]!=0)
+    swap(d.x[1], d.x[2]);
+  else if (d.x[2]==0 && d.x[0]!=0)
+    swap(d.x[2], d.x[0]);
+
+  Dirvector dvPerp=cross(d); dvPerp.normalize();
+
+  // rotate this vector about the perpendicular vector by 'angle'
+  Quat q; q.arbitraryAxisRotation(dvPerp, angle);
+  return(q.translate(*this));
+  }
+
+
 /// find the cross product between this vector and an external one
 /// (e.g. this x o)
 vecutil::Dirvector __D::cross(const Dirvector& o) const {
   return(Dirvector(x[1]*o.x[2]-o.x[1]*x[2], 
 		   x[2]*o.x[0]-o.x[2]*x[0],
 		   x[0]*o.x[1]-o.x[0]*x[1]));
+  }
+
+/// convert this vector from ECI to ECEF for a given epoch t
+vecutil::Dirvector __D::eci2ecef(const tmtc::TmTcTime& t) const {
+  // find days since 1968 JAN 1 00h 
+  const double jd=t.getJd()-JD1968;
+  const double zmt=::floor(jd);
+
+  // get sidereal time day fraction
+  double gst=23696.535 + 236.55536*zmt + 86636.55536*(jd-zmt);
+  gst=fmod(gst/3600.0, 24.0);
+   
+  // equatorial pole at epoch (Z)
+  vecutil::Dirvector z(0, 0, 1);
+
+  // X
+  vecutil::Dirvector x; x.fromCelestial(TWOPI*(gst)/24.0, 0.0);
+
+  // Y
+  vecutil::Dirvector y=z.cross(x);
+
+  // precess to J2000 ECI coordinate frame
+  z.precess(t, t2000); x.precess(t, t2000); y.precess(t, t2000);
+
+  // make a quaternion from the direction cosine matrix
+  vecutil::Quat q;
+  const double dcm[3][3]={{x[0], x[1], x[2]},
+                    {y[0], y[1], y[2]},
+                    {z[0], z[1], z[2]}};
+  const double w=sqrt(1+x[0]+y[1]+z[2])/2.0;
+  q.set((dcm[1][2]-dcm[2][1])/(4*w),
+        (dcm[2][0]-dcm[0][2])/(4*w),
+        (dcm[0][1]-dcm[1][0])/(4*w), w);
+  q.normalize();
+
+  return(q.inverseTranslate(*this));
+  }
+
+/// convert this vector from ECEF to ECI for a given epoch t
+vecutil::Dirvector __D::ecef2eci(const tmtc::TmTcTime& t) const {
+  // find days since 1968 JAN 1 00h 
+  const double jd=t.getJd()-JD1968;
+  const double zmt=::floor(jd);
+
+  // get sidereal time day fraction
+  double gst=23696.535 + 236.55536*zmt + 86636.55536*(jd-zmt);
+  gst=fmod(gst/3600.0, 24.0);
+   
+  // equatorial pole at epoch (Z)
+  vecutil::Dirvector z(0, 0, 1);
+
+  // X
+  vecutil::Dirvector x; x.fromCelestial(TWOPI*(gst)/24.0, 0.0);
+
+  // Y
+  vecutil::Dirvector y=z.cross(x);
+
+  // precess to J2000 ECI coordinate frame
+  z.precess(t, t2000); x.precess(t, t2000); y.precess(t, t2000);
+
+  // make a quaternion from the direction cosine matrix
+  vecutil::Quat q;
+  const double dcm[3][3]={{x[0], x[1], x[2]},
+                    {y[0], y[1], y[2]},
+                    {z[0], z[1], z[2]}};
+  const double w=sqrt(1+x[0]+y[1]+z[2])/2.0;
+  q.set((dcm[1][2]-dcm[2][1])/(4*w),
+        (dcm[2][0]-dcm[0][2])/(4*w),
+        (dcm[0][1]-dcm[1][0])/(4*w), w);
+  q.normalize();
+
+  return(q.translate(*this));
   }
 
 double __D::angle(const Dirvector& y) const {

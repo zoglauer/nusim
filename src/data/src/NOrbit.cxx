@@ -69,5 +69,16 @@ void NOrbit::Clear()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+std::ostream& operator<<(std::ostream& os, const NOrbit& Orbit)
+{
+  os<<"(lat: "<<Orbit.GetLatitude()/deg<<" deg, long: "<<Orbit.GetLongitude()/deg<<" deg, alt: "<<Orbit.GetAltitude()/km<<" km)";
+  return os;
+}
+
+
+
 // NOrbit.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

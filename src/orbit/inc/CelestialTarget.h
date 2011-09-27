@@ -19,6 +19,10 @@
 namespace vecutil {
 
 class CelestialTarget {
+private:
+  // the time of epoch 2000.0
+  static tmtc::TmTcTime t2000;
+
 protected:
   // utility function: make sure an angle is between [0, TWOPI)
   static double reduceAngle(double ang);

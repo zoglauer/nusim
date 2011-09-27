@@ -105,6 +105,9 @@ class NOrbit
 
 };
 
+//! Global operator for Orbit IO:
+std::ostream& operator<<(std::ostream& os, const NOrbit& Orbit);
+
 #endif
 
 

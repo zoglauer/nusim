@@ -288,11 +288,26 @@ NOrbit NModuleOrbitEngineTLE::GetOrbit(NTime Time)
 {
   //! Return the orbit position at a given time
 
+  // Convert the time
+  NTime T = m_Satellite.ConvertToAbsoluteTime(Time);
+  tmtc::TmTcTime t; // set the time
+  t.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
+
+  // Get the ECI position at this instant
+  vecutil::StateVector sv = m_SGP4.getStateVector(t);
+  vecutil::Dirvector dvPos = sv.getPosition();
+
+  // Translate the vector from ECI to ECEF
+  dvPos = dvPos.eci2ecef(t);
+        
+  // Get the latitude and longitude (NB: lng and lat will be in radians)
+  double lat, lng; 
+  dvPos.toCelestial(lng, lat);
+  
   NOrbit Orbit;
-  Orbit.SetAltitude(575);
-  Orbit.SetInclination(7.5);
-  Orbit.SetLatitude(0);
-  Orbit.SetLongitude(0);
+  Orbit.SetAltitude((sv.getAltitude()-vecutil::KM_PER_EARTH)*km);
+  Orbit.SetLatitude(lat*rad);
+  Orbit.SetLongitude(lng*rad);
 
   return Orbit;
 }
