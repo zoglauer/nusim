@@ -158,7 +158,7 @@ bool NExposureMap::WriteExposureMap(int index)
   for (int jj = 0; jj < naxes[1]; jj++) {   
     for (int ii = 0; ii < naxes[0]; ii++) {
       array[jj][ii] = SkyMapZ[ii + jj*naxes[0]];
-    }
+	}
   }
 
   cout<<"File name:"<<m_FileName.Data()<<endl;
@@ -300,6 +300,7 @@ bool NExposureMap::ProjectOnSky(float dt)
   //Det2.ToRaDeg();
   //Det3.ToRaDeg();
   //Det4.ToRaDeg();
+
 
   for (int i=0; i<(int) SkyMapX.size();i++){
     for (int j=0; j<(int) SkyMapY.size();j++){
