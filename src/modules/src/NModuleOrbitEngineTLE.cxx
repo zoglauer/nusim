@@ -393,8 +393,10 @@ NTime NModuleOrbitEngineTLE::GetBlackoutDuration(NTime t1, NTime t2)
 {
   //! Get the duration of the sum of all blackouts between t1 and t2
 
-  if (t1 >= t2) {
-    merr<<"t1 >= t2"<<endl;
+  if (t1 == t2) {
+    return NTime(0.0);
+  } else if (t1 > t2) {
+    merr<<"GetBlackoutDuration: t1 >= t2: "<<t1<<" vs. "<<t2<<endl;
     return NTime(0.0);
   }
 
