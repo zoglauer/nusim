@@ -108,6 +108,8 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   Usage<<"         --start-stop-time <double> <double>:"<<endl;
   Usage<<"             Set an observation start and stop time within the limits of the given observation time"<<endl;
   Usage<<"             This is mainly used for parallel simulations with pnusim!"<<endl;
+  Usage<<"      -r --mode-restricted <filename>.cfg:"<<endl;
+  Usage<<"             Use a restricted mode which only enables certain modules from the file given with -c and the others from the file given with -r"<<endl;
   Usage<<"      -p --mode-astrophysics:"<<endl;
   Usage<<"             Use a restricted mode which only enables modules relevant for astrophysics"<<endl;
   Usage<<"      -h --help:"<<endl;
@@ -152,8 +154,12 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   // First parse all high level options
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
-    if (Option == "--mode-astrophysics" || Option == "-p") {
-      m_Supervisor->SetAstrophysicsMode(true);
+    if (Option == "--mode-restricted" || Option == "-r") {
+      TString FileName = argv[++i];
+      m_Supervisor->SetRestrictedMode(true, FileName);
+      cout<<"Command-line parser: Enabling restricted mode with file: "<<FileName<<endl;
+    } else if (Option == "--mode-astrophysics" || Option == "-p") {
+      m_Supervisor->SetRestrictedMode(true);
       cout<<"Command-line parser: Enabling astrophysics mode"<<endl;
     }
   }
@@ -173,9 +179,6 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
       double Stop = atof(argv[++i]);
       m_Supervisor->SetObservationStartStopTime(Start, Stop);
       cout<<"Command-line parser: Enabling observation start and stop time for parallel simulations"<<endl;
-    } else if (Option == "--mode-astrophysics" || Option == "-p") {
-      m_Supervisor->SetAstrophysicsMode(true);
-      cout<<"Command-line parser: Enabling astrophysics mode"<<endl;
     } else if (Option == "--auto" || Option == "-a") {
       // Parse later
     }

@@ -251,7 +251,8 @@ NSupervisor::NSupervisor()
   m_ToggleDiagnostics = false;
   m_DiagnosticsGUI = 0;
   
-  m_AstrophysicsMode = false;
+  m_RestrictedMode = false;
+  m_RestrictedModeFileName = "$(NUSIM)/resource/configurations/AstrophysicsMode.cfg";
   
   m_UseObservationStartStopTime = false;
   m_ObservationStartTime.Set(0.0);
@@ -1646,14 +1647,21 @@ bool NSupervisor::Load(TString FileName)
   delete Document;
 
   // If we are in astrophysics mode, then replace the content of the non-science modules with the default content
-  if (m_AstrophysicsMode == true) {
+  if (m_RestrictedMode == true) {
     // Create a XML document describing the data:
     
-    TString DefaultFileName("$(NUSIM)/resource/configurations/AstrophysicsMode.cfg");
-    MFile::ExpandFileName(DefaultFileName);
-    
+    if (m_RestrictedModeFileName = "") {
+      m_RestrictedModeFileName = "$(NUSIM)/resource/configurations/AstrophysicsMode.cfg";
+    }
+
+    MFile::ExpandFileName(m_RestrictedModeFileName);
+    if (MFile::Exists(m_RestrictedModeFileName) == false) {
+      mout<<"Error: Cannot find a module with name: "<<Node->GetNode(m)->GetValue()<<endl;
+      return false;
+    }
+
     MXmlDocument* Document = new MXmlDocument();
-    Document->Load(DefaultFileName);
+    Document->Load(m_RestrictedModeFileName);
 
     if ((Node = Document->GetNode("Version")) != 0) {
       Version = Node->GetValueAsInt();

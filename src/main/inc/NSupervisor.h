@@ -68,9 +68,9 @@ class NSupervisor
   void ToggleDiagnosticsWindow();
 
   //! Set the astrophysics mode
-  void SetAstrophysicsMode(bool On = true) { m_AstrophysicsMode = On; }
+  void SetRestrictedMode(bool On = true, const TString& FileName = "") { m_RestrictedMode = On; m_RestrictedModeFileName = FileName; }
   //! Get the astrophysics mode
-  bool GetAstrophysicsMode() const { return m_AstrophysicsMode; } 
+  bool GetRestrictedMode() const { return m_RestrictedMode; } 
 
   //! Set the partial observation start time
   void SetObservationStartStopTime(const NTime& Start, const NTime& Stop) { m_UseObservationStartStopTime = true; m_ObservationStartTime = Start; m_ObservationStopTime = Stop; }
@@ -193,7 +193,9 @@ class NSupervisor
   NSatellite m_Satellite;
 
   //! True if the restricted astrophysics mode is on
-  bool m_AstrophysicsMode;
+  bool m_RestrictedMode;
+  //! The file with the restriction modules 
+  TString m_RestrictedModeFileName;
 
   //! The target name of the observation
   TString m_TargetName;
