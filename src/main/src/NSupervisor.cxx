@@ -722,7 +722,7 @@ bool NSupervisor::Run()
         }
         
         // Update the GUI...
-        gSystem->ProcessEvents();
+        if (gROOT->IsBatch() == false) gSystem->ProcessEvents();
       }
       
 
@@ -761,7 +761,7 @@ bool NSupervisor::Run()
         }
         
         // Redisplay the GUI...
-        gSystem->ProcessEvents();
+        if (gROOT->IsBatch() == false) gSystem->ProcessEvents();
         
       }
       if (Event.GetBlocked() == false && Event.GetLostInDeadTime() == false && Event.GetVeto() == false && Event.GetEventCut() == false && Event.GetTrigger() == true) {
@@ -811,12 +811,12 @@ bool NSupervisor::Run()
 
     }
 
-    if (EventID % EventBasedUpdateInterval == 0) {
+    if (EventID % EventBasedUpdateInterval == 0 && gROOT->IsBatch() == false) {
       gSystem->ProcessEvents();
     }
 
 
-    if (EventID % m_UpdateInterval == 0) {
+    if (EventID % m_UpdateInterval == 0 && gROOT->IsBatch() == false) {
       gSystem->ProcessEvents();
       if (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->IsMapped()) {
         m_DiagnosticsGUI->Update();
