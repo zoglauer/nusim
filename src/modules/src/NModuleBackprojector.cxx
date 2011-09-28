@@ -89,17 +89,18 @@ bool NModuleBackprojector::Initialize()
 {
   // Initialize the module 
 
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsBackprojector(m_PixelSize);
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
-                                                                                    m_Satellite.GetDetectorHalfDimension(), 
-                                                                                    m_Satellite.GetDetectorPixelsX(),
-                                                                                    m_Satellite.GetDetectorPixelsY());
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsBackprojector(m_PixelSize);
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
+                                                                                      m_Satellite.GetDetectorHalfDimension(), 
+                                                                                      m_Satellite.GetDetectorPixelsX(),
+                                                                                      m_Satellite.GetDetectorPixelsY());
 
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
-                                                                                 m_Satellite.GetPointing(0).GetDec());
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
-                                                                   
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
+                                                                                  m_Satellite.GetPointing(0).GetDec());
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
+  }                                                          
                                                                                     
   return true;
 }
@@ -139,11 +140,15 @@ bool NModuleBackprojector::AnalyzeEvent(NEvent& Event)
     
     Energy += Event.GetHit(i).GetEnergy();
 
-    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddBackprojection(RA, DEC);
+    if (gROOT->IsBatch() == false) {
+      dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddBackprojection(RA, DEC);
+    }
   }
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddEnergy(Energy);
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
-
+    
+  if (gROOT->IsBatch() == false) {
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->AddEnergy(Energy);
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
+  }
   //cout<<"Energy: "<<Energy<<endl;
 
   return true;
@@ -157,7 +162,9 @@ bool NModuleBackprojector::Finalize()
 {
   // Finalize the module
   
-  dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
+  if (gROOT->IsBatch() == false) {
+    dynamic_cast<NGUIDiagnosticsBackprojector*>(m_Diagnostics)->SetTime(m_Satellite.GetEffectiveObservationTime());
+  }
   
   return true;
 }

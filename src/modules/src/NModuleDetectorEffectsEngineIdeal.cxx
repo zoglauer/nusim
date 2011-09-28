@@ -82,13 +82,14 @@ bool NModuleDetectorEffectsEngineIdeal::Initialize()
 {
   // Initialize the module 
 
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
 //   dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
 //                                                                                             m_Satellite.GetDetectorHalfDimension(), 
 //                                                                                             m_Satellite.GetDetectorPixelsX(),
 //                                                                                             m_Satellite.GetDetectorPixelsY());
-
+  }
   return true;
 }
 
@@ -116,7 +117,9 @@ bool NModuleDetectorEffectsEngineIdeal::AnalyzeEvent(NEvent& Event)
       NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetInteraction(i).GetTelescope(), Event.GetInteraction(i).GetDetector());
       MVector Pos = Event.GetInteraction(i).GetPosition();
       O.TransformOut(Pos);
-      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
+      if (gROOT->IsBatch() == false) {
+        dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
+      } 
     }
   }
 
@@ -187,7 +190,9 @@ bool NModuleDetectorEffectsEngineIdeal::AnalyzeEvent(NEvent& Event)
       if (Pos[2] < -m_Satellite.GetDetectorHalfDimension().Z()) Pos[2] = -0.999*m_Satellite.GetDetectorHalfDimension().Z();
       NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), P.GetTelescope(), P.GetDetector());
       O.TransformOut(Pos);
-      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetIdealEnergy());  
+      if (gROOT->IsBatch() == false) {
+        dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetIdealEnergy());  
+      } 
     }
   }
 

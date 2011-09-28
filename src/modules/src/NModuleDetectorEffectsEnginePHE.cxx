@@ -89,12 +89,14 @@ bool NModuleDetectorEffectsEnginePHE::Initialize()
 {
   // Initialize the module 
 
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
-  dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
-                                                                                            m_Satellite.GetDetectorHalfDimension(), 
-                                                                                            m_Satellite.GetDetectorPixelsX(),
-                                                                                            m_Satellite.GetDetectorPixelsY());
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
+    dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(), 
+                                                                                              m_Satellite.GetDetectorHalfDimension(), 
+                                                                                              m_Satellite.GetDetectorPixelsX(),
+                                                                                              m_Satellite.GetDetectorPixelsY());
+  }
   m_PHEs.clear();                                                                                          
 
   MFile::ExpandFileName(m_PHEFileName);
@@ -382,7 +384,9 @@ bool NModuleDetectorEffectsEnginePHE::AnalyzeEvent(NEvent& Event)
     NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), Event.GetTelescope(), Detector);
     MVector Pos = Photon.GetPosition();
     O.TransformOut(Pos);
-    dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Photon.GetEnergy());
+    if (gROOT->IsBatch() == false) {
+      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Photon.GetEnergy());
+    }    
   }
   
   // After:

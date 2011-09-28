@@ -63,11 +63,14 @@ NModuleSourceDistribution::NModuleSourceDistribution(NSatellite& Satellite) : NM
   m_ModuleType = c_SourceGenerator;
 
   // Set if this module has a diagnostics GUI
-  m_HasDiagnosticsGUI = true;
-  // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsSourceDistribution)
-  // and implement all your GUI options
-  m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
-
+  if (gROOT->IsBatch() == false) {
+    m_HasDiagnosticsGUI = true;
+    m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
+  } else {
+    m_HasDiagnosticsGUI = false;
+    m_Diagnostics = 0;    
+  }
+  
   // Additional data:
   m_PointingPatternFileName = "$(NUSIM)/ATestPattern.dat";
   m_NTestPhotons = 1000000;
@@ -95,17 +98,18 @@ bool NModuleSourceDistribution::Initialize()
 {
   // Initialize the module - since this is an entry module determine the time of the first event
 
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
-
   if (m_Sources.size() == 0) {
     cerr<<"No sources!"<<endl;
     return false;
   }
   
-  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
-                                                                                      m_Satellite.GetPointing(0).GetDec());
-
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsSourceDistribution();
+    dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->SetInitialPointing(m_Satellite.GetPointing(0).GetRa(), 
+                                                                                        m_Satellite.GetPointing(0).GetDec());
+  }
+  
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
     m_Sources[s]->CalculateNextEmission(m_Satellite.GetTime());
@@ -259,9 +263,11 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
   m_Sources[m_NextComponent]->CalculateNextEmission(m_Satellite.GetTime());
   DetermineNext();
 
-  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra, Dec);
-  dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddEnergy(Photon.GetEnergy());
- 
+  if (gROOT->IsBatch() == false) {
+    dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddOrigin(Ra, Dec);
+    dynamic_cast<NGUIDiagnosticsSourceDistribution*>(m_Diagnostics)->AddEnergy(Photon.GetEnergy());
+  }
+    
   return true;
 }
 

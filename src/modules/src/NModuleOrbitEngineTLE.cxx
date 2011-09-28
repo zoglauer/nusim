@@ -79,9 +79,11 @@ bool NModuleOrbitEngineTLE::Initialize()
 {
   // Initialize the module 
 
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsOrbitEngine();
-
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsOrbitEngine();
+  }
+  
   if (m_TLEFileName != "") {
     MFile::ExpandFileName(m_TLEFileName);
     if (MFile::Exists(m_TLEFileName) == false) {
@@ -271,7 +273,7 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
       //cout<<"New night end: "<<m_Time<<endl;
       m_EndNightTime.push_back(m_Time);
     }
-    if (m_Time >= 0) {
+    if (m_Time >= 0 && gROOT->IsBatch() == false) {
       dynamic_cast<NGUIDiagnosticsOrbitEngine*>(m_Diagnostics)->AddOrbitStatus(m_Time, NowOcculted, NowNight);
     }
   }

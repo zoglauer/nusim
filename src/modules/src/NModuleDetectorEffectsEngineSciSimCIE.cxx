@@ -95,13 +95,15 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
 {
   // Initialize the module
   
-  delete m_Diagnostics;
-  m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
-  dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>
-    (m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(),
-					   m_Satellite.GetDetectorHalfDimension(),
-					   m_Satellite.GetDetectorPixelsX(), m_Satellite.GetDetectorPixelsY());
-
+  if (gROOT->IsBatch() == false) {
+    delete m_Diagnostics;
+    m_Diagnostics = new NGUIDiagnosticsDetectorEffectsEngine();
+    dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>
+      (m_Diagnostics)->SetDetectorParameters(m_Satellite.GetOrientationDetectorRelFocalPlaneModule(0, 1, 1).GetTranslation(),
+              m_Satellite.GetDetectorHalfDimension(),
+              m_Satellite.GetDetectorPixelsX(), m_Satellite.GetDetectorPixelsY());
+  }
+    
   // Load the charge induction efficiency
   if ( m_ChargeInductionEfficiencyFileName.Contains("CIE_500V.root") == true ) {
     mgui << " ERROR in " << m_Name << "\n"
@@ -342,8 +344,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 								Event.GetInteraction(i).GetDetector());
       MVector Pos = Event.GetInteraction(i).GetPosition();
       O.TransformOut(Pos);
-      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>
-	(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
+      if (gROOT->IsBatch() == false) {
+        dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddBefore(Pos, Event.GetInteraction(i).GetEnergy());
+      }
     }
   }
 
@@ -552,7 +555,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
     NOrientation O = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(), P.GetTelescope(), P.GetDetector());
     O.TransformOut(Pos);
-    dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetPostTriggerSampleSum());
+    if (gROOT->IsBatch() == false) {
+      dynamic_cast<NGUIDiagnosticsDetectorEffectsEngine*>(m_Diagnostics)->AddAfter(Pos, P.GetPostTriggerSampleSum());
+    }
   }
 
   if (Event.GetNShieldHits() == 0 && Event.GetNPixelHits() == 0) {
