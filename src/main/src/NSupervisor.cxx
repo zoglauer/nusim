@@ -449,7 +449,7 @@ bool NSupervisor::Run()
 
   // Advance the time for parallel simulations
   NTime BlackoutTime = 0;
-  if (HasSourceEngine == true && m_UseObservationStartStopTime == true) {
+  if ((HasSourceEngine == true || HasBackgroundPipe == true) && m_UseObservationStartStopTime == true) {
     cout<<"StartStopTime correction: "<<m_ObservationStartTime<<":"<<m_ObservationStopTime<<endl;
     NTime IdealTime = m_Satellite.FindIdealTime(m_ObservationStartTime);
     cout<<"Ideal time: "<<IdealTime<<endl;
@@ -587,7 +587,7 @@ bool NSupervisor::Run()
     }
     
     // Take care of blackouts:
-    if (HasSourceEngine == true && m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
+    if ((HasSourceEngine == true || HasBackgroundPipe == true) && m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
       NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
       cout<<"Occultation detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<endl;
       BlackoutTime += BlackoutDuration;
