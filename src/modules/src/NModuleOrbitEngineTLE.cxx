@@ -59,9 +59,7 @@ NModuleOrbitEngineTLE::NModuleOrbitEngineTLE(NSatellite& Satellite) : NModule(Sa
 
   // Set if this module has a diagnostics GUI
   m_HasDiagnosticsGUI = false;
-  // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsOrbitPosition)
-  // and implement all your GUI options
-  m_Diagnostics = new NGUIDiagnosticsOrbitEngine();
+  m_Diagnostics = 0;    
 }
 
 
@@ -81,7 +79,10 @@ bool NModuleOrbitEngineTLE::Initialize()
 {
   // Initialize the module 
 
- if (m_TLEFileName != "") {
+  delete m_Diagnostics;
+  m_Diagnostics = new NGUIDiagnosticsOrbitEngine();
+
+  if (m_TLEFileName != "") {
     MFile::ExpandFileName(m_TLEFileName);
     if (MFile::Exists(m_TLEFileName) == false) {
       cerr<<"Error: NModuleOrbitEngineTLE: TLE file does not exist: "<<m_TLEFileName<<endl;
