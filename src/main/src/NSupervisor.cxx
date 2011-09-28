@@ -381,19 +381,21 @@ bool NSupervisor::Run()
   m_DiagnosticsGUI = 0;
 
   int NDiagnostics = 0;
-  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
-    if ((*Iter).second->HasDiagnosticsGUI() == true) {
-      ++NDiagnostics;
-    }
-  }
-  if (NDiagnostics > 0 && gROOT->IsBatch() == false) {
-    m_DiagnosticsGUI = new NGUIDiagnosticsMain(m_Satellite);
-    for (RIter = m_ActiveModules.rbegin(); RIter != m_ActiveModules.rend(); ++RIter) {
-      if ((*RIter).second->HasDiagnosticsGUI() == true) {
-        m_DiagnosticsGUI->AddDiagnostics((*RIter).second->GetDiagnosticsGUI());
+  if (gROOT->IsBatch() == false) {
+    for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+      if ((*Iter).second->HasDiagnosticsGUI() == true) {
+        ++NDiagnostics;
       }
     }
-    m_DiagnosticsGUI->Create();
+    if (NDiagnostics > 0 && gROOT->IsBatch() == false) {
+      m_DiagnosticsGUI = new NGUIDiagnosticsMain(m_Satellite);
+      for (RIter = m_ActiveModules.rbegin(); RIter != m_ActiveModules.rend(); ++RIter) {
+        if ((*RIter).second->HasDiagnosticsGUI() == true) {
+          m_DiagnosticsGUI->AddDiagnostics((*RIter).second->GetDiagnosticsGUI());
+        }
+      }
+      m_DiagnosticsGUI->Create();
+    }
   }
 
   // If we have an exit module which is also an IO module we save the configuration
