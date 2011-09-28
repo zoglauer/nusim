@@ -101,6 +101,9 @@ class NModuleInterfaceEventSaverLevel2Fits
   vector<MVector> m_Tfbob;
   vector<NQuaternion> m_Qstar;
 
+  //! Fully saved entries
+  unsigned int m_NEntries;
+  
 #ifdef ___CINT___
  public:
   ClassDef(NModuleInterfaceEventSaverLevel2Fits, 0) // no descriptEventSaverLevel2Fitsn

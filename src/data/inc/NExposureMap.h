@@ -49,6 +49,9 @@ class NExposureMap
   //! Default destructor
   virtual ~NExposureMap();
 
+  //! Clear the data
+  void Clear();
+  
   //! Set the file name (excluding the ".exposuremap.fits") which is automatically attached
   void SetFileNamePrefix(TString FileNamePrefix);
 
@@ -56,7 +59,7 @@ class NExposureMap
   void SetImageParameters(float TCRVL1, float TCDLT1, float TLMAX1, float TCRVL2, float TCDLT2, float TLMAX2);
 
   //! Add one mast information
-  void AddObservatoryData(const NQuaternion& Qfbob, const MVector& Tfbob, const NQuaternion& Qstar, const NTime& Time);
+  void AddObservatoryData(NQuaternion& Qfbob, MVector& Tfbob, NQuaternion& Qstar, NTime& Time);
 
   //! Calculate the exposure map
   bool ExposeSky(int index);
@@ -106,7 +109,12 @@ private:
   //! The output file name
   TString m_FileName;
  
-  vector<NObservatoryData> MastData; 
+  vector<NQuaternion> m_Qfbob;
+  vector<MVector> m_Tfbob;
+  vector<NQuaternion> m_Qstar;
+  vector<NTime> m_Time;
+  
+  
   vector<NObservatoryData> CHU4Data;
   vector<unsigned int> m_TelescopeID;
   //NAlignmentsDBEntry IdealAlignments;
