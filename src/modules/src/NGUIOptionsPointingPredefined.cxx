@@ -254,11 +254,13 @@ bool NGUIOptionsPointingPredefined::OnImport()
   OnApply();
   
   // Load a file
-  const char** Types = new const char*[4];
-  Types[0] = "All files";
-  Types[1] = "*";
-  Types[2] = 0;
-  Types[3] = 0;
+  const char** Types = new const char*[6];
+  Types[0] = "Pointing patterns";
+  Types[1] = "*.pat";
+  Types[2] = "All files";
+  Types[3] = "*";
+  Types[4] = 0;
+  Types[5] = 0;
   
   TGFileInfo Info;
   Info.fFileTypes = Types;
