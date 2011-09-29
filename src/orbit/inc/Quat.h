@@ -19,7 +19,7 @@
 
 namespace vecutil {
 
-struct Quat {
+class Quat {
 protected:
   // stores quaternion as a 4-tuple of doubles. the axis of rotation
   // (aka the pure part of the quaternion) is stored in quat[0], 

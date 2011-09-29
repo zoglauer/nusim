@@ -52,7 +52,8 @@ protected:
   CalculateIntervals(void) { 
     setIncrementSize(DT_INC_DEFAULT);
     dtStop.setSeconds(DT_STOP_DEFAULT);
-    }
+  }
+  virtual ~CalculateIntervals() {}
 
 public:
   /// Calcalate intervals

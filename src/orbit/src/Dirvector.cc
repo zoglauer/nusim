@@ -296,7 +296,7 @@ vecutil::Dirvector __D::edgeOfCone(double angle) const {
   Dirvector dvPerp=cross(d); dvPerp.normalize();
 
   // rotate this vector about the perpendicular vector by 'angle'
-  Quat q; q.arbitraryAxisRotation(dvPerp, angle);
+  vecutil::Quat q; q.arbitraryAxisRotation(dvPerp, angle);
   return(q.translate(*this));
   }
 
