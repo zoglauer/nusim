@@ -18,6 +18,8 @@
 #include "NExposureMap.h"
 
 // Standard libs:
+#include <iomanip>
+using namespace std;
 
 // ROOT libs:
 
@@ -51,6 +53,34 @@ NExposureMap::NExposureMap(NSatellite& Satellite) : m_Satellite(Satellite)
 NExposureMap::~NExposureMap()
 {
   // Delete this instance of NExposureMap
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NExposureMap::Clear()
+{
+  // Clear the data
+ 
+  m_Qfbob.clear();
+  m_Tfbob.clear();
+  m_Qstar.clear();
+  m_Time.clear();
+  
+  Det1.Clear();
+  Det2.Clear();
+  Det3.Clear();
+  Det4.Clear();
+  DetHold.Clear();
+ 
+  SkyMapX.clear();
+  SkyMapY.clear();
+  SkyMapZ.clear();
+  TransformIndex.clear();
+  TotalTime.clear();
+  Skypix.clear();
+  SkyExposed.clear();
 }
 
 
@@ -114,21 +144,12 @@ void NExposureMap::SetImageParameters(float TCRVL1, float TCDLT1, float TLMAX1, 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NExposureMap::AddObservatoryData(const NQuaternion& Qfbob, const MVector& Tfbob, const NQuaternion& Qstar, const NTime& Time)
-{
-  NObservatoryData Obs;
-
-  NOrientation dummy;
-  dummy.SetTranslation(Tfbob);
-	dummy.SetRotation(Qfbob);
-  Obs.SetOrientationFocalPlaneToOB(dummy);
-  
-  NOrientation dummystar;
-	dummystar.SetRotation(Qstar);
-  Obs.SetOrientationOBToIS(dummystar);
-  
-	Obs.SetTime(Time);
-	MastData.push_back(Obs);
+void NExposureMap::AddObservatoryData(NQuaternion& Qfbob, MVector& Tfbob, NQuaternion& Qstar, NTime& Time)
+{  
+  m_Qfbob.push_back(Qfbob);
+  m_Tfbob.push_back(Tfbob);
+  m_Qstar.push_back(Qstar);
+  m_Time.push_back(Time);
 }
 
 
@@ -339,23 +360,31 @@ bool NExposureMap::ExposeSky(int index)
   MVector FM;
   NOrientation FPM;
   
-  cout<<"ToDo: Why do we always look at number one here???"<<endl;
+  cout<<"ToDo later: Make sure we are using both modules here..."<<endl;
   FPM = m_Satellite.GetCalibratedOrientationFocalPlaneModule(1);
   FM = m_Satellite.GetCalibratedOrientationOpticsRelOpticalBench(1).GetTranslation();
     
-  for (int i = 0; i < (int) MastData.size()-1; i++) {
+  int Progress = m_Time.size()/100;
+  for (unsigned int i = 0; i < m_Time.size()-1; i++) {
+    if (i%Progress == 100) {
+      cout<<"\r"<<"Progress part 1/2: "<<setprecision(4)<<100.0*i/m_Time.size()<<"%    "<<flush;
+    }
+    
+    Rfbob.Clear();
+    Rfbob.SetTranslation(m_Tfbob[i]);
+    Rfbob.SetRotation(m_Qfbob[i]);
+    Qstar.Clear();
+    Qstar.SetRotation(m_Qstar[i]);
 
-	Rfbob=MastData[i].GetOrientationFocalPlaneToOB();
-    Qstar=MastData[i].GetOrientationOBToIS();
 
-    float dt = m_Satellite.GetEffectiveObservationTime(MastData[i].GetTime(), MastData[i+1].GetTime()).GetAsSeconds();
-	
-	  DetHold.Clear();
-	  DetHold.AddVertice(20.25,20.25);
-	  DetHold.TransformMapOut(FPM);
-	  DetHold.TransformMapIn(Rfbob);
-      DetHold.Bench2Sky(Qstar,FM, MaxRa, AvgDec);
-	  Corner = ToSkyPix(DetHold.GetCorner());
+    float dt = m_Satellite.GetEffectiveObservationTime(m_Time[i], m_Time[i+1]).GetAsSeconds();
+    
+    DetHold.Clear();
+    DetHold.AddVertice(20.25,20.25);
+    DetHold.TransformMapOut(FPM);
+    DetHold.TransformMapIn(Rfbob);
+    DetHold.Bench2Sky(Qstar, FM, MaxRa, AvgDec);
+    Corner = ToSkyPix(DetHold.GetCorner());
 	
 	  // fill in first entry
 	  if (i == 0) {
@@ -383,12 +412,19 @@ bool NExposureMap::ExposeSky(int index)
   }
   
   
-  for (int i = 0; i < (int) TransformIndex.size(); i++) {
-  	//cout<<TotalTime[i]<<endl;
-	  //cout<<TransformIndex[i]<<endl;
-	  //Now do the exposure map calculation
-	  Rfbob=MastData[TransformIndex[i]].GetOrientationFocalPlaneToOB();
-      Qstar=MastData[TransformIndex[i]].GetOrientationOBToIS();
+  Progress = TransformIndex.size()/10000;
+  for (unsigned int i = 0; i < TransformIndex.size(); i++) {
+    if (i%Progress == 10000) {
+      cout<<"\r"<<"Progress part 2/2: "<<setprecision(4)<<100.0*i/TransformIndex.size()<<"%    "<<flush;
+    }
+
+    //cout<<TransformIndex[i]<<endl;
+    //Now do the exposure map calculation
+    Rfbob.Clear();
+    Rfbob.SetTranslation(m_Tfbob[TransformIndex[i]]);
+    Rfbob.SetRotation(m_Qfbob[TransformIndex[i]]);
+    Qstar.Clear();
+    Qstar.SetRotation(m_Qstar[TransformIndex[i]]);
 
 	  MakeDetMap();
 	  Det1.TransformMapOut(FPM);
