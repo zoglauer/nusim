@@ -10,7 +10,7 @@
  */
 
 #include <StateVector.h>
-#include <Quat.h>
+#include <NQuat.h>
 
 // added this meaningless comment
 

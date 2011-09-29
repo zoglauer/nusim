@@ -9,7 +9,7 @@
  H-
 */
 
-#include "Quat.h"
+#include "NQuat.h"
 
 typedef vecutil::Quat __V;
 using namespace vecutil;

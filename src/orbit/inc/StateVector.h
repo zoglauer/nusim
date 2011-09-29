@@ -15,7 +15,7 @@
 #include <GUtil.h>
 #include <TmTcTime.h>
 #include <Dirvector.h>
-#include <Quat.h>
+#include <NQuat.h>
 
 
 namespace vecutil {

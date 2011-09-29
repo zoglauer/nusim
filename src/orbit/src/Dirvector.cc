@@ -17,7 +17,7 @@
  */
 
 #include "Dirvector.h"
-#include "Quat.h"
+#include "NQuat.h"
 
 const static double OBLIQ2000=  (0.4090928);
 const static double JD2000=     (2451544.5);
