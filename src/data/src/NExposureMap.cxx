@@ -365,6 +365,7 @@ bool NExposureMap::ExposeSky(int index)
   FM = m_Satellite.GetCalibratedOrientationOpticsRelOpticalBench(1).GetTranslation();
     
   unsigned int Progress = m_Time.size()/1000;
+  if (Progress < 10) Progress = 10;
   for (unsigned int i = 0; i < m_Time.size()-1; i++) {
     if (i%Progress == 0) {
       cout<<"\r"<<"Progress part 1/2: "<<setprecision(4)<<100.0*i/m_Time.size()<<"%    "<<flush;
@@ -410,11 +411,12 @@ bool NExposureMap::ExposeSky(int index)
 	    Skypix.push_back(Corner);
 	  }
   }
+  cout<<"\r"<<"Progress part 1/2: "<<setprecision(4)<<100.0<<"%    "<<flush;
   cout<<endl;
   
   
   Progress = TransformIndex.size()/1000;
-  cout<<Progress<<":"<<TransformIndex.size()<<endl;
+  if (Progress < 10) Progress = 10;
   for (unsigned int i = 0; i < TransformIndex.size(); i++) {
     if (i%Progress == 0) {
       cout<<"\r"<<"Progress part 2/2: "<<setprecision(4)<<100.0*i/TransformIndex.size()<<"%    "<<flush;
@@ -450,6 +452,7 @@ bool NExposureMap::ExposeSky(int index)
 	  Det3.Clear();
 	  Det4.Clear();
   }
+  cout<<"\r"<<"Progress part 2/2: "<<setprecision(4)<<100.0<<"%    "<<flush;
   cout<<endl;	
 
   WriteExposureMap(index);
