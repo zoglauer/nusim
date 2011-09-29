@@ -14,7 +14,7 @@
 
 #include <GUtil.h>
 #include <Dirvector.h>
-#include <Euler.h>
+#include <NEuler.h>
 
 
 namespace vecutil {

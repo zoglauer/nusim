@@ -16,7 +16,7 @@ LOBJS = $(LB)/CalculateIntervalsIntersection.o \
 	$(LB)/CelestialTarget.o \
 	$(LB)/NQuat.o \
 	$(LB)/Dirvector.o \
-	$(LB)/Euler.o \
+	$(LB)/NEuler.o \
 	$(LB)/GUException.o \
 	$(LB)/GUStringvec.o \
 	$(LB)/GUtil.o \

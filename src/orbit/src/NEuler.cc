@@ -10,7 +10,7 @@
  */
 
 
-#include "Euler.h"
+#include "NEuler.h"
 
 using namespace vecutil;
 
