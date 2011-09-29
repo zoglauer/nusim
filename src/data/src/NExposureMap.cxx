@@ -18,8 +18,6 @@
 #include "NExposureMap.h"
 
 // Standard libs:
-#include <iomanip>
-using namespace std;
 
 // ROOT libs:
 
@@ -59,34 +57,6 @@ NExposureMap::~NExposureMap()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NExposureMap::Clear()
-{
-  // Clear the data
- 
-  m_Qfbob.clear();
-  m_Tfbob.clear();
-  m_Qstar.clear();
-  m_Time.clear();
-  
-  Det1.Clear();
-  Det2.Clear();
-  Det3.Clear();
-  Det4.Clear();
-  DetHold.Clear();
- 
-  SkyMapX.clear();
-  SkyMapY.clear();
-  SkyMapZ.clear();
-  TransformIndex.clear();
-  TotalTime.clear();
-  Skypix.clear();
-  SkyExposed.clear();
-}
- 
-  
-////////////////////////////////////////////////////////////////////////////////
-
-
 void NExposureMap::SetFileNamePrefix(TString FileNamePrefix)
 {
   m_FileName = "!";
@@ -122,7 +92,7 @@ void NExposureMap::SetImageParameters(float TCRVL1, float TCDLT1, float TLMAX1, 
   float yMax = ceil(TLMAX2);
     
   AvgDec = yCenterValue+yMax*0.5*yDelta;
-  MaxRa = xCenterValue+xMax*xDelta/cos(AvgDec/rad);
+  MaxRa = xCenterValue;
   
   //create sky map
   //create dimension vectors x, y
@@ -144,12 +114,21 @@ void NExposureMap::SetImageParameters(float TCRVL1, float TCDLT1, float TLMAX1, 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NExposureMap::AddObservatoryData(NQuaternion& Qfbob, MVector& Tfbob, NQuaternion& Qstar, NTime& Time)
-{  
-  m_Qfbob.push_back(Qfbob);
-  m_Tfbob.push_back(Tfbob);
-  m_Qstar.push_back(Qstar);
-  m_Time.push_back(Time);
+void NExposureMap::AddObservatoryData(const NQuaternion& Qfbob, const MVector& Tfbob, const NQuaternion& Qstar, const NTime& Time)
+{
+  NObservatoryData Obs;
+
+  NOrientation dummy;
+  dummy.SetTranslation(Tfbob);
+	dummy.SetRotation(Qfbob);
+  Obs.SetOrientationFocalPlaneToOB(dummy);
+  
+  NOrientation dummystar;
+	dummystar.SetRotation(Qstar);
+  Obs.SetOrientationOBToIS(dummystar);
+  
+	Obs.SetTime(Time);
+	MastData.push_back(Obs);
 }
 
 
@@ -182,7 +161,7 @@ bool NExposureMap::WriteExposureMap(int index)
 	}
   }
 
-  //cout<<"File name:"<<m_FileName.Data()<<endl;
+  cout<<"File name:"<<m_FileName.Data()<<endl;
   fits_create_file(&m_File, m_FileName.Data(), &Status); /* create new FITS file */
   if (Status != 0) {
     cout<<"Unable to open file: "<<m_FileName<<endl;
@@ -241,22 +220,6 @@ bool NExposureMap::WriteExposureMap(int index)
 	fits_write_key(m_File, TSTRING, "HDUNAME", hduname," ", &Status);
 	fits_write_key(m_File, TSTRING, "BUNIT", bunit," ", &Status);
 	
-	/*fits_write_key(m_File, TSTRING, "MFORM1", mform1," ", &Status);
-	fits_write_key(m_File, TSTRING, "MTYPE1", mtype1," ", &Status);
-	fits_write_key(m_File, TSTRING, "TCTYP1P", tctyp1p," ", &Status);
-	fits_write_key(m_File, TSTRING, "WCSTYP1", wcsty," ", &Status);
-    fits_write_key(m_File, TFLOAT, "TCDLT1P", &one, "", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "TCVLT1P",&SkyMapX[SkyMapX.size()],"",&Status);
-    fits_write_key(m_File, TFLOAT, "TCRPX1P", &SkyMapX[0], "Pixel reference point", &Status); 	  
-
-	fits_write_key(m_File, TSTRING, "MFORM2", mform2," ", &Status);
-	fits_write_key(m_File, TSTRING, "MTYPE2", mtype2," ", &Status);
-	fits_write_key(m_File, TSTRING, "TCTYP2P", tctyp2p," ", &Status);
-	fits_write_key(m_File, TSTRING, "WCSTYP2", wcsty," ", &Status);
-	fits_write_key(m_File, TFLOAT, "TCDLT2P", &one, "", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "TCVLT2P",&SkyMapY[SkyMapY.size()],"",&Status);
-    fits_write_key(m_File, TFLOAT, "TCRPX2P", &SkyMapY[0], "Pixel reference point", &Status); */	  
-
     fits_write_key(m_File, TFLOAT, "CDELT1", &xDelta, "Platescale", &Status); 	  
     fits_write_key(m_File, TFLOAT, "CDELT2", &yDelta, "Platescale", &Status); 	  
     fits_write_key(m_File, TFLOAT, "CRVAL1", &xCenterValue, "Transform to celestial coords", &Status); 	  
@@ -358,7 +321,7 @@ MVector NExposureMap::ToSkyPix(MVector Coords)
   // find the index that the corner falls in.
   // Doing this analytically for speed
   pix[0] = floor((Coords[0]-xCenterValue)/xDelta);
-  pix[1] = floor((Coords[1]-xCenterValue)/xDelta);
+  pix[1] = floor((Coords[1]-yCenterValue)/yDelta);
   
   return pix;
 }
@@ -376,30 +339,22 @@ bool NExposureMap::ExposeSky(int index)
   MVector FM;
   NOrientation FPM;
   
-  cout<<"ToDo later: Make sure we are using both modules here..."<<endl;
+  cout<<"ToDo: Why do we always look at number one here???"<<endl;
   FPM = m_Satellite.GetCalibratedOrientationFocalPlaneModule(1);
   FM = m_Satellite.GetCalibratedOrientationOpticsRelOpticalBench(1).GetTranslation();
-  
-  int Progress = m_Time.size()/100;
-  for (unsigned int i = 0; i < m_Time.size()-1; i++) {
-    if (i%Progress == 100) {
-      cout<<"\r"<<"Progress part 1/2: "<<setprecision(4)<<100.0*i/m_Time.size()<<"%    "<<flush;
-    }
     
-    Rfbob.Clear();
-    Rfbob.SetTranslation(m_Tfbob[i]);
-    Rfbob.SetRotation(m_Qfbob[i]);
-    Qstar.Clear();
-    Qstar.SetRotation(m_Qstar[i]);
+  for (int i = 0; i < (int) MastData.size()-1; i++) {
 
+	Rfbob=MastData[i].GetOrientationFocalPlaneToOB();
+    Qstar=MastData[i].GetOrientationOBToIS();
 
-    float dt = m_Satellite.GetEffectiveObservationTime(m_Time[i], m_Time[i+1]).GetAsSeconds();
-    
+    float dt = m_Satellite.GetEffectiveObservationTime(MastData[i].GetTime(), MastData[i+1].GetTime()).GetAsSeconds();
+	
 	  DetHold.Clear();
 	  DetHold.AddVertice(20.25,20.25);
 	  DetHold.TransformMapOut(FPM);
 	  DetHold.TransformMapIn(Rfbob);
-    DetHold.Bench2Sky(Qstar, FM, MaxRa, AvgDec);
+      DetHold.Bench2Sky(Qstar,FM, MaxRa, AvgDec);
 	  Corner = ToSkyPix(DetHold.GetCorner());
 	
 	  // fill in first entry
@@ -427,21 +382,14 @@ bool NExposureMap::ExposeSky(int index)
 	  }
   }
   
-  Progress = TransformIndex.size()/100;
-  for (unsigned int i = 0; i < TransformIndex.size(); i++) {
-    //if (i%Progress == 100) {
-      cout<<"\r"<<"Progress part 2/2: "<<setprecision(4)<<100.0*i/TransformIndex.size()<<"%    "<<flush;
-    //}
-
+  
+  for (int i = 0; i < (int) TransformIndex.size(); i++) {
+  	//cout<<TotalTime[i]<<endl;
 	  //cout<<TransformIndex[i]<<endl;
 	  //Now do the exposure map calculation
-    Rfbob.Clear();
-    Rfbob.SetTranslation(m_Tfbob[TransformIndex[i]]);
-    Rfbob.SetRotation(m_Qfbob[TransformIndex[i]]);
-    Qstar.Clear();
-    Qstar.SetRotation(m_Qstar[TransformIndex[i]]);
+	  Rfbob=MastData[TransformIndex[i]].GetOrientationFocalPlaneToOB();
+      Qstar=MastData[TransformIndex[i]].GetOrientationOBToIS();
 
-    
 	  MakeDetMap();
 	  Det1.TransformMapOut(FPM);
 	  Det2.TransformMapOut(FPM);

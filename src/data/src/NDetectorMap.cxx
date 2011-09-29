@@ -195,10 +195,12 @@ bool NDetectorMap::Bench2Sky(NOrientation& R, MVector& FM, float& MaxRa, float& 
 
 bool NDetectorMap::ToRaDeg(float& MaxRa, float& AvgDec)
 {
+
+   float ra;
    for (int i=0; i<(int)fX.size();i++){
-	  fX[i] = atan2(fY[i],fX[i])*c_Deg;
+	  ra = atan2(fY[i],fX[i])*c_Deg;
 	  if (fX[i] < 0.0) fX[i] += 360.0;
-	  fX[i] = MaxRa+(fX[i]-MaxRa)*cos(AvgDec/rad);
+	  fX[i] = MaxRa+(ra-MaxRa)*cos(AvgDec*c_Rad);
 	  fY[i] = asin(fZ[i])*c_Deg;
 	  //if (fY[i] < 0.0) fY[i] += 180.0;
    }
