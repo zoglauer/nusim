@@ -306,7 +306,6 @@ bool NExposureMap::ProjectOnSky(float dt)
   //Det3.ToRaDeg();
   //Det4.ToRaDeg();
 
-
   for (int i=0; i<(int) SkyMapX.size();i++){
     for (int j=0; j<(int) SkyMapY.size();j++){
 	    if (Det1.IsInside(SkyMapX[i], SkyMapY[j])) {
