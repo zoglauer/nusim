@@ -50,8 +50,7 @@ public:
   ~PSF();
   bool LoadPSF(int type);
   
-  vector <float> oaa0;
-  vector <float> oaa1;
+  vector <float> cube;
    
 };
 /************************/
@@ -73,7 +72,7 @@ public:
   bool SetTarget(MVector region);
   bool WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure);
   bool WriteARF(float* Elow, float* Ehigh, float* data);
-  float GetPSFFraction(float region, float oaa);
+  float GetPSFFraction(float region, int oaa);
   int GetDetIndex();
   NAlignmentsDBEntry IdealAlignments;
   NOrientation Rfbob;
@@ -165,10 +164,9 @@ bool Target::Initialize()
 
   LoadEffArea();
   LoadVignet();
-  ReadCalibratedAlignmentsDB("/Users/kristin/data/nusim/nusim/resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
-  psfimg.LoadPSF(0);
-  psfimg.LoadPSF(1);
-  
+  ReadCalibratedAlignmentsDB("resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
+  psfimg.LoadPSF(16);
+
   //cout<<psfimg.oaa0[100*201+100]<<endl;
   
   return 0;
@@ -176,51 +174,52 @@ bool Target::Initialize()
 }
 
 /******************************************************************************/
-bool PSF::LoadPSF(int oaa)
+bool PSF::LoadPSF(int noaa)
 {
-
-  TString FileName;
-  if (oaa == 0) FileName="resource/data/PSFoaa0.fits";
-  if (oaa == 1) FileName="resource/data/PSFoaa1.fits";
 
   int Status = 0;
   int AnyNull;
-  
-  fitsfile* File = 0; 
-  fits_open_file(&File, FileName, READONLY, &Status);
-  if (Status != 0) {
-    mgui<<"Unable to open file: "<<endl;
-    mgui<<FileName<<show;
-    return false;
-  }
-
-  // Switch to the right extension:
-  int HDUNumber = 1;
-  fits_movabs_hdu(File, HDUNumber, NULL, &Status);
-  if (Status != 0) {
-    mgui<<"HDU number "<<HDUNumber<<" not found in fits file!"<<show;
-    return false;
-  }
-
-  // Retrieve the dimensions and data type of the image:
-  int NDimensions;
-  int DataType;
-  long AxisDimension[2];  
-  fits_get_img_param(File, 2, &DataType, &NDimensions, AxisDimension, &Status);
-  if (Status != 0 || NDimensions == 0) {
-    mgui<<"The image in the fits file has no dimensions..."<<show;
-    return false;
-  }
-
-  // Create some dummy arrays
-  long StartPixel[2];
-  long NPixel = 1;
-  for (int dim = 0; dim < NDimensions; ++dim) {
-    NPixel *= AxisDimension[dim];
-    StartPixel[dim] = 1;
-  }
-
   float FloatNullVal = 0;
+  fitsfile* File = 0; 
+  
+  for (int i=0;i < noaa; ++i) {
+  
+    char FileName[50]; 
+	sprintf(FileName,"resource/data/responsefiles/PSF%d.fits",i);
+  
+	fits_open_file(&File, FileName, READONLY, &Status);
+    if (Status != 0) {
+      mgui<<"Unable to open file: "<<endl;
+      mgui<<FileName<<show;
+      return false;
+    }
+
+    // Switch to the right extension:
+    int HDUNumber = 1;
+    fits_movabs_hdu(File, HDUNumber, NULL, &Status);
+    if (Status != 0) {
+      mgui<<"HDU number "<<HDUNumber<<" not found in fits file!"<<show;
+      return false;
+    }
+
+    // Retrieve the dimensions and data type of the image:
+    int NDimensions;
+    int DataType;
+    long AxisDimension[2];  
+    fits_get_img_param(File, 2, &DataType, &NDimensions, AxisDimension, &Status);
+    if (Status != 0 || NDimensions == 0) {
+      mgui<<"The image in the fits file has no dimensions..."<<show;
+      return false;
+    }
+
+    // Create some dummy arrays
+    long StartPixel[2];
+    long NPixel = 1;
+    for (int dim = 0; dim < NDimensions; ++dim) {
+      NPixel *= AxisDimension[dim];
+      StartPixel[dim] = 1;
+    }
+
     float* FloatArray = new float[NPixel];
     fits_read_pix(File, TFLOAT, StartPixel, NPixel, &FloatNullVal, FloatArray, &AnyNull, &Status);
     if (Status != 0) {
@@ -230,13 +229,13 @@ bool PSF::LoadPSF(int oaa)
 
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
-        if (oaa == 0) oaa0.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
-        if (oaa == 1) oaa1.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
-      }
+        cube.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+	  }
     }
     delete [] FloatArray;
+  }
 
-    return 0;
+  return 0;
 	
 }
 /******************************************************************************/
@@ -252,7 +251,7 @@ bool Target::LoadEffArea()
   int anynull;
   m_File = 0;
   
-  fits_open_file(&m_File, "/Users/kristin/data/nusim/nusim/resource/data/nustar_effarea_v2.0.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.0.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;
@@ -291,7 +290,7 @@ bool Target::LoadVignet()
   int anynull;
   m_File = 0;
   
-  fits_open_file(&m_File, "/Users/kristin/data/nusim/nusim/resource/data/nustar_vign_v2.0.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.0.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;
@@ -602,7 +601,7 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
   }
   if (Type == "source"){
     T.Analyze(ARFFile, false);
-    fits_write_key(m_File, TSTRING, "RESPFILE",  const_cast<char*>("nustar_v2.0.rmf"), " ", &Status);  
+    fits_write_key(m_File, TSTRING, "RESPFILE",  const_cast<char*>("nustar_v3.2.rmf"), " ", &Status);  
     fits_write_key(m_File, TSTRING, "ANCRFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
     T.Analyze(BkgFile, false);
 	fits_write_key(m_File, TSTRING, "BACKFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
@@ -787,7 +786,7 @@ int Target::GetDetIndex()
 }
 
 /****************************************************************************/
-float Target::GetPSFFraction(float region, float oaa)
+float Target::GetPSFFraction(float region, int oaa)
 {
 
   // one PSF image pixel is 0.2x0.2 mm
@@ -807,11 +806,11 @@ float Target::GetPSFFraction(float region, float oaa)
 	if (rad > region) continue;
 	
 	//if (check for gap)
-    if (round(oaa) == 0) AccumulatedPSF += psfimg.oaa0[i];	
-    if (round(oaa) == 1) AccumulatedPSF += psfimg.oaa1[i];	
+	int n = 40401*oaa+i;
+    AccumulatedPSF += psfimg.cube[n];	
   }
   
-  //cout<<AccumulatedPSF<<endl;
+  //cout<<"PSFfraction = "<<AccumulatedPSF<<endl;
 
   return AccumulatedPSF;
 
@@ -944,15 +943,18 @@ bool Target::GenerateARF()
 	
   }
 
-  for (int j=0;j<(int)DetIndex.size();j++) oaat_hist[int(oaa[j])] += TotalTime[j]*GetPSFFraction(regionAtDet, oaa[j]);
+  for (int j=0;j<(int)DetIndex.size();j++) oaat_hist[int(oaa[j]*2)] += TotalTime[j]*GetPSFFraction(regionAtDet, int(oaa[j]*2));
   
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
-	  ARF[i] += AE[i]*vignet[j*820+i]*oaat_hist[j]/exposure;  
+	  ARF[i] += 2*AE[i]*vignet[j*820+i]*oaat_hist[j]/exposure;  
 	}
   }
 
-  //cout<<ARF[0]<<" "<<ARF[100]<<endl;
+  cout<<"oaa = "<<oaa[0]<<endl;
+  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa[0]*2))<<endl;
+  cout<<"Effective Area @ 3 keV "<< ARF[0]<<endl;
+  cout<<"Effective Area @ 10 keV "<<ARF[130]<<endl;
    
   WriteFitsSpectrum(SourceOutFile, "source", source, exposure);
   WriteFitsSpectrum(BkgFile, "bkg", bkg, exposure);
