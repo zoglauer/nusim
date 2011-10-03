@@ -65,12 +65,12 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   void SetPerturbedOpticsDBFileName(const TString PerturbedOpticsDBFileName) { m_PerturbedOpticsDBFileName = PerturbedOpticsDBFileName; }
 
   //! Get the file name of the calibrated alignments data base
-  TString GetCalibratedAlignmentsDBFileName() const { return m_CalibratedAlignmentsDBFileName; }
+  virtual TString GetCalibratedAlignmentsDBFileName() const { return m_CalibratedAlignmentsDBFileName; }
   //! Set the file name of the calibrated alignments data base
   void SetCalibratedAlignmentsDBFileName(const TString CalibratedAlignmentsDBFileName) { m_CalibratedAlignmentsDBFileName = CalibratedAlignmentsDBFileName; }
 
   //! Get the file name of the pertubations data base
-  TString GetPerturbedAlignmentsDBFileName() const { return m_PerturbedAlignmentsDBFileName; }
+  virtual TString GetPerturbedAlignmentsDBFileName() const { return m_PerturbedAlignmentsDBFileName; }
   //! Set the file name of the pertubations data base
   void SetPerturbedAlignmentsDBFileName(const TString PerturbedAlignmentsDBFileName) { m_PerturbedAlignmentsDBFileName = PerturbedAlignmentsDBFileName; }
 

@@ -91,6 +91,9 @@ class NModuleInterfaceOrientations : public NAlignmentsDBEntry
   //! Get the focal plane detector module - detector orientation at time t
   virtual NOrientation GetOrientationDetectorRelFocalPlaneModule(const NTime& t, int ModuleID, int DetectorID) { AdvanceTime(t); return m_LatestPerturbedAlignments.GetOrientationDetectorRelFocalPlaneModule(ModuleID, DetectorID); }
 
+  //! Get the file name of the pertubations data base
+  virtual TString GetPerturbedAlignmentsDBFileName() const { return ""; }
+
 
   // Calibrated:
 
@@ -111,6 +114,9 @@ class NModuleInterfaceOrientations : public NAlignmentsDBEntry
 
   //! Get the CALIBRATED star tracker orientation relative to the optical bench
   virtual NOrientation GetCalibratedOrientationStarTrackerRelOpticalBench(int StarTrackerID) { return m_CalibratedAlignments.GetOrientationStarTrackerRelOpticalBench(StarTrackerID); }
+  
+  //! Get the file name of the calibrated alignments data base
+  virtual TString GetCalibratedAlignmentsDBFileName() const { return ""; }
 
 
   // Optics:
@@ -142,8 +148,6 @@ class NModuleInterfaceOrientations : public NAlignmentsDBEntry
 
   //! Get the calibrated pointing direction of the metrology laser (independent of time)
   virtual MVector GetCalibratedPointingMetrologyLaserRelML(int MetrologyID) { return m_CalibratedMetrologyUncertainties.GetPointingMetrologyLaserRelML(MetrologyID); }
-  
-
 
 
   // protected methods:
