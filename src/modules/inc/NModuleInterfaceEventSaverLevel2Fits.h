@@ -30,6 +30,7 @@ using namespace std;
 #include "NEvent.h"
 #include "NSatellite.h"
 #include "NModuleInterfaceIO.h"
+#include "NModuleInterfaceObservation.h"
 #include "NModule.h"
 #include "NExposureMap.h"
 
@@ -43,7 +44,7 @@ using namespace std;
 //! This interface represents a module interface representing modules with the 
 //! capability to save to a level 2 fits file. 
 
-class NModuleInterfaceEventSaverLevel2Fits
+class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
 {
   // public interface:
  public:

@@ -256,63 +256,51 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     }
   }
 
-
-
   //! Write WCS header keywords   
-  char degree[10], tctyp1[10], tctyp2[10],radesys[10],object[10];
-  char instrume[10], mission[10], telescope[10], timeunit[10];
   float tcrvl1=RaMax/deg;
   float tcrvl2=DecMin/deg;
   float tcdlt1=-PixelSize/deg;
   float tcdlt2=-tcdlt1;
   float tcrpx1=0.0, tcrpx2=0.0;
   long MDJREFI = 55197;
-  float MDJREFF =7.6601852000000E-04; 
+  float MDJREFF =7.6601852000000E-04;
+  long targ_id = 0; 
   ostringstream out1;
-  
-  strcpy(timeunit, "s");
-  strcpy(degree,"deg");
-  strcpy(tctyp1,"RA---TAN");
-  strcpy(tctyp2,"DEC--TAN");
-  strcpy(radesys,"FK5");
-  strcpy(object,"MyObj");
-  strcpy(instrume,"FPM");
-  strcpy(mission,"NuSim");
-  strcpy(telescope,"NuSim");
   
   double tstart = m_Satellite.GetEpochObservationStartTime().GetAsSeconds();
   double tend = m_Satellite.GetEpochObservationEndTime().GetAsSeconds();
   NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
   NTime End = m_Satellite.GetAbsoluteObservationEndTime();
 
-  
-  fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
-  fits_write_key(m_File, TSTRING, "MISSION", mission, " ", &Status); 	  
-  fits_write_key(m_File, TSTRING, "TELESCOP", telescope, " ", &Status); 
+  fits_write_key(m_File, TSTRING, "INSTRUME", const_cast<char*>("FPM"), "Detector", &Status); 	  
+  fits_write_key(m_File, TSTRING, "MISSION", const_cast<char*>("NuSTAR"), " ", &Status); 	  
+  fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSIM"), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "CREATOR", const_cast<char*>("NuSIM"), " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  fits_write_key(m_File, TSTRING, "OBS_ID",   const_cast<char*>(m_ObservationID.Data()), " ", &Status);  
+  fits_write_key(m_File, TLONG,   "TARG_ID",  &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "OBJECT",   const_cast<char*>(m_TargetName.Data()), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "ALIGNDB",   const_cast<char*>(m_Satellite.GetCalibratedAlignmentsDBFileName().Data()), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "PERTURDB",   const_cast<char*>(m_Satellite.GetPerturbedAlignmentsDBFileName().Data()), " ", &Status); 
   fits_write_key(m_File, TLONG, "MJDREFI", &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
   fits_write_key(m_File, TFLOAT, "MDJREFF", &MDJREFF , "MJD reference", &Status);
-  fits_write_key(m_File, TSTRING, "TIMEUNIT", timeunit, " ", &Status); 
+  fits_write_key(m_File, TSTRING, "TIMEUNIT", const_cast<char*>("s"), " ", &Status); 
   fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, "start time", &Status); 	  
-  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	  
-  out1<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds();
-  char* DateObs = (char*) out1.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-OBS", DateObs, " ", &Status);
-  out1.str("");
-  out1<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<"T"<<End.GetHours()<<":"<<End.GetMinutes()<<":"<<End.GetSeconds();
-  char* DateEnd = (char*) out1.str().c_str();
-  fits_write_key(m_File, TSTRING, "DATE-END", DateEnd, " ", &Status);	  
+  fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	
+  fits_write_key(m_File, TSTRING, "DATE-OBS", const_cast<char*>(m_Satellite.GetAbsoluteObservationStartTime().GetDateInString().Data()), " ", &Status);
+  fits_write_key(m_File, TSTRING, "DATE-END", const_cast<char*>(m_Satellite.GetAbsoluteObservationEndTime().GetDateInString().Data()), " ", &Status);  
   fits_write_key(m_File, TFLOAT, "TCDLT1", &tcdlt1, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCDLT2", &tcdlt2, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRVL1", &tcrvl1, "Transform to celestrial coords", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRVL2", &tcrvl2, "Transform to celestrial coords", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRPX1", &tcrpx1, "Pixel reference point", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRPX2", &tcrpx2, "Pixel reference point", &Status); 	  
-  fits_write_key(m_File, TSTRING, "TCRUNI1", degree," ", &Status);
-  fits_write_key(m_File, TSTRING, "TCRUNI2", degree," ", &Status);
-  fits_write_key(m_File, TSTRING, "TCTYP1", tctyp1," ", &Status);
-  fits_write_key(m_File, TSTRING, "TCTYP2", tctyp2," ", &Status); 
-  fits_write_key(m_File, TSTRING, "RADESYS", radesys, " ", &Status);
-  fits_write_key(m_File, TSTRING, "OBJECT", object, "NuSim object", &Status);
+  fits_write_key(m_File, TSTRING, "TCRUNI1", const_cast<char*>("deg")," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCRUNI2", const_cast<char*>("deg")," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCTYP1", const_cast<char*>("RA---TAN")," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCTYP2", const_cast<char*>("DEC--TAN")," ", &Status); 
+  fits_write_key(m_File, TSTRING, "RADESYS", const_cast<char*>("FK5"), " ", &Status);
 
   if (Status != 0) {
     mgui<<"Error in creating header for events table "<<endl;
@@ -597,10 +585,15 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     return false;
   }
     
-  fits_write_key(m_File, TSTRING, "OBJECT", object, "NuSim object", &Status);
-  fits_write_key(m_File, TSTRING, "INSTRUME", instrume, "Detector", &Status); 	  
-  fits_write_key(m_File, TSTRING, "MISSION", mission, " ", &Status); 	  
-  fits_write_key(m_File, TSTRING, "TELESCOP", telescope, " ", &Status); 	
+  fits_write_key(m_File, TSTRING, "INSTRUME", const_cast<char*>("FPM"), "Detector", &Status); 	  
+  fits_write_key(m_File, TSTRING, "MISSION", const_cast<char*>("NuSTAR"), " ", &Status); 	  
+  fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSIM"), " ", &Status); 
+  fits_write_key(m_File, TSTRING, "CREATOR", const_cast<char*>("NuSIM"), " ", &Status);  
+  fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
+  fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
+  fits_write_key(m_File, TSTRING, "OBS_ID",   const_cast<char*>(m_ObservationID.Data()), " ", &Status);  
+  fits_write_key(m_File, TLONG,   "TARG_ID",  &targ_id, " ", &Status);  
+  fits_write_key(m_File, TSTRING, "OBJECT",   const_cast<char*>(m_TargetName.Data()), " ", &Status); 
   fits_write_key(m_File, TDOUBLE, "TSTART", &tstart, "start time", &Status); 	  
   fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	  	  
   
