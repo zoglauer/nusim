@@ -144,6 +144,9 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   //! Get the focal plane detector module - detector orientation at time t
   virtual NOrientation GetOrientationDetectorRelFocalPlaneModule(const NTime& t, int ModuleID, int DetectorID) { return m_Orientations->GetOrientationDetectorRelFocalPlaneModule(t, ModuleID, DetectorID); }
 
+  //! Get the file name of the pertubations data base
+  virtual TString GetPerturbedAlignmentsDBFileName() const { return m_Orientations->GetPerturbedAlignmentsDBFileName(); }
+
 
 
   //! Get the CALIBRATED focal plane detector module orientation
@@ -163,6 +166,9 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
 
   //! Get the CALIBRATED star tracker orientation relative to the optical bench
   virtual NOrientation GetCalibratedOrientationStarTrackerRelOpticalBench(int StarTrackerID) { return m_Orientations->GetCalibratedOrientationStarTrackerRelOpticalBench(StarTrackerID); }
+  
+  //! Get the file name of the calibrated alignments data base
+  virtual TString GetCalibratedAlignmentsDBFileName() const { return m_Orientations->GetCalibratedAlignmentsDBFileName(); }
 
 
   // Optics
