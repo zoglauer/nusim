@@ -386,7 +386,7 @@ bool NModuleOrientationsDatabase::ReadCalibratedAlignmentsDB(TString FileName)
   
   // If there is any error in the file, it will always be caught in ParseDB...
   TString Line;
-  Line.ReadToDelim(in, Delimeter); // version
+  Line.ReadToDelim(in, Delimeter); // version or fileformatversion
   Line.ReadToDelim(in, Delimeter); // type
   Line.ReadToDelim(in, Delimeter); // description
   Line.ReadToDelim(in, Delimeter); // column title 1
@@ -430,15 +430,40 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
   // Let's read until we find the first delimeter, then rewind
   char Delimeter = FindDelimeter(in);
   
+  unsigned int Version = 1;
+  
   // Read the header
   TString Line;
-
-  Line.ReadToDelim(in, Delimeter); // version
-  Line.ReadToDelim(in, Delimeter); // type
-  Line.ReadToDelim(in, Delimeter); // description
-  Line.ReadToDelim(in, Delimeter); // column title 1
-  Line.ReadToDelim(in, Delimeter); // column title 2
-
+  MTokenizer T(',', false);
+  Line.ReadToDelim(in, Delimeter); // version or fileformatversion
+  if (Line.BeginsWith("fileformatversion") == true) {
+    T.Analyze(Line);
+    Version = T.GetTokenAtAsUnsignedInt(1);
+  }
+  
+  if (Version == 1) {
+    Line.ReadToDelim(in, Delimeter); // type
+    Line.ReadToDelim(in, Delimeter); // description
+    Line.ReadToDelim(in, Delimeter); // step size
+    Line.ReadToDelim(in, Delimeter); // column title
+    m_HasDayAndNightAlignments = false; 
+  } else if (Version == 2) {
+    Line.ReadToDelim(in, Delimeter); // version
+    Line.ReadToDelim(in, Delimeter); // type
+    Line.ReadToDelim(in, Delimeter); // description
+    Line.ReadToDelim(in, Delimeter); // step size
+    Line.ReadToDelim(in, Delimeter); // night
+    T.Analyze(Line);
+    m_NightStartAlignments = T.GetTokenAtAsUnsignedInt(1);    
+    Line.ReadToDelim(in, Delimeter); // day
+    T.Analyze(Line);
+    m_DayStartAlignments = T.GetTokenAtAsUnsignedInt(1);
+    m_HasDayAndNightAlignments = true;
+    Line.ReadToDelim(in, Delimeter); // column title
+  } else {
+    cerr<<"While reading: "<<FileName<<":Unknown file version: "<<Version<<endl;
+    return false;
+  }
   
   // Read the data
   TString Positions, Rotations;
@@ -480,6 +505,18 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
     return false;
   }
 
+  // Check the day and night alignments
+  if (m_HasDayAndNightAlignments == true) {
+    if (m_DayStartAlignments >= m_PerturbedAlignments.size()) {
+      merr<<"DB error: The index of the start of the day is beyond the vector limits"<<endl;
+      return false;
+    }
+    if (m_NightStartAlignments >= m_PerturbedAlignments.size()) {
+      merr<<"DB error: The index of the start of the night is beyond the vector limits"<<endl;
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -515,7 +552,7 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
 {
   // Determine orientations if they are not yet present for the given time t
   // All are relative to the focal plane coordinate system
-  // Remember distance are in mm!
+  // Remember: Distances are in mm!
   
   // Don't do anything if we are at the same time...
   if (m_Time == t) return;

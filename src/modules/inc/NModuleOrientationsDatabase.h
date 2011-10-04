@@ -135,7 +135,14 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   //! The pertubed alignments in space as a function of time...
   vector<NAlignmentsDBEntry> m_PerturbedAlignments;   
 
-
+  //! True if we have day and night alignments
+  bool m_HasDayAndNightAlignments;
+  //! Index at which the Day starts in the alignments
+  unsigned int m_DayStartAlignments;
+  //! Index at which the Night starts in the alignments
+  unsigned int m_NightStartAlignments;
+  
+  
   //! Start your search for the perturbed alignments at this index...
   unsigned int m_StartIndexPerturbedMetrologyUncertainties;
   //! Time wrap for the perturbed alignments time index
