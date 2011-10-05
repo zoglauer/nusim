@@ -21,7 +21,13 @@ in the heasoft/$<$system version$>$/lib directory.
 \end{itemize}
 
 \subsection{Boost}
-Finally NuSIM requires the Boost library to work (www.boost.org). On Linux just use your favorite package manager to install the boost development tools -- any version within the last 5 years should be fine. On a Mac, the tested and thus preferred installation path is to download the source code from the website, follow the setup instructions from the boost website, compile it, and install it in /usr/local.
+Finally NuSIM requires the Boost library to work (www.boost.org). On Linux just use your favorite package manager to install the boost development tools -- any version within the last 5 years should be fine. On a Mac, the tested and thus preferred installation path is to download the source code from the website, follow the setup instructions from the boost website, compile it, and install it in /usr/local. On the Mac, you should do something similar to this:
+\begin{verbatim}
+tar xvfz boost_1_47_0.tar.gz
+cd boost_1_47_0
+bootstrap.sh
+sudo ./bjam install --prefix=/usr/local 
+\end{verbatim}
 
 \subsection{NuSIM}
 Next, retrieve NuSIM from its repository by using subversion:
