@@ -640,13 +640,14 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
     if (m_Satellite.IsNight(m_Time) == true) {
       NTime Low = m_Satellite.GetLastBeginNightTime(m_Time);
       NTime High = m_Satellite.GetNextEndNightTime(m_Time);
-      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * m_PerturbedAlignmentsNight.size();
-      unsigned int Bin = floor(TimeBin); 
+      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * (m_PerturbedAlignmentsNight.size()-1);
+      unsigned int Bin = floor(TimeBin);
       if (Bin < 0) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = 0;
-      }
-      if (Bin >= m_PerturbedAlignmentsNight.size()) {
+      } else if (Bin == m_PerturbedAlignmentsNight.size() && m_Time < High+0.0001) {
+        Bin = m_PerturbedAlignmentsNight.size() - 1;
+      } else if (Bin == m_PerturbedAlignmentsNight.size()) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = m_PerturbedAlignmentsNight.size() - 1;
       }
@@ -655,13 +656,14 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
     } else {
       NTime Low = m_Satellite.GetLastEndNightTime(m_Time);
       NTime High = m_Satellite.GetNextBeginNightTime(m_Time);
-      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * m_PerturbedAlignmentsDay.size();
+      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * (m_PerturbedAlignmentsDay.size()-1);
       unsigned int Bin = floor(TimeBin); 
       if (Bin < 0) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = 0;
-      }
-      if (Bin >= m_PerturbedAlignmentsDay.size()) {
+      } else if (Bin == m_PerturbedAlignmentsDay.size() && m_Time < High+0.0001) {
+        Bin = m_PerturbedAlignmentsDay.size() - 1;
+      } else if (Bin >= m_PerturbedAlignmentsDay.size()) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = m_PerturbedAlignmentsDay.size() - 1;
       }

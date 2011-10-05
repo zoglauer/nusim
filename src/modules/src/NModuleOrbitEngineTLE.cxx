@@ -134,10 +134,10 @@ bool NModuleOrbitEngineTLE::Initialize()
   cout<<"Initial night times: "<<m_BeginNightTime.size()<<endl;
   unsigned int e = 0;
   for (unsigned int i = 0; i < m_BeginNightTime.size(); ++i) {
-    cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginNightTime[i]).GetDateInString();
+    cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginNightTime[i]).GetASCIIFileString()<<" ("<<m_BeginNightTime[i]<<")";
     while (m_EndNightTime[e] < m_BeginNightTime[i] && e < m_EndNightTime.size()) ++e;
     if (e < m_EndNightTime.size()) {
-      cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndNightTime[e]).GetDateInString()<<endl;
+      cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndNightTime[e]).GetASCIIFileString()<<" ("<<m_EndNightTime[e]<<")"<<endl;
     } else {
       cout<<endl;
     }
@@ -146,10 +146,10 @@ bool NModuleOrbitEngineTLE::Initialize()
   cout<<"Initial occultation times: "<<m_BeginOccultationTime.size()<<endl;
   e = 0;
   for (unsigned int i = 0; i < m_BeginOccultationTime.size(); ++i) {
-    cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginOccultationTime[i]).GetDateInString();
+    cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginOccultationTime[i]).GetASCIIFileString()<<" ("<<m_BeginOccultationTime[i]<<")";
     while (m_EndOccultationTime[e] < m_BeginOccultationTime[i] && e < m_EndOccultationTime.size()) ++e;
     if (e < m_EndOccultationTime.size()) {
-      cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndOccultationTime[e]).GetDateInString()<<endl;
+      cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndOccultationTime[e]).GetASCIIFileString()<<" ("<<m_EndOccultationTime[e]<<")"<<endl;
     } else {
       cout<<endl;
     }
@@ -422,17 +422,20 @@ bool NModuleOrbitEngineTLE::IsBlackout(NTime t)
   NTime Begin;
   for (unsigned int i = m_BeginOccultationTime.size() - 2; i < m_BeginOccultationTime.size(); --i) {
     if (m_BeginOccultationTime[i] < t) {
-      Begin = m_BeginOccultationTime[i+1];
+      Begin = m_BeginOccultationTime[i];
       break;
     }
   }
   // Find the first End after begin
   NTime End;
   for (unsigned int i = m_EndOccultationTime.size() - 2; i < m_EndOccultationTime.size(); --i) {
-    if (m_EndOccultationTime[i] < Begin) End = m_EndOccultationTime[i+1];
+    if (m_EndOccultationTime[i] < Begin) {
+      End = m_EndOccultationTime[i+1];
+      break;
+    }
   }
 
-  if (Begin >= t && End <= t) return true; 
+  if (Begin <= t && t <= tEnd) return true; 
   
   return false;
 }
@@ -689,7 +692,7 @@ NTime NModuleOrbitEngineTLE::GetOrbitDuration(NTime Time)
 
 bool NModuleOrbitEngineTLE::IsNight(NTime t)
 {
-  //! Return true if we are within blackout
+  //! Return true if we are on the night side of Earth
 
   // Make sure we have a complete blackout...
   while (m_BeginNightTime.back() < t) AdvanceTime();
@@ -699,17 +702,20 @@ bool NModuleOrbitEngineTLE::IsNight(NTime t)
   NTime Begin;
   for (unsigned int i = m_BeginNightTime.size() - 2; i < m_BeginNightTime.size(); --i) {
     if (m_BeginNightTime[i] < t) {
-      Begin = m_BeginNightTime[i+1];
+      Begin = m_BeginNightTime[i];
       break;
     }
   }
   // Find the first End after begin
   NTime End;
   for (unsigned int i = m_EndNightTime.size() - 2; i < m_EndNightTime.size(); --i) {
-    if (m_EndNightTime[i] < Begin) End = m_EndNightTime[i+1];
+    if (m_EndNightTime[i] < Begin) {
+      End = m_EndNightTime[i+1];
+      break;
+    }
   }
 
-  if (Begin >= t && End <= t) return true; 
+  if (Begin <= t && t <= End) return true; 
   
   return false;
 }
