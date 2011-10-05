@@ -435,7 +435,7 @@ bool NModuleOrbitEngineTLE::IsBlackout(NTime t)
     }
   }
 
-  if (Begin <= t && t <= tEnd) return true; 
+  if (Begin <= t && t <= End) return true; 
   
   return false;
 }
