@@ -397,6 +397,21 @@ unsigned int NTime::GetDays()
   return tp.tm_mday;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+unsigned int NTime::GetDaysInYear()
+{
+  // Return the day
+
+  struct tm tp;
+  tp = *localtime(&m_Seconds);
+  
+  return tp.tm_yday + 1;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -407,7 +422,7 @@ unsigned int NTime::GetMonths()
   struct tm tp;
   tp = *localtime(&m_Seconds);
 
-  return tp.tm_mon+1;
+  return tp.tm_mon + 1;
 }
 
 
@@ -421,10 +436,13 @@ unsigned int NTime::GetYears()
   struct tm tp;
   tp = *localtime(&m_Seconds);
 
-  return tp.tm_year+1900;
+  return tp.tm_year + 1900;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
+
+
 TString NTime::GetDateInString()
 {
   ostringstream out;
@@ -467,9 +485,11 @@ TString NTime::GetDateInString()
   }
    
   return TString(out.str().c_str());
-  
 }
+
+
 ////////////////////////////////////////////////////////////////////////////////
+
 
 NTime& NTime::operator=(const NTime& T)
 {
@@ -742,6 +762,43 @@ TString NTime::GetString(unsigned int Precision) const
   out<<" sec";
 
   return TString(out.str().c_str());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TString NTime::GetOccultationString()
+{
+  // Format: 2012/045 00:04:49
+  
+  ostringstream out;
+  out<<GetYears()<<"/"
+      <<setw(3)<<setfill('0')<<GetDaysInYear()<<" "
+      <<setw(2)<<setfill('0')<<GetHours()<<":"
+      <<setw(2)<<setfill('0')<<GetMinutes()<<":"
+      <<setw(2)<<setfill('0')<<GetSeconds();
+  
+  return out.str().c_str();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TString NTime::GetASCIIFileString()
+{
+  // Format: 2012/045 00:04:49
+  
+  ostringstream out;
+  out<<GetYears()<<"-"
+      <<setw(2)<<setfill('0')<<GetMonths()<<"-"
+      <<setw(2)<<setfill('0')<<GetDays()<<" "
+      <<setw(2)<<setfill('0')<<GetHours()<<"-"
+      <<setw(2)<<setfill('0')<<GetMinutes()<<"-"
+      <<setw(2)<<setfill('0')<<GetSeconds();
+  
+  return out.str().c_str();
 }
 
 

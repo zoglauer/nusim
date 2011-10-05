@@ -88,12 +88,12 @@ class NTime
   unsigned int GetHours();
   //! Return the days
   unsigned int GetDays();
+  //! Return the days
+  unsigned int GetDaysInYear();
   //! Return the months
   unsigned int GetMonths();
   //! Return the years
   unsigned int GetYears();
-  //! Return the date as a string
-  TString GetDateInString();
   
   //! The assignment operator
   NTime& operator=(const NTime& Time);
@@ -143,6 +143,13 @@ class NTime
 
   //! Get as string with the given precisision and without "sec"
   TString GetString(unsigned int Precision = 9) const;
+
+  //! Return the date as a string
+  TString GetDateInString();
+  //! Return the date as a string
+  TString GetOccultationString();
+  //! Return the date as a string
+  TString GetASCIIFileString();
 
   //! Dump the time as string in seconds in the form "123.1376765 sec"
   TString ToString() const;
