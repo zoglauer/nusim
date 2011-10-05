@@ -88,7 +88,7 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   //! Get the orbit at time t
   virtual NOrbit GetOrbit(const NTime& t) { return m_Orbit->GetOrbit(t); }
   //! Get the orbit duration
-  NTime GetOrbitDuration() const { return m_Orbit->GetOrbitDuration(); }
+  NTime GetOrbitDuration(NTime t) const { return m_Orbit->GetOrbitDuration(t); }
   //! Get the start time of the next black-out
   virtual NTime StartOfNextBlackout(NTime t) { return m_Orbit->StartOfNextBlackout(t); }
   //! Get the end time of the next black-out
@@ -101,6 +101,22 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   virtual NTime GetEffectiveObservationTime(NTime t1, NTime t2) { return m_Orbit->GetEffectiveObservationTime(t1, t2); }
   //! Get the ideal time as a function of observation time
   virtual NTime FindIdealTime(NTime ObservationTime) { return m_Orbit->FindIdealTime(ObservationTime); }
+
+  //! Get time of next switch to night
+  virtual NTime GetNextEndNightTime(NTime t) { return m_Orbit->GetNextEndNightTime(t); }
+  //! Get time of next switch to day
+  virtual NTime GetNextBeginNightTime(NTime t) { return m_Orbit->GetNextBeginNightTime(t); }
+  //! Get time of next switch to night
+  virtual NTime GetLastEndNightTime(NTime t) { return m_Orbit->GetLastEndNightTime(t); }
+  //! Get time of next switch to day
+  virtual NTime GetLastBeginNightTime(NTime t) { return m_Orbit->GetLastBeginNightTime(t); }
+  //! Return true if we are within night time
+  virtual bool IsNight(NTime t) { return m_Orbit->IsNight(t); }
+
+//! Return if we provide day and night cycles
+  virtual bool OrbitProvidesDayAndNightCycles() const { return m_Orbit->OrbitProvidesDayAndNightCycles(); }
+
+
 
   //! Get all orientations
   virtual NAlignmentsDBEntry GetAllAlignments(const NTime& t) { return m_Orientations->GetAllAlignments(t); }

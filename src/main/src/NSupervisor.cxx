@@ -357,12 +357,21 @@ bool NSupervisor::Run()
     cout<<"Unable to initialize the satellite - aborting..."<<endl;
     return false;
   }
-  // Initialize the module data. End with the orbit module
+  // Initialize the module data - sequence is important...
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
-    if (dynamic_cast<NModuleInterfaceOrbit*>((*Iter).second) != 0) continue;
-    if ((*Iter).second->Initialize() == false) {
-      cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
-      return false;
+    if (dynamic_cast<NModuleInterfaceTime*>((*Iter).second) != 0) {
+      if ((*Iter).second->Initialize() == false) {
+        cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
+        return false;
+      }
+    }
+  }
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfacePointing*>((*Iter).second) != 0) {
+      if ((*Iter).second->Initialize() == false) {
+        cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
+        return false;
+      }
     }
   }
   for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
@@ -373,6 +382,15 @@ bool NSupervisor::Run()
       }
     }
   }  
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceTime*>((*Iter).second) != 0) continue;
+    if (dynamic_cast<NModuleInterfacePointing*>((*Iter).second) != 0) continue;
+    if (dynamic_cast<NModuleInterfaceOrbit*>((*Iter).second) != 0) continue;
+    if ((*Iter).second->Initialize() == false) {
+      cout<<"Unable to initialize module: "<<(*Iter).second->GetFullName()<<" - aborting..."<<endl;
+      return false;
+    }
+  }
 
 
 
@@ -426,6 +444,16 @@ bool NSupervisor::Run()
   
   NModuleInterfacePointing* Pointing = m_PointingModules[0];
 
+  vector<NModuleInterfaceTimeJump*> TimeJumpModules;
+  for (Iter = m_ActiveModules.begin(); Iter != m_ActiveModules.end(); ++Iter) {
+    if (dynamic_cast<NModuleInterfaceTimeJump*>((*Iter).second) != 0) {
+      if (m_StarTrackerModules.size() > 0 && dynamic_cast<NModuleInterfaceEntry*>((*Iter).second) == StarTrackerStart) continue;
+      if (m_MetrologyModules.size() > 0 && dynamic_cast<NModuleInterfaceEntry*>((*Iter).second) == MetrologyStart) continue;
+      TimeJumpModules.push_back(dynamic_cast<NModuleInterfaceTimeJump*>((*Iter).second));
+    }
+  }
+
+  
   bool HasSourcePipe = false;
   if (m_PipelineModules.size() > 0 && SourceStart != 0) HasSourcePipe = true;
   bool HasBackgroundPipe = false;
@@ -458,8 +486,9 @@ bool NSupervisor::Run()
     
     BlackoutTime = m_Satellite.GetBlackoutDuration(0, IdealTime);
     NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(0.0, IdealTime);
-    if (SourceStart != 0) SourceStart->PerformTimeJump(IdealTime);
-    if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(IdealTime);
+    for (unsigned int i = 0; i < TimeJumpModules.size(); ++i) {
+      TimeJumpModules[i]->PerformTimeJump(IdealTime);
+    }
     Pointing->StartNewOrbit(IdealTime, BlackoutDuration); // IdealTime not used!
     
     if (HasStarTrackerPipe == true) {
@@ -593,8 +622,9 @@ bool NSupervisor::Run()
       NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
       cout<<"Occultation detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<endl;
       BlackoutTime += BlackoutDuration;
-      if (SourceStart != 0) SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
-      if (BackgroundStart != 0) BackgroundStart->PerformTimeJump(BlackoutDuration + 100*ns);
+      for (unsigned int i = 0; i < TimeJumpModules.size(); ++i) {
+        TimeJumpModules[i]->PerformTimeJump(BlackoutDuration + 100*ns);
+      }
       Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent), BlackoutDuration);
       m_Satellite.SetTime(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
       

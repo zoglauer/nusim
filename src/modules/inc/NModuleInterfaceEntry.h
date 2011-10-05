@@ -23,6 +23,7 @@
 
 // NuSTAR libs:
 #include "NTime.h"
+#include "NModuleInterfaceTimeJump.h"
 
 // Forward declarations:
 
@@ -35,7 +36,7 @@
 //! Its special feature is to store the time when the next event has to be started
 //! or the next data set has to be generated, etc.
 
-class NModuleInterfaceEntry
+class NModuleInterfaceEntry : public NModuleInterfaceTimeJump
 {
   // public interface:
  public:

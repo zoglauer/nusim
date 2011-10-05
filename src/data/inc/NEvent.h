@@ -87,10 +87,15 @@ class NEvent
   //! Return the telescope module of this event
   unsigned int GetTelescope() const { return m_Telescope; }
 
-  //! Set the Time of this event
+  //! Set the time of this event
   void SetTime(NTime Time) { m_Empty = false; m_Time = Time; }
   //! Return the Time of this event
   NTime GetTime() const { return m_Time; }
+
+  //! Set the detector life time for this event
+  void SetDetectorLifeTime(NTime DetectorLifeTime) { m_Empty = false; m_DetectorLifeTime = DetectorLifeTime; }
+  //! Return the detector life time for this event
+  NTime GetDetectorLifeTime() const { return m_DetectorLifeTime; }
 
   //! Set the blocked flag - event got blocked by the optics, aperture, passive detector material, etc)
   void SetBlocked(bool Blocked = true) { m_Empty = false; m_Blocked = Blocked; }
@@ -314,6 +319,9 @@ class NEvent
 
   //! Time of this event
   NTime m_Time;
+
+  //! Detector life time of this event
+  NTime m_DetectorLifeTime;
 
   //! Flag indicating that this event got blocked (e.g. by the optics, the aperture, passive detector material, etc.) 
   bool m_Blocked;

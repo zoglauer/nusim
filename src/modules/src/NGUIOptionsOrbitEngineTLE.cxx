@@ -74,6 +74,16 @@ void NGUIOptionsOrbitEngineTLE::Create()
   m_TLEFile->SetFileType("TLE file", "*.tle");
   AddFrame(m_TLEFile, FileLayout);
 
+
+  m_Save = new TGCheckButton(this, "Save occultation data");
+  m_Save->Associate(this);
+  if (dynamic_cast<NModuleOrbitEngineTLE*>(m_Module)->GetSave() == true) {
+    m_Save->SetState(kButtonDown);
+  } else {
+    m_Save->SetState(kButtonUp);
+  }
+  AddFrame(m_Save, FileLayout);
+  
   PostCreate();
 }
 
@@ -118,6 +128,12 @@ bool NGUIOptionsOrbitEngineTLE::OnApply()
 
   dynamic_cast<NModuleOrbitEngineTLE*>(m_Module)->SetTLEFileName(m_TLEFile->GetFileName());
 
+  if (m_Save->GetState() == kButtonDown) {
+    dynamic_cast<NModuleOrbitEngineTLE*>(m_Module)->SetSave(true);
+  } else {
+    dynamic_cast<NModuleOrbitEngineTLE*>(m_Module)->SetSave(false);
+  }
+  
 	return true;
 }
 

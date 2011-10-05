@@ -79,6 +79,11 @@ class NModuleInterfaceEventSaverAscii : public NModuleInterfaceObservation
   //! The output stream
   ofstream m_Out;
 
+  //! Collects the total life time of all events in detector 1
+  NTime m_TotalLifeTime1;
+  //! Collects the total life time of all events in detector 2
+  NTime m_TotalLifeTime2;
+  
   // private members:
  private:
 

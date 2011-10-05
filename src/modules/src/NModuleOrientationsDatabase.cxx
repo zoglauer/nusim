@@ -155,7 +155,7 @@ bool NModuleOrientationsDatabase::Initialize()
   //}
   //cout<<"N perturbed entries: "<<m_PerturbedAlignments.size()<<endl;
 
-  m_Time = -99999; // Any value < 0 will do... 
+  m_Time = -90*minute; // Any value < 0 will do... 
   
   return true;
 }
@@ -515,6 +515,33 @@ bool NModuleOrientationsDatabase::ReadPerturbedAlignmentsDB(TString FileName)
       merr<<"DB error: The index of the start of the night is beyond the vector limits"<<endl;
       return false;
     }
+    
+    if (m_DayStartAlignments == 0 && m_NightStartAlignments == 0) {
+      m_HasDayAndNightAlignments = false;
+    }
+    
+    unsigned int Position = m_NightStartAlignments;
+    m_PerturbedAlignmentsNight.clear();
+    while (true) {
+      m_PerturbedAlignmentsNight.push_back(m_PerturbedAlignments[Position]);
+      Position++;
+      if (Position == m_PerturbedAlignments.size()) Position = 0;
+      if (Position == m_DayStartAlignments) {
+        m_PerturbedAlignmentsNight.push_back(m_PerturbedAlignments[Position]);
+        break;
+      }
+    }
+    Position = m_DayStartAlignments;
+    m_PerturbedAlignmentsDay.clear();
+    while (true) {
+      m_PerturbedAlignmentsDay.push_back(m_PerturbedAlignments[Position]);
+      Position++;
+      if (Position == m_PerturbedAlignments.size()) Position = 0;
+      if (Position == m_NightStartAlignments) {
+        m_PerturbedAlignmentsDay.push_back(m_PerturbedAlignments[Position]);
+        break;
+      }
+    }
   }
 
   return true;
@@ -553,62 +580,95 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
   // Determine orientations if they are not yet present for the given time t
   // All are relative to the focal plane coordinate system
   // Remember: Distances are in mm!
-  
+    
   // Don't do anything if we are at the same time...
   if (m_Time == t) return;
 
   bool Interpolate = true;
 
   // Retrieve latest perturbed alignments
-  if (t.GetAsSeconds() >= 0 && m_PerturbedAlignments.size() > 1) {
-    if (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
-      m_StartIndexPerturbedAlignments = 0;
-      while (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
-        m_TimeWrapPerturbedAlignments -= m_PerturbedAlignments.back().GetTime();
-      }
-    }
-
-    unsigned int NextIndex = 0;
-    do {
-      NextIndex = m_StartIndexPerturbedAlignments + 1;
-      // If we reached the end of the array, rewind
-      if (NextIndex >= m_PerturbedAlignments.size()) {
-        NextIndex = 0;
-        m_TimeWrapPerturbedAlignments += m_PerturbedAlignments.back().GetTime();
-      }
-      if (m_PerturbedAlignments[NextIndex].GetTime() + m_TimeWrapPerturbedAlignments > t) {
-        break;
-      } else {
-        m_StartIndexPerturbedAlignments = NextIndex;      
-      }
-    } while (true);
-    // Start index is always smaller the the last one, except when they are identical, then rewind:
-    if (m_StartIndexPerturbedAlignments == m_PerturbedAlignments.size() - 1) m_StartIndexPerturbedAlignments = 0; 
-  } else {
-    // If the time is lower than 0 we alwasy start with the first index, in order to have smooth start:
-    m_StartIndexPerturbedAlignments = 0;
-  }
-
-  if (m_PerturbedAlignments.size() == 1) {
-    m_LatestPerturbedAlignments = m_PerturbedAlignments[0];
-  } else {
-    // We should do interpolations here...
-    if (Interpolate == true) {
-      double Fraction = (t.GetAsSeconds() - m_TimeWrapPerturbedAlignments.GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds())/
-        (m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1].GetTime().GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds());
-        
-      if (Fraction > 1) {
-        merr<<"Time fraction for data base interpolation larger than 1!"<<show;
-        Fraction = 1;
+  if (m_HasDayAndNightAlignments == false || m_Satellite.OrbitProvidesDayAndNightCycles() == false) {
+    if (t.GetAsSeconds() >= 0 && m_PerturbedAlignments.size() > 1) {
+      if (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
+        m_StartIndexPerturbedAlignments = 0;
+        while (m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime() + m_TimeWrapPerturbedAlignments > t) {
+          m_TimeWrapPerturbedAlignments -= m_PerturbedAlignments.back().GetTime();
+        }
       }
 
-      m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignments[m_StartIndexPerturbedAlignments], 
-                                                  m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1], Fraction);
+      unsigned int NextIndex = 0;
+      do {
+        NextIndex = m_StartIndexPerturbedAlignments + 1;
+        // If we reached the end of the array, rewind
+        if (NextIndex >= m_PerturbedAlignments.size()) {
+          NextIndex = 0;
+          m_TimeWrapPerturbedAlignments += m_PerturbedAlignments.back().GetTime();
+        }
+        if (m_PerturbedAlignments[NextIndex].GetTime() + m_TimeWrapPerturbedAlignments > t) {
+          break;
+        } else {
+          m_StartIndexPerturbedAlignments = NextIndex;      
+        }
+      } while (true);
+      // Start index is always smaller the the last one, except when they are identical, then rewind:
+      if (m_StartIndexPerturbedAlignments == m_PerturbedAlignments.size() - 1) m_StartIndexPerturbedAlignments = 0; 
     } else {
-      m_LatestPerturbedAlignments = m_PerturbedAlignments[m_StartIndexPerturbedAlignments];
+      // If the time is lower than 0 we alwasy start with the first index, in order to have smooth start:
+      m_StartIndexPerturbedAlignments = 0;
+    }
+
+    if (m_PerturbedAlignments.size() == 1) {
+      m_LatestPerturbedAlignments = m_PerturbedAlignments[0];
+    } else {
+      // We should do interpolations here...
+      if (Interpolate == true) {
+        double Fraction = (t.GetAsSeconds() - m_TimeWrapPerturbedAlignments.GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds())/
+          (m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1].GetTime().GetAsSeconds() - m_PerturbedAlignments[m_StartIndexPerturbedAlignments].GetTime().GetAsSeconds());
+        
+        if (Fraction > 1) {
+          merr<<"Time fraction for data base interpolation larger than 1!"<<show;
+          Fraction = 1;
+        }
+
+        m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignments[m_StartIndexPerturbedAlignments], 
+                                                    m_PerturbedAlignments[m_StartIndexPerturbedAlignments+1], Fraction);
+      } else {
+        m_LatestPerturbedAlignments = m_PerturbedAlignments[m_StartIndexPerturbedAlignments];
+      }
+    }
+  } else {
+    if (m_Satellite.IsNight(m_Time) == true) {
+      NTime Low = m_Satellite.GetLastBeginNightTime(m_Time);
+      NTime High = m_Satellite.GetNextEndNightTime(m_Time);
+      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * m_PerturbedAlignmentsNight.size();
+      unsigned int Bin = floor(TimeBin); 
+      if (Bin < 0) {
+        merr<<"Bin finding failed: "<<Bin<<endl;
+        Bin = 0;
+      }
+      if (Bin >= m_PerturbedAlignmentsNight.size()) {
+        merr<<"Bin finding failed: "<<Bin<<endl;
+        Bin = m_PerturbedAlignmentsNight.size() - 1;
+      }
+      m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignmentsNight[Bin], 
+                                                  m_PerturbedAlignmentsNight[Bin+1], TimeBin - Bin);      
+    } else {
+      NTime Low = m_Satellite.GetLastEndNightTime(m_Time);
+      NTime High = m_Satellite.GetNextBeginNightTime(m_Time);
+      double TimeBin = (m_Time - Low).GetAsSeconds() / (High - Low).GetAsSeconds() * m_PerturbedAlignmentsDay.size();
+      unsigned int Bin = floor(TimeBin); 
+      if (Bin < 0) {
+        merr<<"Bin finding failed: "<<Bin<<endl;
+        Bin = 0;
+      }
+      if (Bin >= m_PerturbedAlignmentsDay.size()) {
+        merr<<"Bin finding failed: "<<Bin<<endl;
+        Bin = m_PerturbedAlignmentsDay.size() - 1;
+      }
+      m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignmentsDay[Bin], 
+                                                  m_PerturbedAlignmentsDay[Bin+1], TimeBin - Bin);      
     }
   }
-
 
 
   // Retrieve latest metrology uncertainties

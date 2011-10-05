@@ -24,6 +24,7 @@
 // NuSTAR libs:
 #include "NTime.h"
 #include "NEvent.h"
+#include "NModuleInterfaceTimeJump.h"
 
 // Forward declarations:
 
@@ -34,7 +35,7 @@
 //! The class is an DeadTime decorator for a module.
 //! It provides a function to check if the stop criterion is fullfilled
 
-class NModuleInterfaceDeadTime
+class NModuleInterfaceDeadTime : public NModuleInterfaceTimeJump
 {
   // public interface:
  public:
@@ -42,6 +43,9 @@ class NModuleInterfaceDeadTime
   NModuleInterfaceDeadTime();
   //! Default destructor
   virtual ~NModuleInterfaceDeadTime();
+
+  //! Perform a time jump:
+  virtual void PerformTimeJump(const NTime& TimeJump) { m_DeadTimeEndTelescope1 += TimeJump; m_DeadTimeEndTelescope2 += TimeJump; } 
 
   //! Initialize
   virtual bool Initialize();

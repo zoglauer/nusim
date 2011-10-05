@@ -24,6 +24,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceOrientations.o \
 	$(LB)/NModuleInterfacePhotonPropagation.o \
 	$(LB)/NModuleInterfaceTime.o \
+	$(LB)/NModuleInterfaceTimeJump.o \
 	$(LB)/NModuleInterfaceIO.o \
 	$(LB)/NModuleInterfacePhotonSaverAscii.o \
 	$(LB)/NModuleInterfaceEventSaverAscii.o \

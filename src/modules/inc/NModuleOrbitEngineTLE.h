@@ -24,6 +24,7 @@
 // NuSTAR:
 #include "NModule.h"
 #include "NModuleInterfaceOrbit.h"
+#include "NModuleInterfaceIO.h"
 #include "NOrbit.h"
 
 // Bryce tool
@@ -39,7 +40,7 @@
 
 
 // Choose one:
-class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit
+class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit, public NModuleInterfaceIO
 {
   // public interface:
  public:
@@ -50,9 +51,19 @@ class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit
 
   //! Initialize the module
   virtual bool Initialize();
+  //! Initialize the module
+  virtual bool Finalize();
+
+  //! Enable saving the file as fits
+  void SetSave(bool Save = true) { m_Save = Save; }
+  //! Enable saving the file as fits
+  bool GetSave() const { return m_Save; }
 
   //! Return the orbit position at a given time
   virtual NOrbit GetOrbit(NTime Time);
+  
+  //! Get the orbit duration
+  virtual NTime GetOrbitDuration(NTime Time);
 
   //! Get the orbit duration
   virtual TString GetTLEFileName() const { return m_TLEFileName; }
@@ -76,6 +87,19 @@ class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit
   //! Get the ideal time as a function of observation time
   virtual NTime FindIdealTime(NTime ObservationTime);
   
+  //! Get time of next switch to night
+  virtual NTime GetNextEndNightTime(NTime t);
+  //! Get time of last switch to night
+  virtual NTime GetLastEndNightTime(NTime t);
+  //! Get time of next switch to day
+  virtual NTime GetNextBeginNightTime(NTime t);
+  //! Get time of last switch to day
+  virtual NTime GetLastBeginNightTime(NTime t);
+  //! Return true if we are within night time
+  virtual bool IsNight(NTime t);
+
+  //! Return if we provide day and night cycles
+  virtual bool OrbitProvidesDayAndNightCycles() const { return true; }
 
 
   //! Show the options GUI
@@ -128,6 +152,8 @@ class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit
   //! A vector of all "end occultation-time" times
   vector<NTime> m_EndOccultationTime;
   
+  //! Flag indicating whether of not to save the data
+  bool m_Save;
   
   
 

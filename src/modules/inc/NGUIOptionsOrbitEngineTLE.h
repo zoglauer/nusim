@@ -64,7 +64,7 @@ class NGUIOptionsOrbitEngineTLE : public NGUIOptions
   // protected members:
  protected:
   MGUIEFileSelector* m_TLEFile;
-
+  TGCheckButton* m_Save;
 
 
   // private members:

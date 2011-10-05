@@ -47,7 +47,7 @@ class NModuleInterfaceOrbit
   virtual NOrbit GetOrbit(NTime t) { return NOrbit(); }
 
   //! Get the orbit duration
-  virtual NTime GetOrbitDuration() const { return NTime(0); }
+  virtual NTime GetOrbitDuration(NTime Time) const { return NTime(96.3*minute); }
 
   //! Get the start time of the next black-out
   virtual NTime StartOfNextBlackout(NTime t) { return NTime(0); }
@@ -56,14 +56,26 @@ class NModuleInterfaceOrbit
   //! Return true if we are within blackout
   virtual bool IsBlackout(NTime t) { return false; }
   //! Get the number of blackouts in between
-  virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return 0; }
+  virtual NTime GetBlackoutDuration(NTime t1, NTime t2) { return NTime(0); }
   //! Get the effective observation time between times
-  virtual NTime GetEffectiveObservationTime(NTime t1, NTime t2) { return 0; }
+  virtual NTime GetEffectiveObservationTime(NTime t1, NTime t2) { return NTime(0); }
 
   //! Get the ideal time as a function of observation time
   virtual NTime FindIdealTime(NTime ObservationTime) { return 0; }
 
-  //! CalculateNextOrbit
+  //! Get time of next switch to night
+  virtual NTime GetNextEndNightTime(NTime t) { return NTime(0); }
+  //! Get time of last switch to night
+  virtual NTime GetLastEndNightTime(NTime t) { return NTime(0); }
+  //! Get time of next switch to day
+  virtual NTime GetNextBeginNightTime(NTime t) { return NTime(0); }
+  //! Get time of last switch to day
+  virtual NTime GetLastBeginNightTime(NTime t) { return NTime(0); }
+  //! Return true if we are within night time
+  virtual bool IsNight(NTime t) { return false; }
+
+  //! Return if we provide day and night cycles
+  virtual bool OrbitProvidesDayAndNightCycles() const { return false; }
 
   // protected methods:
  protected:

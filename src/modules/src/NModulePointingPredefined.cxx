@@ -150,7 +150,7 @@ bool NModulePointingPredefined::Initialize()
   
   
   for (unsigned int j = 0; j < m_PointingJitters.size(); ++j) {
-    m_PointingJitters[j].SetTime(NTime(j*m_Satellite.GetOrbitDuration().GetAsSeconds()/m_PointingJitters.size()));
+    m_PointingJitters[j].SetTime(NTime(j*m_Satellite.GetOrbitDuration(NTime(0)).GetAsSeconds()/m_PointingJitters.size()));
   }
   //for (unsigned int p = 0; p < m_SequencedInitialPointings.size(); ++p) {
   //  cout<<"I["<<p<<"] = "<<m_SequencedInitialPointings[p].ToString()<<endl;
@@ -203,6 +203,7 @@ bool NModulePointingPredefined::ReadPointingJitterDB(TString FileName)
         in.close();
         return false;            
       }
+      //cout<<J.ToString()<<endl;
       m_PointingJitters.push_back(J);
     }
   } 
@@ -312,7 +313,7 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
     
     // PART 1: Find the initial pointing:
     
-    if (t.GetAsSeconds() >= 0 && m_SequencedInitialPointings.size() > 1) {
+    if (t.GetAsSeconds() > 0 && m_SequencedInitialPointings.size() > 1) {
       if (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
         m_StartIndexSequencedInitialPointings = 0;
         while (m_SequencedInitialPointings[m_StartIndexSequencedInitialPointings].GetTime() + m_TimeWrapSequencedInitialPointings > PointingTime) {
@@ -364,20 +365,26 @@ NPointing NModulePointingPredefined::GetPointing(NTime t)
       NTime JitterTime = t - m_PointingJitters.back().GetTime()*int(t/m_PointingJitters.back().GetTime());
       
       // Retrieve latest perturbed alignments
-      if (JitterTime.GetAsSeconds() >= 0 && m_PointingJitters.size() > 1) {
+      if (JitterTime.GetAsSeconds() > 0 && m_PointingJitters.size() > 1) {
         // Start search from the beginning --- should happen rarely
         if (m_PointingJitters[m_StartIndexPointingJitters].GetTime() > JitterTime) {
           m_StartIndexPointingJitters = 0;
         }
 
+        //cout<<"N indices: "<<m_PointingJitters.size()<<" Index: "<<m_StartIndexPointingJitters<<" index time:"<<m_PointingJitters[m_StartIndexPointingJitters].GetTime()<<" jittertime:"<<JitterTime<<endl;
+
         unsigned int NextIndex = 0;
         do {
           NextIndex = m_StartIndexPointingJitters + 1;
           // If we reached the end of the array, rewind
+          //cout<<"Next index: "<<NextIndex<<" vs. "<<m_PointingJitters.size()<<endl;
           if (NextIndex >= m_PointingJitters.size()) {
             NextIndex = 0;
             cout<<"Jittering: We tried to go beyond the last index without finding the correct jitter... jittertime: "<<JitterTime<<" last index time: "<<m_PointingJitters.back().GetTime()<<endl;
+            abort();
           }
+          //cout<<"JTime: "<<m_PointingJitters[NextIndex].GetTime()<<" vs. "<<JitterTime<<endl;
+          //cout<<NextIndex<<":"<<m_PointingJitters[NextIndex].ToString()<<endl;
           if (m_PointingJitters[NextIndex].GetTime() > JitterTime) {
             break;
           } else {

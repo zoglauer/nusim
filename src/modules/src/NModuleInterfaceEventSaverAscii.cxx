@@ -84,10 +84,13 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
   m_Out<<"OBSID "<<m_ObservationID<<endl;
   m_Out<<endl;
   NTime Start = m_Satellite.GetAbsoluteObservationStartTime();
-  m_Out<<"OBSSTART "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<" "<<Start.GetHours()<<"-"<<Start.GetMinutes()<<"-"<<Start.GetSeconds()<<endl;
-  m_Out<<"DATE-OBS "<<Start.GetYears()<<"-"<<Start.GetMonths()<<"-"<<Start.GetDays()<<"T"<<Start.GetHours()<<":"<<Start.GetMinutes()<<":"<<Start.GetSeconds()<<endl;
+  m_Out<<"OBSSTART "<<Start.GetASCIIFileString()<<endl;
+  m_Out<<"DATE-OBS "<<Start.GetDateInString()<<endl;
   m_Out<<"TSTART "<<m_Satellite.GetEpochObservationStartTime().GetAsSeconds()<<endl;
   m_Out<<endl;
+  
+  m_TotalLifeTime1.Set(0.0);
+  m_TotalLifeTime2.Set(0.0);
   
   return true;
 }
@@ -107,6 +110,9 @@ bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToSt
 
   Event.Stream(m_Out, WhatToStream);
   
+  if (Event.GetTelescope() == 1) m_TotalLifeTime1 += Event.GetDetectorLifeTime();
+  if (Event.GetTelescope() == 2) m_TotalLifeTime2 += Event.GetDetectorLifeTime();
+  
   return true;
 }
 
@@ -122,9 +128,14 @@ bool NModuleInterfaceEventSaverAscii::CloseAsciiFile()
     m_Out<<"EN"<<endl;
     m_Out<<endl;
     NTime End = m_Satellite.GetAbsoluteObservationEndTime();
-    m_Out<<"OBSEND "<<End.GetYears()<<"-"<<End.GetMonths()<<"-"<<End.GetDays()<<" "<<End.GetHours()<<"-"<<End.GetMinutes()<<"-"<<End.GetSeconds()<<endl;
+    m_Out<<"OBSEND "<<End.GetASCIIFileString()<<endl;
     m_Out<<endl;
-
+    m_Out<<"TOTLIFE1 "<<m_TotalLifeTime1<<endl;
+    m_Out<<"TOTLIFE2 "<<m_TotalLifeTime2<<endl;
+    m_Out<<endl;
+    m_Out<<"EFFOBS "<<m_Satellite.GetEffectiveObservationTime()<<endl;
+    m_Out<<endl;
+    
     m_Out.close();
   }
   

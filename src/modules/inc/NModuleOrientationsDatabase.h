@@ -134,6 +134,10 @@ class NModuleOrientationsDatabase : public NModule, public NModuleInterfaceOrien
   NTime m_TimeWrapPerturbedAlignments;
   //! The pertubed alignments in space as a function of time...
   vector<NAlignmentsDBEntry> m_PerturbedAlignments;   
+  //! The pertubed alignments in space as a function of time...
+  vector<NAlignmentsDBEntry> m_PerturbedAlignmentsNight;   
+  //! The pertubed alignments in space as a function of time...
+  vector<NAlignmentsDBEntry> m_PerturbedAlignmentsDay;   
 
   //! True if we have day and night alignments
   bool m_HasDayAndNightAlignments;

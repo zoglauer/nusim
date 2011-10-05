@@ -18,6 +18,8 @@
 #include "NModuleOrbitEngineTLE.h"
 
 // Standard libs:
+#include <fstream>
+using namespace std;
 
 // ROOT libs:
 #include "TGClient.h"
@@ -39,7 +41,7 @@ ClassImp(NModuleOrbitEngineTLE)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleOrbitEngineTLE::NModuleOrbitEngineTLE(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceOrbit()
+NModuleOrbitEngineTLE::NModuleOrbitEngineTLE(NSatellite& Satellite) : NModule(Satellite), NModuleInterfaceOrbit(), NModuleInterfaceIO()
 {
   // Construct an instance of NModuleOrbitEngineTLE
 
@@ -59,7 +61,9 @@ NModuleOrbitEngineTLE::NModuleOrbitEngineTLE(NSatellite& Satellite) : NModule(Sa
 
   // Set if this module has a diagnostics GUI
   m_HasDiagnosticsGUI = false;
-  m_Diagnostics = 0;    
+  m_Diagnostics = 0; 
+  
+  m_Save = false;
 }
 
 
@@ -92,7 +96,7 @@ bool NModuleOrbitEngineTLE::Initialize()
     }
   }
 
-  m_LimbAngle = 10*deg;
+  m_LimbAngle = 20*deg;
 
 
   // read the file nustar.tle in to the SGP4 model
@@ -102,12 +106,16 @@ bool NModuleOrbitEngineTLE::Initialize()
     return false;
   }
      
-  cout<<"Pre-calculating a first set of occultation times & day-night cycles..."<<endl;
+  cout<<"Pre-calculating a first set of occultation times & day-night cycles including jittering in one second steps..."<<endl;
   // Advance time to zero to make sure we are out of initialization troubles...
   m_Time.Set(-4*60*60+1.0);
+  m_BeginOccultationTime.clear();
   m_BeginOccultationTime.push_back(NTime(-4*60*60.0-100.0));
+  m_EndOccultationTime.clear();
   m_EndOccultationTime.push_back(NTime(-4*60*60.0-1.0));
+  m_BeginNightTime.clear();
   m_BeginNightTime.push_back(NTime(-4*60*60.0-100.0));
+  m_EndNightTime.clear();
   m_EndNightTime.push_back(NTime(-4*60*60.0-1.0));
 
   AdvanceTime(NTime(4*60*60));
@@ -150,7 +158,45 @@ bool NModuleOrbitEngineTLE::Initialize()
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleOrbitEngineTLE::Finalize()
+{
+  // Initialize the module 
+
+  TString FileName = GetBaseFileName() + ".occ";
+  MFile::ExpandFileName(FileName);
   
+  ofstream out;
+  out.open(FileName);
+  if (out.is_open() == false) {
+    cerr<<"Unable to open file: "<<FileName<<endl;
+    return false;
+  }
+  
+  out<<";occultation_entry occultation_exit duration"<<endl;
+  
+  unsigned int Begin = 0;
+  unsigned int End = 0;
+  if (m_BeginOccultationTime[Begin] > m_EndOccultationTime[End]) Begin++;
+  
+  while (Begin < m_BeginOccultationTime.size() && End < m_EndOccultationTime.size()) {
+    NTime Start = m_Satellite.ConvertToAbsoluteTime(m_BeginOccultationTime[Begin]);
+    NTime Stop = m_Satellite.ConvertToAbsoluteTime(m_EndOccultationTime[End]);
+    out<<Start.GetOccultationString()<<"|"
+       <<Stop.GetOccultationString()<<"|"
+       <<(int) (Stop - Start).GetAsSeconds()<<endl;
+    Begin++;
+    End++;
+  }
+  out.close();
+  
+  return true;
+}
+ 
+ 
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -172,7 +218,7 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
  
   while (m_Time < Time) {
     m_Time += 1*s;
-    //cout<<"Time: "<<m_Time<<endl;
+    //cout<<"Time: "<<m_Satellite.ConvertToAbsoluteTime(m_Time).GetDateInString()<<endl;
 
     NPointing P = m_Satellite.GetPointing(m_Time);
     
@@ -196,7 +242,7 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
     tmtc::TmTcTime tStart, tEnd;
     
     NTime T = m_Satellite.ConvertToAbsoluteTime(m_Time);
-    T -= 4*hour;
+    T -= 2*hour;
     tStart.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
     T += 4*hour;
     tEnd.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
@@ -205,6 +251,7 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
     
     
     tmtc::TmTcIntervalSet isOcc = ooi.getIntervals(tStart, tEnd);
+    //cout<<isOcc<<endl;
     
     bool PreviouslyOcculted = true;
     if (m_BeginOccultationTime.back() < m_EndOccultationTime.back()) {
@@ -230,10 +277,12 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
       }
     }
     if (PreviouslyOcculted == false && NowOcculted == true) {
-      //cout<<"New occultation begin: "<<m_Time<<endl;
+      //cout<<"New occultation begin: "<<m_Satellite.ConvertToAbsoluteTime(m_Time).GetDateInString()<<endl;
+      //cout<<isOcc<<endl;
       m_BeginOccultationTime.push_back(m_Time);
     } else if (PreviouslyOcculted == true && NowOcculted == false) {
-      //cout<<"New occultation end: "<<m_Time<<endl;
+      //cout<<"New occultation end: "<<m_Satellite.ConvertToAbsoluteTime(m_Time).GetDateInString()<<endl;
+      //cout<<isOcc<<endl;
       m_EndOccultationTime.push_back(m_Time);
     }
     
@@ -543,6 +592,132 @@ NTime NModuleOrbitEngineTLE::StartOfPreviousBlackout(NTime t)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+NTime NModuleOrbitEngineTLE::GetNextBeginNightTime(NTime t)
+{
+  //! Get time of next switch to night
+
+  // Make sure we have a next blackout...
+  while (m_BeginNightTime.back() < t) AdvanceTime();
+  
+  // Find it going from the back...
+  for (unsigned int i = m_BeginNightTime.size() - 2; i < m_BeginNightTime.size(); --i) {
+    if (m_BeginNightTime[i] < t) return m_BeginNightTime[i+1];
+  }
+ 
+  merr<<"By design, we sould never reach this part of the code..."<<fatal;
+ 
+  return NTime(0);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NModuleOrbitEngineTLE::GetLastBeginNightTime(NTime t)
+{
+  //! Get time of next switch to night
+
+  // Make sure we have a next blackout...
+  while (m_BeginNightTime.back() < t) AdvanceTime();
+  
+  // Find it going from the back...
+  for (unsigned int i = m_BeginNightTime.size() - 2; i < m_BeginNightTime.size(); --i) {
+    if (m_BeginNightTime[i] < t) return m_BeginNightTime[i];
+  }
+ 
+  merr<<"By design, we sould never reach this part of the code..."<<fatal;
+ 
+  return NTime(0);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NModuleOrbitEngineTLE::GetNextEndNightTime(NTime t)
+{
+  //! Get time of next switch to day
+
+  // Make sure we have a next blackout...
+  while (m_EndNightTime.back() < t) AdvanceTime();
+  
+  // Find it going from the back...
+  for (unsigned int i = m_EndNightTime.size() - 2; i < m_EndNightTime.size(); --i) {
+    if (m_EndNightTime[i] < t) return m_EndNightTime[i+1];
+  }
+ 
+  merr<<"By design, we sould never reach this part of the code..."<<fatal;
+ 
+  return NTime(0);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NModuleOrbitEngineTLE::GetLastEndNightTime(NTime t)
+{
+  //! Get time of last switch to night
+
+  // Make sure we have a next blackout...
+  while (m_EndNightTime.back() < t) AdvanceTime();
+  
+  // Find it going from the back...
+  for (unsigned int i = m_EndNightTime.size() - 2; i < m_EndNightTime.size(); --i) {
+    if (m_EndNightTime[i] < t) return m_EndNightTime[i];
+  }
+ 
+  merr<<"By design, we sould never reach this part of the code..."<<fatal;
+ 
+  return NTime(0);
+}
+ 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+NTime NModuleOrbitEngineTLE::GetOrbitDuration(NTime Time)
+{
+  //! Get the orbit duration
+
+  return GetNextEndNightTime(Time) - GetLastEndNightTime(Time);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NModuleOrbitEngineTLE::IsNight(NTime t)
+{
+  //! Return true if we are within blackout
+
+  // Make sure we have a complete blackout...
+  while (m_BeginNightTime.back() < t) AdvanceTime();
+  while (m_EndNightTime.back() < t || m_EndNightTime.back() < m_BeginNightTime.back()) AdvanceTime();
+
+  // Find the first start which is smaller than this one:
+  NTime Begin;
+  for (unsigned int i = m_BeginNightTime.size() - 2; i < m_BeginNightTime.size(); --i) {
+    if (m_BeginNightTime[i] < t) {
+      Begin = m_BeginNightTime[i+1];
+      break;
+    }
+  }
+  // Find the first End after begin
+  NTime End;
+  for (unsigned int i = m_EndNightTime.size() - 2; i < m_EndNightTime.size(); --i) {
+    if (m_EndNightTime[i] < Begin) End = m_EndNightTime[i+1];
+  }
+
+  if (Begin >= t && End <= t) return true; 
+  
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NModuleOrbitEngineTLE::ShowOptionsGUI()
 {
   //! Show the options GUI --- has to be overwritten!
@@ -571,6 +746,10 @@ bool NModuleOrbitEngineTLE::ReadXmlConfiguration(MXmlNode* Node)
   if (TLEFileNameNode != 0) {
     m_TLEFileName = TLEFileNameNode->GetValueAsString();
   }
+  MXmlNode* SaveNode = Node->GetNode("Save");
+  if (SaveNode != 0) {
+    m_Save = SaveNode->GetValueAsBoolean();
+  }
 
   return true;
 }
@@ -586,7 +765,8 @@ MXmlNode* NModuleOrbitEngineTLE::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
 
   new MXmlNode(Node, "TLEFileName", m_TLEFileName);
-
+  new MXmlNode(Node, "Save", m_Save);
+  
   return Node;
 }
 

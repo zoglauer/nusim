@@ -203,8 +203,8 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
 
             if (P.GetPostTriggerSampleSum() - P.GetPreTriggerSampleSum() > m_TriggerThreshold) {
               Niner.SetTrigger(ID, true);
-	      NTriggersInNiner++;
-	      TriggerPattern += (0x01 << (ID-1));
+              NTriggersInNiner++;
+              TriggerPattern += (0x01 << (ID-1));
             }
 
             // Use energy weighted depths:
@@ -224,10 +224,10 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
       }
     }
     
-    for ( int grade=0; grade<33; grade++ ) {
-      if ( TriggerPattern == m_TriggerPattern[grade] ) {
-	TriggerGrade = grade;
-	break;
+    for (int grade = 0; grade < 33; ++grade) {
+      if (TriggerPattern == m_TriggerPattern[grade]) {
+        TriggerGrade = grade;
+        break;
       }
     }
 
@@ -264,6 +264,7 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     }
 
     // Raise the dead time
+    Event.SetDetectorLifeTime(Event.GetTime() - GetDeadTimeEndTelescope(Event.GetTelescope()));
     SetDeadTimeDetectorHit(Event.GetTime(), Event.GetTelescope());
   } else {
     if (Event.GetTelescope() == 1) {

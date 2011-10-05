@@ -76,6 +76,7 @@ const NEvent& NEvent::operator=(const NEvent& Event)
   m_Telescope = Event.m_Telescope;
 
   m_Time = Event.m_Time;
+  m_DetectorLifeTime = Event.m_DetectorLifeTime;
 
   m_Blocked = Event.m_Blocked;
   m_LostInDeadTime = Event.m_LostInDeadTime;
@@ -114,6 +115,7 @@ void NEvent::Clear()
   m_ID = 0;
   m_Telescope = g_IntNotDefined;
   m_Time.Clear();
+  m_DetectorLifeTime.Clear();
 
   m_Blocked = false;
   m_LostInDeadTime = false;
@@ -178,6 +180,8 @@ bool NEvent::Stream(ofstream& S, int WhatToStream)
   for (unsigned int i = 0; i < m_Hits.size(); ++i) {
     m_Hits[i].Stream(S);
   }
+  S<<"LT "<<m_DetectorLifeTime.GetString(9)<<endl;
+
 
   return true;
 }
@@ -266,6 +270,8 @@ bool NEvent::Parse(TString& Line)
     } else {
       Error = true;
     }
+  } else if (Data[0] == 'L' && Data[1] == 'T') {
+    m_DetectorLifeTime.Set(Data);
   } else {
     Error = true;
   }

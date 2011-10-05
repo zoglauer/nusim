@@ -34,7 +34,7 @@ ClassImp(NModuleInterfaceDeadTime)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModuleInterfaceDeadTime::NModuleInterfaceDeadTime()
+NModuleInterfaceDeadTime::NModuleInterfaceDeadTime() : NModuleInterfaceTimeJump()
 {
   // Construct an instance of NModuleInterfaceDeadTime
 
