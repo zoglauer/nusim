@@ -190,13 +190,15 @@ bool NTime::Set(const long Seconds, const long NanoSeconds)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NTime::Set(const TString& String)
+bool NTime::Set(const TString& String, const TString& Prefix)
 {
-  if (String.BeginsWith("TI") == true) {
+  if (String.BeginsWith(Prefix) == true) {
     long Seconds = 0;
     long NanoSeconds = 0;
     TString NewString = String;
-    NewString.ReplaceAll("TI", "");
+    NewString.ReplaceAll(Prefix, "");
+    NewString.ReplaceAll("sec", "");
+    NewString.ReplaceAll(" ", "");
     MTokenizer T('.', true);
     T.Analyze(NewString);
     if (T.GetNTokens() == 1) {
@@ -212,12 +214,12 @@ bool NTime::Set(const TString& String)
         NanoSeconds /= int(pow(10.0, Digits - 9.0));   
       }
     } else {
-      mout<<"NTime: TI not correct ("<<T.GetNTokens()<<" tokens): "<<String<<endl;
+      mout<<"NTime: Time not correct ("<<T.GetNTokens()<<" tokens): "<<String<<endl;
       return false;       
     }
     Set(Seconds, NanoSeconds);
   } else {
-    mout<<"NTime: String does not start with TI"<<endl;
+    mout<<"NTime: String does not start with "<<Prefix<<endl;
     return false;
   }
 

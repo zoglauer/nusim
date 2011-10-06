@@ -629,10 +629,10 @@ bool NSupervisor::Run()
       m_Satellite.SetTime(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
       
       if (HasStarTrackerPipe == true) {
-        StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
+        StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*s);
       }
       if (HasMetrologyPipe == true) {
-        MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 99*ns);
+        MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*ns);
       }
       
       continue; // We continue, so that we get the next event beyond the timeout

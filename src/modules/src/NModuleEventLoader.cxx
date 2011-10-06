@@ -160,12 +160,16 @@ bool NModuleEventLoader::Initialize()
                                        atoi(dynamic_cast<TObjString*>(Tokens->At(4))->GetString().Data()),
                                        atoi(dynamic_cast<TObjString*>(Tokens->At(5))->GetString().Data()),
                                        atoi(dynamic_cast<TObjString*>(Tokens->At(6))->GetString().Data()), 0);
-       cout<<"OBSEND: "<<m_AbsoluteObservationEndTime<<" vs "<<Line<<endl;
-       break;                      
+    } else if (Line.BeginsWith("EFFOBS") == true) {
+      NTime Time;
+      Time.Set(Line, "EFFOBS");
+      m_Satellite.SetEffectiveObservationTime(Time);
     }
   }
   
   // Jump back to original position
+  m_In.close(); 
+  m_In.open(m_FileName);
   m_In.seekg(Intermediate);
   
 

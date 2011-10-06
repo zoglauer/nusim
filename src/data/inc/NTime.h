@@ -71,7 +71,7 @@ class NTime
   //! Set as two doubles
   bool Set(const double Seconds, const double NanoSeconds);
   //! Set as TI string: "TI 2376547.23487"
-  bool Set(const TString& String);
+  bool Set(const TString& String, const TString& Prefix = "TI");
 
   //! Return content as seconds
   double GetAsSeconds() const;

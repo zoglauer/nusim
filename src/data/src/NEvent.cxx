@@ -271,7 +271,7 @@ bool NEvent::Parse(TString& Line)
       Error = true;
     }
   } else if (Data[0] == 'L' && Data[1] == 'T') {
-    m_DetectorLifeTime.Set(Data);
+    m_DetectorLifeTime.Set(Data, "LT");
   } else {
     Error = true;
   }

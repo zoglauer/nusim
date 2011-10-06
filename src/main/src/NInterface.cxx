@@ -116,6 +116,14 @@ bool NInterface::ParseCommandLine(int argc, char** argv)
   Usage<<"             You know the answer..."<<endl;
   Usage<<endl;
 
+  // Dump command line
+  cout<<"Command-line parser: Options: ";
+  for (int i = 0; i < argc; i++) {
+    cout<<argv[i]<<" ";
+  }
+  cout<<endl;
+  
+  
   // Store some options temporarily:
   TString Option;
 
