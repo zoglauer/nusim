@@ -36,10 +36,10 @@ protected:
   /// earth limb angle
   double limbAngle;
 
+public:
   /// find occultation status at an instant in time
   int findStatus(const tmtc::TmTcTime& t) const;
 
-public:
   /// Constructor
   OrbitalOccultationIntervals(vecutil::OrbitModel *__om);
 

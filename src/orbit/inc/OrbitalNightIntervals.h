@@ -36,10 +36,10 @@ protected:
   /// the type of eclipse (umbra or penumbra)
   event_enum eventType;
 
+public:
   /// find occultation status at an instant in time
   int findStatus(const tmtc::TmTcTime& t) const;
 
-public:
   /// Constructor
   OrbitalNightIntervals(vecutil::OrbitModel *__om);
 

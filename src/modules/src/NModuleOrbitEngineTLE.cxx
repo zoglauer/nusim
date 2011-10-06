@@ -218,9 +218,16 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
  
   while (m_Time < Time) {
     m_Time += 1*s;
-    //cout<<"Time: "<<m_Satellite.ConvertToAbsoluteTime(m_Time).GetDateInString()<<endl;
 
     NPointing P = m_Satellite.GetPointing(m_Time);
+    
+    // calculate orbital occultation intervals
+    tmtc::TmTcTime Now;
+    NTime T = m_Satellite.ConvertToAbsoluteTime(m_Time);
+    Now.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
+
+
+    // Occultation:
     
     // target direction vector -- initialize from celestial coordinates
     vecutil::Dirvector ObjectDirection;
@@ -232,26 +239,6 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
     ooi.setTarget(ObjectDirection);
     // set desired critical limb angle
     ooi.setLimbAngle(m_LimbAngle/rad);
-  
-    // create an orbital night interval object, set with orbit model
-    vecutil::OrbitalNightIntervals oni(&m_SGP4);
-
-
-
-    // calculate orbital occultation intervals
-    tmtc::TmTcTime tStart, tEnd;
-    
-    NTime T = m_Satellite.ConvertToAbsoluteTime(m_Time);
-    T -= 2*hour;
-    tStart.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
-    T += 4*hour;
-    tEnd.setGregorian(T.GetYears(), T.GetMonths(), T.GetDays(), T.GetHours(), T.GetMinutes(), T.GetSeconds());
-    //cout<<tStart.getEngineering()<<endl;
-    //cout<<tEnd.getEngineering()<<endl;
-    
-    
-    tmtc::TmTcIntervalSet isOcc = ooi.getIntervals(tStart, tEnd);
-    //cout<<isOcc<<endl;
     
     bool PreviouslyOcculted = true;
     if (m_BeginOccultationTime.back() < m_EndOccultationTime.back()) {
@@ -259,22 +246,10 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
     }
     
     bool NowOcculted = false;
-    for (tmtc::TmTcIntervalSet::const_iterator i = isOcc.begin(), iEnd = isOcc.end(); i != iEnd; i++) {
-      // get the ingress and egress times of this interval
-      // (in other words, target occultation start and end)
-      const tmtc::TmTcTime tIngress = i->getStart();
-      const tmtc::TmTcTime tEgress  = i->getEnd();
-      NTime Start;
-      Start.Set(tIngress.getYear(), tIngress.getMonth(), tIngress.getDay(), tIngress.getHour(), tIngress.getMinute(), tIngress.getSecond());
-      Start = m_Satellite.ConvertFromAbsoluteTime(Start);
-      NTime Stop;
-      Stop.Set(tEgress.getYear(), tEgress.getMonth(), tEgress.getDay(), tEgress.getHour(), tEgress.getMinute(), tEgress.getSecond());
-      Stop = m_Satellite.ConvertFromAbsoluteTime(Stop);
-    
-      if (m_Time >= Start && m_Time <= Stop) {
-        NowOcculted = true;
-        break;
-      }
+    if (ooi.findStatus(Now) == 1) {
+      NowOcculted = true;
+    } else {
+      NowOcculted = false;      
     }
     if (PreviouslyOcculted == false && NowOcculted == true) {
       //cout<<"New occultation begin: "<<m_Satellite.ConvertToAbsoluteTime(m_Time).GetDateInString()<<endl;
@@ -285,11 +260,12 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
       //cout<<isOcc<<endl;
       m_EndOccultationTime.push_back(m_Time);
     }
-    
-    
-    // Calculated the day and night times:
-    tmtc::TmTcIntervalSet isNight = oni.getIntervals(tStart, tEnd);
-    //cout<<"IsNight: "<<isNight<<endl;
+
+
+    // Night: 
+  
+    // create an orbital night interval object, set with orbit model
+    vecutil::OrbitalNightIntervals oni(&m_SGP4);
 
     bool PreviouslyNight = true;
     if (m_BeginNightTime.back() < m_EndNightTime.back()) {
@@ -297,22 +273,10 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
     }
     
     bool NowNight = false;
-    for (tmtc::TmTcIntervalSet::const_iterator i = isNight.begin(), iEnd = isNight.end(); i != iEnd; i++) {
-      // get the ingress and egress times of this interval
-      // (in other words, target occultation start and end)
-      const tmtc::TmTcTime tIngress = i->getStart();
-      const tmtc::TmTcTime tEgress  = i->getEnd();
-      NTime Start;
-      Start.Set(tIngress.getYear(), tIngress.getMonth(), tIngress.getDay(), tIngress.getHour(), tIngress.getMinute(), tIngress.getSecond());
-      Start = m_Satellite.ConvertFromAbsoluteTime(Start);
-      NTime Stop;
-      Stop.Set(tEgress.getYear(), tEgress.getMonth(), tEgress.getDay(), tEgress.getHour(), tEgress.getMinute(), tEgress.getSecond());
-      Stop = m_Satellite.ConvertFromAbsoluteTime(Stop);
-
-      if (m_Time >= Start && m_Time <= Stop) {
-        NowNight = true;
-        break;
-      }
+    if (oni.findStatus(Now) == 1) {
+      NowNight = true;
+    } else {
+      NowNight = false;      
     }
     //cout<<"Prev. night: "<<((PreviouslyNight == true) ? "true" : "false")<<" now night: "<<((NowNight == true) ? "true" : "false")<<endl;
     if (PreviouslyNight == false && NowNight == true) {
@@ -322,6 +286,8 @@ bool NModuleOrbitEngineTLE::AdvanceTime(const NTime& Time)
       //cout<<"New night end: "<<m_Time<<endl;
       m_EndNightTime.push_back(m_Time);
     }
+    
+    // Diagnostics:
     if (m_Time >= 0 && gROOT->IsBatch() == false) {
       dynamic_cast<NGUIDiagnosticsOrbitEngine*>(m_Diagnostics)->AddOrbitStatus(m_Time, NowOcculted, NowNight);
     }
