@@ -35,7 +35,7 @@ using namespace std;
 
 // NuSIM
 #include <NQuaternion.h>
-#include <NObservatorydata.h>
+#include <NObservatoryData.h>
 #include <NOrientation.h>
 #include "NAlignmentsDBEntry.h"
 
@@ -846,10 +846,10 @@ int main(int argc, char** argv)
 
   ExposureMap Map1;
   
-  Map1.ReadCalibratedAlignmentsDB("/Users/kristin/data/nusim/nusim/resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
+  Map1.ReadCalibratedAlignmentsDB("/users/nusim/soft/NuSim/svn/resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
   
-  //Map1.OpenEvtFile("/Users/kristin/data/nusim/nusim/resource/examples/Cygnus/cygsoft.events.fit");
-  Map1.OpenEvtFile(argv[1]);
+  Map1.OpenEvtFile("/users/nusim/soft/NuSim/svn/GalacticCenter.events.fits");
+  //Map1.OpenEvtFile(argv[1]);
   
   cout<<"Reading in file...."<<endl;
   //Map1.OpenEvtFile("/Users/kristin/data/nusim/nusim/test.events.fits");
