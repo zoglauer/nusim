@@ -65,7 +65,7 @@ public:
   bool Initialize();
   bool OpenEvtFile();
   bool GenerateARF();
-  bool ReadCalibratedAlignmentsDB(TString FileName);
+  bool ReadCalibratedAlignmentsDB();
   MVector LoadDSRegion(TString FileName);
   bool LoadEffArea();
   bool LoadVignet();
@@ -97,6 +97,7 @@ private:
   TString m_FitsFileName;
   /// Output file name
   TString m_OutputFileName;
+  TString DataBase;
   long axis1;
   long axis2;
  
@@ -110,8 +111,10 @@ private:
   float xDelta, yDelta;
   float xCenterValue, yCenterValue;
   float AvgDec;
-  float oaat_hist[29];
-  float ARF[820];
+  float oaat_hist1[29];
+  float ARF1[820];
+  float oaat_hist2[29];
+  float ARF2[820];
   float AE[820];
   float Elow[820];
   float Ehigh[820];
@@ -119,6 +122,7 @@ private:
   float VEhigh[820];
   float theta[29];
   float vignet[23780];
+  
   
 };
 /****************************************************************************/
@@ -164,8 +168,11 @@ bool Target::Initialize()
 
   LoadEffArea();
   LoadVignet();
-  ReadCalibratedAlignmentsDB("resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
   psfimg.LoadPSF(16);
+  for (int i=0; i<29; i++) {
+    oaat_hist1[i] = 0;
+	oaat_hist2[i] = 0;
+  }
 
   //cout<<psfimg.oaa0[100*201+100]<<endl;
   
@@ -389,9 +396,17 @@ bool Target::OpenEvtFile()
     cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
     return false;
   }
-  
-  char Dummy[30];
-  fits_read_keyword(m_File, "TCRVL1", Dummy, NULL, &Status);
+ 
+  char Dummy[30]; 
+  fits_read_key(m_File, TSTRING, "ALIGNDB", Dummy, NULL, &Status);
+  if (Status != 0) {
+	cout<<"Cannot retrieve ALIGNDB keyword..."<<show;
+	return false;
+  }
+  DataBase = Dummy;
+  DataBase = "resource/data/AlignmentDatabases/"+DataBase;
+
+  fits_read_keyword(m_File, "TCRVL4", Dummy, NULL, &Status);
   if (Status != 0) {
     cout<<"Cannot retrieve TCRVL1 keyword..."<<show;
     return false;
@@ -399,7 +414,7 @@ bool Target::OpenEvtFile()
   xCenterValue = atof(Dummy);
   //cout<<"xCenterValue: "<<xCenterValue<<endl;
   
-  fits_read_keyword(m_File, "TCDLT1", Dummy, NULL, &Status);
+  fits_read_keyword(m_File, "TCDLT4", Dummy, NULL, &Status);
   if (Status != 0) {
 	cout<<"Cannot retrieve TCDLT1 keyword..."<<show;
 	return false;
@@ -407,7 +422,7 @@ bool Target::OpenEvtFile()
   xDelta = -fabs(atof(Dummy));
   //cout<<"xDelta: "<<xDelta<<endl;
   
-  fits_read_keyword(m_File, "TCRVL2", Dummy, NULL, &Status);
+  fits_read_keyword(m_File, "TCRVL5", Dummy, NULL, &Status);
   if (Status != 0) {
     cout<<"Cannot retrieve TCRVL2 keyword..."<<show;
     return false;
@@ -415,7 +430,7 @@ bool Target::OpenEvtFile()
   yCenterValue = atof(Dummy);
   //cout<<"yCenterValue: "<<yCenterValue<<endl;
   
-  fits_read_keyword(m_File, "TCDLT2", Dummy, NULL, &Status);
+  fits_read_keyword(m_File, "TCDLT5", Dummy, NULL, &Status);
   if (Status != 0) {
 	cout<<"Cannot retrieve CDELT2 keyword..."<<show;
 	return false;
@@ -429,9 +444,9 @@ bool Target::OpenEvtFile()
   }  
   float xMax = ceil(atof(Dummy));*/
   
-  fits_read_keyword(m_File, "TLMAX2", Dummy, NULL, &Status);
+  fits_read_keyword(m_File, "TLMAX5", Dummy, NULL, &Status);
   if (Status != 0) {
-	cout<<"Cannot retrieve TLMAX2 keyword..."<<show;
+	cout<<"Cannot retrieve TLMAX5 keyword..."<<show;
 	return false;
   }
   float yMax = ceil(atof(Dummy));
@@ -653,7 +668,7 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
 /****************************************************************************/
 
 
-bool Target::ReadCalibratedAlignmentsDB(TString FileName)
+bool Target::ReadCalibratedAlignmentsDB()
 {
   //! Read the data from file
   //! For the time being this is identical with the ReadPerturbedAlignmentsDB(TString FileName)
@@ -663,9 +678,9 @@ bool Target::ReadCalibratedAlignmentsDB(TString FileName)
   // Load from file
   //MFile::ExpandFileName(FileName);
   ifstream in;
-  in.open(FileName);
+  in.open(DataBase);
   if (in.is_open() == false) {
-    cerr<<"Unable to open file: \""<<FileName<<"\""<<endl;
+    cerr<<"Unable to open file: \""<<DataBase<<"\""<<endl;
     return false;
   }
 
@@ -793,21 +808,26 @@ float Target::GetPSFFraction(float region, int oaa)
 
   
   float AccumulatedPSF=0;
-  
+ 
+  //cout<<Vdet<<" "<<region<<endl; 
   for (int i=0;i < 40401; i++) {
     float pixX = floor(i/201); 
 	float pixY = i - pixX*201;
-  //cout<<i<<" "<<pixX<<" "<<pixY<<endl;
 	pixX = (pixX-100)*0.2; // mm
 	pixY = (pixY-100)*0.2; // mm
-	float rad = sqrt(pow(pixX,2)+pow(pixY,2));
-   //cout<<rad<<" "<<region<<endl;
+	float radius = sqrt(pow(pixX,2)+pow(pixY,2));
+    pixX += Vdet[0];
+	pixY += Vdet[1];
 
-	if (rad > region) continue;
+	if (radius > region) continue;
 	
-	//if (check for gap)
-	int n = 40401*oaa+i;
-    AccumulatedPSF += psfimg.cube[n];	
+	//Check gaps and edges
+	if ((pixX > -20.25 && pixX < -0.25) || (pixX > 0.25 && pixX < 20.25)) {
+	  if ((pixY > -20.25 && pixY < -0.25) || (pixY > 0.25 && pixY < 20.25)) {
+  	    int n = 40401*oaa+i;
+        AccumulatedPSF += psfimg.cube[n];
+      }
+	}
   }
   
   //cout<<"PSFfraction = "<<AccumulatedPSF<<endl;
@@ -821,6 +841,8 @@ bool Target::GenerateARF()
 {
 
   OpenEvtFile();
+  //ReadCalibratedAlignmentsDB("resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
+  ReadCalibratedAlignmentsDB();
 
   int Status = 0;
   float floatnull;
@@ -828,6 +850,8 @@ bool Target::GenerateARF()
   int anynull;
 
   double fT[axis2];
+  double fL[axis2];
+  int iModule[axis2];
   float fX[axis2];
   float fY[axis2];
   int iPHA[axis2];
@@ -843,23 +867,25 @@ bool Target::GenerateARF()
   float fQSy[axis2];
   float fQSz[axis2];
   float fQSr[axis2];
-  
-  fits_read_col(m_File, TFLOAT, 1, 1, 1, axis2, &floatnull, fX, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 2, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
-  fits_read_col(m_File, TINT, 3, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
-  fits_read_col(m_File, TDOUBLE, 5, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
-  fits_read_col(m_File, TINT, 7, 1, 1, axis2, &anynull, iType, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 9, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 10, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 11, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 12, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
+ 
+  fits_read_col(m_File, TDOUBLE, 1, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
+  fits_read_col(m_File, TDOUBLE, 2, 1, 1, axis2, &doublenull, fL, &anynull,&Status); 
+  fits_read_col(m_File, TINT, 3, 1, 1, axis2, &anynull, iModule, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 4, 1, 1, axis2, &floatnull, fX, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 5, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
+  fits_read_col(m_File, TINT, 6, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
+  fits_read_col(m_File, TINT, 9, 1, 1, axis2, &anynull, iType, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 11, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 12, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 20, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 21, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
   
   fits_close_file(m_File, &Status); 
   
@@ -867,28 +893,55 @@ bool Target::GenerateARF()
   region = LoadDSRegion(DS9File);
   float regionAtDet = region[2]*yDelta/c_Deg*10150.;
   
-  float exposure=0;
-  long* source = new long[820];
-  long* bkg = new long[820];
+  float exposure1=0;
+  float exposure2=0;
+  float lifetime1 = 0;
+  float lifetime2 = 0;
+  long* source1 = new long[820];
+  long* bkg1 = new long[820];
+  long* source2 = new long[820];
+  long* bkg2 = new long[820];
   for (int i=0; i<820;i++) {
-    source[i] = 0;
-	bkg[i] = 0;
+    source1[i] = 0;
+	bkg1[i] = 0;
+	source2[i] = 0;
+	bkg2[i] = 0;
+	ARF1[i] = 0;
+	ARF2[i] = 0;
   }
   
   
-  vector <int> DetIndex;
-  vector <float> TotalTime;
-  vector <int> oaa;
+  vector <int> DetIndex1;
+  vector <float> TotalTime1;
+  vector <int> oaa1;
+  vector <int> DetIndex2;
+  vector <float> TotalTime2;
+  vector <int> oaa2;
 
-  int exists = 0;
-  
+  int exists1 = 0;
+  int exists2 = 0;
+  double last_t1 = fT[0];
+  double last_t2 = fT[0];
+  double dt = 0;
+ 
   for (int i=0;i<axis2-1;i++){
-    Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
+	Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
 	Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
     Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
-    float dt = fT[i+1]-fT[i];
-	exposure += dt;
-
+	if (iModule[i] == 1) {
+	  dt = fT[i]-last_t1; 
+	  exposure1 += dt;
+	  if (fL[i] > 0) lifetime1 += fL[i];
+	  else lifetime1+=dt;
+	  last_t1 = fT[i];
+	}
+	if (iModule[i] == 2) {
+	  dt = fT[i]-last_t2; 
+	  exposure2 += dt;
+	  if (fL[i] > 0) lifetime2 += fL[i];
+	  else lifetime2+=dt;
+	  last_t2 = fT[i];
+    }
 	SetTarget(region);
 	
 	// Check what effective area bin the event falls in 
@@ -911,54 +964,92 @@ bool Target::GenerateARF()
 
 	  // fill in first entry
 	  if (i==0){
-	    DetIndex.push_back(GetDetIndex());  // first index, using 0.02 resolution
-	    TotalTime.push_back(dt);
-		oaa.push_back(round(m_oaa));
-	    continue;
+	    if (iModule[i] == 1) {
+	      DetIndex1.push_back(GetDetIndex());  // first index, using 0.02 resolution
+	      TotalTime1.push_back(dt);
+		  oaa1.push_back(round(m_oaa));
+	      continue;
+		}
+		if (iModule[i] == 2) {
+	      DetIndex2.push_back(GetDetIndex());  // first index, using 0.02 resolution
+	      TotalTime2.push_back(dt);
+		  oaa2.push_back(round(m_oaa));
+	      continue;
+		}
 	  }
     
-      exists = 0;
+      if (iModule[i] == 1) exists1 = 0;
+      if (iModule[i] == 2) exists2 = 0;
+	 
 	  // Check that this pixel is already exposed and at what oaa
-	  for (int j=0;j < (int)DetIndex.size(); j++){
-		if (DetIndex[j] == GetDetIndex() && oaa[j] == round(m_oaa)) {
-		  exists = 1;
-		  TotalTime[j] += dt;
+	  if (iModule[i] == 1) {
+	    for (int j=0;j < (int)DetIndex1.size(); j++){
+		  if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa)) {
+			exists1 = 1;
+		    TotalTime1[j] += dt;
+		  }
 	    }
-	  }	
-	  // And if it hasnt then add it to transform
-	  if (exists == 0) {
-	    DetIndex.push_back(GetDetIndex());  // first index occurance of transform
-	    TotalTime.push_back(dt);
-	    oaa.push_back(round(m_oaa));
+	    if (exists1 == 0) {
+		  DetIndex1.push_back(GetDetIndex());  // pixel
+	      TotalTime1.push_back(dt);
+	      oaa1.push_back(round(m_oaa));
+	    }
 	  }
-    }
-
+	  if (iModule[i] == 2) {
+	    for (int j=0;j < (int)DetIndex2.size(); j++){
+		  if (DetIndex2[j] == GetDetIndex() && oaa2[j] == round(m_oaa)) {
+		    exists2 = 1;
+		    TotalTime2[j] += dt;
+		  }
+	    }
+		if (exists2 == 0) {
+	      DetIndex2.push_back(GetDetIndex());  // pixel
+	      TotalTime2.push_back(dt);
+ 	      oaa2.push_back(round(m_oaa));
+	    }
+	  }
+	  
+	  // And if it hasnt then add it to transform
+	  
+    } //end loop oaa<11.5 arcmin
 	
 	//  In here add to the source spectrum and background spectrum. 
 	float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
 	if (rr < region[2] && iPHA[i] < 820) {
-	  source[iPHA[i]] += 1;
-	  if (iType[i] == 2) bkg[iPHA[i]] += 1;
+	  if (iModule[i] == 1) source1[iPHA[i]] += 1;
+	  if (iModule[i] == 2) source2[iPHA[i]] += 1;
+	  if (iType[i] == 2) {
+	    if (iModule[i] == 1) bkg1[iPHA[i]] += 1;
+	    if (iModule[i] == 2) bkg2[iPHA[i]] += 1;
+	  }
     }
 	
-  }
+  } //End loop over transforms
 
-  for (int j=0;j<(int)DetIndex.size();j++) oaat_hist[int(oaa[j]*2)] += TotalTime[j]*GetPSFFraction(regionAtDet, int(oaa[j]*2));
+  cout<<DetIndex1.size()<<endl;
+
+  for (int j=0;j<(int)DetIndex1.size();j++) 
+    oaat_hist1[int(oaa1[j]*2)] += TotalTime1[j]*GetPSFFraction(regionAtDet, int(oaa1[j]*2));
+  for (int j=0;j<(int)DetIndex2.size();j++) 
+    oaat_hist2[int(oaa2[j]*2)] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]*2));
   
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
-	  ARF[i] += 2*AE[i]*vignet[j*820+i]*oaat_hist[j]/exposure;  
+	  ARF1[i] += AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1; 
+	  ARF2[i] += AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2; 
 	}
   }
 
-  cout<<"oaa = "<<oaa[0]<<endl;
-  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa[0]*2))<<endl;
-  cout<<"Effective Area @ 3 keV "<< ARF[0]<<endl;
-  cout<<"Effective Area @ 10 keV "<<ARF[130]<<endl;
+  cout<<"oaa = "<<m_oaa<<" "<<oaa1[0]<<endl;
+  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa1[0]*2))<<endl;
+  cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
+  cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
+  cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" "<<AE[0]<<endl;
+  cout<<"Effective Area @ 10 keV "<<ARF1[71]<<" "<<AE[71]<<endl;
    
-  WriteFitsSpectrum(SourceOutFile, "source", source, exposure);
-  WriteFitsSpectrum(BkgFile, "bkg", bkg, exposure);
-  WriteARF(Elow,Ehigh,ARF);
+  WriteFitsSpectrum(SourceOutFile, "source", source1, lifetime1);
+  WriteFitsSpectrum(BkgFile, "bkg", bkg1, lifetime1);
+  WriteARF(Elow,Ehigh,ARF1);
   
   // We now have a histogram of dimensions offaxis angle that matches the loaded 
   // effective area. And we have a cumulative PSF fraction with duration.
@@ -1009,7 +1100,7 @@ int main(int argc, char** argv)
   
   src.SourceInFile = InFile;
   src.DS9File = argv[2];
-  src.SourceOutFile = T.GetTokenAtAsString(0) + ".pha";
+  src.SourceOutFile = T.GetTokenAtAsString(0) + ".pi";
   src.BkgFile = T.GetTokenAtAsString(0) + "_bkg.fits";
   src.ARFFile = T.GetTokenAtAsString(0) + ".arf";
 

@@ -93,7 +93,9 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   vector<double> m_Ra; 
   vector<double> m_Dec;
   vector<double> m_Energy;
+  vector<NTime> m_Life;
   vector<NTime> m_Time;
+  vector<int>    m_Module;
   vector<int>    m_Origin;
   vector<int>    m_Reject;
   vector<int>    m_PI;
