@@ -29,10 +29,6 @@ data_b = mrdfits(template_b, 'EVENTS', header_b, range = [0, 10], /silent)
 primary_header_a = headfits(template_a, exten = 0)
 primary_header_b = headfits(template_b, exten = 0)
 
-; Truncate all of the "HISTORY" crap from the EVENTS header
-header_a = header_a[0:114]
-header_b = header_b[0:114]
-
 ; Setup the output file names
 out_a = outpath+'/nu'+header_data.obsid+'A01.evt'
 out_b = outpath+'/nu'+header_data.obsid+'B01.evt'
