@@ -258,7 +258,7 @@ bool Target::LoadEffArea()
   int anynull;
   m_File = 0;
   
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.0.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.1.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;
@@ -297,7 +297,7 @@ bool Target::LoadVignet()
   int anynull;
   m_File = 0;
   
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.0.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.1.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;

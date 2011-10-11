@@ -122,9 +122,9 @@ bool NModuleInterfaceStarTrackerSaverLevel1Fits::SaveAsLevel1Fits(NStarTrackerDa
   NQuaternion Q = Data.GetStarTrackerDataSet4().GetMeasuredTransformation();
 
   Time.push_back(double(m_Sat.ConvertToTimeSinceEpoch(Data.GetTime()).GetAsSeconds()));
-  m_X.push_back(Q.m_V[0]);
-  m_Y.push_back(Q.m_V[1]);
-  m_Z.push_back(Q.m_V[2]);
+  m_X.push_back(-Q.m_V[0]);
+  m_Y.push_back(-Q.m_V[1]);
+  m_Z.push_back(-Q.m_V[2]);
   m_R.push_back(Q.m_R);
    
   //! If there are 100000 metrology data points then save the chunk to file 
