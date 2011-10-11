@@ -697,7 +697,12 @@ NTime NTime::operator*(const double& Scale) const
 
   // Overflow detection --- possible loss of precision...
   if (numeric_limits<long>::max() < double(m_NanoSeconds)*Scale) {
-    merr<<"Overflow in NTime: Precision loss..."<<endl;
+    if (log10(1E9*GetAsSeconds()*Scale) > 53*log10(2)) {
+      mout<<"Overflow in NTime: Precision loss of < "<<ceil(pow(10, log10(1E9*GetAsSeconds()*Scale)-53*log10(2)))<<" nanoseconds"<<endl;
+      if (sizeof(long) < 8) {
+        mout<<"   I suggest you switch to a 64-bit system..."<<endl;
+      } 
+    }
     return NTime(GetAsSeconds()*Scale);
   } else {
     NTime T;
