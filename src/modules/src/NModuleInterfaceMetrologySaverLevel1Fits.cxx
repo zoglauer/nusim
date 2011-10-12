@@ -250,9 +250,9 @@ bool NModuleInterfaceMetrologySaverLevel1Fits::WriteHDR()
   fits_write_key(m_File, TLONG,   "NuSimSVN", &g_SVNRevision, "NuSim SVN reversion number", &Status);
   fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSTAR"), " ", &Status);
   fits_write_key(m_File, TFLOAT,  "TIMEPIXR", &timepixr, "Bin time beginning=0 middle=0.5 end=1", &Status);
-  fits_write_key(m_File, TSTRING, "TIEMSYS",  const_cast<char*>("TT"), "Terrestrial Time", &Status);
+  fits_write_key(m_File, TSTRING, "TIMESYS",  const_cast<char*>("TT"), "Terrestrial Time", &Status);
   fits_write_key(m_File, TLONG,   "MJDREFI",  &MDJREFI, "MJD reference day 01 Jan 2010 00:00:00 UTC", &Status);
-  fits_write_key(m_File, TFLOAT,  "MDJREFF",  &MDJREFF , "MJD reference", &Status); 
+  fits_write_key(m_File, TFLOAT,  "MJDREFF",  &MDJREFF , "MJD reference", &Status); 
   fits_write_key(m_File, TSTRING, "TIMEUNIT", const_cast<char*>("s"), " ", &Status);
   fits_write_key(m_File, TDOUBLE, "TSTART",   &tstart, " ", &Status);
   fits_write_key(m_File, TDOUBLE, "TSTOP",    &tend, " ", &Status);
