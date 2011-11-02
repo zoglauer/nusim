@@ -46,6 +46,7 @@ const int NSource::c_LastSpectralType             = 8;
 
 const int NSource::c_Gaussian                     = 105; 
 const int NSource::c_ThermalBremsstrahlung        = 106; 
+const int NSource::c_Activation                   = 107; 
 const int NSource::c_BandFunction                 = 108; 
 
 
