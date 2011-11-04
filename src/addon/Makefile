@@ -19,8 +19,7 @@ PRGS = \
 	$(BN)/ConcatDat \
 	$(BN)/MakeARF \
 
-ALLLIBS = $(shell $(BN)/alllibs $(LB) $(DLL) )
-
+ALLLIBS = -lMain -lModules -lMegalib -lOrbit -lData
 
 
 #----------------------------------------------------------------
@@ -42,7 +41,7 @@ clean:
 
 $(PRGS): $(BN)/%: %.cxx
 	@echo "Compiling and linking $(subst $(BN)/,,$@) ..."
-	$(LD) $(LDFLAGS) $(CXXFLAGS) $(ALLLIBS) $(DEFINES) -I$(LHEASOFT)/include -lcfitsio -lm $< $(GLIBS) $(LIBS) -L$(LHEASOFT)/lib -o $@
+	$(LD) $(LDFLAGS) $(CXXFLAGS) $(DEFINES) -I$(LHEASOFT)/include $< -L$(LHEASOFT)/lib $(ALLLIBS) -lcfitsio -lm $(GLIBS) $(LIBS) -o $@
 
 
 

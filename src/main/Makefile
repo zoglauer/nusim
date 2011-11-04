@@ -74,7 +74,7 @@ $(LOBJS): $(LB)/%.o: src/%.cxx inc/%.h
 
 $(PRG): $(SOBJ) $(MOBJS)
 	@echo "Linking $(subst $(BN)/,,$@) ..."
-	@$(LD) $(LDFLAGS) $(NUSIMLIBS) $(MOBJS) $(GLIBS) $(LIBS) -o $(PRG)
+	@$(LD) $(LDFLAGS) $(MOBJS) $(NUSIMLIBS) $(GLIBS) $(LIBS) -o $(PRG)
 
 
 #

@@ -50,9 +50,9 @@ LDFLAGS     += -L$(LB)
 # NuSIM
 
 NUSIMLIBS = \
-	-lMegalib \
 	-lMain \
 	-lModules \
+	-lMegalib \
 	-lOrbit \
 	-lData \
 
