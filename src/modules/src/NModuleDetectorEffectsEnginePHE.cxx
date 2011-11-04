@@ -311,7 +311,7 @@ bool NModuleDetectorEffectsEnginePHE::Initialize()
     }
   }
   
-  return true;
+  return ReadingError;
 }
 
 
@@ -363,8 +363,12 @@ bool NModuleDetectorEffectsEnginePHE::AnalyzeEvent(NEvent& Event)
   int xPixel = int((Photon.GetPosition().X() + m_Satellite.GetDetectorHalfDimension().X()) / (2*m_Satellite.GetDetectorHalfDimension().X() / NPixelsX));
   int yPixel = int((Photon.GetPosition().Y() + m_Satellite.GetDetectorHalfDimension().Y()) / (2*m_Satellite.GetDetectorHalfDimension().Y() / NPixelsY));
 
-  massert(xPixel >= 0 && xPixel < NPixelsX);
-  massert(yPixel >= 0 && yPixel < NPixelsY);
+  if (xPixel < 0 || xPixel >= NPixelsX || yPixel < 0 || yPixel >= NPixelsY) {
+    mout<<"Pixels out of bounds: x="<<xPixel<<"  y="<<yPixel<<endl;
+    mout<<"Setting this event as blocked!"<<endl;
+    Event.SetBlocked(true);
+    return true;    
+  }
   
 
   // (4) Grab a random PHE

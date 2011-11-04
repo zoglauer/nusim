@@ -46,7 +46,7 @@ class NGUIOptionsSinglePointing : public TGCompositeFrame
   // public interface:
  public:
   //! Standard constructor
-  NGUIOptionsSinglePointing(const TGWindow* Parent, NPointing* Pointing, unsigned int ID); 
+  NGUIOptionsSinglePointing(const TGWindow* Parent, NPointing* Pointing, unsigned long ID); 
   //! Default destructor
   virtual ~NGUIOptionsSinglePointing();
 
@@ -74,7 +74,7 @@ class NGUIOptionsSinglePointing : public TGCompositeFrame
   //! The SinglePointing itself
   NPointing* m_Pointing;
   //! ID of this pointing
-  unsigned int m_ID;
+  unsigned long m_ID;
   
   MGUIEEntry* m_Dec;
   MGUIEEntry* m_Ra;

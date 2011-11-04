@@ -359,13 +359,13 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
 {
 
   int
-    j_index,
+    /* j_index, */
     e_index,           /* energy index */
     shell_index,
     mirror_group,
 	flag=0;				/*flag for keeping track og ghost rays*/
-  float photon_energy,
-    Rmin,Rmax,    /* for restricting the simulation space *********/
+  float /*photon_energy,*/
+    /* Rmin,Rmax, */    /* for restricting the simulation space *********/
     apex1,apex2,  /* cone apices */
     z_interaction,  /* z coordinate of photon reflection point */
     incidence_angle1,incidence_angle2,
@@ -386,13 +386,14 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   // Use 0.0 if you don't want scattering
   if (m_UseScattering) scatter = 6e-5;
   else scatter = 0.0;
-  Rmin = m_Rm1[0];
-  Rmax = m_Rm1[133];
+  
+  //Rmin = m_Rm1[0];
+  //Rmax = m_Rm1[133];
 
   e_index = (int)floor((e_photon_lo) / m_EnergyMesh);
 
-  j_index = 1;
-  photon_energy = e_photon_lo;
+//  j_index = 1;
+//  photon_energy = e_photon_lo;
   flag = 0;
  
   incidence_angle1=0.;

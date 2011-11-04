@@ -390,11 +390,13 @@ void genutil::daemonize(void) {
   close(STDERR_FILENO);
 
   // attach standard filehandles to /dev/null
+  /*
   int fd0, fd1, fd2;
   fd0=open("/dev/null", O_RDWR);
   fd1=dup(0);
   fd2=dup(0);
-  }
+  */
+}
 
 /// \brief a quick diff function, which returns trie if files are identical,
 /// false if not

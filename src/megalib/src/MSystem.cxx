@@ -296,12 +296,12 @@ void MSystem::BusyWait(int musec)
 //   } while (stoptime > currenttime)
 
 	long long currenttime = 0, stoptime;
-	long long starttime;
+	//long long starttime;
 	struct timeval tv;
 	gettimeofday(&tv, 0);
 	stoptime = (long long)tv.tv_sec * (long long)1000000;
 	stoptime += (long long)tv.tv_usec;
-	starttime = stoptime;
+	//starttime = stoptime;
 	stoptime += (long long)(musec+1);
 	while (stoptime > currenttime) {
 		gettimeofday(&tv, 0);
@@ -431,21 +431,24 @@ bool MSystem::GetProcessInfo(int ProcessID)
 	}
 
   int Result = 0; // Storing result required by some compilers
-	Result = fscanf(PIDStatus, "%*s %*s");
-	Result = fscanf(PIDStatus, "%*s %*c %*s");
-	Result = fscanf(PIDStatus, "%*s %*d");
-	Result = fscanf(PIDStatus, "%*s %*d");
-	Result = fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
-	Result = fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
-	Result = fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmSize
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmLck
-	Result = fscanf(PIDStatus, "%*s %d %*s", &m_ProcessMemory);	// VmRSS
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmData
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmStk
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmExe
-	Result = fscanf(PIDStatus, "%*s %*d %*s");	// VmLib
-
+	Result += fscanf(PIDStatus, "%*s %*s");
+	Result += fscanf(PIDStatus, "%*s %*c %*s");
+	Result += fscanf(PIDStatus, "%*s %*d");
+	Result += fscanf(PIDStatus, "%*s %*d");
+	Result += fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
+	Result += fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
+	Result += fscanf(PIDStatus, "%*s %*d %*d %*d %*d");
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmSize
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmLck
+	Result += fscanf(PIDStatus, "%*s %d %*s", &m_ProcessMemory);	// VmRSS
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmData
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmStk
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmExe
+	Result += fscanf(PIDStatus, "%*s %*d %*s");	// VmLib
+  if (Result != 1) {
+    cout<<"An unknown error occured during process memory determination"<<endl;
+  }
+  
   m_ProcessMemory /= 1024;
 
 	fclose(PIDStatus);

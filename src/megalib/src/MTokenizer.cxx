@@ -582,7 +582,7 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
 
   TString Token;
   bool IsFirstToken = true;
-  bool IsMath = false;
+  //bool IsMath = false;
   int MathDepth = 0;
   int MathMatch = 0;
 
@@ -602,7 +602,7 @@ bool MTokenizer::Analyse(TString Text, const bool AllowMaths)
     if (pText[i] == '{') {
       MathDepth++;
       MathMatch++;
-      IsMath = true;
+      //IsMath = true;
     }
     if (pText[i] == '}') {
       MathMatch--;

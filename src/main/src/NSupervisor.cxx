@@ -511,12 +511,12 @@ bool NSupervisor::Run()
   NObservatoryData ObservatoryData;
 
   NModuleObservatoryReconstructor* OR = 0;
-  NModuleObservatoryMerger* OM = 0;
+  //NModuleObservatoryMerger* OM = 0;
   for (unsigned int m = 0; m < m_MergerModules.size(); ++m) {
     if (dynamic_cast<NModuleObservatoryReconstructor*>(m_MergerModules[m]) != 0) {
       OR = dynamic_cast<NModuleObservatoryReconstructor*>(m_MergerModules[m]);
-    } else if (dynamic_cast<NModuleObservatoryMerger*>(m_MergerModules[m]) != 0) {
-      OM = dynamic_cast<NModuleObservatoryMerger*>(m_MergerModules[m]);
+    //} else if (dynamic_cast<NModuleObservatoryMerger*>(m_MergerModules[m]) != 0) {
+    //  OM = dynamic_cast<NModuleObservatoryMerger*>(m_MergerModules[m]);
     }
   }
 
@@ -1609,7 +1609,10 @@ bool NSupervisor::Load(TString FileName)
   if ((Node = Document->GetNode("Version")) != 0) {
     Version = Node->GetValueAsInt();
   }
-
+  if (Version < 1 || Version > 2) {
+    mout<<"Info: Unhandled version"<<endl;   
+  }
+    
   if ((Node = Document->GetNode("TargetName")) != 0) {
     SetTargetName(Node->GetValueAsString());
   }
@@ -1697,6 +1700,9 @@ bool NSupervisor::Load(TString FileName)
 
     if ((Node = Document->GetNode("Version")) != 0) {
       Version = Node->GetValueAsInt();
+    }
+    if (Version < 1 || Version > 2) {
+      mout<<"Info: Unhandled version"<<endl;   
     }
 
     MXmlNode* ModuleOptions = Document->GetNode("ModuleOptions");

@@ -57,7 +57,7 @@ const int NGUIOptionsSinglePointing::c_Down     = 998;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NGUIOptionsSinglePointing::NGUIOptionsSinglePointing(const TGWindow* Parent, NPointing* Pointing, unsigned int ID) :
+NGUIOptionsSinglePointing::NGUIOptionsSinglePointing(const TGWindow* Parent, NPointing* Pointing, unsigned long ID) :
   TGCompositeFrame(Parent, 100, 100, kChildFrame), m_Pointing(Pointing), m_ID(ID)
 {
   // Standard constructor

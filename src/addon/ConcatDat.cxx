@@ -203,12 +203,18 @@ bool ConcatDat::Analyze()
   Saver.SetChosenModuleType(ChosenType);
   if (Saver.Initialize() == false) return false;
 
+  NTime Largest = NTime(0);
+  NTime LifeTime1(0);
+  NTime LifeTime2(0);
+  
   // Loop over all files, extrcat and save the events into the new file
   unsigned long IDOffset = 0;
+  NTime ObsTime(0.0);
   for (unsigned int f = 0; f < m_InputFileNames.size(); ++f) {
     NModuleEventLoader Loader(Sat);
     Loader.SetFileName(m_InputFileNames[f]);
     if (Loader.Initialize() == false) return false;
+    ObsTime += Sat.GetEffectiveObservationTime();
     
     NEvent Event;
     unsigned long LatestID = 0;
@@ -218,10 +224,24 @@ bool ConcatDat::Analyze()
       LatestID = Event.GetID();
       Event.SetID(Event.GetID() + IDOffset);
       Saver.AnalyzeEvent(Event);
+      
+      if (Event.GetDetectorLifeTime() > Largest) Largest = Event.GetDetectorLifeTime();
+      cout<<Event.GetDetectorLifeTime()<<endl;
+      if (Event.GetTelescope() == 1) {
+        LifeTime1 += Event.GetDetectorLifeTime();
+      } else if (Event.GetTelescope() == 2) {
+        LifeTime2 += Event.GetDetectorLifeTime();        
+      } else {
+        cout<<"Unknown telescope: "<<Event.GetTelescope()<<endl;
+      }
+      
     }
     IDOffset += LatestID; 
     Loader.Finalize();
   }
+  cout<<"L: "<<LifeTime1<<":"<<LifeTime2<<" largest="<<Largest<<endl;
+  
+  Sat.SetEffectiveObservationTime(ObsTime);
   Saver.Finalize();
 
   return true;
