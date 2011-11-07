@@ -376,7 +376,7 @@ bool Target::OpenEvtFile()
 {  
   //! Load and initialize the file
 
-  // cout<<"OpenFits"<<endl;
+  //cout<<"OpenFits"<<endl;
   
   int Status = 0;
   int nfound;
@@ -841,7 +841,6 @@ bool Target::GenerateARF()
 {
 
   OpenEvtFile();
-  //ReadCalibratedAlignmentsDB("resource/data/AlignmentDatabases/NuSIM_OrientationsALIGN_008.csv");
   ReadCalibratedAlignmentsDB();
 
   int Status = 0;
@@ -849,24 +848,26 @@ bool Target::GenerateARF()
   double doublenull;
   int anynull;
 
-  double fT[axis2];
-  double fL[axis2];
-  int iModule[axis2];
-  float fX[axis2];
-  float fY[axis2];
-  int iPHA[axis2];
-  int iType[axis2];
-  float fQx[axis2];
-  float fQy[axis2];
-  float fQz[axis2];
-  float fQr[axis2];
-  float fTx[axis2];
-  float fTy[axis2];
-  float fTz[axis2];
-  float fQSx[axis2];
-  float fQSy[axis2];
-  float fQSz[axis2];
-  float fQSr[axis2];
+  cout<<"Calculate ARF..."<<endl;
+
+  double* fT= new double[axis2];
+  double* fL= new double[axis2];
+  int* iModule = new int[axis2];
+  float* fX = new float[axis2];
+  float* fY = new float[axis2];
+  int* iPHA = new int[axis2];
+  int* iType = new int[axis2];
+  float* fQx = new float[axis2];
+  float* fQy = new float[axis2];
+  float* fQz = new float[axis2];
+  float* fQr = new float[axis2];
+  float* fTx = new float[axis2];
+  float* fTy = new float[axis2];
+  float* fTz = new float[axis2];
+  float* fQSx = new float[axis2];
+  float* fQSy = new float[axis2];
+  float* fQSz = new float[axis2];
+  float* fQSr = new float[axis2];
  
   fits_read_col(m_File, TDOUBLE, 1, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
   fits_read_col(m_File, TDOUBLE, 2, 1, 1, axis2, &doublenull, fL, &anynull,&Status); 
@@ -1056,6 +1057,26 @@ bool Target::GenerateARF()
   // Now we multiply the whole thing together and normalize.
   
   // Finally write out all files to FITS.
+  //
+  delete [] fT;
+  delete [] fL;
+  delete [] iModule;
+  delete [] fX;
+  delete [] fY;
+  delete [] iPHA;
+  delete [] iType;
+  delete [] fQx;
+  delete [] fQy;
+  delete [] fQz;
+  delete [] fQr;
+  delete [] fTx;
+  delete [] fTy;
+  delete [] fTz;
+  delete [] fQSx;
+  delete [] fQSy;
+  delete [] fQSz;
+  delete [] fQSr;
+ 
   
   return true;
 }
@@ -1103,9 +1124,13 @@ int main(int argc, char** argv)
   src.SourceOutFile = T.GetTokenAtAsString(0) + ".pi";
   src.BkgFile = T.GetTokenAtAsString(0) + "_bkg.fits";
   src.ARFFile = T.GetTokenAtAsString(0) + ".arf";
-
   
   src.GenerateARF();
+
+  cout<<"Files written: "<<endl;
+  cout<<src.SourceOutFile<<endl;
+  cout<<src.BkgFile<<endl;
+  cout<<src.ARFFile<<endl;
     
   cout<<"Done!"<<endl;
   
