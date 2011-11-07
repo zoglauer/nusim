@@ -53,7 +53,7 @@ NModuleInterfaceEventSaverLevel2Fits::NModuleInterfaceEventSaverLevel2Fits(NSate
   // Construct an instance of NModuleInterfaceEventSaverLevel2Fits
   
   m_File = 0;
-  m_PixelSize = 6*arcsec;
+  m_PixelSize = (12.36/5.)*arcsec;
 }
 
 
@@ -172,7 +172,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   }
 
   // The default image pixel size:
-  double PixelSize = (12.36/5.)*arcsec;
+  double PixelSize = m_PixelSize;
   double PixelLimit = 2048.0; // +- center, so the real limits is double this size
 
   // Calculate the minimum, maximum and average RA & DEC
