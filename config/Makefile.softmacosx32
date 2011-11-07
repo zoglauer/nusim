@@ -26,7 +26,7 @@ DEFINES       = -UHARDWARE
 LD            = c++
 LDFLAGS       = $(OPT) -m32 -Xlinker -bind_at_load -flat_namespace -D___LINUX___
 SOFLAGS       = -dynamiclib -flat_namespace -undefined suppress -m32
-LIBS          = $(ROOTLIBS) -lpthread -lThread -lMinuit -lX3d -lGeom -L$(LHEASOFT)/lib -lcfitsio                            
+LIBS          = $(ROOTLIBS) -lpthread -lThread -lX3d -lGeom -L$(LHEASOFT)/lib -lcfitsio                            
 GLIBS         = $(ROOTGLIBS) 
 
 LINK          = ln -s -f

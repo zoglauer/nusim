@@ -24,7 +24,7 @@ DEFINES       = -UHARDWARE
 LD            = /opt/experimental/bin/g++
 LDFLAGS       = $(OPT) -D___LINUX___
 SOFLAGS       = -shared  
-LIBS          = $(ROOTLIBS) -lpthread -lThread -lMinuit -lX3d -lGeom
+LIBS          = $(ROOTLIBS) -lpthread -lThread -lX3d -lGeom
 GLIBS         = $(ROOTGLIBS) 
 
 LINK          = ln -s -f
