@@ -139,7 +139,6 @@ bool NModuleObservatoryReconstructor::AnalyzeEvent(NEvent& Event)
 {
   // Reconstruct alignments, aspect and pointing...
 
-  cout<<"Obs Analyzeer"<<endl;
 
   // Step 1: Interpolate at event time
   NTime Time = Event.GetTime();
