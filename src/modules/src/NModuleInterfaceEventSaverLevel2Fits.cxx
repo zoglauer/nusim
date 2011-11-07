@@ -171,7 +171,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   }
 
   // The default image pixel size:
-  double PixelSize = 6.0*arcsec;
+  double PixelSize = (12.36/5.)*arcsec;
   double PixelLimit = 2048.0; // +- center, so the real limits is double this size
 
   // Calculate the minimum, maximum and average RA & DEC
@@ -278,7 +278,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   NTime End = m_Satellite.GetAbsoluteObservationEndTime();
 
   fits_write_key(m_File, TSTRING, "INSTRUME", const_cast<char*>("FPM"), "Detector", &Status); 	  
-  fits_write_key(m_File, TSTRING, "MISSION", const_cast<char*>("NuSTAR"), " ", &Status); 	  
+  fits_write_key(m_File, TSTRING, "MISSION", const_cast<char*>("NuSIM"), " ", &Status); 	  
   fits_write_key(m_File, TSTRING, "TELESCOP", const_cast<char*>("NuSIM"), " ", &Status); 
   fits_write_key(m_File, TSTRING, "CREATOR", const_cast<char*>("NuSIM"), " ", &Status);  
   fits_write_key(m_File, TSTRING, "NuSimVER", const_cast<char*>(g_Version.Data()), "NuSim version number", &Status);
