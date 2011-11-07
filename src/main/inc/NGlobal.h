@@ -89,6 +89,9 @@ extern const double hour;
 extern const double day;
 extern const double year;
 
+extern const double keV;
+extern const double MeV;
+
 
 //! \brief Initialization of everything global
 //! This is a global class taking care of initialization of ROOT and some global constants

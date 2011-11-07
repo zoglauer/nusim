@@ -53,6 +53,7 @@ NModuleInterfaceEventSaverLevel2Fits::NModuleInterfaceEventSaverLevel2Fits(NSate
   // Construct an instance of NModuleInterfaceEventSaverLevel2Fits
   
   m_File = 0;
+  m_PixelSize = 6*arcsec;
 }
 
 

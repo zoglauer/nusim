@@ -110,6 +110,9 @@ const double hour     = 3600.0;
 const double day      = 24.0*hour;
 const double year     = 365.24*day;
 
+const double keV = 1.0;
+const double MeV = 1000.0;
+
 NGlobal g_Global;
 
 

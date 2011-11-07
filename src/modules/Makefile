@@ -53,6 +53,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleDetectorSimulatorPropagatorOnly.o \
 	$(LB)/NModuleDetectorSimulatorDetailed.o \
 	$(LB)/NModuleDetectorSimulatorGeant4.o \
+	$(LB)/NGUIOptionsDetectorSimulator.o \
 	$(LB)/NModuleBackgroundSimulatorTrivial.o \
 	$(LB)/NGUIOptionsBackgroundSimulator.o \
 	$(LB)/NModuleBackgroundSimulator.o \

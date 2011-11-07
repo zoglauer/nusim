@@ -43,7 +43,12 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
   NModuleDetectorSimulatorDetailed(NSatellite& Satellite);
   //! Default destructor
   virtual ~NModuleDetectorSimulatorDetailed();
-
+  
+  //! Enable or disable the Beryllium window
+  void SetUseBerylliumWindow(bool UseBerylliumWindow) { m_UseBerylliumWindow = UseBerylliumWindow; }
+  //! Return true if the Beryllium window is enabled
+  bool GetUseBerylliumWindow() const { return m_UseBerylliumWindow; }
+  
   //! Initialize the module
   virtual bool Initialize();
 
@@ -95,7 +100,9 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
   int m_NRayleigh;
   int m_NFluorescence;
 
-
+  //! Use the Beryllium window
+  bool m_UseBerylliumWindow;
+  
 
 #ifdef ___CINT___
  public:

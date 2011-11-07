@@ -56,6 +56,11 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   //! Load and initialize the file
   virtual bool OpenLevel2FitsFile(TString FileName);
   
+  //! Set the pixel size
+  void SetPixelSize(const double PixelSize) { m_PixelSize = PixelSize; }
+  //! Get the pixel size
+  double GetPixelSize() const { return m_PixelSize; }
+  
   //! Return true if the ASCII file is open
   virtual bool IsLevel2FitsFileOpen() { if (m_File != 0) return true; else return false; }
   
@@ -80,7 +85,10 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
  protected:
   //! The output stream
   fitsfile* m_File; 
-
+  
+  //! The pixel size when saving as fits file
+  double m_PixelSize;
+  
   // private members:
  private:
   //! Reference to the satellite module 
@@ -88,7 +96,7 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
    
   //! The exposure map
   NExposureMap m_ExposureMap;
-   
+  
   //! fields for fits file.
   vector<double> m_Ra; 
   vector<double> m_Dec;

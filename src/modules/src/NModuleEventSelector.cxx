@@ -73,10 +73,10 @@ NModuleEventSelector::NModuleEventSelector(NSatellite& Satellite) : NModule(Sate
   m_SaveAsDat = false;
   m_SaveBeforeSelections = true;
 
-  m_EnergyMin = 3;
-  m_EnergyMax = 80;
+  m_EnergyMin = 3*keV;
+  m_EnergyMax = 80*keV;
 
-  m_DepthMax = 40;
+  m_DepthMax = 40*mm;
 
   m_SelectByBadDepthCal = false;
   m_SelectByDepthCut    = false;
@@ -331,6 +331,10 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   if (SaveEventsAsFitsNode != 0) {
     m_SaveAsFits = SaveEventsAsFitsNode->GetValueAsBoolean();
   }
+  MXmlNode* PixelSizeNode = Node->GetNode("PixelSize");
+  if (PixelSizeNode != 0) {
+    m_PixelSize = PixelSizeNode->GetValueAsDouble();
+  }
   MXmlNode* SaveEventsAsDatNode = Node->GetNode("SaveEventsAsDat");
   if (SaveEventsAsDatNode != 0) {
     m_SaveAsDat = SaveEventsAsDatNode->GetValueAsBoolean();
@@ -381,6 +385,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   new MXmlNode(Node, "SaveEventsAsFits", m_SaveAsFits);
+  new MXmlNode(Node, "PixelSize", m_PixelSize);
   new MXmlNode(Node, "SaveEventsAsDat", m_SaveAsDat);
   new MXmlNode(Node, "SaveEventsAsROOT", m_SaveAsROOT);
   new MXmlNode(Node, "SaveEnergyResponseAsROOT", m_SaveAsResponseROOT);

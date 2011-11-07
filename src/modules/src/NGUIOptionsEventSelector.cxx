@@ -66,17 +66,50 @@ void NGUIOptionsEventSelector::Create()
   TGLabel* FileLabel = new TGLabel(this, "Event saving options:");
   AddFrame(FileLabel, FileLabelLayout);
 
-  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 20, 20, 10, 5);
+  TGLayoutHints* FileOptionsLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 20, 20, 10, 5);
+  TGLabel* FileOptions = new TGLabel(this, "Choose how to save the output file (you can choose none or multiple):");
+  AddFrame(FileOptions, FileOptionsLayout);
 
-  m_FileOptions = new MGUIECBList(this, "Choose how to save the output file (you can choose none or multiple):", true);
-  m_FileOptions->Add("Events in FITS format (*.events.fits)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits());
-  m_FileOptions->Add("Events in ASCII format (*.events.dat)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsDat());
-  m_FileOptions->Add("Events in ROOT format (*.events.root)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsROOT());
-  m_FileOptions->Add("Spectral response in ROOT format (*.energyresponse.root)", dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEnergyResponseAsROOT());
-  m_FileOptions->Create();
-  m_FileOptions->Associate(this);
-  AddFrame(m_FileOptions, FileLayout);
+  TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 40, 20, 2, 2);
 
+  m_SaveAsFits = new TGCheckButton(this, "Events in FITS format (*.events.fits)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+    m_SaveAsFits->SetState(kButtonDown);
+  } else {
+    m_SaveAsFits->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveAsFits, FileLayout);
+
+  TGLayoutHints* PixelSizeLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 61, 20, 2, 2);
+  m_PixelSize = new MGUIEEntry(this, "Pixel size for fits file [arcsec]", false,
+                               dynamic_cast<NModuleEventSelector*>(m_Module)->GetPixelSize()/arcsec);
+  AddFrame(m_PixelSize, PixelSizeLayout);
+  
+  m_SaveAsASCII = new TGCheckButton(this, "Events in ASCII format (*.events.dat)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+    m_SaveAsASCII->SetState(kButtonDown);
+  } else {
+    m_SaveAsASCII->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveAsASCII, FileLayout);
+
+  m_SaveAsROOT = new TGCheckButton(this, "Events in ROOT format (*.events.root)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+    m_SaveAsROOT->SetState(kButtonDown);
+  } else {
+    m_SaveAsROOT->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveAsROOT, FileLayout);
+
+  m_SaveSpectralResponse = new TGCheckButton(this, "Spectral response in ROOT format (*.energyresponse.root)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+    m_SaveSpectralResponse->SetState(kButtonDown);
+  } else {
+    m_SaveSpectralResponse->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveSpectralResponse, FileLayout);
+  
+  
   TGLayoutHints* SaveBeforeSelectionsLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 15);
   m_SaveBeforeSelections = new TGCheckButton(this, "Save events before selections (otherwise after)");
   if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveBeforeSelections() == true) {
@@ -162,10 +195,11 @@ bool NGUIOptionsEventSelector::OnApply()
 {
   // Modify this to store the data in the module!
 
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsFits(m_FileOptions->IsSelected(0));
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsDat(m_FileOptions->IsSelected(1));
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsROOT(m_FileOptions->IsSelected(2));
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEnergyResponseAsROOT(m_FileOptions->IsSelected(3));
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsFits((m_SaveAsFits->GetState() == kButtonDown) ? true : false);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetPixelSize(m_PixelSize->GetAsDouble()*arcsec);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsDat((m_SaveAsASCII->GetState() == kButtonDown) ? true : false);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsROOT((m_SaveAsROOT->GetState() == kButtonDown) ? true : false);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEnergyResponseAsROOT((m_SaveSpectralResponse->GetState() == kButtonDown) ? true : false);
 
   if (m_SaveBeforeSelections->GetState() == kButtonDown) {
     dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveBeforeSelections(true);
@@ -178,9 +212,9 @@ bool NGUIOptionsEventSelector::OnApply()
     return false;
   }
   
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMin(m_Energies->GetMinValueDouble());
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMax(m_Energies->GetMaxValueDouble());
-  dynamic_cast<NModuleEventSelector*>(m_Module)->SetDepthMax(m_DepthMax->GetAsDouble());
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMin(m_Energies->GetMinValueDouble()*keV);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetEnergyMax(m_Energies->GetMaxValueDouble()*keV);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetDepthMax(m_DepthMax->GetAsDouble()*mm);
 
 
   if (m_SelectByBadDepthCal->GetState() == kButtonDown) {

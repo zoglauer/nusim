@@ -30,7 +30,7 @@
 
 // NuSTAR libs:
 #include "NInteraction.h"
-#include "NGUIOptions.h"
+#include "NGUIOptionsDetectorSimulator.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +67,8 @@ NModuleDetectorSimulatorDetailed::NModuleDetectorSimulatorDetailed(NSatellite& S
   // If true, you have to derive a class from MGUIDiagnostics (use NGUIDiagnosticsDetectorSimulator)
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsDetectorSimulator();
+  
+  m_UseBerylliumWindow = true;
 }
 
 
@@ -145,6 +147,10 @@ bool NModuleDetectorSimulatorDetailed::Initialize()
 //   Hist->Draw();
 //   C->Update();
 
+  if (m_UseBerylliumWindow == false) {
+    mout<<"Attention: Beryllium window is deactivated in detailed detector simulator"<<endl;
+  }
+  
   return true;
 }
 
@@ -184,11 +190,13 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
 
   // (e) Calculate absorption probabilty in Beryllium
   //     --- IGNORE Compton/Rayleigh scatter probability and other effects
-  double BerylliumThickness = 0.1;
-  double BerylliumLength = gRandom->Exp(1.0/m_Satellite.GetBerylliumAbsorptionCoefficient(Photon.GetEnergy()));
-  if (BerylliumLength < BerylliumThickness) {
-    Event.SetBlocked(true);
-    return true;
+  if (m_UseBerylliumWindow == true) {
+    double BerylliumThickness = 0.1;
+    double BerylliumLength = gRandom->Exp(1.0/m_Satellite.GetBerylliumAbsorptionCoefficient(Photon.GetEnergy()));
+    if (BerylliumLength < BerylliumThickness) {
+      Event.SetBlocked(true);
+      return true;
+    }
   }
 
   // For testing: Set direction 0 0 -1 and position in the center of one of the detectors
@@ -524,10 +532,7 @@ void NModuleDetectorSimulatorDetailed::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsTemplate* Options = new NGUIOptionsTemplate(this);
+  NGUIOptionsDetectorSimulator* Options = new NGUIOptionsDetectorSimulator(this);
 
   // this stays always the same:
   Options->Create();
@@ -542,12 +547,10 @@ bool NModuleDetectorSimulatorDetailed::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode.GetValue();
+  MXmlNode* UseBerylliumWindowNode = Node->GetNode("UseBerylliumWindow");
+  if (UseBerylliumWindowNode != 0) {
+    m_UseBerylliumWindow = UseBerylliumWindowNode->GetValueAsBoolean();
   }
-  */
 
   return true;
 }
@@ -561,10 +564,7 @@ MXmlNode* NModuleDetectorSimulatorDetailed::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "UseBerylliumWindow", m_UseBerylliumWindow);
 
   return Node;
 }

@@ -71,8 +71,16 @@ class NGUIOptionsEventSelector : public NGUIOptions
 
   // private members:
  private:
-  //! Choose a file to save the data to:
-  MGUIECBList* m_FileOptions;
+  //! Choose to save the data to fits
+  TGCheckButton* m_SaveAsFits;
+  //! Choose the pixel size when saving as fits
+  MGUIEEntry* m_PixelSize;
+  //! Choose to save the data to ASCII
+  TGCheckButton* m_SaveAsASCII;
+  //! Choose to save the data to ROOT
+  TGCheckButton* m_SaveAsROOT;
+  //! Choose to save the data as spectral response
+  TGCheckButton* m_SaveSpectralResponse;
   //! Choose if the saving should be applied before or after the selections
   TGCheckButton* m_SaveBeforeSelections;
 
