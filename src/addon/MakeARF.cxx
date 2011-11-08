@@ -150,6 +150,7 @@ Target::Target()
 {
 
  m_File = 0;
+  
 
 }
 
@@ -166,13 +167,13 @@ Target::~Target()
 bool Target::Initialize()
 {
 
+  for (int i=0; i<29; i++) {
+        oaat_hist1[i] = 0;
+        oaat_hist2[i] = 0;
+  }
   LoadEffArea();
   LoadVignet();
   psfimg.LoadPSF(16);
-  for (int i=0; i<29; i++) {
-    oaat_hist1[i] = 0;
-	oaat_hist2[i] = 0;
-  }
 
   //cout<<psfimg.oaa0[100*201+100]<<endl;
   
@@ -254,8 +255,8 @@ bool Target::LoadEffArea()
   // cout<<"OpenFits"<<endl;
   
   int Status = 0;
-  float floatnull;
-  int anynull;
+  float floatnull = 0;
+  int anynull = 0;
   m_File = 0;
   
   fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.1.fits", READONLY, &Status);
@@ -272,7 +273,6 @@ bool Target::LoadEffArea()
     return false;
   }
 
-   
   fits_read_col(m_File, TFLOAT, 1, 1, 1, 820, &floatnull, Elow, &anynull,&Status);
   fits_read_col(m_File, TFLOAT, 2, 1, 1, 820, &floatnull, Ehigh, &anynull,&Status);
   fits_read_col(m_File, TFLOAT, 3, 1, 1, 820, &floatnull, AE, &anynull,&Status);
@@ -293,8 +293,8 @@ bool Target::LoadVignet()
   // cout<<"OpenFits"<<endl;
   
   int Status = 0;
-  float floatnull;
-  int anynull;
+  float floatnull=0;
+  int anynull=0;
   m_File = 0;
   
   fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.1.fits", READONLY, &Status);
@@ -412,7 +412,7 @@ bool Target::OpenEvtFile()
     return false;
   }  
   xCenterValue = atof(Dummy);
-  //cout<<"xCenterValue: "<<xCenterValue<<endl;
+  cout<<"xCenterValue: "<<xCenterValue<<endl;
   
   fits_read_keyword(m_File, "TCDLT4", Dummy, NULL, &Status);
   if (Status != 0) {
@@ -420,7 +420,7 @@ bool Target::OpenEvtFile()
 	return false;
   }
   xDelta = -fabs(atof(Dummy));
-  //cout<<"xDelta: "<<xDelta<<endl;
+  cout<<"xDelta: "<<xDelta<<endl;
   
   fits_read_keyword(m_File, "TCRVL5", Dummy, NULL, &Status);
   if (Status != 0) {
@@ -428,7 +428,7 @@ bool Target::OpenEvtFile()
     return false;
   }  
   yCenterValue = atof(Dummy);
-  //cout<<"yCenterValue: "<<yCenterValue<<endl;
+  cout<<"yCenterValue: "<<yCenterValue<<endl;
   
   fits_read_keyword(m_File, "TCDLT5", Dummy, NULL, &Status);
   if (Status != 0) {
@@ -437,20 +437,13 @@ bool Target::OpenEvtFile()
   }
   yDelta = fabs(atof(Dummy));
   
-  /*fits_read_keyword(m_File, "TLMAX1", Dummy, NULL, &Status);
-  if (Status != 0) {
-    cout<<"Cannot retrieve TLMAX1 keyword..."<<show;
-    return false;
-  }  
-  float xMax = ceil(atof(Dummy));*/
-  
   fits_read_keyword(m_File, "TLMAX5", Dummy, NULL, &Status);
   if (Status != 0) {
 	cout<<"Cannot retrieve TLMAX5 keyword..."<<show;
 	return false;
   }
   float yMax = ceil(atof(Dummy));
-    
+      
    // Retrieve the dimensions:
   long AxisDimension[2];  
   fits_read_keys_lng(m_File, "NAXIS", 1, 2, AxisDimension, &nfound, &Status);
@@ -463,7 +456,8 @@ bool Target::OpenEvtFile()
   
   AvgDec = yCenterValue+yMax*0.5*yDelta;
   
-  //cout<<"axis1 ="<<axis1<<" axis2="<<axis2<<endl;
+  cout<<"axis1 ="<<axis1<<" axis2="<<axis2<<endl; 
+  fits_close_file(m_File, &Status);
 
   return true;
 }
@@ -827,7 +821,7 @@ float Target::GetPSFFraction(float region, int oaa)
   	    int n = 40401*oaa+i;
         AccumulatedPSF += psfimg.cube[n];
       }
-	}
+    }
   }
   
   //cout<<"PSFfraction = "<<AccumulatedPSF<<endl;
@@ -840,13 +834,30 @@ float Target::GetPSFFraction(float region, int oaa)
 bool Target::GenerateARF()
 {
 
+  
   OpenEvtFile();
   ReadCalibratedAlignmentsDB();
 
   int Status = 0;
-  float floatnull;
-  double doublenull;
-  int anynull;
+  float floatnull=0;
+  double doublenull=0;
+  int anynull=0;
+  m_File = 0;
+
+  fits_open_file(&m_File, SourceInFile, READONLY, &Status);
+  if (Status != 0) {
+    cout<<"Unable to open file: "<<endl;
+    cout<<SourceInFile<<endl;
+    return false;
+  }
+
+  // Switch to the right extension:
+  int HDUNumber = 2;
+  fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
+  if (Status != 0) {
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    return false;
+  }
 
   cout<<"Calculate ARF..."<<endl;
 
@@ -1108,10 +1119,9 @@ int main(int argc, char** argv)
   }
 
 
-
   Target src;
   src.Initialize();
- 
+     
   TString InFile = argv[1];
   MTokenizer T;
   T.AllowComposed(false);
@@ -1124,7 +1134,7 @@ int main(int argc, char** argv)
   src.SourceOutFile = T.GetTokenAtAsString(0) + ".pi";
   src.BkgFile = T.GetTokenAtAsString(0) + "_bkg.fits";
   src.ARFFile = T.GetTokenAtAsString(0) + ".arf";
-  
+    
   src.GenerateARF();
 
   cout<<"Files written: "<<endl;
