@@ -1027,7 +1027,7 @@ bool Target::GenerateARF()
 	
 	//  In here add to the source spectrum and background spectrum. 
 	float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
-	if (rr < region[2] && iPHA[i] < 820) {
+	if (rr < region[2] && iPHA[i] >= 0 && iPHA[i] < 820) {
 	  if (iModule[i] == 1) source1[iPHA[i]] += 1;
 	  if (iModule[i] == 2) source2[iPHA[i]] += 1;
 	  if (iType[i] == 2) {
