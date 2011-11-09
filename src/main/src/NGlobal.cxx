@@ -98,6 +98,9 @@ const double m  = 1000.0;
 const double cm = 10.0;
 const double mm = 1.0; // default unit for length
 
+const double ph       = 1.0;
+const double photons  = 1.0;
+
 const double cm2 = 100.0;
 const double mm2 = 1.0;
 
@@ -105,6 +108,8 @@ const double ns       = 0.000000001;
 const double us       = 0.000001;
 const double ms       = 0.001;
 const double s        = 1.0; // default unit for time
+const double sec      = 1.0; // default unit for time
+const double second   = 1.0; // default unit for time
 const double minute   = 60.0;
 const double hour     = 3600.0;
 const double day      = 24.0*hour;

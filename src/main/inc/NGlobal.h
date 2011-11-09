@@ -77,6 +77,9 @@ extern const double m;
 extern const double cm;
 extern const double mm;
 
+extern const double ph;
+extern const double photons;
+
 extern const double cm2;
 extern const double mm2;
 
@@ -84,6 +87,8 @@ extern const double ns;
 extern const double us;
 extern const double ms;
 extern const double s;
+extern const double sec;
+extern const double second;
 extern const double minute;
 extern const double hour;
 extern const double day;
