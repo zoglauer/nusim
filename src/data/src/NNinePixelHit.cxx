@@ -187,7 +187,7 @@ bool NNinePixelHit::GetTrigger(unsigned int PixelID) const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NNinePixelHit::Stream(ofstream& S)
+bool NNinePixelHit::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -209,7 +209,7 @@ bool NNinePixelHit::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NNinePixelHit::Parse(TString& Line)
+bool NNinePixelHit::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file
 

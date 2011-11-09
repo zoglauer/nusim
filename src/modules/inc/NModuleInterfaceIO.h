@@ -77,6 +77,9 @@ class NModuleInterfaceIO
   //! The module position as the module type
   int m_ChosenType;
 
+  //! The version of the ASCII file format
+  int m_ASCIIFileVersion;
+
   // private members:
  private:
 

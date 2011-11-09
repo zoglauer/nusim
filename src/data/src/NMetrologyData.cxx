@@ -74,13 +74,13 @@ void NMetrologyData::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMetrologyData::Stream(ofstream& S)
+bool NMetrologyData::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
   S<<"ME"<<endl;
-  m_Metrology1.Stream(S, "M1");
-  m_Metrology2.Stream(S, "M2");
+  m_Metrology1.Stream(S, Version, "M1");
+  m_Metrology2.Stream(S, Version, "M2");
   S<<"ME EN"<<endl;
 
   return true;
@@ -90,16 +90,16 @@ bool NMetrologyData::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMetrologyData::Parse(TString& Line)
+bool NMetrologyData::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 
   bool NoError = true;
 
   if (Line.BeginsWith("M1") == true) {
-    NoError = m_Metrology1.Parse(Line);
+    NoError = m_Metrology1.Parse(Line, Version);
   } else if (Line.BeginsWith("M2") == true) {
-    NoError = m_Metrology2.Parse(Line);
+    NoError = m_Metrology2.Parse(Line, Version);
   } else if (Line.BeginsWith("ME EN") == true) {
     return true;
   } else {
@@ -116,6 +116,10 @@ bool NMetrologyData::Parse(TString& Line)
 
   return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 void NMetrologyData::Interpolate(NMetrologyData A, NMetrologyData B, NTime t)
 {

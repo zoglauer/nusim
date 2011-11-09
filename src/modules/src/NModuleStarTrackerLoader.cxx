@@ -104,6 +104,15 @@ bool NModuleStarTrackerLoader::Initialize()
       }
       m_ChosenType = T.GetTokenAtAsInt(1);
       break;
+    } else if (Line.BeginsWith("VF") == true) {
+      MTokenizer T(Line);
+      if (T.GetNTokens() != 2) {
+        mgui<<"Cannot parse file "<<m_FileName<<" correctly: VF-keyword is not OK!"<<show;
+        return false;
+      }
+      m_ASCIIFileVersion = T.GetTokenAtAsInt(1);
+    } else if (Line.BeginsWith("S4") == true) {
+      break;
     }
   }
 
@@ -143,7 +152,7 @@ bool NModuleStarTrackerLoader::AnalyzeStarTrackerData(NStarTrackerData& Data)
   while(!m_In.eof()) {
     Line.ReadLine(m_In);
     if (Line.BeginsWith("S4") == true) {
-      m_StarTrackerData.Parse(Line);
+      m_StarTrackerData.Parse(Line, m_ASCIIFileVersion);
       break;
     }
   }

@@ -485,7 +485,7 @@ bool NModulePointingPredefined::ImportPointings(TString FileName)
     
     if (Line.BeginsWith("RD") == true) {
       NPointing P;
-      P.Parse(Line);
+      P.Parse(Line, 1);
       if (P.IsEmpty() == false) {
         m_InitialPointings.push_back(P);
       }

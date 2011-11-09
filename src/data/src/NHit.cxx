@@ -76,6 +76,8 @@ const NHit& NHit::operator=(const NHit& Hit)
 
   m_DepthCut = Hit.m_DepthCut;
 
+  m_TriggerGrade = Hit.m_TriggerGrade;
+
   return (*this);
 }
 
@@ -102,14 +104,14 @@ void NHit::Clear()
   m_BadDepthCalibration = false;
 
   m_DepthCut = false;
-
+  m_TriggerGrade = 1; // Intentional for backward compatibility
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NHit::Stream(ofstream& S)
+bool NHit::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -117,11 +119,19 @@ bool NHit::Stream(ofstream& S)
   if (m_Empty == true) {
     S<<"-"<<endl;
   } else {
-    S<<m_Telescope<<" "<<m_Detector<<" "
-     <<m_Position[0]<<" "<<m_Position[1]<<" "<<m_Position[2]<<" "
-     <<m_PositionResolution[0]<<" "<<m_PositionResolution[1]<<" "<<m_PositionResolution[2]<<" "
-     <<m_Energy<<" "<<m_EnergyResolution<<" ";
-     m_ObservatoryData.Stream(S, true);
+    if (Version == 1) {
+     S<<m_Telescope<<" "<<m_Detector<<" "
+      <<m_Position[0]<<" "<<m_Position[1]<<" "<<m_Position[2]<<" "
+      <<m_PositionResolution[0]<<" "<<m_PositionResolution[1]<<" "<<m_PositionResolution[2]<<" "
+      <<m_Energy<<" "<<m_EnergyResolution<<" ";
+      m_ObservatoryData.Stream(S, true);
+    } else {
+     S<<m_Telescope<<" "<<m_Detector<<" "
+      <<m_Position[0]<<" "<<m_Position[1]<<" "<<m_Position[2]<<" "
+      <<m_PositionResolution[0]<<" "<<m_PositionResolution[1]<<" "<<m_PositionResolution[2]<<" "
+      <<m_Energy<<" "<<m_EnergyResolution<<" "<<m_TriggerGrade<<" ";
+      m_ObservatoryData.Stream(S, true);
+    }
   } 
 
   return true;
@@ -131,7 +141,7 @@ bool NHit::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NHit::Parse(TString& Line)
+bool NHit::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 
@@ -140,19 +150,6 @@ bool NHit::Parse(TString& Line)
     return true;
   }
 
-  /*
-  double xP, yP, zP, xD, yD, zD;
-  char Text[1024];
-  if (sscanf(Line.Data(), "HT %d %d %lf %lf %lf %lf %lf %lf %lf %lf %s", 
-             &m_Telescope, &m_Detector,
-             &xP, &yP, &zP, &xD, &yD, &zD, 
-             &m_Energy, &m_EnergyResolution, Text) != 11) {
-    merr<<"Unable to parse hit"<<show;
-    return false;
-  }
-  m_Position.SetXYZ(xP, yP, zP);
-  m_PositionResolution.SetXYZ(xD, yD, zD);
-  */
   char* p;
   m_Telescope = strtol(Line.Data()+3, &p, 10);
   m_Detector = strtol(p, &p, 10);
@@ -164,9 +161,12 @@ bool NHit::Parse(TString& Line)
   m_PositionResolution[2] = strtod(p, &p);
   m_Energy = strtod(p, &p);
   m_EnergyResolution = strtod(p, &p);
+  if (Version > 1) {
+    m_TriggerGrade = strtol(p, &p, 10);
+  }
   
   TString ObsString = p;
-  m_ObservatoryData.Parse(ObsString, true);
+  m_ObservatoryData.Parse(ObsString, Version, true);
   
   m_Empty = false;
 

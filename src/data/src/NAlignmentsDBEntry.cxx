@@ -438,7 +438,7 @@ NOrientation NAlignmentsDBEntry::GetOrientationDetectorRelFocalPlaneModule(int M
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NAlignmentsDBEntry::Stream(ofstream& S)
+bool NAlignmentsDBEntry::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -447,20 +447,20 @@ bool NAlignmentsDBEntry::Stream(ofstream& S)
   S.precision(12);
 
   S<<"OR ";
-  m_SpaceCraftRelInertial.Stream(S);
-  m_FocalPlaneRelSC.Stream(S);
-  m_FocalPlaneModule1.Stream(S);
-  m_FocalPlaneModule2.Stream(S);
-  m_MetrologyDetector1.Stream(S);
-  m_MetrologyDetector2.Stream(S);
-  m_Aperture1.Stream(S);
-  m_Aperture2.Stream(S);
-  m_OpticalBench.Stream(S);
-  m_Optics1RelOB.Stream(S);
-  m_Optics2RelOB.Stream(S);
-  m_MetrologyLaser1RelOB.Stream(S);
-  m_MetrologyLaser2RelOB.Stream(S);
-  m_StarTracker4RelOB.Stream(S);
+  m_SpaceCraftRelInertial.Stream(S, Version);
+  m_FocalPlaneRelSC.Stream(S, Version);
+  m_FocalPlaneModule1.Stream(S, Version);
+  m_FocalPlaneModule2.Stream(S, Version);
+  m_MetrologyDetector1.Stream(S, Version);
+  m_MetrologyDetector2.Stream(S, Version);
+  m_Aperture1.Stream(S, Version);
+  m_Aperture2.Stream(S, Version);
+  m_OpticalBench.Stream(S, Version);
+  m_Optics1RelOB.Stream(S, Version);
+  m_Optics2RelOB.Stream(S, Version);
+  m_MetrologyLaser1RelOB.Stream(S, Version);
+  m_MetrologyLaser2RelOB.Stream(S, Version);
+  m_StarTracker4RelOB.Stream(S, Version);
   S<<endl;
 
   S.precision(p);
@@ -472,38 +472,38 @@ bool NAlignmentsDBEntry::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
   
 
-bool NAlignmentsDBEntry::Parse(TString& Line)
+bool NAlignmentsDBEntry::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
   
   int StartToken = 1;
-  if (m_SpaceCraftRelInertial.Parse(Line, StartToken) == false) return false;
+  if (m_SpaceCraftRelInertial.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_FocalPlaneRelSC.Parse(Line, StartToken) == false) return false;
+  if (m_FocalPlaneRelSC.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_FocalPlaneModule1.Parse(Line, StartToken) == false) return false;
+  if (m_FocalPlaneModule1.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_FocalPlaneModule2.Parse(Line, StartToken) == false) return false;
+  if (m_FocalPlaneModule2.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_MetrologyDetector1.Parse(Line, StartToken) == false) return false;
+  if (m_MetrologyDetector1.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_MetrologyDetector2.Parse(Line, StartToken) == false) return false;
+  if (m_MetrologyDetector2.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_Aperture1.Parse(Line, StartToken) == false) return false;
+  if (m_Aperture1.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_Aperture2.Parse(Line, StartToken) == false) return false;
+  if (m_Aperture2.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_OpticalBench.Parse(Line, StartToken) == false) return false;
+  if (m_OpticalBench.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_Optics1RelOB.Parse(Line, StartToken) == false) return false;
+  if (m_Optics1RelOB.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_Optics2RelOB.Parse(Line, StartToken) == false) return false;
+  if (m_Optics2RelOB.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_MetrologyLaser1RelOB.Parse(Line, StartToken) == false) return false;
+  if (m_MetrologyLaser1RelOB.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_MetrologyLaser2RelOB.Parse(Line, StartToken) == false) return false;
+  if (m_MetrologyLaser2RelOB.Parse(Line, Version, StartToken) == false) return false;
   StartToken += 7;
-  if (m_StarTracker4RelOB.Parse(Line, StartToken) == false) return false;
+  if (m_StarTracker4RelOB.Parse(Line, Version, StartToken) == false) return false;
   
   m_Empty = false;
   

@@ -75,10 +75,10 @@ class NPointing
 
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S, TString Keyword = "OP");
+  bool Stream(ofstream& S, int Version, TString Keyword = "OP");
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
   //! Dump content to a string
   TString ToString() const;

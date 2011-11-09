@@ -491,7 +491,7 @@ TString NOrientation::ToString() const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NOrientation::Stream(ofstream& S)
+bool NOrientation::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -505,7 +505,7 @@ bool NOrientation::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NOrientation::Parse(TString& Line, int StartToken)
+bool NOrientation::Parse(TString& Line, int Version, int StartToken)
 {
   //! Stream the content from a line of an ASCII file starting at Token StartToken
 

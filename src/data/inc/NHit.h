@@ -106,11 +106,16 @@ class NHit
   //! Return the depth cut flag of the hit
   bool GetDepthCut() const { return m_DepthCut; }
   
+  //! Set the trigger grade
+  void SetTriggerGrade(int TriggerGrade) { m_Empty = false; m_TriggerGrade = TriggerGrade; };
+  //! Get the trigger grade
+  int GetTriggerGrade() const { return m_TriggerGrade; };
+
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S);
+  bool Stream(ofstream& S, int Version);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
 
   // protected methods:
@@ -154,6 +159,10 @@ class NHit
 
   //! Depth cut flag
   bool m_DepthCut;
+
+  //! The trigger grade
+  int m_TriggerGrade;
+
 
 #ifdef ___CINT___
  public:

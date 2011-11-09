@@ -72,11 +72,11 @@ void NStarTrackerData::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NStarTrackerData::Stream(ofstream& S)
+bool NStarTrackerData::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
-  m_StarTracker4.Stream(S, "S4");
+  m_StarTracker4.Stream(S, Version, "S4");
 
   return true;
 }
@@ -85,12 +85,12 @@ bool NStarTrackerData::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NStarTrackerData::Parse(TString& Line)
+bool NStarTrackerData::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file
 
   if (Line.BeginsWith("S4") == true) {
-    if (m_StarTracker4.Parse(Line) == false) {
+    if (m_StarTracker4.Parse(Line, Version) == false) {
       return false;
     }
   } else {

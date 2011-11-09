@@ -103,6 +103,13 @@ bool NModuleMetrologyLoader::Initialize()
         return false;
       }
       m_ChosenType = T.GetTokenAtAsInt(1);
+    } else if (Line.BeginsWith("VF") == true) {
+      MTokenizer T(Line);
+      if (T.GetNTokens() != 2) {
+        mgui<<"Cannot parse file "<<m_FileName<<" correctly: VF-keyword is not OK!"<<show;
+        return false;
+      }
+      m_ASCIIFileVersion = T.GetTokenAtAsInt(1);
     } else if (Line.BeginsWith("ME") == true) {
       break;
     }
@@ -150,7 +157,7 @@ bool NModuleMetrologyLoader::AnalyzeMetrologyData(NMetrologyData& Data)
       while (!m_In.eof()) Line.ReadLine(m_In);
       break;
     } else {
-      m_MetrologyData.Parse(Line);
+      m_MetrologyData.Parse(Line, m_ASCIIFileVersion);
     }
   }
 

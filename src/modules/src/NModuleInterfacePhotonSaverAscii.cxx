@@ -56,7 +56,7 @@ NModuleInterfacePhotonSaverAscii::~NModuleInterfacePhotonSaverAscii()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfacePhotonSaverAscii::OpenAsciiFile(TString FileName)
+bool NModuleInterfacePhotonSaverAscii::OpenAsciiFile(TString FileName, int Version)
 {  
   //! Load and initialize the file
 
@@ -73,6 +73,8 @@ bool NModuleInterfacePhotonSaverAscii::OpenAsciiFile(TString FileName)
   m_Out<<"VE "<<g_Version<<endl;
   m_Out<<"# NuSIM revision:"<<endl;
   m_Out<<"RV "<<g_SVNRevision<<endl;
+  m_Out<<"# ASCII file version:"<<endl;
+  m_Out<<"VF "<<Version<<endl;
   m_Out<<endl;
   m_Out<<"# Start data..."<<endl;
   
@@ -83,7 +85,7 @@ bool NModuleInterfacePhotonSaverAscii::OpenAsciiFile(TString FileName)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfacePhotonSaverAscii::SavePhotonAscii(NPhoton& Photon)
+bool NModuleInterfacePhotonSaverAscii::SavePhotonAscii(NPhoton& Photon, int Version)
 {
   //! Main data analysis routine, which updates the event to a new level 
 
@@ -92,7 +94,7 @@ bool NModuleInterfacePhotonSaverAscii::SavePhotonAscii(NPhoton& Photon)
     return false;
   }
 
-  Photon.Stream(m_Out);
+  Photon.Stream(m_Out, Version);
   
   return true;
 }

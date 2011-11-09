@@ -99,6 +99,8 @@ bool NModuleEventLoader::Initialize()
   m_AbsoluteObservationStartTime.Set(0l, 0l);
   m_AbsoluteObservationEndTime.Set(0l, 0l);
 
+  m_ASCIIFileVersion = 1;
+
   MFile::ExpandFileName(m_FileName);
   m_In.open(m_FileName);
   if (m_In.is_open() == false) {
@@ -117,6 +119,13 @@ bool NModuleEventLoader::Initialize()
         return false;
       }
       m_ChosenType = T.GetTokenAtAsInt(1);
+    } else if (Line.BeginsWith("VF") == true) {
+      MTokenizer T(Line);
+      if (T.GetNTokens() != 2) {
+        mgui<<"Cannot parse file "<<m_FileName<<" correctly: VF-keyword is not OK!"<<show;
+        return false;
+      }
+      m_ASCIIFileVersion = T.GetTokenAtAsInt(1);
     } else if (Line.BeginsWith("OBSSTART") == true) {
       TObjArray* Tokens = Line.Tokenize(" -");
       if (Tokens->GetEntries() != 7) {
@@ -225,7 +234,7 @@ bool NModuleEventLoader::AnalyzeEvent(NEvent& Event)
       while (!m_In.eof()) Line.ReadLine(m_In);
       break;
     } else {
-      m_Event.Parse(Line);
+      m_Event.Parse(Line, m_ASCIIFileVersion);
     }
   }
 

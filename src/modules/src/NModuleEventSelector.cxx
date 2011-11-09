@@ -114,7 +114,7 @@ bool NModuleEventSelector::Initialize()
     if (OpenEnergyResponseROOTFile(NModuleInterfaceIO::GetBaseFileName() + ".energyresponse.root") == false) return false;
   }
   if (m_SaveAsDat == true) {
-    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".events.dat", m_ChosenType) == false) return false;
+    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".events.dat", m_ASCIIFileVersion, m_ChosenType) == false) return false;
   }
   
   return true;

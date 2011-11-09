@@ -94,7 +94,7 @@ bool NModuleEventSaver::Initialize()
 {
   // Initialize the module 
 
-  return OpenAsciiFile(m_FileName, m_ChosenType);
+  return OpenAsciiFile(m_FileName, m_ASCIIFileVersion, m_ChosenType);
 }
 
 
@@ -105,7 +105,7 @@ bool NModuleEventSaver::AnalyzeEvent(NEvent& Event)
 {
   // Main data analysis routine, which updates the event to a new level 
 
-  return SaveEventAscii(Event);
+  return SaveEventAscii(Event, m_ASCIIFileVersion);
 }
 
 

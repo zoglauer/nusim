@@ -74,7 +74,7 @@ void NPhoton::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPhoton::Stream(ofstream& S, TString Keyword)
+bool NPhoton::Stream(ofstream& S, int Version, TString Keyword)
 {
   //! Stream the content to an ASCII file 
 
@@ -95,7 +95,7 @@ bool NPhoton::Stream(ofstream& S, TString Keyword)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPhoton::Parse(const TString& Line)
+bool NPhoton::Parse(const TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 

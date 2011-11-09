@@ -143,13 +143,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
     m_Time.push_back(Event.GetTime());
 	m_Life.push_back(Event.GetDetectorLifeTime());
 	//cout<<Event.GetDetectorLifeTime().GetAsSeconds()<<endl;
-	m_Origin.push_back(Event.GetOrigin());
-	if (Event.GetHit(i).GetDepthCut()==false) m_Reject.push_back(0);
+	  m_Origin.push_back(Event.GetOrigin());
+	  if (Event.GetHit(i).GetDepthCut()==false) m_Reject.push_back(0);
     if (Event.GetHit(i).GetDepthCut()==true) m_Reject.push_back(1);
-    m_Grade.push_back(Event.GetNinePixelHit(i).GetTriggerGrade());
+    m_Grade.push_back(Event.GetHit(i).GetTriggerGrade());
     m_Qfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetRotationQuaternion());
     m_Tfbob.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationFocalPlaneToOB().GetTranslation());
-	m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
+	  m_Qstar.push_back(Event.GetHit(i).GetObservatoryData().GetOrientationOBToIS().GetRotationQuaternion());
   }
     
   return true;

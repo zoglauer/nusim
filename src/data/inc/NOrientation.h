@@ -119,10 +119,10 @@ class NOrientation
 
   
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S);
+  bool Stream(ofstream& S, int Version);
 
   //! Stream the content from a line of an ASCII file starting at Token StartToken
-  bool Parse(TString& Line, int StartToken);
+  bool Parse(TString& Line, int Version, int StartToken);
 
   
   // protected methods:

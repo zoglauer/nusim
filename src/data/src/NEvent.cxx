@@ -148,7 +148,7 @@ void NEvent::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NEvent::Stream(ofstream& S, int WhatToStream)
+bool NEvent::Stream(ofstream& S, int Version, int WhatToStream)
 {
   //! Stream the content to an ASCII file 
 
@@ -159,26 +159,26 @@ bool NEvent::Stream(ofstream& S, int WhatToStream)
   S<<"OG "<<m_Origin<<endl;
   if (WhatToStream < 2) {
     S<<"RD "<<m_Ra<<" "<<m_Dec<<endl;
-    if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S);
-    if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, "OP");
-    if (m_InitialPhotonRelOM.IsEmpty() == false) m_InitialPhotonRelOM.Stream(S, "IP");
-    if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, "CP");
+    if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S, Version);
+    if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, Version, "OP");
+    if (m_InitialPhotonRelOM.IsEmpty() == false) m_InitialPhotonRelOM.Stream(S, Version, "IP");
+    if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, Version, "CP");
     for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
-      m_Interactions[i].Stream(S);
+      m_Interactions[i].Stream(S, Version);
     }
-    m_PHEData.Stream(S);
+    m_PHEData.Stream(S, Version);
     for (unsigned int i = 0; i < m_PixelHits.size(); ++i) {
-      m_PixelHits[i].Stream(S);
+      m_PixelHits[i].Stream(S, Version);
     }
     for (unsigned int i = 0; i < m_ShieldHits.size(); ++i) {
-      m_ShieldHits[i].Stream(S);
+      m_ShieldHits[i].Stream(S, Version);
     }
     for (unsigned int i = 0; i < m_NinePixelHits.size(); ++i) {
-      m_NinePixelHits[i].Stream(S);
+      m_NinePixelHits[i].Stream(S, Version);
     }
   }
   for (unsigned int i = 0; i < m_Hits.size(); ++i) {
-    m_Hits[i].Stream(S);
+    m_Hits[i].Stream(S, Version);
   }
   S<<"LT "<<m_DetectorLifeTime.GetString(9)<<endl;
 
@@ -190,7 +190,7 @@ bool NEvent::Stream(ofstream& S, int WhatToStream)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NEvent::Parse(TString& Line)
+bool NEvent::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 
@@ -216,56 +216,56 @@ bool NEvent::Parse(TString& Line)
       Error = true;
     } 
   } else if (Data[0] == 'O' && Data[1] == 'R') {
-    if (m_Orientations.Parse(Line) == false) {
+    if (m_Orientations.Parse(Line, Version) == false) {
       Error = true;
     }
   } else if (Data[0] == 'O' && Data[1] == 'P') {
-    if (m_OriginalPhoton.Parse(Line) == false) {
+    if (m_OriginalPhoton.Parse(Line, Version) == false) {
       Error = true;
     }
   } else if (Data[0] == 'I' && Data[1] == 'P') {
-    if (m_InitialPhotonRelOM.Parse(Line) == false) {
+    if (m_InitialPhotonRelOM.Parse(Line, Version) == false) {
       Error = true;
     }
   } else if (Data[0] == 'C' && Data[1] == 'P') {
-    if (m_CurrentPhoton.Parse(Line) == false) {
+    if (m_CurrentPhoton.Parse(Line, Version) == false) {
       Error = true;
     }
   } else if (Data[0] == 'I' && Data[1] == 'A') {
     NInteraction IA;
-    if (IA.Parse(Line) == true) {
+    if (IA.Parse(Line, Version) == true) {
       m_Interactions.push_back(IA);
     } else {
       Error = true;
     }
   } else if (Data[0] == 'P' && Data[1] == 'E') {
-    if (m_PHEData.Parse(Line) == false) {
+    if (m_PHEData.Parse(Line, Version) == false) {
       Error = true;
     }
   } else if (Data[0] == 'P' && Data[1] == 'H') {
     NPixelHit PH;
-    if (PH.Parse(Line) == true) {
+    if (PH.Parse(Line, Version) == true) {
       m_PixelHits.push_back(PH);
     } else {
       Error = true;
     }
   } else if (Data[0] == 'S' && Data[1] == 'H') {
     NShieldHit SH;
-    if (SH.Parse(Line) == true) {
+    if (SH.Parse(Line, Version) == true) {
       m_ShieldHits.push_back(SH);
     } else {
       Error = true;
     }
   } else if (Data[0] == 'N' && Data[1] == 'H') {
     NNinePixelHit NH;
-    if (NH.Parse(Line) == true) {
+    if (NH.Parse(Line, Version) == true) {
       m_NinePixelHits.push_back(NH);
     } else {
       Error = true;
     }
   } else if (Data[0] == 'H' && Data[1] == 'T') {
     NHit HT;
-    if (HT.Parse(Line) == true) {
+    if (HT.Parse(Line, Version) == true) {
       m_Hits.push_back(HT);
     } else {
       Error = true;
@@ -472,6 +472,7 @@ NNinePixelHit NEvent::GetNinePixelHit(unsigned int i)
   }
 
   merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<show;
+  abort();
 
   return NNinePixelHit();
 }
@@ -489,6 +490,7 @@ NNinePixelHit& NEvent::GetNinePixelHitRef(unsigned int i)
   }
 
   merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<fatal;
+  abort();
 
   return m_NinePixelHits[0];
 }

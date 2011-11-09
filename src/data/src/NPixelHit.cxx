@@ -80,7 +80,7 @@ void NPixelHit::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPixelHit::Stream(ofstream& S)
+bool NPixelHit::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -97,7 +97,7 @@ bool NPixelHit::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPixelHit::Parse(TString& Line)
+bool NPixelHit::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file
 

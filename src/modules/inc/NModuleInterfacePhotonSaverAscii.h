@@ -47,14 +47,14 @@ class NModuleInterfacePhotonSaverAscii
   virtual ~NModuleInterfacePhotonSaverAscii();
   
   //! Load and initialize the file
-  virtual bool OpenAsciiFile(TString FileName);
+  virtual bool OpenAsciiFile(TString FileName, int Version);
   
   //! Return true if the ASCII file is open
   virtual bool IsAsciiFileOpen() { return m_Out.is_open(); }
 
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
-  virtual bool SavePhotonAscii(NPhoton& Photon);
+  virtual bool SavePhotonAscii(NPhoton& Photon, int Version);
  
   //! Close the file
   virtual bool CloseAsciiFile();

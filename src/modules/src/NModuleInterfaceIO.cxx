@@ -38,6 +38,8 @@ ClassImp(NModuleInterfaceIO)
 NModuleInterfaceIO::NModuleInterfaceIO() : m_ChosenType(NModule::c_Unknown)
 {
   // Construct an instance of NModuleInterfaceIO
+
+  m_ASCIIFileVersion = 2;
 }
 
 

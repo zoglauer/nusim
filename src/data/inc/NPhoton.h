@@ -70,10 +70,10 @@ class NPhoton
   void SetEnergy(double Energy) { m_Empty = false; m_Energy = Energy; } 
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S, TString Keyword = "OP");
+  bool Stream(ofstream& S, int Version, TString Keyword = "OP");
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(const TString& Line);
+  bool Parse(const TString& Line, int Version);
 
 
   // protected methods:

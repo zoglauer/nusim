@@ -74,7 +74,7 @@ void NInteraction::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NInteraction::Stream(ofstream& S)
+bool NInteraction::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -96,7 +96,7 @@ bool NInteraction::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NInteraction::Parse(TString& Line)
+bool NInteraction::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 

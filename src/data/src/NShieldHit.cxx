@@ -70,7 +70,7 @@ void NShieldHit::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NShieldHit::Stream(ofstream& S)
+bool NShieldHit::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -87,7 +87,7 @@ bool NShieldHit::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NShieldHit::Parse(TString& Line)
+bool NShieldHit::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file
 

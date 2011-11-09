@@ -49,14 +49,14 @@ class NModuleInterfaceEventSaverAscii : public NModuleInterfaceObservation
   virtual ~NModuleInterfaceEventSaverAscii();
   
   //! Load and initialize the file
-  virtual bool OpenAsciiFile(TString FileName, int ModuleType);
+  virtual bool OpenAsciiFile(TString FileName, int Version, int ModuleType);
   
   //! Return true if the ASCII file is open
   virtual bool IsAsciiFileOpen() { return m_Out.is_open(); }
 
   //! Main data analysis routine, which updates the event to a new level
   //! WhatToStream: see NEvent::Stream
-  virtual bool SaveEventAscii(NEvent& Event, int WhatToStream = 0);
+  virtual bool SaveEventAscii(NEvent& Event, int Version, int WhatToStream = 0);
  
   //! Close the file
   virtual bool CloseAsciiFile();

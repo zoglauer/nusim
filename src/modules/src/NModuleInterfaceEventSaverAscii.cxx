@@ -56,7 +56,7 @@ NModuleInterfaceEventSaverAscii::~NModuleInterfaceEventSaverAscii()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int ModuleType)
+bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int ASCIIFileVersion, int ModuleType)
 {  
   //! Load and initialize the file
 
@@ -73,6 +73,8 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
   m_Out<<"VE "<<g_Version<<endl;
   m_Out<<"# NuSIM revision:"<<endl;
   m_Out<<"RV "<<g_SVNRevision<<endl;
+  m_Out<<"# ASCII file version:"<<endl;
+  m_Out<<"VF "<<ASCIIFileVersion<<endl;
   m_Out<<endl;
   m_Out<<"# Stored after the following module type: "<<endl;
   m_Out<<"CM "<<ModuleType<<endl;
@@ -99,7 +101,7 @@ bool NModuleInterfaceEventSaverAscii::OpenAsciiFile(TString FileName, int Module
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToStream)
+bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int ASCIIFileVersion, int WhatToStream)
 {
   //! Main data analysis routine, which updates the event to a new level 
 
@@ -108,7 +110,7 @@ bool NModuleInterfaceEventSaverAscii::SaveEventAscii(NEvent& Event, int WhatToSt
     return false;
   }
 
-  Event.Stream(m_Out, WhatToStream);
+  Event.Stream(m_Out, ASCIIFileVersion, WhatToStream);
   
   if (Event.GetTelescope() == 1) m_TotalLifeTime1 += Event.GetDetectorLifeTime();
   if (Event.GetTelescope() == 2) m_TotalLifeTime2 += Event.GetDetectorLifeTime();

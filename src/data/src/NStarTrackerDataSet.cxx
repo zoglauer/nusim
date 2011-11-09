@@ -75,7 +75,7 @@ void NStarTrackerDataSet::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NStarTrackerDataSet::Stream(ofstream& S, TString Keyword)
+bool NStarTrackerDataSet::Stream(ofstream& S, int Version, TString Keyword)
 {
   //! Stream the content to an ASCII file 
 
@@ -93,7 +93,7 @@ bool NStarTrackerDataSet::Stream(ofstream& S, TString Keyword)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NStarTrackerDataSet::Parse(TString& Line)
+bool NStarTrackerDataSet::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 

@@ -76,10 +76,10 @@ class NStarTrackerDataSet
   NPointing GetReconstructedPointing() const { return m_ReconstructedPointing; }
   
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S, TString Keyword);
+  bool Stream(ofstream& S, int Version, TString Keyword);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
 
 

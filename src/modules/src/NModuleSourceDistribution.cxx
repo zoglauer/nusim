@@ -125,7 +125,7 @@ bool NModuleSourceDistribution::Initialize()
   //return GeneratePointingPattern();
 
   if (m_StoreInitialPhoton == true) {
-    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".photon.dat") == false) return false;
+    if (OpenAsciiFile(NModuleInterfaceIO::GetBaseFileName() + ".photon.dat", m_ASCIIFileVersion) == false) return false;
   }
 
   return true;
@@ -252,7 +252,7 @@ bool NModuleSourceDistribution::AnalyzeEvent(NEvent& Event)
 
   if (m_StoreInitialPhoton == true) {
     if (IsAsciiFileOpen() == true) {
-      if (SavePhotonAscii(Photon) == false) return false;
+      if (SavePhotonAscii(Photon, m_ASCIIFileVersion) == false) return false;
     }
   }
 

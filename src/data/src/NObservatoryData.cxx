@@ -145,7 +145,7 @@ double NObservatoryData::GetDec()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool NObservatoryData::Stream(ofstream& S, bool Compact)
+bool NObservatoryData::Stream(ofstream& S, int Version, bool Compact)
 {
   //! Stream the content to an ASCII file 
 
@@ -187,7 +187,7 @@ bool NObservatoryData::Stream(ofstream& S, bool Compact)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NObservatoryData::Parse(TString& Line, bool Compact)
+bool NObservatoryData::Parse(TString& Line, int Version, bool Compact)
 {
   //! Stream the content from a line of an ASCII file  
 

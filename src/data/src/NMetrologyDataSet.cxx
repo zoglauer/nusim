@@ -81,7 +81,7 @@ void NMetrologyDataSet::Clear()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMetrologyDataSet::Stream(ofstream& S, TString Keyword)
+bool NMetrologyDataSet::Stream(ofstream& S, int Version, TString Keyword)
 {
   //! Stream the content to an ASCII file 
 
@@ -100,7 +100,7 @@ bool NMetrologyDataSet::Stream(ofstream& S, TString Keyword)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMetrologyDataSet::Parse(TString& Line)
+bool NMetrologyDataSet::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 
@@ -125,6 +125,10 @@ bool NMetrologyDataSet::Parse(TString& Line)
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NMetrologyDataSet::Interpolate(NMetrologyDataSet A, NMetrologyDataSet B, NTime t)
 {
   MVector p1=A.GetCalibratedLaserHit();
@@ -137,6 +141,7 @@ void NMetrologyDataSet::Interpolate(NMetrologyDataSet A, NMetrologyDataSet B, NT
   
   m_CalibratedLaserHit = pNew;
 }
+
 
 // NMetrologyDataSet.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

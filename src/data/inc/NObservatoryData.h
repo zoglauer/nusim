@@ -92,10 +92,10 @@ class NObservatoryData
 
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S, bool Compact = false);
+  bool Stream(ofstream& S, int Version, bool Compact = false);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line, bool Compact = false);
+  bool Parse(TString& Line, int Version, bool Compact = false);
 
 
   // private members:

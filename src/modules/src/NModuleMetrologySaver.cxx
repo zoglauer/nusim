@@ -95,6 +95,13 @@ bool NModuleMetrologySaver::Initialize()
 
   m_Out<<"# NuSIM metrology file"<<endl;
   m_Out<<endl;
+  m_Out<<"# NuSIM version:"<<endl;
+  m_Out<<"VE "<<g_Version<<endl;
+  m_Out<<"# NuSIM revision:"<<endl;
+  m_Out<<"RV "<<g_SVNRevision<<endl;
+  m_Out<<"# ASCII file version:"<<endl;
+  m_Out<<"VF "<<m_ASCIIFileVersion<<endl;
+  m_Out<<endl;
   m_Out<<"# Stored after the following module type: "<<endl;
   m_Out<<"CM "<<m_ChosenType<<endl;
   m_Out<<endl;
@@ -111,7 +118,7 @@ bool NModuleMetrologySaver::AnalyzeMetrologyData(NMetrologyData& Data)
 {
   // Main data analysis routine, which updates the data to a new level 
 
-   Data.Stream(m_Out);
+   Data.Stream(m_Out, m_ASCIIFileVersion);
 
   return true;
 }

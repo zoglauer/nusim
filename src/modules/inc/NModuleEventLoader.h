@@ -90,7 +90,6 @@ class NModuleEventLoader : public NModule, public NModuleInterfaceEvent, public 
   NTime m_AbsoluteObservationEndTime;
 
 
-
 #ifdef ___CINT___
  public:
   ClassDef(NModuleEventLoader, 0) // no description

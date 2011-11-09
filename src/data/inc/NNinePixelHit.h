@@ -116,10 +116,10 @@ class NNinePixelHit
 
   
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S);
+  bool Stream(ofstream& S, int Version);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
 
   // protected methods:
@@ -155,7 +155,7 @@ class NNinePixelHit
   vector<int> m_Trigger;
   //! The number of triggers
   int m_NTriggers;
-  //! The number of triggers
+  //! The trigger grade
   int m_TriggerGrade;
     
   //! The ideal average depth position

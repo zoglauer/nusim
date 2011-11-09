@@ -84,10 +84,10 @@ class NMetrologyDataSet
   MVector GetCalibratedLaserHit() const { return m_CalibratedLaserHit; }
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S, TString Keyword);
+  bool Stream(ofstream& S, int Version, TString Keyword);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
   //! Interpolate from previous data point
   void Interpolate(NMetrologyDataSet A, NMetrologyDataSet B, NTime t);

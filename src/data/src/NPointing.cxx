@@ -157,7 +157,7 @@ void NPointing::RaDecToQuaternion()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPointing::Stream(ofstream& S, TString Keyword)
+bool NPointing::Stream(ofstream& S, int Version, TString Keyword)
 {
   //! Stream the content to an ASCII file 
 
@@ -199,7 +199,7 @@ TString NPointing::ToString() const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPointing::Parse(TString& Line)
+bool NPointing::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file  
 

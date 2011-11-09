@@ -194,7 +194,7 @@ int NPHEFitsData::GetTriggerMap(unsigned int PixelID) const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPHEFitsData::Stream(ofstream& S)
+bool NPHEFitsData::Stream(ofstream& S, int Version)
 {
   //! Stream the content to an ASCII file 
 
@@ -213,7 +213,7 @@ bool NPHEFitsData::Stream(ofstream& S)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NPHEFitsData::Parse(TString& Line)
+bool NPHEFitsData::Parse(TString& Line, int Version)
 {
   //! Stream the content from a line of an ASCII file
   

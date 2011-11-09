@@ -240,10 +240,10 @@ class NEvent
 
   //! Stream the content to an ASCII file 
   //! WhatToStream: 0: All, 1: Level 1 relevant, 2: Level 2 relevant
-  bool Stream(ofstream& S, int WhatToStream = 0);
+  bool Stream(ofstream& S, int Version, int WhatToStream = 0);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
 
 

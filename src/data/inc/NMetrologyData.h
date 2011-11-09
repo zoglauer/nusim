@@ -70,10 +70,10 @@ class NMetrologyData
   NMetrologyDataSet& GetMetrologyDataSet2ByRef() { return m_Metrology2; }
 
   //! Stream the content to an ASCII file 
-  bool Stream(ofstream& S);
+  bool Stream(ofstream& S, int Version);
 
   //! Stream the content from a line of an ASCII file  
-  bool Parse(TString& Line);
+  bool Parse(TString& Line, int Version);
 
   //! interpolate the metrology data
   void Interpolate(NMetrologyData A, NMetrologyData B, NTime t);
