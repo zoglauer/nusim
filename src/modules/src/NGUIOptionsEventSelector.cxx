@@ -86,7 +86,7 @@ void NGUIOptionsEventSelector::Create()
   AddFrame(m_PixelSize, PixelSizeLayout);
   
   m_SaveAsASCII = new TGCheckButton(this, "Events in ASCII format (*.events.dat)");
-  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsDat() == true) {
     m_SaveAsASCII->SetState(kButtonDown);
   } else {
     m_SaveAsASCII->SetState(kButtonUp);    
@@ -94,7 +94,7 @@ void NGUIOptionsEventSelector::Create()
   AddFrame(m_SaveAsASCII, FileLayout);
 
   m_SaveAsROOT = new TGCheckButton(this, "Events in ROOT format (*.events.root)");
-  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsROOT() == true) {
     m_SaveAsROOT->SetState(kButtonDown);
   } else {
     m_SaveAsROOT->SetState(kButtonUp);    
@@ -102,7 +102,7 @@ void NGUIOptionsEventSelector::Create()
   AddFrame(m_SaveAsROOT, FileLayout);
 
   m_SaveSpectralResponse = new TGCheckButton(this, "Spectral response in ROOT format (*.energyresponse.root)");
-  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEnergyResponseAsROOT() == true) {
     m_SaveSpectralResponse->SetState(kButtonDown);
   } else {
     m_SaveSpectralResponse->SetState(kButtonUp);    
