@@ -126,11 +126,11 @@ void NExposureMap::SetImageParameters(float TCRVL1, float TCDLT1, float TLMAX1, 
   
   //create sky map
   //create dimension vectors x, y
-  for (int x = 0; x < xMax; ++x) SkyMapX.push_back(xCenterValue+x*xDelta);
-  for (int y = 0; y < yMax; ++y) SkyMapY.push_back(yCenterValue+y*yDelta);
+  for (int x = 0; x <= xMax; ++x) SkyMapX.push_back(xCenterValue+x*xDelta);
+  for (int y = 0; y <= yMax; ++y) SkyMapY.push_back(yCenterValue+y*yDelta);
   //create 2d map
-  for (int x = 0; x < xMax; ++x) {
-    for (int y = 0; y < yMax; ++y) {
+  for (int x = 0; x <= xMax; ++x) {
+    for (int y = 0; y <= yMax; ++y) {
       SkyMapZ.push_back(0);
       SkyExposed.push_back(0);
 	  }

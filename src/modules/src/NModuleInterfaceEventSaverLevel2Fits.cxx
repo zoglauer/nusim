@@ -578,8 +578,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float tlmin3 = 0;
   float tlmin5 = 0;
 
-  float tlmax1 = (RaMax-RaMin)*cos(DecAvg/rad)/PixelSize;
-  float tlmax2 = (DecMax-DecMin)/PixelSize;
+  float tlmax1 = ceil((RaMax-RaMin)*cos(DecAvg/rad)/PixelSize);
+  float tlmax2 = ceil((DecMax-DecMin)/PixelSize);
   float tlmax3 = 819;
   float tlmax5 = 3;
 

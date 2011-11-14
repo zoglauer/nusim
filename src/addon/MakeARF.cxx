@@ -259,7 +259,7 @@ bool Target::LoadEffArea()
   int anynull = 0;
   m_File = 0;
   
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.1.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.0.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;
@@ -297,7 +297,7 @@ bool Target::LoadVignet()
   int anynull=0;
   m_File = 0;
   
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.1.fits", READONLY, &Status);
+  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.0.fits", READONLY, &Status);
   if (Status != 0) {
     cout<<"Unable to open file: "<<endl;
     //cout<<FileName<<endl;
@@ -610,7 +610,7 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
   }
   if (Type == "source"){
     T.Analyze(ARFFile, false);
-    fits_write_key(m_File, TSTRING, "RESPFILE",  const_cast<char*>("nustar_v3.2.rmf"), " ", &Status);  
+    fits_write_key(m_File, TSTRING, "RESPFILE",  const_cast<char*>("nustar_v3.5.rmf"), " ", &Status);  
     fits_write_key(m_File, TSTRING, "ANCRFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
     T.Analyze(BkgFile, false);
 	fits_write_key(m_File, TSTRING, "BACKFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
