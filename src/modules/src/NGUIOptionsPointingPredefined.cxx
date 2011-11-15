@@ -117,6 +117,15 @@ void NGUIOptionsPointingPredefined::Create()
   m_PointingJitterDB->SetFileType("CSV data base", "*.csv");
   AddFrame(m_PointingJitterDB, DBLayout);
   
+  m_Save = new TGCheckButton(this, "Save pointing data");
+  m_Save->Associate(this);
+  if (dynamic_cast<NModulePointingPredefined*>(m_Module)->GetSave() == true) {
+    m_Save->SetState(kButtonDown);
+  } else {
+    m_Save->SetState(kButtonUp);
+  }
+  AddFrame(m_Save, BasicLayout);
+
   Resize(1030, 400);
   
   PostCreate();
@@ -310,7 +319,11 @@ bool NGUIOptionsPointingPredefined::OnApply()
   } else {
     dynamic_cast<NModulePointingPredefined*>(m_Module)->SetContinuousYawMode(true);
   }
-  
+  if (m_Save->GetState() == kButtonDown) {
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetSave(true);
+  } else {
+    dynamic_cast<NModulePointingPredefined*>(m_Module)->SetSave(false);
+  }
 	return true;
 }
 

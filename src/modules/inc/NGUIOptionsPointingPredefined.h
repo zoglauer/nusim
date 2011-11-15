@@ -94,6 +94,8 @@ class NGUIOptionsPointingPredefined : public NGUIOptions
   //! Pointing jitter DB selector
   MGUIEFileSelector* m_PointingJitterDB;
 
+  //! Save the pointing data
+  TGCheckButton* m_Save;
 
 
 

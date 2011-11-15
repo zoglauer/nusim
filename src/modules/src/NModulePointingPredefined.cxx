@@ -18,6 +18,10 @@
 #include "NModulePointingPredefined.h"
 
 // Standard libs:
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+using namespace std;
 
 // ROOT libs:
 #include "TRandom.h"
@@ -27,6 +31,7 @@
 #include "MStreams.h"
 
 // NuSTAR libs:
+#include "NGlobal.h"
 #include "NGUIOptionsPointingPredefined.h"
 
 
@@ -53,7 +58,7 @@ const int NModulePointingPredefined::c_MotionPatternMax         = 2;
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NModule(Satellite), NModuleInterfacePointing()
+NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NModule(Satellite), NModuleInterfacePointing(), NModuleInterfaceIO(), NModuleInterfaceStopCriterion()
 {
   // Construct an instance of NModulePointingPredefined
 
@@ -86,6 +91,8 @@ NModulePointingPredefined::NModulePointingPredefined(NSatellite& Satellite) : NM
   m_MotionPattern = c_MotionPatternNone;
 
   m_ContinuousYawMode = true;
+    
+  m_Save = false;
 }
 
 
@@ -269,8 +276,10 @@ NTime NModulePointingPredefined::GetPointingSlewTime(const NTime& First, const N
   unsigned int NSlews = GetNPointingSlews(First, Second);
   
   if (SlewID >= NSlews) {
-    merr<<"Error: SlewID larger than present slews! Using first!"<<endl;
-    SlewID = 0;
+    return g_TimeNotDefined;
+  }
+  if (NSlews == 0) {
+    return g_TimeNotDefined;
   }
   
   unsigned int IndexAfterFirst = 0;
@@ -500,6 +509,45 @@ bool NModulePointingPredefined::ImportPointings(TString FileName)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NModulePointingPredefined::Finalize()
+{
+  // Initialize the module 
+
+  if (m_Save == true) {
+    TString FileName = GetBaseFileName() + ".ptg";
+    MFile::ExpandFileName(FileName);
+  
+    ofstream out;
+    out.open(FileName);
+    if (out.is_open() == false) {
+      cerr<<"Unable to open file: "<<FileName<<endl;
+      return false;
+    }
+
+    NTime First(0, -1);
+    NTime Last = m_Satellite.GetTime();
+
+    out<<";NuSIM generated pointing file"<<endl;
+    out<<";Format: Time|RA in deg|Dec in deg"<<endl;
+    out<<endl;
+    for (unsigned int SlewID = 0; true; ++SlewID) {
+      NTime Slew = GetPointingSlewTime(First, Last, SlewID);
+      if (Slew == g_TimeNotDefined || SlewID >= m_InitialPointings.size()) break;
+      Slew = m_Satellite.ConvertToAbsoluteTime(Slew);
+      out<<Slew.GetOccultationString()
+         <<"|"<<setprecision(6)<<m_InitialPointings[SlewID].GetRa()/deg
+         <<"|"<<setprecision(6)<<m_InitialPointings[SlewID].GetDec()/deg<<endl;
+    }
+    out.close();
+  }
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void NModulePointingPredefined::ShowOptionsGUI()
 {
   //! Show the options GUI --- has to be overwritten!
@@ -553,6 +601,11 @@ bool NModulePointingPredefined::ReadXmlConfiguration(MXmlNode* Node)
     m_ContinuousYawMode = ContinuousYawModeNode->GetValueAsBoolean();
   }
 
+  MXmlNode* SaveNode = Node->GetNode("Save");
+  if (SaveNode != 0) {
+    m_Save = SaveNode->GetValueAsBoolean();
+  }
+  
   if (m_InitialPointings.size() == 0) {
     NPointing N;
     N.SetRaDecYaw(180.0*60, 0.0, 180.0*60);
@@ -580,7 +633,8 @@ MXmlNode* NModulePointingPredefined::CreateXmlConfiguration()
   new MXmlNode(Node, "PointingJitterDBFileName", CleanPath(m_PointingJitterDBFileName));
   new MXmlNode(Node, "AbsoluteTime", m_AbsoluteTime);
   new MXmlNode(Node, "ContinuousRollMode", m_ContinuousYawMode);
-  
+  new MXmlNode(Node, "Save", m_Save);
+    
   return Node;
 }
 

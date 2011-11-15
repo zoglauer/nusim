@@ -26,6 +26,7 @@
 #include "NModuleInterfacePointing.h"
 #include "NModuleInterfaceStopCriterion.h"
 #include "NPointingJitterDBEntry.h"
+#include "NModuleInterfaceIO.h"
 
 // Forward declarations:
 
@@ -34,7 +35,7 @@
 
 
 // Choose one:
-class NModulePointingPredefined : public NModule, public NModuleInterfacePointing, public NModuleInterfaceStopCriterion
+class NModulePointingPredefined : public NModule, public NModuleInterfacePointing, public NModuleInterfaceIO, public NModuleInterfaceStopCriterion
 {
   // public interface:
  public:
@@ -45,6 +46,13 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
 
   //! Initialize the module
   virtual bool Initialize();
+  //! Initialize the module
+  virtual bool Finalize();
+
+  //! Enable saving the file
+  void SetSave(bool Save = true) { m_Save = Save; }
+  //! Enable saving the file
+  bool GetSave() const { return m_Save; }
 
   //! Return the pointing of the satellte at a given time
   virtual NPointing GetPointing(NTime Time);
@@ -166,6 +174,9 @@ class NModulePointingPredefined : public NModule, public NModuleInterfacePointin
   double m_ContinousYawModeInitialYaw;
   //! The total roll per second in continuous roll mode
   double m_ContinousYawModeYawPerSecond;
+  
+  //! Flag indicating whether of not to save the data
+  bool m_Save;
   
   /*
   //! The last pointing call for the random walk
