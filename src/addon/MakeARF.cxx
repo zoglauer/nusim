@@ -1,7 +1,7 @@
 /*
  * ExposureMap.cxx
  *
- * Copyright (C) 2009-2009 by the NuSTAR team.
+ * Copyright (C) 2009-2011 by the NuSTAR team.
  * All rights reserved.
  *
  */
