@@ -151,6 +151,11 @@ bool NModuleDetectorSimulatorDetailed::Initialize()
     mout<<"Attention: Beryllium window is deactivated in detailed detector simulator"<<endl;
   }
   
+  m_NBlockedBeryllium = 0;
+  m_NBlockedInDetectorPlane = 0;
+  m_NBlockedPassedWithoutInteractionThroughDetector = 0;
+  m_NPhotonsEnteringDetector = 0;
+  
   return true;
 }
 
@@ -195,6 +200,7 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
     double BerylliumLength = gRandom->Exp(1.0/m_Satellite.GetBerylliumAbsorptionCoefficient(Photon.GetEnergy()));
     if (BerylliumLength < BerylliumThickness) {
       Event.SetBlocked(true);
+      ++m_NBlockedBeryllium;
       return true;
     }
   }
@@ -233,14 +239,27 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
     // We did not hit the detector and can stop here
     //cout<<"Did not hit detector..."<<endl;
     Event.SetBlocked(true);
+    ++m_NBlockedInDetectorPlane;
     DetectorOrientation.TransformOut(Photon);
     Orientation.TransformOut(Photon);
     return true;
   }
   
   // (h) Simulate an infinite plane of CZT in the detector module coordinate system
+  ++m_NPhotonsEnteringDetector;
+  
+  // Really simulate
   SimulatePhoton(Photon, Event);
-
+  
+  // Check if we really passed through the detector unchanged
+  if (Event.GetNInteractions() == 0) {
+    Event.SetBlocked(true);
+    ++m_NBlockedPassedWithoutInteractionThroughDetector;
+    DetectorOrientation.TransformOut(Photon);
+    Orientation.TransformOut(Photon);
+    return true;
+  }
+  
   // (i) Transform the photon back -- just for book keeping
   DetectorOrientation.TransformOut(Photon);
   Orientation.TransformOut(Photon);
@@ -511,11 +530,15 @@ bool NModuleDetectorSimulatorDetailed::Finalize()
 {
   cout<<endl;
   cout<<"Detector interaction simulator (detailed):"<<endl;
-  cout<<"  Photo:        "<<m_NPhoto<<endl;
-  cout<<"  Compton:      "<<m_NCompton<<endl;
-  cout<<"  Rayleigh:     "<<m_NRayleigh<<endl;
-  cout<<"  Fluorescence: "<<m_NFluorescence<<endl;
-
+  cout<<"  Interaction types:"<<endl;
+  cout<<"    Photo:        "<<m_NPhoto<<endl;
+  cout<<"    Compton:      "<<m_NCompton<<endl;
+  cout<<"    Rayleigh:     "<<m_NRayleigh<<endl;
+  cout<<"    Fluorescence: "<<m_NFluorescence<<endl;
+  cout<<"  Blocked events:"<<endl;
+  cout<<"    In Beryllium:            "<<m_NBlockedBeryllium<<endl;
+  cout<<"    In detector plane:       "<<m_NBlockedInDetectorPlane<<endl;
+  cout<<"    No detector interaction: "<<m_NBlockedPassedWithoutInteractionThroughDetector<<" (Pass throughs and Rayleigh back scatters)"<<endl;
   return true;
 }
 

@@ -94,15 +94,30 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
 
   // private members:
  private:
-  // Statistics
-  int m_NPhoto;
-  int m_NCompton;
-  int m_NRayleigh;
-  int m_NFluorescence;
-
+   
   //! Use the Beryllium window
   bool m_UseBerylliumWindow;
+
   
+  //! Number of photo effects
+  unsigned int m_NPhoto;
+  //! Number of Compton scatters
+  unsigned int m_NCompton;
+  //! Number of Rayleigh scatters
+  unsigned int m_NRayleigh;
+  //! Number of fluorescence photons created
+  unsigned int m_NFluorescence;
+
+  //! Number of photons enetering the detectors
+  unsigned int m_NPhotonsEnteringDetector;
+  
+  //! Event has been blocked in beryllium
+  unsigned int m_NBlockedBeryllium ;
+  //! Event has been blocked at the detector plane, i.e., it hit passive material
+  unsigned int m_NBlockedInDetectorPlane;
+  //! Event passed through the detector without an interaction
+  unsigned int m_NBlockedPassedWithoutInteractionThroughDetector;
+
 
 #ifdef ___CINT___
  public:
