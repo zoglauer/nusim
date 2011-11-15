@@ -17,9 +17,9 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TString.h"
 
 // MEGAlib libs:
-#include "NGlobal.h"
 
 // NuSTAR libs:
 

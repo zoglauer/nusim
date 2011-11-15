@@ -75,6 +75,7 @@ const NQuaternion g_QuaternionNotDefined = NQuaternion(numeric_limits<double>::m
                                                        numeric_limits<double>::max()/11, 
                                                        numeric_limits<double>::max()/11, 
                                                        numeric_limits<double>::max()/11);
+const NTime g_TimeNotDefined = NTime(-numeric_limits<long>::max()+11, 0l);
 
 int g_DebugLevel = 0;
 

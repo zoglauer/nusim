@@ -32,7 +32,7 @@ using namespace std;
 
 #include "MVector.h"
 #include "NQuaternion.h"
-
+#include "NTime.h"
 
 // Some globally defined variables
 extern const TString g_MajorVersion;
@@ -52,7 +52,8 @@ extern const unsigned int g_UnsignedIntNotDefined;
 extern const double g_DoubleNotDefined;
 extern const float g_FloatNotDefined;
 extern const NQuaternion g_QuaternionNotDefined;
-
+extern const NTime g_TimeNotDefined;
+                 
 extern int g_DebugLevel;
 
 // And here a lot of other useful constants:
