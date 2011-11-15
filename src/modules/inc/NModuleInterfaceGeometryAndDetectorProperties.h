@@ -81,16 +81,9 @@ class NModuleInterfaceGeometryAndDetectorProperties
   virtual double GetCZTRayleighAbsorptionCoefficient(double Energy) { return 0.1*m_RayleighCrossSectionCZT.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
 
   //! Return the total absorption coefficient (= macroscopic cross section)
+  virtual double GetCalibratedBerylliumAbsorptionCoefficient(double Energy) { return 0.1*m_CalibratedTotalCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
+  //! Return the total absorption coefficient (= macroscopic cross section)
   virtual double GetBerylliumAbsorptionCoefficient(double Energy) { return 0.1*m_TotalCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
-  //! Return the photo absorption coefficient (= macroscopic cross section)
-  virtual double GetBerylliumPhotoAbsorptionCoefficient(double Energy) { return 0.1*m_PhotoCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
-  //! Return the Compton scattering coefficient (= macroscopic cross section)
-  virtual double GetBerylliumComptonAbsorptionCoefficient(double Energy) { return 0.1*m_ComptonCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
-  //! Return the pair absoption coefficient (= macroscopic cross section)
-  virtual double GetBerylliumPairAbsorptionCoefficient(double Energy) { return 0.1*m_PairCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
-  //! Return the Rayleigh scattering coefficient (= macroscopic cross section)
-  virtual double GetBerylliumRayleighAbsorptionCoefficient(double Energy) { return 0.1*m_RayleighCrossSectionBeryllium.GetInterpolated(Energy); } // 0.1 = 1/cm -> 1/mm
-
 
 
   // protected methods:
@@ -130,16 +123,11 @@ class NModuleInterfaceGeometryAndDetectorProperties
   //! The Rayleigh scattering macroscopic cross section
   MResponseMatrixO1 m_RayleighCrossSectionCZT;
 
+  //! The total CALIBRATED macroscopic cross section
+  MResponseMatrixO1 m_CalibratedTotalCrossSectionBeryllium;
   //! The total macroscopic cross section
   MResponseMatrixO1 m_TotalCrossSectionBeryllium;
-  //! The photo effect macroscopic cross section
-  MResponseMatrixO1 m_PhotoCrossSectionBeryllium;
-  //! The Compton scattering macroscopic cross section
-  MResponseMatrixO1 m_ComptonCrossSectionBeryllium;
-  //! The pair creation macroscopic cross section
-  MResponseMatrixO1 m_PairCrossSectionBeryllium;
-  //! The Rayleigh scattering macroscopic cross section
-  MResponseMatrixO1 m_RayleighCrossSectionBeryllium;
+
 
 
 #ifdef ___CINT___

@@ -114,8 +114,8 @@ bool NModuleDetectorSimulatorPropagatorOnly::AnalyzeEvent(NEvent& Event)
 
   // (e) Calculate absorption probabilty in Beryllium
   //     --- IGNORE Compton/Rayleigh scatter probability and other effects
-  double BerylliumThickness = 0.1;
-  double BerylliumLength = gRandom->Exp(1.0/m_Satellite.GetBerylliumAbsorptionCoefficient(Photon.GetEnergy()));
+  double BerylliumThickness = 0.095*mm; // From kristin!
+  double BerylliumLength = gRandom->Exp(1.0/m_Satellite.GetCalibratedBerylliumAbsorptionCoefficient(Photon.GetEnergy()));
   if (BerylliumLength < BerylliumThickness) {
     Event.SetBlocked(true);
     Orientation.TransformOut(Photon);

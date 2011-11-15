@@ -365,6 +365,11 @@ class NSatellite : public NModuleInterfaceOrbit, public NModuleInterfacePointing
   //! Return the Rayleigh CZT absorption coefficient (= macroscopic cross section)
   virtual double GetCZTRayleighAbsorptionCoefficient(double Energy) { return m_GeometryAndDetectorProperties->GetCZTRayleighAbsorptionCoefficient(Energy); }
 
+  //! Return the total CALIBRATED CZT absorption coefficient (= macroscopic cross section)
+  virtual double GetCalibratedBerylliumAbsorptionCoefficient(double Energy) { return m_GeometryAndDetectorProperties->GetCalibratedBerylliumAbsorptionCoefficient(Energy); }
+  //! Return the total CZT absorption coefficient (= macroscopic cross section)
+  virtual double GetBerylliumAbsorptionCoefficient(double Energy) { return m_GeometryAndDetectorProperties->GetBerylliumAbsorptionCoefficient(Energy); }
+
   // protected methods:
  protected:
 

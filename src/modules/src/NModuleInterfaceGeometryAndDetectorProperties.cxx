@@ -220,6 +220,20 @@ bool NModuleInterfaceGeometryAndDetectorProperties::LoadCrossSections()
     } 
   }
  
+  TotalAbs = "${NUSIM}/resource/data/Xsection.Total.Beryllium.Calibrated.rsp";
+  if (MFile::FileExists(TotalAbs) == false) {
+    cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
+    cout<<"Can't find cross section file "<<TotalAbs<<endl;
+    CrossSectionsPresent = false;
+  } else {
+    if (m_CalibratedTotalCrossSectionBeryllium.Read(TotalAbs) == false) {
+      cout<<"   ***  Error  ***  in material Beryllium"<<endl;
+      cout<<"Can't open cross section file "<<TotalAbs<<endl;
+      CrossSectionsPresent = false;
+      return false;
+    }
+  }
+ 
   TotalAbs = "${NUSIM}/resource/data/Xsection.Total.Beryllium.rsp";
   if (MFile::FileExists(TotalAbs) == false) {
     cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
@@ -232,62 +246,6 @@ bool NModuleInterfaceGeometryAndDetectorProperties::LoadCrossSections()
       CrossSectionsPresent = false;
       return false;
     }
-  }
-
-  PhotoAbs = "${NUSIM}/resource/data/Xsection.Photo.Beryllium.rsp";
-  if (MFile::FileExists(PhotoAbs) == false) {
-    cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
-    cout<<"Can't find cross section file "<<PhotoAbs<<endl;
-    CrossSectionsPresent = false;
-  } else {
-    if (m_PhotoCrossSectionBeryllium.Read(PhotoAbs) == false) {
-      cout<<"   ***  Error  ***  in material Beryllium"<<endl;
-      cout<<"Can't open cross section file "<<PhotoAbs<<endl;
-      CrossSectionsPresent = false;
-      return false;
-    }
-  }
-
-  ComptonAbs = "${NUSIM}/resource/data/Xsection.Compton.Beryllium.rsp";
-  if (MFile::FileExists(ComptonAbs) == false) {
-    cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
-    cout<<"Can't find cross section file "<<ComptonAbs<<endl;
-    CrossSectionsPresent = false;
-  } else {
-    if (m_ComptonCrossSectionBeryllium.Read(ComptonAbs) == false) {
-      cout<<"   ***  Error  ***  in material Beryllium"<<endl;
-      cout<<"Can't open cross section file "<<ComptonAbs<<endl;
-      CrossSectionsPresent = false;
-      return false;
-    } 
-  }
-
-  PairAbs = "${NUSIM}/resource/data/Xsection.Pair.Beryllium.rsp";
-  if (MFile::FileExists(PairAbs) == false) {
-    cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
-    cout<<"Can't find cross section file "<<PairAbs<<endl;
-    CrossSectionsPresent = false;
-  } else {
-    if (m_PairCrossSectionBeryllium.Read(PairAbs) == false) {
-      cout<<"   ***  Error  ***  in material Beryllium"<<endl;
-      cout<<"Can't open cross section file "<<PairAbs<<endl;
-      CrossSectionsPresent = false;
-      return false;
-    } 
-  }
-
-  RayleighAbs = "${NUSIM}/resource/data/Xsection.Rayleigh.Beryllium.rsp";
-  if (MFile::FileExists(RayleighAbs) == false) {
-    cout<<"   ***  Warning  ***  in material Beryllium"<<endl;
-    cout<<"Can't find cross section file "<<RayleighAbs<<endl;
-    CrossSectionsPresent = false;
-  } else {
-    if (m_RayleighCrossSectionBeryllium.Read(RayleighAbs) == false) {
-      cout<<"   ***  Error  ***  in material Beryllium"<<endl;
-      cout<<"Can't open cross section file "<<RayleighAbs<<endl;
-      CrossSectionsPresent = false;
-      return false;
-    } 
   }
    
   return CrossSectionsPresent;
