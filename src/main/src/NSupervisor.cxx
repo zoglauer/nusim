@@ -260,6 +260,8 @@ NSupervisor::NSupervisor()
   
   m_TargetName = "Target";
   m_ObservationID = "0001";
+  
+  m_SimulateOccultations = false;
 }
 
 
@@ -453,7 +455,9 @@ bool NSupervisor::Run()
     }
   }
 
-  
+  bool SourceNext = false;
+  bool BackgroundNext = false;
+
   bool HasSourcePipe = false;
   if (m_PipelineModules.size() > 0 && SourceStart != 0) HasSourcePipe = true;
   bool HasBackgroundPipe = false;
@@ -501,8 +505,6 @@ bool NSupervisor::Run()
     m_Satellite.SetTime(IdealTime);
     m_Satellite.SetAbsoluteObservationStartTime(m_Satellite.GetAbsoluteObservationStartTime() + m_Satellite.FindIdealTime(m_ObservationStartTime));
   }
-  
-  cout<<"Start Time: "<<m_Satellite.GetTime()<<endl;
 
   // Do the pipeline
   NEvent Event;
@@ -566,22 +568,32 @@ bool NSupervisor::Run()
       if (SourceStart->GetTimeOfNextEvent() < BackgroundStart->GetTimeOfNextEvent()) {
         TimeOfNextEvent = SourceStart->GetTimeOfNextEvent();
         NextPipeline = m_PipelineModules;
+        SourceNext = true;
+        BackgroundNext = false;
         //cout<<"Next source"<<endl;
       } else {
         TimeOfNextEvent = BackgroundStart->GetTimeOfNextEvent();
         NextPipeline = m_BackgroundModules;
+        SourceNext = false;
+        BackgroundNext = true;
         //cout<<"Next background"<<endl;
       }
     } else if (HasSourcePipe == true && HasBackgroundPipe == false) {
       TimeOfNextEvent = SourceStart->GetTimeOfNextEvent();
-      NextPipeline = m_PipelineModules;      
+      NextPipeline = m_PipelineModules;
+      SourceNext = true;
+      BackgroundNext = false;
       //cout<<"Next source"<<endl;
     } else if (HasSourcePipe == false && HasBackgroundPipe == true) {
       TimeOfNextEvent = BackgroundStart->GetTimeOfNextEvent();
       NextPipeline = m_BackgroundModules;
+      SourceNext = false;
+      BackgroundNext = true;
       //cout<<"Next background"<<endl;
     } else {
       // If this is the case we might only have to generate satellite data or metrology data or star tracker data
+      SourceNext = false;
+      BackgroundNext = false;
       if (HasStarTrackerPipe == true && HasMetrologyPipe == true) {
         if (StarTrackerStart->GetTimeOfNextEvent() < MetrologyStart->GetTimeOfNextEvent()) {
           TimeOfNextEvent = StarTrackerStart->GetTimeOfNextEvent();
@@ -618,24 +630,41 @@ bool NSupervisor::Run()
     }
     
     // Take care of blackouts:
-    if ((HasSourceEngine == true || HasBackgroundPipe == true) && m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
-      NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
-      cout<<"Occultation detected at "<<TimeOfNextEvent<<" for "<<BlackoutDuration<<endl;
-      BlackoutTime += BlackoutDuration;
-      for (unsigned int i = 0; i < TimeJumpModules.size(); ++i) {
-        TimeJumpModules[i]->PerformTimeJump(BlackoutDuration + 100*ns);
-      }
-      Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent), BlackoutDuration);
-      m_Satellite.SetTime(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
+    if ((HasSourceEngine == true || HasBackgroundPipe == true) && 
+        m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
+      if (m_SimulateOccultations == false) {
+        NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), m_Satellite.EndOfNextBlackout(TimeOfNextEvent));
+        BlackoutTime += BlackoutDuration;
+        for (unsigned int i = 0; i < TimeJumpModules.size(); ++i) {
+          TimeJumpModules[i]->PerformTimeJump(BlackoutDuration + 100*ns);
+        }
+        Pointing->StartNewOrbit(m_Satellite.EndOfNextBlackout(TimeOfNextEvent), BlackoutDuration);
+        m_Satellite.SetTime(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) + 100*ns);
       
-      if (HasStarTrackerPipe == true) {
-        StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*s);
-      }
-      if (HasMetrologyPipe == true) {
-        MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*ns);
-      }
-      
-      continue; // We continue, so that we get the next event beyond the timeout
+        if (HasStarTrackerPipe == true) {
+          StarTrackerStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*s);
+        }
+        if (HasMetrologyPipe == true) {
+          MetrologyStart->ForceTimeOfNextEvent(m_Satellite.EndOfNextBlackout(TimeOfNextEvent) - 10*ns);
+        }
+        continue; // We continue, so that we get the next event beyond the timeout
+      } else {
+        // Time jump only the source engine and the pointing engine:
+        NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent);
+        BlackoutTime += BlackoutDuration;
+        if (SourceStart->GetTimeOfNextEvent() < m_Satellite.EndOfNextBlackout(TimeOfNextEvent)) {
+          SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
+        }
+        Pointing->StartNewOrbit(TimeOfNextEvent, BlackoutDuration);
+        if (SourceNext == true) {
+          m_Satellite.SetTime(TimeOfNextEvent);
+          m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime - m_ObservationStartTime);
+          m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent);
+          continue;
+        } else if (BackgroundNext == true) {
+          // keep to prevent compiler warning... 
+        }
+      }      
     }
     
     
@@ -1633,6 +1662,10 @@ bool NSupervisor::Load(TString FileName)
     SetBaseFileName(Node->GetValueAsString());
   }
 
+  if ((Node = Document->GetNode("SimulateOccultations")) != 0) {
+    SetSimulateOccultations(Node->GetValueAsBoolean());
+  }
+
   RemoveAllActiveModules();
   if ((Node = Document->GetNode("ActiveModuleSequence")) != 0) {
     for (unsigned int m = 0; m < Node->GetNNodes(); ++m) {
@@ -1769,6 +1802,7 @@ bool NSupervisor::Save(TString FileName)
   new MXmlNode(Document, "ObservationTime", m_ObservationTime.GetAsSeconds());
   new MXmlNode(Document, "UpdateInterval", m_UpdateInterval);
   new MXmlNode(Document, "BaseFileName", NModule::CleanPath(m_BaseFileName));
+  new MXmlNode(Document, "SimulateOccultations", m_SimulateOccultations);
 
   MXmlNode* ActiveModuleSequence = new MXmlNode(Document, "ActiveModuleSequence");
   map<int, NModule*>::iterator Iter;

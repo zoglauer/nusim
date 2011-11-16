@@ -104,6 +104,17 @@ void NGUISupervisor::Create()
   m_BaseFileName->SetFileType("Base file name", "*");
   AddFrame(m_BaseFileName, FileLayout);
 
+  m_SimulateOccultations = new TGCheckButton(this, "Simulate background during occultations instead of doing time jumps");
+  m_SimulateOccultations->Associate(this);
+  if (m_Supervisor->GetSimulateOccultations() == true) {
+    m_SimulateOccultations->SetState(kButtonDown);
+  } else {
+    m_SimulateOccultations->SetState(kButtonUp);
+  }
+  AddFrame(m_SimulateOccultations, FileLayout); 
+
+  
+  
   // OK and cancel buttons
   // Frame around the buttons:
   TGHorizontalFrame* ButtonFrame = new TGHorizontalFrame(this, 150, 25);
@@ -227,7 +238,8 @@ bool NGUISupervisor::OnApply()
   m_Supervisor->SetObservationTime(NTime(m_ObservationTime->GetAsDouble()));
   m_Supervisor->SetUpdateInterval(m_UpdateInterval->GetAsInt());
   m_Supervisor->SetBaseFileName(m_BaseFileName->GetFileName());
-
+  m_Supervisor->SetSimulateOccultations((m_SimulateOccultations->GetState() == kButtonDown) ? true : false);
+  
 	return true;
 }
 

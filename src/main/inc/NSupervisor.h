@@ -83,6 +83,11 @@ class NSupervisor
   //! Get the observation ID
   TString GetObservationID() const { return m_ObservationID; } 
 
+  //! Enable (background) simulations during occultaions instead of time jumps 
+  void SetSimulateOccultations(bool SimulateOccultations = true) { m_SimulateOccultations = SimulateOccultations; }
+  //! Return if we perform (background) simulations during occultaions instead of time jumps 
+  bool GetSimulateOccultations() const { return m_SimulateOccultations; }
+  
   //! Load all data from a file
   bool Load(TString FileName);
   //! Save all data to a file
@@ -213,7 +218,10 @@ class NSupervisor
 
   //! Update frequency of the diagnostics window in started events
   int m_UpdateInterval;
-
+  
+  //! Simulate (background) during occultations instead of performing time jumps
+  bool m_SimulateOccultations;
+  
   //! The base file name for all saved files
   TString m_BaseFileName;
 

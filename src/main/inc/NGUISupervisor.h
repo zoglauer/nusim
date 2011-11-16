@@ -93,6 +93,10 @@ class NGUISupervisor : public TGTransientFrame
   //! Set a basic file name
   MGUIEFileSelector* m_BaseFileName;
 
+  //! Continue the simulations during occultation phases
+  TGCheckButton* m_SimulateOccultations;
+
+  
 #ifdef ___CINT___
  public:
   ClassDef(NGUISupervisor, 1) // basic class for dialog windows
