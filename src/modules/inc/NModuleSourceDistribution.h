@@ -145,6 +145,9 @@ class NModuleSourceDistribution : public NModule, public NModuleInterfaceEvent, 
   //! Maximum DEC of all started photons
   double m_DecMax;
 
+  //! Number of started photons
+  unsigned int m_NStartedPhotons;
+  
   //! If true store the initial photon parameters in a file
   bool m_StoreInitialPhoton; 
 
