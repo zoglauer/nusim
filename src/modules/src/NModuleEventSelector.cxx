@@ -292,9 +292,9 @@ bool NModuleEventSelector::Finalize()
   cout<<"Event selector:";
   cout<<endl;
   cout<<"Counts in bands before selections: "<<endl;
-  cout<<" 5 - 10 keV: "<<m_Counts5To10<<endl;
-  cout<<"10 - 20 keV: "<<m_Counts10To20<<endl;
-  cout<<"20 - 60 keV: "<<m_Counts20To60<<endl;
+  cout<<"   5 - 10 keV: "<<m_Counts5To10<<endl;
+  cout<<"  10 - 20 keV: "<<m_Counts10To20<<endl; 
+  cout<<"  20 - 60 keV: "<<m_Counts20To60<<endl;
 
   return true;
 }
@@ -334,6 +334,10 @@ bool NModuleEventSelector::ReadXmlConfiguration(MXmlNode* Node)
   MXmlNode* PixelSizeNode = Node->GetNode("PixelSize");
   if (PixelSizeNode != 0) {
     m_PixelSize = PixelSizeNode->GetValueAsDouble();
+  }
+  MXmlNode* CreateExposureMapNode = Node->GetNode("CreateExposureMap");
+  if (CreateExposureMapNode != 0) {
+    m_CreateExposureMap = CreateExposureMapNode->GetValueAsBoolean();
   }
   MXmlNode* SaveEventsAsDatNode = Node->GetNode("SaveEventsAsDat");
   if (SaveEventsAsDatNode != 0) {
@@ -386,6 +390,7 @@ MXmlNode* NModuleEventSelector::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   new MXmlNode(Node, "SaveEventsAsFits", m_SaveAsFits);
   new MXmlNode(Node, "PixelSize", m_PixelSize);
+  new MXmlNode(Node, "CreateExposureMap", m_CreateExposureMap);
   new MXmlNode(Node, "SaveEventsAsDat", m_SaveAsDat);
   new MXmlNode(Node, "SaveEventsAsROOT", m_SaveAsROOT);
   new MXmlNode(Node, "SaveEnergyResponseAsROOT", m_SaveAsResponseROOT);

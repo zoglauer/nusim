@@ -85,6 +85,15 @@ void NGUIOptionsEventSelector::Create()
                                dynamic_cast<NModuleEventSelector*>(m_Module)->GetPixelSize()/arcsec);
   AddFrame(m_PixelSize, PixelSizeLayout);
   
+  m_SaveExposureMap = new TGCheckButton(this, "Save also (time-only) exposure map (*.exposure.fits)");
+  if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetCreateExposureMap() == true) {
+    m_SaveExposureMap->SetState(kButtonDown);
+  } else {
+    m_SaveExposureMap->SetState(kButtonUp);    
+  }
+  AddFrame(m_SaveExposureMap, PixelSizeLayout);
+
+  
   m_SaveAsASCII = new TGCheckButton(this, "Events in ASCII format (*.events.dat)");
   if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsDat() == true) {
     m_SaveAsASCII->SetState(kButtonDown);
@@ -197,6 +206,7 @@ bool NGUIOptionsEventSelector::OnApply()
 
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsFits((m_SaveAsFits->GetState() == kButtonDown) ? true : false);
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetPixelSize(m_PixelSize->GetAsDouble()*arcsec);
+  dynamic_cast<NModuleEventSelector*>(m_Module)->SetCreateExposureMap((m_SaveExposureMap->GetState() == kButtonDown) ? true : false);
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsDat((m_SaveAsASCII->GetState() == kButtonDown) ? true : false);
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEventsAsROOT((m_SaveAsROOT->GetState() == kButtonDown) ? true : false);
   dynamic_cast<NModuleEventSelector*>(m_Module)->SetSaveEnergyResponseAsROOT((m_SaveSpectralResponse->GetState() == kButtonDown) ? true : false);

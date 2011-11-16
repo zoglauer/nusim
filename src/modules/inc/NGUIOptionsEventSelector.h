@@ -75,6 +75,8 @@ class NGUIOptionsEventSelector : public NGUIOptions
   TGCheckButton* m_SaveAsFits;
   //! Choose the pixel size when saving as fits
   MGUIEEntry* m_PixelSize;
+  //! Choose to save the exposure map too
+  TGCheckButton* m_SaveExposureMap;
   //! Choose to save the data to ASCII
   TGCheckButton* m_SaveAsASCII;
   //! Choose to save the data to ROOT

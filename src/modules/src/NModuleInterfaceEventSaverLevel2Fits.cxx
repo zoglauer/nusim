@@ -54,6 +54,7 @@ NModuleInterfaceEventSaverLevel2Fits::NModuleInterfaceEventSaverLevel2Fits(NSate
   
   m_File = 0;
   m_PixelSize = (12.36/5.)*arcsec;
+  m_CreateExposureMap = true;
 }
 
 
@@ -636,14 +637,13 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   
   
   // Save also the exposure map
-  
-
-  m_ExposureMap.SetImageParameters(tcrvl1, tcdlt1, tlmax1, tcrvl2, tcdlt2, tlmax2);
-  for (unsigned int i = 0; i < m_Ra.size(); ++i) {
-    m_ExposureMap.AddObservatoryData(m_Qfbob[i], m_Tfbob[i], m_Qstar[i], m_Time[i]);
+  if (m_CreateExposureMap == true) {
+    m_ExposureMap.SetImageParameters(tcrvl1, tcdlt1, tlmax1, tcrvl2, tcdlt2, tlmax2);
+    for (unsigned int i = 0; i < m_Ra.size(); ++i) {
+      m_ExposureMap.AddObservatoryData(m_Qfbob[i], m_Tfbob[i], m_Qstar[i], m_Time[i]);
+    }
+    m_ExposureMap.ExposeSky(1);
   }
-  m_ExposureMap.ExposeSky(1);
-  
   
   return true;
 }

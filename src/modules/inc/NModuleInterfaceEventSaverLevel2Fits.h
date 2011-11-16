@@ -61,6 +61,11 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   //! Get the pixel size
   double GetPixelSize() const { return m_PixelSize; }
   
+  //! Set the pixel size
+  void SetCreateExposureMap(const bool CreateExposureMap) { m_CreateExposureMap = CreateExposureMap; }
+  //! Get the pixel size
+  bool GetCreateExposureMap() const { return m_CreateExposureMap; }
+  
   //! Return true if the ASCII file is open
   virtual bool IsLevel2FitsFileOpen() { if (m_File != 0) return true; else return false; }
   
@@ -88,12 +93,15 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   
   //! The pixel size when saving as fits file
   double m_PixelSize;
-  
+
+  //! Create the exposure map
+  bool m_CreateExposureMap;
+
   // private members:
  private:
   //! Reference to the satellite module 
   NSatellite& m_Satellite; 
-   
+  
   //! The exposure map
   NExposureMap m_ExposureMap;
   
