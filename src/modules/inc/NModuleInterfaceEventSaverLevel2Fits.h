@@ -106,19 +106,30 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   NExposureMap m_ExposureMap;
   
   //! fields for fits file.
-  vector<double> m_Ra; 
-  vector<double> m_Dec;
-  vector<double> m_Energy;
-  vector<NTime> m_Life;
-  vector<NTime> m_Time;
+  vector<float>  m_Ra; 
+  vector<float>  m_Dec;
+  vector<float>  m_Energy;
+  vector<double> m_Life;
+  vector<double> m_Time;
   vector<int>    m_Module;
-  vector<int>    m_Origin;
-  vector<int>    m_Reject;
+  vector<short>  m_Origin;
+  vector<short>  m_Reject;
   vector<int>    m_PI;
-  vector<int>    m_Grade;
-  vector<NQuaternion> m_Qfbob;
-  vector<MVector> m_Tfbob;
-  vector<NQuaternion> m_Qstar;
+  vector<short>  m_Grade;
+  
+  vector<float> m_QfbobX;
+  vector<float> m_QfbobY;
+  vector<float> m_QfbobZ;
+  vector<float> m_QfbobR;
+
+  vector<float> m_TfbobX;
+  vector<float> m_TfbobY;
+  vector<float> m_TfbobZ;
+  
+  vector<float> m_QstarX;
+  vector<float> m_QstarY;
+  vector<float> m_QstarZ;
+  vector<float> m_QstarR;
 
   //! Fully saved entries
   unsigned int m_NEntries;
