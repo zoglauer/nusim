@@ -736,7 +736,7 @@ MXmlNode* NModuleOrbitEngineTLE::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
 
-  new MXmlNode(Node, "TLEFileName", m_TLEFileName);
+  new MXmlNode(Node, "TLEFileName", CleanPath(m_TLEFileName));
   new MXmlNode(Node, "Save", m_Save);
   
   return Node;
