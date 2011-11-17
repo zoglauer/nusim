@@ -95,6 +95,7 @@ class NGUIOptionsEventSelector : public NGUIOptions
   //! Choose a selection by depth cut
   TGCheckButton* m_SelectByDepthCut;
 
+  enum ButtenIDs { c_SaveAsFitsID = 1001 };
 
 
 #ifdef ___CINT___

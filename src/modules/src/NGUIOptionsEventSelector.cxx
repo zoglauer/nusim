@@ -72,7 +72,7 @@ void NGUIOptionsEventSelector::Create()
 
   TGLayoutHints* FileLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 40, 20, 2, 2);
 
-  m_SaveAsFits = new TGCheckButton(this, "Events in FITS format (*.events.fits)");
+  m_SaveAsFits = new TGCheckButton(this, "Events in FITS format (*.events.fits)", c_SaveAsFitsID);
   if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsFits() == true) {
     m_SaveAsFits->SetState(kButtonDown);
   } else {
@@ -93,6 +93,15 @@ void NGUIOptionsEventSelector::Create()
   }
   AddFrame(m_SaveExposureMap, PixelSizeLayout);
 
+  /*
+  if (m_SaveAsFits->GetState() == kButtonDown) {
+    m_PixelSize->SetEnabled(true);
+    m_SaveExposureMap->SetEnabled(true);
+  } else if (m_SaveAsFits->GetState() == kButtonUp) {
+    m_PixelSize->SetEnabled(false);
+    m_SaveExposureMap->SetEnabled(false);
+  }
+  */
   
   m_SaveAsASCII = new TGCheckButton(this, "Events in ASCII format (*.events.dat)");
   if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveEventsAsDat() == true) {
@@ -178,6 +187,24 @@ bool NGUIOptionsEventSelector::ProcessMessage(long Message, long Parameter1, lon
   switch (GET_MSG(Message)) {
   case kC_COMMAND:
     switch (GET_SUBMSG(Message)) {
+    case kCM_CHECKBUTTON:
+      switch (Parameter1) {
+      case c_SaveAsFitsID:
+        /*
+        if (m_SaveAsFits->GetState() == kButtonDown) {
+          m_PixelSize->SetEnabled(true);
+          m_SaveExposureMap->SetEnabled(true);
+        } else {
+          m_PixelSize->SetEnabled(false);
+          m_SaveExposureMap->SetEnabled(false);
+        }
+        */
+
+      default:
+        break; 
+      }
+      break;
+
     case kCM_BUTTON:
       break;
     default:
