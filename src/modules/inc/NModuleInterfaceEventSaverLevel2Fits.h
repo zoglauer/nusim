@@ -106,8 +106,8 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   NExposureMap m_ExposureMap;
   
   //! fields for fits file.
-  vector<float>  m_Ra; 
-  vector<float>  m_Dec;
+  vector<double>  m_Ra; 
+  vector<double>  m_Dec;
   vector<float>  m_Energy;
   vector<double> m_Life;
   vector<double> m_Time;

@@ -270,20 +270,35 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   //cout<<"Final min, avg, max: "<<RaMin/deg<<":"<<RaAvg/deg<<":"<<RaMax/deg<<endl;
 
   // Throw out everything beyond the borders
-  for (vector<float>::iterator I = m_Ra.begin(); I != m_Ra.end(); ) {
+  for (vector<double>::iterator I = m_Ra.begin(); I != m_Ra.end(); ) {
     if ((*I) < RaMin || (*I) > RaMax || m_Dec[int(I-m_Ra.begin())] < DecMin || m_Dec[int(I-m_Ra.begin())] > DecMax) {
       unsigned int Diff = int(I-m_Ra.begin());
       cout<<"Erasing events at time "<<m_Time[Diff]<<" since the position is out of bounds!"<<endl;
       I = m_Ra.erase(I);
       m_Dec.erase(m_Dec.begin() + Diff);
       m_Energy.erase(m_Energy.begin() + Diff);
+      m_Life.erase(m_Life.begin() + Diff);
       m_Time.erase(m_Time.begin() + Diff);
+      m_Module.erase(m_Module.begin() + Diff);
       m_Origin.erase(m_Origin.begin() + Diff);
+      m_Reject.erase(m_Reject.begin() + Diff);
+      m_Grade.erase(m_Grade.begin() + Diff);
+      m_QfbobX.erase(m_QfbobX.begin() + Diff);
+      m_QfbobY.erase(m_QfbobY.begin() + Diff);
+      m_QfbobZ.erase(m_QfbobZ.begin() + Diff);
+      m_QfbobR.erase(m_QfbobR.begin() + Diff);
+      m_TfbobX.erase(m_TfbobX.begin() + Diff);
+      m_TfbobY.erase(m_TfbobY.begin() + Diff);
+      m_TfbobZ.erase(m_TfbobZ.begin() + Diff);
+      m_QstarX.erase(m_QstarX.begin() + Diff);
+      m_QstarY.erase(m_QstarY.begin() + Diff);
+      m_QstarZ.erase(m_QstarZ.begin() + Diff);
+      m_QstarR.erase(m_QstarR.begin() + Diff);
     } else {
       ++I;
     }
   }
-
+  
   //! Write WCS header keywords   
   float tcrvl1=RaMax/deg;
   float tcrvl2=DecMin/deg;
@@ -352,8 +367,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   
   //! save the data before closing  
   for (unsigned int i = 0; i < m_Ra.size(); ++i) {
-    float Ra = RaMax+(m_Ra[i]-RaMax)*cos(DecAvg/rad);
-    NormalizedRA[i] = (RaMax-Ra)/PixelSize;
+    NormalizedRA[i] = (RaMax-m_Ra[i])*cos(DecAvg/rad)/PixelSize;
     NormalizedDEC[i] = (m_Dec[i]-DecMin)/PixelSize;
     PI[i] = (int)((m_Energy[i]-3.0)*10 + 0.5);  // conversion to PI channels
   }
