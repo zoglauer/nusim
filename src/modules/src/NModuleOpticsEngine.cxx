@@ -384,7 +384,9 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   r0 = sqrt(Square(r[1]) + Square(r[2]));
 
   // Use 0.0 if you don't want scattering
-  if (m_UseScattering) scatter = 6e-5;
+  // OLD 6.e-5 for 42ish hpd
+  // 7.5e-5 for 51ish hpd
+  if (m_UseScattering) scatter = 7.5e-5;
   else scatter = 0.0;
   
   //Rmin = m_Rm1[0];
