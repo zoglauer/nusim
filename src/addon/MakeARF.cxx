@@ -72,7 +72,7 @@ public:
   bool SetTarget(MVector region);
   bool WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure);
   bool WriteARF(float* Elow, float* Ehigh, float* data);
-  float GetPSFFraction(float region, int oaa);
+  float GetPSFFraction(float region, int oaa, int DetIndex);
   int GetDetIndex();
   NAlignmentsDBEntry IdealAlignments;
   NOrientation Rfbob;
@@ -673,6 +673,7 @@ bool Target::ReadCalibratedAlignmentsDB()
   //MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(DataBase);
+    cout<<DataBase<<endl;
   if (in.is_open() == false) {
     cerr<<"Unable to open file: \""<<DataBase<<"\""<<endl;
     return false;
@@ -736,11 +737,12 @@ char Target::FindDelimeter(ifstream& in)
 bool Target::SetTarget(MVector region)
 {  
 
+  double dtor = 3.14159265/180.;
   // Transform to radians
-  m_Ra = (xCenterValue+region[0]*xDelta/cos(AvgDec/rad))/c_Deg;
+  m_Ra = (xCenterValue+region[0]*xDelta/cos(AvgDec*dtor))/c_Deg;
   m_Dec = (yCenterValue+region[1]*yDelta)/c_Deg;
   m_R = region[2];
-  //cout<<m_Ra<<" "<<m_Dec<<endl;
+  //cout<<m_Ra<<" "<<region[0]<<" "<<xDelta<<" "<<xCenterValue<<endl;
    
   // turn into vector	  
   Vsky[0]=cos(m_Dec)*cos(m_Ra);
@@ -770,11 +772,12 @@ bool Target::SetTarget(MVector region)
   //cout<<Vob<<FL<<FM<<endl;
   
   Vdet=Vob;
-  Rfbob.TransformOut(Vdet);
-  //cout<<Vdet<<endl;
-  Rfbfm.TransformIn(Vdet);
-  //cout<<Vdet<<endl;
   
+  //cout<<"Vdet OB"<<Vob<<endl;    
+  Rfbob.TransformOut(Vdet);
+  //cout<<"Vdet FB"<<Vdet<<endl;
+  Rfbfm.TransformIn(Vdet);
+  //cout<<"Vdet FPM"<<Vdet<<endl;
   
   return 0;
   
@@ -795,36 +798,44 @@ int Target::GetDetIndex()
 }
 
 /****************************************************************************/
-float Target::GetPSFFraction(float region, int oaa)
+float Target::GetPSFFraction(float region, int oaa, int DetIndex)
 {
 
   // one PSF image pixel is 0.2x0.2 mm
 
   
   float AccumulatedPSF=0;
+    
+  float DetY = floor(DetIndex/250);
+  float DetX = DetIndex - DetY*250;
+  DetX = DetX*0.2-25;
+  DetY = DetY*0.2-25;
  
-  //cout<<Vdet<<" "<<region<<endl; 
+  //cout<<"DetX "<<DetX<<" DetY "<<DetY<<endl;
+  
   for (int i=0;i < 40401; i++) {
     float pixX = floor(i/201); 
 	float pixY = i - pixX*201;
 	pixX = (pixX-100)*0.2; // mm
 	pixY = (pixY-100)*0.2; // mm
 	float radius = sqrt(pow(pixX,2)+pow(pixY,2));
-    pixX += Vdet[0];
-	pixY += Vdet[1];
-
+  pixX += DetX;
+	pixY += DetY;
+     
 	if (radius > region) continue;
-	
+  //cout<<pixX<<" "<<pixY<<" "<<oaa*0.5<<endl;
+  
 	//Check gaps and edges
 	if ((pixX > -20.25 && pixX < -0.25) || (pixX > 0.25 && pixX < 20.25)) {
 	  if ((pixY > -20.25 && pixY < -0.25) || (pixY > 0.25 && pixY < 20.25)) {
   	    int n = 40401*oaa+i;
         AccumulatedPSF += psfimg.cube[n];
+        //cout<<psfimg.cube[n]<<endl;
       }
     }
   }
   
-  //cout<<"PSFfraction = "<<AccumulatedPSF<<endl;
+  //cout<<"PSFfraction = "<<AccumulatedPSF<<" oaa ="<<oaa<<endl;
 
   return AccumulatedPSF;
 
@@ -968,12 +979,17 @@ bool Target::GenerateARF()
 	// case. Instead we will factor in the duration the PSF fraction 
 	// so that PSF(1)*t1 and all the t = t1 + t2 + .... will add up to
 	// the total time spend at EA(t,1).
-	//cout<<m_oaa<<endl;
 	
-	//cout<<m_oaa<<endl;
+	
 	
 	if (m_oaa < 11.5) {
-
+    
+      // cout<<"m_oaa ="<<m_oaa<<endl;
+      // cout<<Vdet<<endl;
+      // If the offaxis angle is within the window then check how many times that particular
+      // transfrom repeats itself, and how many different transforms exist as a function of
+      // offaxis angle.
+        
 	  // fill in first entry
 	  if (i==0){
 	    if (iModule[i] == 1) {
@@ -993,7 +1009,8 @@ bool Target::GenerateARF()
       if (iModule[i] == 1) exists1 = 0;
       if (iModule[i] == 2) exists2 = 0;
 	 
-	  // Check that this pixel is already exposed and at what oaa
+	  // Check that this pixel is already exposed and at what oaa. If it already exists then increase time 
+      // of that transform with dt
 	  if (iModule[i] == 1) {
 	    for (int j=0;j < (int)DetIndex1.size(); j++){
 		  if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa)) {
@@ -1001,6 +1018,7 @@ bool Target::GenerateARF()
 		    TotalTime1[j] += dt;
 		  }
 	    }
+        // if it doesn't exist fill in new entry for transform
 	    if (exists1 == 0) {
 		  DetIndex1.push_back(GetDetIndex());  // pixel
 	      TotalTime1.push_back(dt);
@@ -1020,9 +1038,7 @@ bool Target::GenerateARF()
  	      oaa2.push_back(round(m_oaa));
 	    }
 	  }
-	  
-	  // And if it hasnt then add it to transform
-	  
+	  	  
     } //end loop oaa<11.5 arcmin
 	
 	//  In here add to the source spectrum and background spectrum. 
@@ -1038,26 +1054,29 @@ bool Target::GenerateARF()
 	
   } //End loop over transforms
 
-  cout<<DetIndex1.size()<<endl;
+  cout<<"Number of different transforms ="<<DetIndex1.size()<<endl;    
 
-  for (int j=0;j<(int)DetIndex1.size();j++) 
-    oaat_hist1[int(oaa1[j]*2)] += TotalTime1[j]*GetPSFFraction(regionAtDet, int(oaa1[j]*2));
+  float average_oaa=0;
+  for (int j=0;j<(int)DetIndex1.size();j++){ 
+    oaat_hist1[int(oaa1[j]*2)] += TotalTime1[j]*GetPSFFraction(regionAtDet, int(oaa1[j]*2), DetIndex1[j]);
+    average_oaa += oaa1[j]*TotalTime1[j];
+  }       
   for (int j=0;j<(int)DetIndex2.size();j++) 
-    oaat_hist2[int(oaa2[j]*2)] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]*2));
+    oaat_hist2[int(oaa2[j]*2)] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]*2), DetIndex2[j]);
   
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
-	  ARF1[i] += AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1; 
-	  ARF2[i] += AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2; 
-	}
+	    ARF1[i] += AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1; 
+	    ARF2[i] += AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2; 
+	  }
   }
 
-  cout<<"oaa = "<<m_oaa<<" "<<oaa1[0]<<endl;
-  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa1[0]*2))<<endl;
+  cout<<"average oaa = "<<average_oaa/lifetime1<<endl;
+  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa1[0]*2), DetIndex1[0])<<endl;
   cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
   cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
-  cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" "<<AE[0]<<endl;
-  cout<<"Effective Area @ 10 keV "<<ARF1[71]<<" "<<AE[71]<<endl;
+  cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
+  cout<<"Effective Area @ 10 keV "<<ARF1[71]<<"  , IDEAL@ 0oaa: "<<AE[71]<<endl;
    
   WriteFitsSpectrum(SourceOutFile, "source", source1, lifetime1);
   WriteFitsSpectrum(BkgFile, "bkg", bkg1, lifetime1);
