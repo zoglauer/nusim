@@ -21,9 +21,10 @@ using namespace std;
 // ROOT libs:
 
 // MEGAlib libs:
-#include "NGlobal.h"
+#include "MVector.h"
 
 // NuSTAR libs:
+#include "NGlobal.h"
 
 // Forward declarations:
 

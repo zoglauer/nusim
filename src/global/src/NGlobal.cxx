@@ -38,10 +38,6 @@ using namespace std;
 #include <TStyle.h>
 #include <TError.h>
 
-// MEGAlib libs:
-#include "MFile.h"
-#include "MStreams.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,18 +60,12 @@ int g_SVNRevision = 0;
 const TString g_MEGAlibPath = "$(NUSIM)";
 
 const TString g_StringNotDefined = "___NotDefined___"; 
-const MVector g_VectorNotDefined = MVector(numeric_limits<double>::max()/11, 
-                                           numeric_limits<double>::max()/11, 
-                                           numeric_limits<double>::max()/11);
+
 const int g_IntNotDefined = numeric_limits<int>::max()-11;
 const unsigned int g_UnsignedIntNotDefined = numeric_limits<unsigned int>::max()-11;
 const double g_DoubleNotDefined = numeric_limits<double>::max()/11;
 const float g_FloatNotDefined = numeric_limits<float>::max()/11;
-const NQuaternion g_QuaternionNotDefined = NQuaternion(numeric_limits<double>::max()/11, 
-                                                       numeric_limits<double>::max()/11, 
-                                                       numeric_limits<double>::max()/11, 
-                                                       numeric_limits<double>::max()/11);
-const NTime g_TimeNotDefined = NTime(-numeric_limits<long>::max()+11, 0l);
+
 
 int g_DebugLevel = 0;
 
@@ -87,7 +77,6 @@ const double c_SpeedOfLight = 29.9792458E+9; // cm/s
 const double c_E0 = 510.999; // keV
 const double c_FarAway = 1E30; // cm
 const double c_LargestEnergy = 0.999*numeric_limits<float>::max();
-const MVector c_NullVector(0.0, 0.0, 0.0);
 
 const double deg = 60.0;
 const double arcmin = 1.0;  // default unit for angles
@@ -131,9 +120,6 @@ bool NGlobal::Initialize()
   g_DebugLevel = 1;
 #endif
 
-  // Initialize the GUI stream
-  mgui.DumpToGui(true);
-
   // Initilize some global ROOT variables:
   gEnv->SetValue("Gui.BackgroundColor", "#e3dfdf");
 
@@ -173,12 +159,9 @@ bool NGlobal::Initialize()
   gStyle->SetPadTopMargin(Margin);
   gStyle->SetPadBottomMargin(Margin);
 
-  
   gStyle->SetOptStat(0);
-
   gStyle->SetPalette(1, 0);
 
-  
   
   // Ignore ROOT messages up to kError
   gErrorIgnoreLevel = kError;
@@ -187,21 +170,18 @@ bool NGlobal::Initialize()
 
   // Set the revision:
   TString RevFile = "$(NUSIM)/config/revision.txt";
-  MFile::ExpandFileName(RevFile);
-  if (MFile::Exists(RevFile) == false) {
-    cout<<"Error: Cannot find NuSim revision file..."<<endl;
-  }
+  gSystem->ExpandPathName(RevFile);
+  gSystem->ExpandPathName(RevFile);
 
   ifstream in;
   in.open(RevFile);
-  //TString Line;
-  //Line.ReadLine(in);
-  //cout<<Line<<endl;
-  //g_SVNRevision = atoi(Line);
-  in >> g_SVNRevision;
-  in.close();
-  
-  cout<<"Found NuSim revision "<<g_SVNRevision<<endl;
+  if (in.is_open() == true) {
+    in >> g_SVNRevision;
+    in.close();
+    cout<<"Found NuSim revision "<<g_SVNRevision<<endl;
+  } else {
+    cout<<"Error: Cannot find NuSim revision file..."<<endl;
+  }
 
   return true;
 }

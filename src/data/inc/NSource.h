@@ -347,6 +347,9 @@ protected:
   //! Shape of a Band function
   double BandFunction(const double Energy, double Alpha, const double Beta, const double E0) const; 
 
+  //! Check for $NUSIM paths in the given file name and replace it if possible
+  TString CleanPath(TString Path);
+
   // protected members:
 protected:
 

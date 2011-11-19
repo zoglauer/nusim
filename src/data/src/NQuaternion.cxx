@@ -39,6 +39,16 @@ ClassImp(NQuaternion)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+const NQuaternion g_QuaternionNotDefined = NQuaternion(numeric_limits<double>::max()/11, 
+                                                       numeric_limits<double>::max()/11, 
+                                                       numeric_limits<double>::max()/11, 
+                                                       numeric_limits<double>::max()/11);
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 NQuaternion::NQuaternion(const NQuaternion& Q) : m_R(Q.m_R), m_V(Q.m_V) 
 {
 }

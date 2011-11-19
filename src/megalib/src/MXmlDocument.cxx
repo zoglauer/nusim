@@ -27,6 +27,9 @@
 #include "MXmlDocument.h"
 
 // Standard libs:
+#include <iostream>
+#include <fstream>
+using namespace std;
 
 // ROOT libs:
 

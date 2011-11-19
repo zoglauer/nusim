@@ -27,6 +27,7 @@
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "NPhoton.h"
+#include "NQuaternion.h"
 
 // Forward declarations:
 

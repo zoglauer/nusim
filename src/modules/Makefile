@@ -125,6 +125,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NGUIDiagnosticsTemplate.o \
 	$(LB)/NGUIOptions.o \
 	$(LB)/NGUIOptionsTemplate.o \
+	$(LB)/NSatellite.o \
 
 
 SOBJ = $(LB)/libModules.$(DLL)

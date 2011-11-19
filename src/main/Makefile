@@ -23,7 +23,6 @@ LOBJS     = $(LB)/NGUIMain.o \
 						$(LB)/NTextButton.o \
 						$(LB)/NInterface.o \
 						$(LB)/NSupervisor.o \
-						$(LB)/NGlobal.o \
 
 SOBJ = $(LB)/libMain.$(DLL)
 

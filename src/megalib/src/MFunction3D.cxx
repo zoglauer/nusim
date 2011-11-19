@@ -27,6 +27,9 @@
 #include "MFunction3D.h"
 
 // Standard libs:
+#include <algorithm>
+#include <limits>
+using namespace std;
 
 // ROOT libs:
 #include "TH3.h"

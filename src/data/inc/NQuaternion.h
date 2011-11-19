@@ -167,6 +167,8 @@ class NQuaternion
 // Very important ;-)
 std::ostream& operator<<(std::ostream& os, const NQuaternion& Q);
 
+//! Global fixed quaternion
+extern const NQuaternion g_QuaternionNotDefined;
 
 // getters / setters
 

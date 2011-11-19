@@ -38,6 +38,7 @@ addon:
 # All
 
 link:
+	$(MAKE) link -C global
 	$(MAKE) link -C megalib
 	$(MAKE) link -C main
 	$(MAKE) link -C modules
@@ -45,6 +46,7 @@ link:
 	$(MAKE) link -C orbit
 
 all:
+	@$(MAKE) -C global
 	@$(MAKE) -C orbit
 	@$(MAKE) -C megalib
 	@$(MAKE) -C data
@@ -53,6 +55,7 @@ all:
 	@$(MAKE) -C addon
 
 clean:
+	@$(MAKE) clean -C global
 	@$(MAKE) clean -C megalib
 	@$(MAKE) clean -C main
 	@$(MAKE) clean -C modules

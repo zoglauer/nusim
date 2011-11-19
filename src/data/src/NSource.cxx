@@ -1714,8 +1714,8 @@ MXmlNode* NSource::CreateXmlConfiguration()
 {
   //! Create an XML node tree from the configuration
 
-  m_PositionFileName = NModule::CleanPath(m_PositionFileName);
-  m_EnergyFileName = NModule::CleanPath(m_EnergyFileName);
+  m_PositionFileName = CleanPath(m_PositionFileName);
+  m_EnergyFileName = CleanPath(m_EnergyFileName);
 
   MXmlNode* Node = new MXmlNode(0, "Source");
   
@@ -1748,6 +1748,32 @@ MXmlNode* NSource::CreateXmlConfiguration()
   
   return Node;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TString NSource::CleanPath(TString Path)
+{
+  //! Check for $NUSIM paths in the given file name and replace it if possible
+
+  TString ToBeReplaced = "$NUSIM";
+  
+  if (ToBeReplaced == "" || ToBeReplaced == "/") return Path;
+
+  MFile::ExpandFileName(ToBeReplaced);
+  
+  TString ToBeReplacedTrunk = ToBeReplaced;
+  ToBeReplacedTrunk += "_trunk/";
+  ToBeReplaced += "/";
+
+  // First replace the extended version
+  Path = Path.ReplaceAll(ToBeReplacedTrunk, "$NUSIM/");
+  Path = Path.ReplaceAll(ToBeReplaced, "$NUSIM/");
+
+  return Path;  
+}
+
 
 /*
  * NSource.cc: the end...

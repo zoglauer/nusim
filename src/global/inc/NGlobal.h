@@ -30,9 +30,6 @@ using namespace std;
 #include <TString.h>
 #include <TSystem.h>
 
-#include "MVector.h"
-#include "NQuaternion.h"
-#include "NTime.h"
 
 // Some globally defined variables
 extern const TString g_MajorVersion;
@@ -46,13 +43,10 @@ extern const TString g_Homepage;
 extern const TString g_MEGAlibPath;
 
 extern const TString g_StringNotDefined;
-extern const MVector g_VectorNotDefined;
 extern const int g_IntNotDefined;
 extern const unsigned int g_UnsignedIntNotDefined;
 extern const double g_DoubleNotDefined;
 extern const float g_FloatNotDefined;
-extern const NQuaternion g_QuaternionNotDefined;
-extern const NTime g_TimeNotDefined;
                  
 extern int g_DebugLevel;
 
@@ -65,7 +59,7 @@ extern const double c_SpeedOfLight;   //
 extern const double c_E0;             // rest mass electron  
 extern const double c_FarAway;        // Radius for conversion from spherical to cartesian coordinates   
 extern const double c_LargestEnergy;  // 
-extern const MVector c_NullVector;
+
 
 // Units
 extern const double deg;

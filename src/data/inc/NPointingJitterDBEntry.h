@@ -19,10 +19,11 @@
 // ROOT libs:
 
 // MEGAlib libs:
-#include "NGlobal.h"
 
 // NuSTAR libs:
+#include "NGlobal.h"
 #include "NTime.h"
+#include "NQuaternion.h"
 
 // Forward declarations:
 

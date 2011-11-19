@@ -28,6 +28,7 @@
 
 // Standard libs:
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 // ROOT libs:

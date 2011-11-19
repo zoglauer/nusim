@@ -179,6 +179,9 @@ public:
 
 // Section XXX: Globally defined operators
 
+extern const MVector g_VectorNotDefined;
+extern const MVector c_NullVector;
+
 // Very important ;-)
 std::ostream& operator<<(std::ostream& os, const MVector& Vector);
 

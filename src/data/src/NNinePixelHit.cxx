@@ -19,6 +19,8 @@
 #include "NNinePixelHit.h"
 
 // Standard libs:
+#include <iostream>
+using namespace std;
 
 // ROOT libs:
 

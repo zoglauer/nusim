@@ -24,6 +24,7 @@ using namespace std;
 
 // MEGAlib libs:
 #include "MGlobal.h"
+#include "MVector.h"
 #include "MXmlData.h"
 #include "MXmlAttribute.h"
 

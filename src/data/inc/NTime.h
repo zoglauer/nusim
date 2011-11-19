@@ -189,6 +189,9 @@ class NTime
 
 };
 
+//! Global fixed Time
+extern const NTime g_TimeNotDefined;
+
 //! Global operator for Time IO:
 std::ostream& operator<<(std::ostream& os, const NTime& Time);
 

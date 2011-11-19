@@ -27,6 +27,7 @@ using namespace std;
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "NTime.h"
+#include "NQuaternion.h"
 
 // Forward declarations:
 

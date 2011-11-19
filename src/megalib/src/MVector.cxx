@@ -46,6 +46,14 @@ ClassImp(MVector)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+const MVector g_VectorNotDefined = MVector(numeric_limits<double>::max()/11, 
+                                           numeric_limits<double>::max()/11, 
+                                           numeric_limits<double>::max()/11);
+const MVector c_NullVector(0.0, 0.0, 0.0);                                   
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 MVector::MVector(double X, double Y, double Z) : m_X(X), m_Y(Y), m_Z(Z) 
 {  
   // Intentionally left blank
