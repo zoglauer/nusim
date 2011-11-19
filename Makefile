@@ -49,12 +49,7 @@ LDFLAGS     += -L$(LB)
 #------------------------------------------------------------------------------
 # NuSIM
 
-NUSIMLIBS = \
-	-lMain \
-	-lModules \
-	-lMegalib \
-	-lOrbit \
-	-lData \
+NUSIMLIBS = -lMain -lModules -lMegalib -lOrbit -lData -lGlobal
 
 all: info link modules data main megalib orbit
 	@$(MAKE) all -C src
