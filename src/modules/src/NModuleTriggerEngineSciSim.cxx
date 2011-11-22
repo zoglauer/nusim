@@ -292,8 +292,8 @@ bool NModuleTriggerEngineSciSim::Finalize()
   cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime1<<endl;
   if (m_ApplyDeadTime == true) {
     cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime1<<endl;
-    cout<<"     Life time:                  "<<(m_Satellite.GetTime() - m_DeadTimeCouter1*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetTime().GetAsSeconds()<<" per second"<<endl;
-    double Input = m_NEventsNotLostInDeadTime1/(1 - m_NEventsNotLostInDeadTime1*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetTime().GetAsSeconds());
+    cout<<"     Life time:                  "<<(m_Satellite.GetEffectiveObservationTime() - m_DeadTimeCouter1*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
+    double Input = m_NEventsNotLostInDeadTime1/(1 - m_NEventsNotLostInDeadTime1*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
     cout<<"     Input hits as sanity check: "<<Input
       <<" vs. "<<m_NEventsLostInDeadTime1+m_NEventsNotLostInDeadTime1<<endl;
   }
@@ -301,8 +301,8 @@ bool NModuleTriggerEngineSciSim::Finalize()
   cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime2<<endl;
   if (m_ApplyDeadTime == true) {
     cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime2<<endl;
-    cout<<"     Life time:                  "<<(m_Satellite.GetTime() - m_DeadTimeCouter2*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetTime().GetAsSeconds()<<" per second"<<endl;
-    double Input = m_NEventsNotLostInDeadTime2/(1 - m_NEventsNotLostInDeadTime2*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetTime().GetAsSeconds());
+    cout<<"     Life time:                  "<<(m_Satellite.GetEffectiveObservationTime() - m_DeadTimeCouter2*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
+    double Input = m_NEventsNotLostInDeadTime2/(1 - m_NEventsNotLostInDeadTime2*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
     cout<<"     Input hits as sanity check: "<<Input
       <<" vs. "<<m_NEventsLostInDeadTime2+m_NEventsNotLostInDeadTime2<<endl;
   }
