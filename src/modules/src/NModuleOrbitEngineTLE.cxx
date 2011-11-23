@@ -96,7 +96,7 @@ bool NModuleOrbitEngineTLE::Initialize()
     }
   }
 
-  m_LimbAngle = 20*deg;
+  m_LimbAngle = 10*deg;
 
 
   // read the file nustar.tle in to the SGP4 model
@@ -176,7 +176,9 @@ bool NModuleOrbitEngineTLE::Finalize()
     return false;
   }
   
-  out<<";occultation_entry occultation_exit duration"<<endl;
+  out<<";NuSIM occultation time file "<<endl;
+  out<<";Limbangle: "<<m_LimbAngle/deg<<" deg "<<endl;
+  out<<";Format: occultation entry | occultation exit | duration in seconds"<<endl;
   
   unsigned int Begin = 0;
   unsigned int End = 0;
