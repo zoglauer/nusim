@@ -128,7 +128,7 @@ void NGUIOptionsEventSelector::Create()
   AddFrame(m_SaveSpectralResponse, FileLayout);
   
   
-  TGLayoutHints* SaveBeforeSelectionsLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 15);
+  TGLayoutHints* SaveBeforeSelectionsLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 2);
   m_SaveBeforeSelections = new TGCheckButton(this, "Save events before selections (otherwise after)");
   if (dynamic_cast<NModuleEventSelector*>(m_Module)->GetSaveBeforeSelections() == true) {
     m_SaveBeforeSelections->SetState(kButtonDown);
@@ -137,7 +137,11 @@ void NGUIOptionsEventSelector::Create()
   }
   AddFrame(m_SaveBeforeSelections, SaveBeforeSelectionsLayout);
 
-  TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 15, 10);
+  TGLayoutHints* SaveBeforeSelectionsLabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 40, 20, 2, 10);
+  TGLabel* SaveBeforeSelectionsLabel = new TGLabel(this, "Enable this option for external analysis to get the life time correct!");
+  AddFrame(SaveBeforeSelectionsLabel, SaveBeforeSelectionsLabelLayout);
+  
+  TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop, 20, 20, 25, 10);
   TGLabel* SelectionsLabel = new TGLabel(this, "Event selection options:");
   AddFrame(SelectionsLabel, LabelLayout);
   
