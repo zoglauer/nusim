@@ -3,4 +3,4 @@ base = getenv('CONV_DIR')
         expand_path('+/usr/local/rsi/lib/')+':'+$
         !path
 !quiet = 1
-.run idl_routines
+;.run idl_routines

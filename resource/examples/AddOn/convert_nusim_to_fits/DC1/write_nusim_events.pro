@@ -30,8 +30,8 @@ primary_header_a = headfits(template_a, exten = 0)
 primary_header_b = headfits(template_b, exten = 0)
 
 ; Setup the output file names
-out_a = outpath+'/nu'+header_data.obsid+'A01.evt'
-out_b = outpath+'/nu'+header_data.obsid+'B01.evt'
+out_a = outpath+'/nu'+header_data.obsid+'A.evt'
+out_b = outpath+'/nu'+header_data.obsid+'B.evt'
 
 print, out_a
 print, out_b
@@ -45,7 +45,7 @@ date_start = header_data.date_start
 ; This is in NuSTAR epoch time (relative to Jan 1, 2010), 
 ; which is how it should be...
 data.time += header_data.tstart
-
+;stop
 ; Figure out the last event, add 1 seconds, and declare this
 ; the end of the observation:
 t_ref = date_conv('2010-01-01T00:00:00', 'Modified')
@@ -174,16 +174,23 @@ fpmb = where(data.fpm EQ 2, nfpmb)
 data_a = replicate(data_a, nfpma)
 data_b = replicate(data_b, nfpmb)
 
+data_a.pi = round(data[fpma].energy * 100.)
+data_b.pi = round(data[fpmb].energy * 100.)
 
+data_a.time = data[fpma].time
+data_a.prior = data[fpma].livetime
+
+data_b.time = data[fpmb].time
+data_b.prior = data[fpmb].livetime
 
 ; Now for the hard part...
 
 ; This is the main loop where you do all the heavy lifting...
 use = fltarr(nfpma)
-FOR i = 0, nfpma - 1 DO BEGIN
+FOR i = 0l, nfpma - 1 DO BEGIN
    ; First step, figure out which pixel/grade you've hit...
 
-   IF i MOD 100 EQ 0 THEN print, i, " of ", nfpma
+   IF i MOD 1e4 EQ 0 THEN print, i, " of ", nfpma
 
    ; Convert to DET1 coordinates...
    thisx = round( (data[fpma[i]].pos[0] * 1e3 + fpm_origin) / fpm_res)
@@ -268,7 +275,7 @@ FOR i = 0, nfpma - 1 DO BEGIN
    prob = fltarr(nfound)
    rawpos = fltarr(nfound, 2)
    grade = fltarr(nfound)
-   FOR n = 0, nfound - 1 DO BEGIN
+   FOR n = 0l, nfound - 1 DO BEGIN
       CASE found[n] OF
          0: BEGIN
             offx = floor(thisx - pos_a_0[tocheck[n]].ref_det1x)
@@ -320,7 +327,7 @@ FOR i = 0, nfpma - 1 DO BEGIN
 
    ; Here we do an artifical toss into a particular grade, since the
    ; pixpos files aren't rescaled across each other...
-   FOR n = 0, ngood - 1 DO BEGIN
+   FOR n = 0l, ngood - 1 DO BEGIN
       IF grade[n] EQ 0 THEN grade[n] *= 0.5
       IF grade[n] GT 0 AND grade[n] LE 4 THEN prob[n] *= 0.09
       IF grade[n] GT 4 AND grade[n] LE 12 THEN prob[n] *= 0.01
@@ -347,9 +354,8 @@ FOR i = 0, nfpma - 1 DO BEGIN
    data_a[i].rawy = rawpos[1]
    data_a[i].det_id = found[thisone]
    data_a[i].grade = grade
-   data_a[i].pi = round(data[fpma[i]].energy * 100.)
-   data_a[i].prior = data[fpma[i]].livetime
-   
+   ;; data_a[i].pi = round(data[fpma[i]].energy * 100.)
+   ;; data_a[i].prior = data[fpma[i]].livetime
    
    ; Skip below and just assign the PI:
    ;; CASE found[thisone] OF
@@ -397,10 +403,10 @@ foo = temporary(tocheck)
 
 ; This is the main loop where you do all the heavy lifting...
 use = fltarr(nfpmb)
-FOR i = 0, nfpmb - 1 DO BEGIN
+FOR i = 0l, nfpmb - 1 DO BEGIN
 
    ; First step, figure out which pixel/grade you've hit...
-   IF i MOD 100 EQ 0 THEN print, i, " of ", nfpmb
+   IF i MOD 1e4 EQ 0 THEN print, i, " of ", nfpmb
 
    ; Convert to DET1 coordinates...
    thisx = round( (data[fpmb[i]].pos[0] * 1e3 + fpm_origin) / fpm_res)
@@ -484,7 +490,7 @@ FOR i = 0, nfpmb - 1 DO BEGIN
    prob = fltarr(nfound)
    rawpos = fltarr(nfound, 2)
    grade = fltarr(nfound)
-   FOR n = 0, nfound - 1 DO BEGIN
+   FOR n = 0l, nfound - 1 DO BEGIN
       CASE found[n] OF
          0: BEGIN
             offx = floor(thisx - pos_b_0[tocheck[n]].ref_det1x)
@@ -544,7 +550,7 @@ FOR i = 0, nfpmb - 1 DO BEGIN
    ; accounts for about half the counts, 1-4 about 9% each, and the
    ; rest in grade 4-12. This is fudgy, but it should smooth out the
    ; "hot corner" issue that I've been seeing...
-   FOR n = 0, ngood - 1 DO BEGIN
+   FOR n = 0l, ngood - 1 DO BEGIN
       IF grade[n] EQ 0 THEN grade[n] *= 0.5
       IF grade[n] GT 0 AND grade[n] LE 4 THEN prob[n] *= 0.09
       IF grade[n] GT 4 AND grade[n] LE 12 THEN prob[n] *= 0.01
