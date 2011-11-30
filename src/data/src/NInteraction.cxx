@@ -115,7 +115,7 @@ bool NInteraction::Parse(TString& Line, int Version)
     m_Position.SetXYZ(x, y, z);
   } else if (Line.BeginsWith("IA s") == true) {
     m_IsDetector = false;
-    if (sscanf(Line.Data(), "IA d %d %lf", 
+    if (sscanf(Line.Data(), "IA s %d %lf", 
                &m_Telescope, &m_Energy) != 2) {
       return false;
     }
