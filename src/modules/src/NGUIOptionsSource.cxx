@@ -187,7 +187,7 @@ void NGUIOptionsSource::Create()
   // Flux:
   
   m_Flux = new MGUIEEntry(this, "Flux [TBD]: ", false, m_Source->GetFlux());
-  m_Flux->SetEntryFieldSize(200);
+  m_Flux->SetEntryFieldSize(100);
   AddFrame(m_Flux, LayoutL1);
 
 
@@ -272,7 +272,7 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Position Z [mm]: ", false, m_Source->GetPositionParameter3());
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
-    m_Flux->SetLabel("Flux [ph/s]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s]:");
     m_Flux->SetValue(m_Source->GetFlux());
   } else if (m_BeamTypes->GetSelected() == NSource::c_NearFieldBeam) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Center of start disk X [mm]: ", false, m_Source->GetPositionParameter1());
@@ -289,14 +289,14 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P6, Default);
     m_P7 = new MGUIEEntry(m_BeamOptionsSubFrame, "Radius [mm]: ", false, m_Source->GetPositionParameter7(), true, 0.0000001);
     m_BeamOptionsSubFrame->AddFrame(m_P7, Default);
-    m_Flux->SetLabel("Flux [ph/s]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s]:");
     m_Flux->SetValue(m_Source->GetFlux());
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldPoint) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
     m_BeamOptionsSubFrame->AddFrame(m_P1, Default);
     m_P2 = new MGUIEEntry(m_BeamOptionsSubFrame, "Right ascension [deg]: ", false, m_Source->GetPositionParameter2()/60.0, true, 0.0, 360.0);
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
-    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s/cm2]:");
     m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldDisk) {
     m_P1 = new MGUIEEntry(m_BeamOptionsSubFrame, "Declination [deg]: ", false, m_Source->GetPositionParameter1()/60.0, true, -90.0, 90.0);
@@ -305,21 +305,21 @@ void NGUIOptionsSource::UpdateOptions()
     m_BeamOptionsSubFrame->AddFrame(m_P2, Default);
     m_P3 = new MGUIEEntry(m_BeamOptionsSubFrame, "Extent [deg]: ", false, m_Source->GetPositionParameter3()/60.0, true, 0.00000001, 180.0);
     m_BeamOptionsSubFrame->AddFrame(m_P3, Default);
-    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s/cm2]:");
     m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldFitsFile) {
     m_PF = new MGUIEFileSelector(m_BeamOptionsSubFrame, "Choose a FITS file:", 
                                  m_Source->GetPositionFileName());
     m_PF->SetFileType("FITS file", "*.fits");
     m_BeamOptionsSubFrame->AddFrame(m_PF, Default);
-    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s/cm2]:");
     m_Flux->SetValue(m_Source->GetFlux()*100); // go from the internal ph/s/mm2 to ph/s/cm2
   } else if (m_BeamTypes->GetSelected() == NSource::c_FarFieldNormalizedEnergyPositionFluxFunction) {
     m_PF = new MGUIEFileSelector(m_BeamOptionsSubFrame, "Choose a 3D-dat file:", 
                                  m_Source->GetNormalizedEnergyPositionFluxFileName());
     m_PF->SetFileType("3D dat", "*.3Ddat");
     m_BeamOptionsSubFrame->AddFrame(m_PF, Default);
-    m_Flux->SetLabel("Flux [ph/s/cm2]:");
+    m_Flux->SetLabel("Flux (average over light curve) [ph/s/cm2]:");
     m_Flux->SetValue(0.0);
   }
 
