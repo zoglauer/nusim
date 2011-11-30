@@ -602,6 +602,10 @@ double MFunction::Integrate() const
 {
   // Integrate all the data from min to max
 
+  if (m_X.size() < 2) {
+    return 0;
+  }
+  
   return Integrate(m_X.front(), m_X.back());
 }
 
@@ -627,7 +631,7 @@ double MFunction::Integrate(double XMin, double XMax) const
 
   int BinMin = 0;
   if (XMin > m_X.front()) {
-    BinMin = find_if(m_X.begin(), m_X.end(), bind2nd(greater_equal<double>(), XMin)) - m_X.begin();
+    BinMin = find_if(m_X.begin(), m_X.end(), bind2nd(greater<double>(), XMin)) - m_X.begin() - 1;
 //     unsigned int upper = m_Cumulative.size();
 //     unsigned int center = 1;
 //     unsigned int lower = 0;
@@ -947,7 +951,8 @@ double MFunction::GetRandomInterpolate(double Itot)
             merr<<"X0: "<<x1<<" - X1: "<<xs1<<" - X2: "<<xs2<<endl;
             return 0.0;
           }
-        }
+        } 
+
       }
       
       if (m_X[Bin-1] > x || m_X[Bin] < x) {
@@ -1064,6 +1069,129 @@ double MFunction::GetYMax() const
   }
 
   return Max;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+double MFunction::FindX(double XStart, double Integral, bool IsCyclic)
+{
+  //! Find the x value starting from Start which would be achieved after integrating for "Integral"
+  //! If we go beyond x_max, x_max is returned if we are not cyclic, otherwise we continue at x_0
+
+  //cout<<"XStart: "<<XStart<<"  Integral: "<<Integral<<endl;
+
+  long Cycle = 0;
+  double TimeWindow = m_X.back() - m_X.front();
+  if (TimeWindow == 0.0) {
+    merr<<"The start of the function is identical to its end. Return its start."<<endl;
+    return m_X.front();
+  }
+  
+  double X = XStart;
+
+  // Find the bin X is in: 
+  if (X < m_X.front()) {
+    if (IsCyclic == false) {
+      X = m_X.front();
+    } else {
+      double Div = (X-m_X.front())/TimeWindow;
+      if (Div < -static_cast<double>(numeric_limits<long>::max())) {
+        merr<<"The number of cycles exceeds the precision of long on the computer. Returning end of function."<<endl;
+        return m_X.back();
+      }
+      Cycle = static_cast<long>(Div);
+      X -= Cycle*TimeWindow;
+    }
+  }
+  if (X > m_X.back()) {
+    if (IsCyclic == false) {
+      X = m_X.front();
+    } else {
+      double Div = (X-m_X.front())/TimeWindow;
+      if (Div > static_cast<double>(numeric_limits<long>::max())) {
+        merr<<"The number of cycles exceeds the precision of long on the computer. Returning end of function."<<endl;
+        return m_X.back();
+      }
+      Cycle = static_cast<long>(Div);
+      X -= Cycle*TimeWindow;      
+    }
+  }
+  
+  // Step 1: Go from bin to bin until we find an upper limit bin, where iIntegral > I
+
+  int BinStart = 0;
+  if (X > m_X.front()) {
+    BinStart = find_if(m_X.begin(), m_X.end(), bind2nd(greater<double>(), X)) - m_X.begin() - 1;
+  }
+
+  //cout<<"x: "<<X<<" Bin start: "<<BinStart<<endl;
+  
+  int NewUpperBin = BinStart;
+  double tIntegral = 0.0;
+  double iIntegral = 0.0;
+  while (true) {
+    NewUpperBin++;
+    tIntegral = Integrate(X, m_X[NewUpperBin]);
+    //cout<<"Int from "<<X<<" to "<<m_X[NewUpperBin]<<": "<<tIntegral<<endl;
+    if (iIntegral + tIntegral < Integral) {
+      X = m_X[NewUpperBin];
+      iIntegral += tIntegral;
+    } else {
+      //cout<<"Found it"<<endl;
+      break;
+    }
+    if (X >= m_X.back()) { // should always be ==, but...
+      if (IsCyclic == true) {
+        X = m_X.front();
+        NewUpperBin = 0;
+        Cycle++;
+      } else {
+        break;
+      }
+    } 
+  }
+  
+  if (IsCyclic == true && X == m_X.back() && iIntegral < Integral) return numeric_limits<double>::max();
+  
+  
+  // Step 2: Interpolate --- only linear at the moment --- within the given bin to find the right x-value
+  
+  double m = (m_Y[NewUpperBin-1] - m_Y[NewUpperBin]) / (m_X[NewUpperBin-1] - m_X[NewUpperBin]);
+  double t = m_Y[NewUpperBin] - m*m_X[NewUpperBin];
+  
+  double x1 = 0; 
+  double x2 = 0;
+  
+  if (m != 0) {
+    double a = 0.5*m;
+    double b = t;
+    double c = -((Integral-iIntegral) + 0.5*m*X*X + t*X);
+  
+    x1 = (-b-sqrt(b*b-4*a*c))/(2*a);
+    x2 = (-b+sqrt(b*b-4*a*c))/(2*a);
+  } else {
+    x1 = X + (Integral-iIntegral)/t; // t cannot be null here other wise we would have jumped the bin...
+    //x2 = numeric_limits<double>::max();
+    return x1 + Cycle*TimeWindow;
+  }
+  
+  if (x1 >= m_X[NewUpperBin-1] && x1 <= m_X[NewUpperBin] && (x2 < m_X[NewUpperBin-1] || x2 > m_X[NewUpperBin])) {
+    //mout<<"x="<<x1<<endl;
+    return x1 + Cycle*TimeWindow;
+  } else if (x2 >= m_X[NewUpperBin-1] && x2 <= m_X[NewUpperBin] && (x1 < m_X[NewUpperBin-1] || x1 > m_X[NewUpperBin])) {
+    //mout<<"x="<<x2<<endl;
+    return x2 + Cycle*TimeWindow; 
+  } else if ((x2 < m_X[NewUpperBin-1] || x2 > m_X[NewUpperBin]) && (x1 < m_X[NewUpperBin-1] || x1 > m_X[NewUpperBin])) {
+    merr<<"FindX: Both possible results are outside choosen bin ["<<m_X[NewUpperBin-1]<<"-"<<m_X[NewUpperBin]<<"]: x1="<<x1<<" x2="<<x2<<endl;
+  } else {
+    merr<<"FindX: Both possible results are within choosen bin ["<<m_X[NewUpperBin-1]<<"-"<<m_X[NewUpperBin]<<"]: x1="<<x1<<" x2="<<x2<<endl;    
+  }
+  
+  cout<<"Final: "<<XStart + Cycle*TimeWindow<<":"<<Cycle<<endl;
+  
+  return XStart + Cycle*TimeWindow;
 }
 
 
