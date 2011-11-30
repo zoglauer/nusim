@@ -301,7 +301,36 @@ bool NTime::Set(unsigned int Year, unsigned int Month, unsigned int Day,
   return true;
 }
 
+  
+////////////////////////////////////////////////////////////////////////////////
 
+
+bool NTime::SetMax()
+{
+  //! Set the maximum possible time
+ 
+  m_Seconds = numeric_limits<long>::max();
+  m_NanoSeconds = 999999999;
+  
+  return true;
+}
+ 
+ 
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NTime::IsMax()
+{
+  //! Is the maximum possible time
+ 
+  if (m_Seconds == numeric_limits<long>::max() && m_NanoSeconds == 999999999) {
+    return true;
+  } else {
+    return false;
+  }
+}
+ 
+ 
 ////////////////////////////////////////////////////////////////////////////////
 
 

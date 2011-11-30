@@ -75,6 +75,10 @@ NGUIOptionsSource::NGUIOptionsSource(NSource* Source, const TGWindow* Parent) :
   m_E5 = 0;
   m_EF = 0;
   m_EFunction = 0;
+  m_SpectralOptionsSubFrame = 0;
+  m_LL = 0;
+  m_LF = 0;
+  m_LC = 0;
 }
 
 
@@ -105,7 +109,8 @@ void NGUIOptionsSource::Create()
   AddFrame(m_Name, LayoutL1);
 
 
-
+  // Beam:
+  
   TGCompositeFrame* BeamTypeFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
   AddFrame(BeamTypeFrame, LayoutL1);
 
@@ -128,6 +133,9 @@ void NGUIOptionsSource::Create()
   m_BeamOptionsSubFrame = new TGCompositeFrame(m_BeamOptionsFrame);
   m_BeamOptionsFrame->AddFrame(m_BeamOptionsSubFrame, Default);
 
+  
+  // Spectrum:
+  
   TGCompositeFrame* SpectralTypeFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
   AddFrame(SpectralTypeFrame, LayoutL1);
 
@@ -149,7 +157,35 @@ void NGUIOptionsSource::Create()
 
   m_SpectralOptionsSubFrame = new TGCompositeFrame(m_SpectralOptionsFrame);
   m_SpectralOptionsFrame->AddFrame(m_SpectralOptionsSubFrame, Default);
+  
+  
+  // Light curve:
+  
+  TGCompositeFrame* LightCurveTypeFrame = new TGCompositeFrame(this, 100, 100, kHorizontalFrame);
+  AddFrame(LightCurveTypeFrame, LayoutL1);
 
+  TGLabel* LightCurveTypeLabel = new TGLabel(LightCurveTypeFrame, "Light-curve type:");
+  LightCurveTypeLabel->SetWidth(120);
+  LightCurveTypeFrame->AddFrame(LightCurveTypeLabel, LayoutL2);
+
+  m_LightCurveTypes = new TGComboBox(LightCurveTypeFrame, c_LightCurveComboBox);
+  for (int b = NSource::c_FirstLightCurveType; b <= NSource::c_LastLightCurveType; ++b) {
+    m_LightCurveTypes->AddEntry(NSource::GetLightCurveTypeName(b), b);
+  }
+  m_LightCurveTypes->Associate(this);
+  m_LightCurveTypes->SetHeight(20);
+  m_LightCurveTypes->Select(m_Source->GetLightCurveType());
+  LightCurveTypeFrame->AddFrame(m_LightCurveTypes, LayoutL2b);
+
+  m_LightCurveOptionsFrame = new TGGroupFrame(this, "Light-curve options");
+  AddFrame(m_LightCurveOptionsFrame, LayoutL1b);
+
+  m_LightCurveOptionsSubFrame = new TGCompositeFrame(m_LightCurveOptionsFrame);
+  m_LightCurveOptionsFrame->AddFrame(m_LightCurveOptionsSubFrame, Default);
+
+  
+  // Flux:
+  
   m_Flux = new MGUIEEntry(this, "Flux [TBD]: ", false, m_Source->GetFlux());
   m_Flux->SetEntryFieldSize(200);
   AddFrame(m_Flux, LayoutL1);
@@ -372,6 +408,33 @@ void NGUIOptionsSource::UpdateOptions()
     m_SpectralOptionsSubFrame->AddFrame(EnergyLabel, Default);
   }
 
+
+  if (m_LightCurveOptionsSubFrame != 0) {
+    TGFrameElement* E;
+    TIter Next(m_LightCurveOptionsSubFrame->GetList());
+    while ((E = (TGFrameElement *) Next())) {
+      m_LightCurveOptionsSubFrame->HideFrame(E->fFrame);
+      m_LightCurveOptionsSubFrame->RemoveFrame(E->fFrame);
+      delete E->fFrame;
+    } 
+    m_LL = 0;
+    m_LF = 0;
+    m_LC = 0;
+  }
+  
+  if (m_LightCurveTypes->GetSelected() == NSource::c_LightCurveFlat) {
+    m_LL = new TGLabel(m_LightCurveOptionsSubFrame, "No options required...");
+    m_LightCurveOptionsSubFrame->AddFrame(m_LL, Default);
+  } else if (m_LightCurveTypes->GetSelected() == NSource::c_LightCurveFile) {
+    m_LF = new MGUIEFileSelector(m_LightCurveOptionsSubFrame, "Choose a file containing the light curve:", 
+                                 m_Source->GetLightCurveFileName());
+    m_LF->SetFileType("Light-curve", "*.lgt");
+    m_LightCurveOptionsSubFrame->AddFrame(m_LF, Default);    
+    m_LC = new TGCheckButton(m_LightCurveOptionsSubFrame, "Should light-curve loop?");
+    m_LC->SetState((m_Source->GetIsRepeatingLightCurve() == true) ? kButtonDown : kButtonUp);
+    m_LightCurveOptionsSubFrame->AddFrame(m_LC, Default);    
+  }
+  
   if (m_SpectralTypes->GetSelected() == NSource::c_NormalizedFunctionInPhPerCm2PerSPerKeV ||
       m_SpectralTypes->GetSelected() == NSource::c_NormalizedEnergyPositionFluxFunction) {
     m_Flux->SetEnabled(false);
@@ -456,7 +519,10 @@ void NGUIOptionsSource::UpdateSource()
   m_Source->SetEnergy(E1, E2, E3, E4, E5);
   if (m_EF != 0) m_Source->SetEnergy(m_EF->GetFileName());
   if (m_EFunction != 0) m_Source->SetEnergyFunctionString(m_EFunction->GetText());
-  
+
+
+  m_Source->SetLightCurveType(m_LightCurveTypes->GetSelected());
+  if (m_LF != 0) m_Source->SetLightCurve(m_LF->GetFileName(), (m_LC->GetState() == kButtonDown) ? true : false);
 }
 
 

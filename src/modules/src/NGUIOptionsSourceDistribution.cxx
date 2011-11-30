@@ -108,7 +108,7 @@ void NGUIOptionsSourceDistribution::Create()
 
   PostCreate();
 
-  Resize(550, 570);
+  Resize(550, 670);
 }
 
 

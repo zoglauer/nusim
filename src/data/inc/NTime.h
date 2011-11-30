@@ -22,6 +22,7 @@
 // MEGAlib libs:
 
 // NuSTAR libs:
+#include "NGlobal.h"
 
 // Forward declarations:
 
@@ -72,6 +73,11 @@ class NTime
   bool Set(const double Seconds, const double NanoSeconds);
   //! Set as TI string: "TI 2376547.23487"
   bool Set(const TString& String, const TString& Prefix = "TI");
+
+  //! Set the maximum possible time
+  bool SetMax();
+  //! Is the maximum possible time
+  bool IsMax();
 
   //! Return content as seconds
   double GetAsSeconds() const;
@@ -189,7 +195,7 @@ class NTime
 
 };
 
-//! Global fixed Time
+//! Global fixed Times
 extern const NTime g_TimeNotDefined;
 
 //! Global operator for Time IO:

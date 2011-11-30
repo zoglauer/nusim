@@ -112,6 +112,7 @@ bool NModuleSourceDistribution::Initialize()
   
   // Initial calculation of next event.
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    m_Sources[s]->Reset();
     m_Sources[s]->CalculateNextEmission(m_Satellite.GetTime());
   }
 
@@ -141,8 +142,9 @@ void NModuleSourceDistribution::DetermineNext()
 {
   // Determine which module starts:
   m_NextComponent = 0;
-  m_Time = numeric_limits<double>::max();
+  m_Time.SetMax();
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    if (m_Sources[s]->IsActive() == false) continue;
     if (m_Sources[s]->GetNextEmission().GetAsSeconds() < 0.0) {
       cerr<<"Source has negative time: "<<m_Sources[s]->GetName()<<endl;
     }
@@ -161,8 +163,11 @@ void NModuleSourceDistribution::PerformTimeJump(const NTime& TimeJump)
 {
   //! Perform a time jump:
 
+  if (m_Time.IsMax() == true) return;
+  
   m_Time += TimeJump;
   for (unsigned int s = 0; s < m_Sources.size(); ++s) {
+    if (m_Sources[s]->IsActive() == false) continue;
     m_Sources[s]->PerformTimeJump(TimeJump);
   }
 }

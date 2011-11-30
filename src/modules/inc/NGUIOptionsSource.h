@@ -75,6 +75,10 @@ class NGUIOptionsSource : public TGCompositeFrame
   TGGroupFrame* m_SpectralOptionsFrame;
   TGCompositeFrame* m_SpectralOptionsSubFrame;
 
+  TGComboBox* m_LightCurveTypes;
+  TGGroupFrame* m_LightCurveOptionsFrame;
+  TGCompositeFrame* m_LightCurveOptionsSubFrame;
+
   MGUIEEntry* m_Name;
   MGUIEEntry* m_Flux;
   MGUIEEntry* m_P1;
@@ -85,6 +89,7 @@ class NGUIOptionsSource : public TGCompositeFrame
   MGUIEEntry* m_P6;
   MGUIEEntry* m_P7;
   MGUIEFileSelector* m_PF;
+  
   MGUIEEntry* m_E1;
   MGUIEEntry* m_E2;
   MGUIEEntry* m_E3;
@@ -93,8 +98,13 @@ class NGUIOptionsSource : public TGCompositeFrame
   MGUIEFileSelector* m_EF;
   TGTextEntry* m_EFunction;
 
+  TGLabel* m_LL;
+  MGUIEFileSelector* m_LF;
+  TGCheckButton* m_LC;
+  
   int c_BeamComboBox;
   int c_SpectralComboBox;
+  int c_LightCurveComboBox;
 
 #ifdef ___CINT___
  public:

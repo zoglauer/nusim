@@ -55,6 +55,9 @@ public:
   
   //! Common initalization
   void Initialize();
+  
+  //! Reset some common data
+  void Reset();
 
   //! Return the number of generated particles
   long GetNGeneratedParticles() const { return m_NGeneratedParticles; }
@@ -75,6 +78,8 @@ public:
 
   //! Return true, if this source has still photons for the emission
   bool IsActive() const { return m_IsActive; }
+  //! Return true, if this source has still photons for the emission
+  void IsActive(bool Active) { m_IsActive = Active; }
 
   //! Return true, if the spectral type could be set correctly
   bool SetSpectralType(const int& SpectralType);
@@ -85,6 +90,27 @@ public:
   static TString GetSpectralTypeName(const int SpectralType);
   //! Return the ID of a spectral type
   static int GetSpectralType(TString Name);
+
+  /// Return true, if the light curve type could be set correctly
+  bool SetLightCurveType(const int& LightCurveType);
+  /// Return the light curve type
+  int GetLightCurveType() const { return m_LightCurveType; }
+
+  /// Return true, if the light curve could be set correctly
+  bool SetLightCurve(const TString& FileName, const bool& Repeats);
+  //! Return the energy file name
+  TString GetLightCurveFileName() const { return m_LightCurveFileName; }
+
+  //! Set if the light curve is looping
+  void SetIsRepeatingLightCurve(const bool& IsRepeatingLightCurve) { m_IsRepeatingLightCurve = IsRepeatingLightCurve; }
+  //! Return if the light curve is looping
+  bool GetIsRepeatingLightCurve() const { return m_IsRepeatingLightCurve; }
+  
+  
+  //! Return the name of a light curve type
+  static TString GetLightCurveTypeName(const int LightCurveType);
+  //! Return the ID of a light curve type
+  static int GetLightCurveType(TString Name);
 
 
   //! Retrieve energy parameter 1
@@ -333,6 +359,17 @@ public:
   static const int c_NearFieldFlatMap;
 
 
+  //! Id of the first light-curve type
+  static const int c_FirstLightCurveType;
+  //! Id of the last light-curve type
+  static const int c_LastLightCurveType;
+
+  /// Id of a flat light curve, i.e. light curve not used 
+  static const int c_LightCurveFlat;
+  /// Id of a file based light curve
+  static const int c_LightCurveFile;
+
+
 
   // protected methods:
 protected:
@@ -342,6 +379,8 @@ protected:
   bool UpgradeEnergy();
   //! Upgrade the energy parameters and do some sanity checks
   bool UpgradeFlux();
+  /// Upgrade the energy parameters and do some sanity checks
+  bool UpgradeLightCurve();
   //! Shape of black body emission (Temperature in keV)
   double BlackBody(double Energy, double Temperature) const; 
   //! Shape of a Band function
@@ -376,6 +415,8 @@ private:
   int m_SpectralType;
   //! Id of the region type
   int m_BeamType;
+  /// Id of the particle type
+  int m_LightCurveType;
 
   //! Radius of the surrounding sphere
   double m_StartRadius;
@@ -390,7 +431,16 @@ private:
 
   //! TotalEnergyFlux of this source
   double m_TotalEnergyFlux;
-
+  
+  /// The light curve
+  MFunction m_LightCurveFunction;
+  /// True if the light curve is repeating (i.e. pulsar vs. GRB)
+  bool m_IsRepeatingLightCurve;
+  /// The current light curve cycle
+  unsigned int m_LightCurveCycle;
+  /// The current light curve integration value
+  double m_LightCurveIntegration;
+  
   //! Number of generated particles
   long m_NGeneratedParticles;
 
@@ -460,6 +510,9 @@ private:
   
   //! A file containing the spectrum
   MFunction3DSpherical m_NormalizedEnergyPositionFluxFunction;
+  
+  //! The file name of the light curve function
+  TString m_LightCurveFileName;
 
 };
 

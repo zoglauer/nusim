@@ -49,6 +49,11 @@ const int NSource::c_ThermalBremsstrahlung        = 106;
 const int NSource::c_Activation                   = 107; 
 const int NSource::c_BandFunction                 = 108; 
 
+const int NSource::c_LightCurveFlat               = 1;
+const int NSource::c_LightCurveFile               = 2;
+
+const int NSource::c_FirstLightCurveType          = 1;
+const int NSource::c_LastLightCurveType           = 2;
 
 
 const int NSource::c_FarField                     = 1;
@@ -111,14 +116,19 @@ void NSource::Initialize()
   m_CoordinateSystem = c_Invalid;
   m_SpectralType = c_Invalid;
   m_BeamType = c_Invalid;
+  m_LightCurveType = c_LightCurveFlat; // We have a default here since usually no light curve is given
 
   m_IsActive = true;
 
   // Intensity of this source
   m_InputFlux = c_Invalid;
   m_Flux = c_Invalid;
+  
+  // Light curve
+  m_IsRepeatingLightCurve = false;
+  m_LightCurveCycle = 0;
+  m_LightCurveIntegration = 0.0;
 
-  m_NGeneratedParticles = 0;
 
   m_PositionParam1 = 0.0;
   m_PositionParam2 = 0.0;
@@ -144,6 +154,17 @@ void NSource::Initialize()
 
   m_PositionTF1 = 0;
   m_EnergyTF1 = 0;
+}
+
+
+/******************************************************************************
+ * Construction by name
+ */
+void NSource::Reset()
+{
+  m_NextEmission = 0;
+  m_NGeneratedParticles = 0;
+  m_IsActive = true;
 }
 
 
@@ -184,7 +205,9 @@ bool NSource::SetSpectralType(const int& SpectralType)
 }
 
 
-//! Return the name of a beam type
+/******************************************************************************
+ * Return the name of a beam type
+ */
 TString NSource::GetSpectralTypeName(const int SpectralType)
 {
   TString Name = "Unknown";
@@ -232,7 +255,9 @@ TString NSource::GetSpectralTypeName(const int SpectralType)
 }
 
 
-//! Return the ID of a beam type
+/******************************************************************************
+ * Return the ID of a beam type
+ */
 int NSource::GetSpectralType(TString Name)
 {
   int Type = c_Invalid;
@@ -312,7 +337,9 @@ bool NSource::SetBeamType(const int& BeamType)
 }
 
 
-//! Return the name of a beam type
+/******************************************************************************
+ * Return the name of a beam type
+ */
 TString NSource::GetBeamTypeName(const int BeamType)
 {
   TString Name = "Unknown";
@@ -351,7 +378,9 @@ TString NSource::GetBeamTypeName(const int BeamType)
 }
 
 
-//! Return the ID of a beam type
+/******************************************************************************
+ * Return the ID of a beam type
+ */
 int NSource::GetBeamType(TString Name)
 {
   int Type = c_Invalid;
@@ -374,6 +403,67 @@ int NSource::GetBeamType(TString Name)
     Type = c_FarFieldNormalizedEnergyPositionFluxFunction;
   } else {
     mout<<"Unknown beam type (in GetBeamType): "<<Name<<endl;
+  }
+ 
+  return Type;
+}
+
+
+/******************************************************************************
+ *  Return true, if the particle type could be set correctly
+ */
+bool NSource::SetLightCurveType(const int& LightCurveType)
+{
+  switch (LightCurveType) {
+  case c_LightCurveFlat:
+  case c_LightCurveFile:
+    m_LightCurveType = LightCurveType;
+    return true;
+  default:
+    mout<<m_Name<<": Unknown light curve type (in SetLightCurveType): "<<LightCurveType<<endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+/******************************************************************************
+ * Return the name of a beam type
+ */
+TString NSource::GetLightCurveTypeName(const int BeamType)
+{
+  TString Name = "Unknown";
+
+  switch (BeamType) {
+  case c_LightCurveFlat:
+    Name = "Flat - no light curve";
+    break;
+  case c_LightCurveFile:
+    Name = "From file";
+    break;
+  default:
+    mout<<"Unknown light curve type (in GetLightCurveTypeName): "<<BeamType<<endl;
+    break;
+  }
+
+  return Name;
+}
+
+
+/******************************************************************************
+ * Return the ID of a beam type
+ */
+int NSource::GetLightCurveType(TString Name)
+{
+  int Type = c_Invalid;
+
+  if (Name == "Flat - no light curve") {
+    Type = c_LightCurveFlat;
+  } else if (Name == "From file") {
+    Type = c_LightCurveFile;
+  } else {
+    mout<<"Unknown light curve type (in GetLightCurveType): "<<Name<<endl;
   }
  
   return Type;
@@ -628,12 +718,12 @@ bool NSource::SetPosition(TString FileName)
  * description of the meaning of the parameters see the documentation.
  */
 bool NSource::SetEnergy(double EnergyParam1, 
-                         double EnergyParam2, 
-                         double EnergyParam3, 
-                         double EnergyParam4, 
-                         double EnergyParam5, 
-                         double EnergyParam6,
-                         double EnergyParam7)
+                        double EnergyParam2, 
+                        double EnergyParam3, 
+                        double EnergyParam4, 
+                        double EnergyParam5, 
+                        double EnergyParam6,
+                        double EnergyParam7)
 {
   m_EnergyParam1 = EnergyParam1;
   m_EnergyParam2 = EnergyParam2;
@@ -906,6 +996,8 @@ bool NSource::UpgradeFlux()
     return false;
   } 
 
+  UpgradeLightCurve();
+
   return true;
 }
 
@@ -933,6 +1025,61 @@ bool NSource::SetNormalizedEnergyPositionFluxFunction(TString FileName)
 
 
 /******************************************************************************
+ * Return true, if the light curve could be set correctly
+ */
+bool NSource::SetLightCurve(const TString& FileName, const bool& Repeats)
+{
+  if (m_LightCurveType == c_LightCurveFile) {
+    if (MFile::Exists(FileName) == false) {
+      mout<<m_Name<<": LightCurveFile: File does not exist!"<<endl;
+      return false;    
+    }
+    if (m_LightCurveFunction.Set(FileName, "DP") == false) {
+      mout<<m_Name<<": LightCurveFile: Unable to load light curve!"<<endl;
+      return false;
+    }
+    
+    if (m_LightCurveFunction.GetSize() < 2) {
+      mout<<m_Name<<": LightCurveFile: At least two entries in the file are required!"<<endl;
+      return false;
+    }
+    
+    // Scale the time axis with Geant4's times
+    m_LightCurveFunction.ScaleX(second);
+    m_LightCurveFileName = FileName;
+    m_IsRepeatingLightCurve = Repeats;
+  } else if (m_LightCurveType == c_LightCurveFlat) {
+    // Nothing...
+  } else {
+    mout<<m_Name<<": Unknown light curve type (in SetLightCurve): "<<m_LightCurveType<<endl;
+    return false;
+  }
+  
+  UpgradeLightCurve();
+  
+  return true;
+}
+
+
+/******************************************************************************
+ * Return true, if the enhanced light curve calculations could be performed
+ */
+bool NSource::UpgradeLightCurve()
+{
+  if (m_LightCurveType == c_LightCurveFile) {
+    // Make sure the y-value is the flux in particles/second
+    
+    if (m_Flux > 0 && m_LightCurveFunction.Integrate() > 0) {
+      m_LightCurveFunction.ScaleY((m_LightCurveFunction.GetXMax() - m_LightCurveFunction.GetXMin())/m_LightCurveFunction.Integrate());
+    }
+    // cout<<"Final light-curve integration: "<<m_LightCurveFunction.Integrate()<<endl;
+  }
+  
+  return true;
+}
+
+
+/******************************************************************************
  * Return the time to the next photon emission of this source:
  * The error in this routine is <= Scale
  */
@@ -946,12 +1093,25 @@ bool NSource::CalculateNextEmission(NTime Time)
     return false;
   }
   
-  // A random exponential can be used to simulate
-  // random arrival times of the photons (Poisson Arrival Model)
-  NextEmission = gRandom->Exp(1.0/m_Flux);
-  
-  m_NextEmission.Set(NextEmission);
-  m_NextEmission += Time;
+  if (m_LightCurveType == c_LightCurveFlat) {
+    // A random exponential can be used to simulate
+    // random arrival times of the photons (Poisson Arrival Model)
+    NextEmission = gRandom->Exp(1.0/m_Flux);
+    m_NextEmission.Set(NextEmission);
+    m_NextEmission += Time;
+  } else if (m_LightCurveType == c_LightCurveFile) {
+    double dIntegral = gRandom->Exp(1.0/m_Flux);
+    //cout<<"dIntegral: "<<dIntegral<<endl;
+    NextEmission = m_LightCurveFunction.FindX(m_NextEmission.GetAsSeconds(), dIntegral, m_IsRepeatingLightCurve);
+    if (m_IsRepeatingLightCurve == false && NextEmission >= m_LightCurveFunction.GetXMax()) {
+      m_IsActive = false;
+      m_NextEmission.SetMax();
+      mout<<m_Name<<": light-curve data exceeded."<<endl;
+    } else {
+      //cout<<"Next emission: "<<NextEmission<<":"<<dIntegral<<endl;
+      m_NextEmission.Set(NextEmission);
+    }
+  }
   
   if (m_NextEmission.GetAsSeconds() < 0) {
     merr<<m_Name<<": CalculateNextEmission: Next emission time is in the past: "<<m_NextEmission<<endl;
@@ -1544,6 +1704,7 @@ bool NSource::ParseLine(TString Line)
       m_EnergyParam1 = T.GetTokenAtAsDouble(Pos++);
       m_EnergyParam2 = T.GetTokenAtAsDouble(Pos++);
       m_EnergyFunctionString = T.GetTokenAtAsString(Pos++);
+     // cout<<"FUnction: "<<m_EnergyFunctionString<<endl;
     } else {
       cout<<m_Name<<": Line parser source: This spectral type is not yet implemented: "<<m_SpectralType<<endl;
       return false;
@@ -1598,11 +1759,15 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   }
   MXmlNode* SpectralTypeNode = Node->GetNode("SpectralType");
   if (SpectralTypeNode != 0) {
-    m_SpectralType = SpectralTypeNode->GetValueAsDouble();
+    m_SpectralType = SpectralTypeNode->GetValueAsInt();
   }
   MXmlNode* BeamTypeNode = Node->GetNode("BeamType");
   if (BeamTypeNode != 0) {
-    m_BeamType = BeamTypeNode->GetValueAsDouble();
+    m_BeamType = BeamTypeNode->GetValueAsInt();
+  }
+  MXmlNode* LightCurveTypeNode = Node->GetNode("LightCurveType");
+  if (LightCurveTypeNode != 0) {
+    m_LightCurveType = LightCurveTypeNode->GetValueAsInt();
   }
   MXmlNode* FluxNode = Node->GetNode("Flux");
   if (FluxNode != 0) {
@@ -1688,11 +1853,21 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (NormalizedEnergyPositionFluxFileNameNode != 0) {
     m_NormalizedEnergyPositionFluxFileName = NormalizedEnergyPositionFluxFileNameNode->GetValueAsString();
   }
+  MXmlNode* LightCurveFileNameNode = Node->GetNode("LightCurveFileName");
+  if (LightCurveFileNameNode != 0) {
+    m_LightCurveFileName = LightCurveFileNameNode->GetValueAsString();
+  }
+  MXmlNode* IsRepeatingLightCurveNode = Node->GetNode("IsRepeatingLightCurve");
+  if (IsRepeatingLightCurveNode != 0) {
+    m_IsRepeatingLightCurve = IsRepeatingLightCurveNode->GetValueAsBoolean();
+  }
+
 
   // Do an official "set" to initialize all the other variables:
   if (SetSpectralType(m_SpectralType) == false) return false;
   if (SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5) == false) return false; 
   if (SetBeamType(m_BeamType) == false) return false;
+  if (SetLightCurveType(m_LightCurveType) == false) return false;
   if (SetPosition(m_PositionParam1, m_PositionParam2, m_PositionParam3,
               m_PositionParam4, m_PositionParam5, m_PositionParam6, 
               m_PositionParam7, m_PositionParam8, m_PositionParam9, 
@@ -1702,6 +1877,7 @@ bool NSource::ReadXmlConfiguration(MXmlNode* Node)
   if (SetEnergy(m_EnergyFileName) == false) return false;
   if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
   if (SetNormalizedEnergyPositionFluxFunction(m_NormalizedEnergyPositionFluxFileName) == false) return false;
+  if (SetLightCurve(m_LightCurveFileName, m_IsRepeatingLightCurve) == false) return false;
 
   return true;
 }
@@ -1714,14 +1890,12 @@ MXmlNode* NSource::CreateXmlConfiguration()
 {
   //! Create an XML node tree from the configuration
 
-  m_PositionFileName = CleanPath(m_PositionFileName);
-  m_EnergyFileName = CleanPath(m_EnergyFileName);
-
   MXmlNode* Node = new MXmlNode(0, "Source");
   
   new MXmlNode(Node, "Name", m_Name);
   new MXmlNode(Node, "SpectralType", m_SpectralType);
   new MXmlNode(Node, "BeamType", m_BeamType);
+  new MXmlNode(Node, "LightCurveType", m_LightCurveType);
   new MXmlNode(Node, "Flux", m_InputFlux);
   new MXmlNode(Node, "PositionParam1", m_PositionParam1);
   new MXmlNode(Node, "PositionParam2", m_PositionParam2);
@@ -1734,7 +1908,7 @@ MXmlNode* NSource::CreateXmlConfiguration()
   new MXmlNode(Node, "PositionParam9", m_PositionParam9);
   new MXmlNode(Node, "PositionParam10", m_PositionParam10);
   new MXmlNode(Node, "PositionParam11", m_PositionParam11);
-  new MXmlNode(Node, "PositionFileName", m_PositionFileName);
+  new MXmlNode(Node, "PositionFileName", CleanPath(m_PositionFileName));
   new MXmlNode(Node, "EnergyParam1", m_EnergyParam1);
   new MXmlNode(Node, "EnergyParam2", m_EnergyParam2);
   new MXmlNode(Node, "EnergyParam3", m_EnergyParam3);
@@ -1742,9 +1916,11 @@ MXmlNode* NSource::CreateXmlConfiguration()
   new MXmlNode(Node, "EnergyParam5", m_EnergyParam5);
   new MXmlNode(Node, "EnergyParam6", m_EnergyParam6);
   new MXmlNode(Node, "EnergyParam7", m_EnergyParam7);
-  new MXmlNode(Node, "EnergyFileName", m_EnergyFileName);
+  new MXmlNode(Node, "EnergyFileName", CleanPath(m_EnergyFileName));
   new MXmlNode(Node, "EnergyFunctionString", m_EnergyFunctionString);
-  new MXmlNode(Node, "NormalizedEnergyPositionFluxFileName", m_NormalizedEnergyPositionFluxFileName);
+  new MXmlNode(Node, "NormalizedEnergyPositionFluxFileName", CleanPath(m_NormalizedEnergyPositionFluxFileName));
+  new MXmlNode(Node, "LightCurveFileName", CleanPath(m_LightCurveFileName));
+  new MXmlNode(Node, "IsRepeatingLightCurve", m_IsRepeatingLightCurve);
   
   return Node;
 }
