@@ -124,13 +124,13 @@ bool NHit::Stream(ofstream& S, int Version)
       <<m_Position[0]<<" "<<m_Position[1]<<" "<<m_Position[2]<<" "
       <<m_PositionResolution[0]<<" "<<m_PositionResolution[1]<<" "<<m_PositionResolution[2]<<" "
       <<m_Energy<<" "<<m_EnergyResolution<<" ";
-      m_ObservatoryData.Stream(S, true);
+      m_ObservatoryData.Stream(S, Version, true);
     } else {
      S<<m_Telescope<<" "<<m_Detector<<" "
       <<m_Position[0]<<" "<<m_Position[1]<<" "<<m_Position[2]<<" "
       <<m_PositionResolution[0]<<" "<<m_PositionResolution[1]<<" "<<m_PositionResolution[2]<<" "
       <<m_Energy<<" "<<m_EnergyResolution<<" "<<m_TriggerGrade<<" ";
-      m_ObservatoryData.Stream(S, true);
+      m_ObservatoryData.Stream(S, Version, true);
     }
   } 
 
