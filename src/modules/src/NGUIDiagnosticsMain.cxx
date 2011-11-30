@@ -155,8 +155,25 @@ bool NGUIDiagnosticsMain::ProcessMessage(long Message, long Parameter1,
   
   return Status;
 }
- 
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NGUIDiagnosticsMain::NeedsUpdate()
+{
+  //! Return true if we need an update
+ 
+  for (unsigned int d = 0; d < m_DiagnosticTabs.size(); ++d) {
+    if (m_DiagnosticTabs[d]->NeedsUpdate() == true) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+ 
+  
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -167,7 +184,7 @@ void NGUIDiagnosticsMain::Update()
   ostringstream ObsText;
   ObsText<<"Passed time: total observation time: "<<m_Satellite.GetTime().GetString(3)<<" - effective observation time: "<<m_Satellite.GetEffectiveObservationTime().GetString(3);
   double Elapsed = m_Timer.GetElapsed();
-  if (Elapsed < 3) {
+  if (Elapsed < 3 && NeedsUpdate() == false) {
     ObsText<<"   (You are updating this window very fast (dT="<<setprecision(3)<<Elapsed<<" sec) --- this is very CPU consuming...)";
   }
   m_ObservationTime->ChangeText(ObsText.str().c_str());
@@ -175,7 +192,6 @@ void NGUIDiagnosticsMain::Update()
   for (unsigned int d = 0; d < m_DiagnosticTabs.size(); ++d) {
     m_DiagnosticTabs[d]->Update();
   }
-
 
   m_Timer.Reset();
 }

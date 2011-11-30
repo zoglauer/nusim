@@ -224,6 +224,10 @@ void NGUIDiagnosticsBackprojector::AddBackprojection(double Ra, double Dec)
   
   //cout<<Ra<<":"<<Dec<<endl;
   m_Backprojection->Fill(Ra, Dec);
+  
+  if (m_Ra.size() == 1 || m_Ra.size() == 10 || m_Ra.size() == 100 ||  m_Ra.size() == 1000 || m_Ra.size() % 10000 == 0) {
+    m_NeedsUpdate = true; 
+  }
 }
 
 
@@ -404,6 +408,8 @@ void NGUIDiagnosticsBackprojector::Update()
     m_EnergyCanvas->GetCanvas()->Update();
     gSystem->ProcessEvents();
   }
+  
+  m_NeedsUpdate = false;
 }
 
 

@@ -60,6 +60,9 @@ class NGUIDiagnosticsMain : public MGUIDialog
   //! Process all button, etc. messages
   virtual bool ProcessMessage(long Message, long Parameter1, long Parameter2);
  
+  //! Return true if we need an update
+  bool NeedsUpdate();
+ 
   //! Update all tabs
   virtual void Update();
 
@@ -92,6 +95,7 @@ class NGUIDiagnosticsMain : public MGUIDialog
   //! The update timer
   MTimer m_Timer;
 
+  
 
 #ifdef ___CINT___
  public:

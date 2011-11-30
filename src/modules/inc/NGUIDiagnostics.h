@@ -55,11 +55,14 @@ class NGUIDiagnostics : public TGCompositeFrame
   virtual void Create() {};
 
   //! Update the frame
-  virtual void Update() {};
+  virtual void Update() { };
 
   //! Get the title
   TString GetTabTitle() { return m_TabTitle; }
 
+  //! Return true if we need an update
+  bool NeedsUpdate() { return m_NeedsUpdate; }
+  
   // protected methods:
  protected:
 
@@ -68,7 +71,10 @@ class NGUIDiagnostics : public TGCompositeFrame
  protected:
   //! Tab Title of the GUI element
   TString m_TabTitle;
-
+  
+  //! Flag to indicate we need an update
+  bool m_NeedsUpdate;
+  
   // private members:
  private:
 

@@ -628,7 +628,7 @@ bool NSupervisor::Run()
       mout<<"Supervisor: No start module has events left. Ending run."<<endl;
       break;
     }
-    
+     
     // Take care of blackouts:
     if ((HasSourceEngine == true || HasBackgroundPipe == true) && 
         m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent) != NTime(0)) {
@@ -875,7 +875,7 @@ bool NSupervisor::Run()
     }
 
 
-    if (EventID % m_UpdateInterval == 0 && gROOT->IsBatch() == false) {
+    if ((EventID % m_UpdateInterval == 0 || m_DiagnosticsGUI->NeedsUpdate()) && gROOT->IsBatch() == false) {
       gSystem->ProcessEvents();
       if (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->IsMapped()) {
         m_DiagnosticsGUI->Update();

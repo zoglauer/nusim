@@ -46,6 +46,7 @@ NGUIDiagnostics::NGUIDiagnostics()
   SetCleanup(kDeepCleanup);
 
   m_TabTitle = "No title";
+  m_NeedsUpdate = false;
 }
 
 
