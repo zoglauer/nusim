@@ -190,7 +190,7 @@ bool NObservatoryData::Stream(ofstream& S, int Version, bool Compact)
 bool NObservatoryData::Parse(TString& Line, int Version, bool Compact)
 {
   //! Stream the content from a line of an ASCII file  
-
+  
   if ((Line.Length() == 4 && Line[4] == '-') || (Line.Length() == 1 && Line[1] == '-')) {
     Clear();
     return true;
@@ -198,17 +198,19 @@ bool NObservatoryData::Parse(TString& Line, int Version, bool Compact)
 
   double t, xO, yO, zO, xE, yE, zE, xF, yF, zF, rF, sF, tF, uF, xI, yI, zI, rI, sI, tI, uI;
   if (Compact == false) {
-    if (sscanf(Line.Data(), 
+    int Elements = sscanf(Line.Data(), 
                "OD %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 21) {
-      merr<<"Unable to parse observatory data"<<show;
+               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI);
+    if (Elements != 21) {
+      merr<<"Unable to parse observatory data, "<<Elements<<" instead of 21 elements parsed"<<show;
       return false;
     }
   } else {
-    if (sscanf(Line.Data(), 
+    int Elements = sscanf(Line.Data(), 
                "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI) != 21) {
-      merr<<"Unable to parse observatory data"<<show;
+               &t, &xO, &yO, &zO, &xE, &yE, &zE, &xF, &yF, &zF, &rF, &sF, &tF, &uF, &xI, &yI, &zI, &rI, &sI, &tI, &uI);
+    if (Elements != 21) {
+      merr<<"Unable to parse observatory data, "<<Elements<<" instead of 21 elements parsed"<<show;
       return false;
     }    
   }
