@@ -1,5 +1,4 @@
 \chapter{The output file format keywords}
-Corresponds to NuSIM v0.9.0
 
 \begin{table}[htdp]
 \begin{center}
@@ -48,7 +47,7 @@ Description:&	A unique ID of the event\\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:	&OG � �origin�\\
+Key:	&OG (origin)\\
 \hline
 Parameters:&	1: Number (1: source, 2: background)\\
 \hline
@@ -81,7 +80,7 @@ Key:&	RD\\
 Parameters:&	1: Right ascension\\
 &2: Declination\\
 \hline
-Description:&	The RA and DEC of the original photon � empty of the photon was background.\\
+Description:&	The RA and DEC of the original photon - empty of the photon was background.\\
 \hline
 \end{tabular}
 \end{center}
@@ -91,7 +90,7 @@ Description:&	The RA and DEC of the original photon � empty of the photon was 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	OP � �original photon�\\
+Key:&	OP ("original photon") \\
 \hline
 Parameters:&	1-3: Start position of the photon in the focal bench coordinate system in mm  \\
 \hline
@@ -108,7 +107,7 @@ Description:&	The initial parameters of the started photon ("original photon")\\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	IP � �initial photon relative to the optics module�\\
+Key:&	IP ("initial photon relative to the optics module")\\
 \hline
 Parameters:&	see OP\\
 \hline
@@ -123,7 +122,7 @@ Description:&	Contains the parameters of the photon when it is INTIALLY \\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	CP � �current photon�\\
+Key:&	CP ("current photon")\\
 \hline
 Parameters:&	see OP\\
 \hline
@@ -140,12 +139,12 @@ then the last photon parameters.\\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	IA � �interaction�\\
+Key:&	IA ("interaction")\\
 \hline
 Parameters:&	1: d or s: detector or shield\\
 &2: Telescope ID\\
 &3: Detector ID\\
-&4-6: Ideal position within the CZT detector in the CZT detector�s coordinate system mm\\
+&4-6: Ideal position within the CZT detector in the CZT detector's coordinate system mm\\
 &7: Ideal energy in keV\\
 \hline
 Description:&	Interactions as determined by the detector (interactions) engine.\\
@@ -158,7 +157,7 @@ Description:&	Interactions as determined by the detector (interactions) engine.\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	PH � �pixel hit�\\
+Key:&	PH ("pixel hit")\\
 \hline
 Parameters:&	1: Telescope ID\\
 &2: Detector ID\\
@@ -180,7 +179,7 @@ Description:&	A pixel hit, i.e. the detector effects engine applied to the ideal
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	SH � �shield hit�\\
+Key:&	SH ("shield hit")\\
 \hline
 Parameters:&	1: Telescope ID\\
 &2: Detector ID\\
@@ -198,7 +197,7 @@ Description:&	A shield hit, i.e. the detector effects engine applied \\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	NH � �nine-pixel hit�\\
+Key:&	NH ("nine-pixel hit")\\
 \hline
 Parameters:&	1: Telescope ID\\
 &2: Detector ID\\
@@ -207,7 +206,7 @@ Parameters:&	1: Telescope ID\\
 &5: pixel 1: pre-trigger sample sum (pulse height)\\
 &6: pixel 1: post-trigger sample sum (pulse height)\\
 &7: pixel 1: trigger (bool)\\
-&�\\
+&\\
 &29: pixel 9: pre-trigger sample sum (pulse height)\\
 &30: pixel 9: post-trigger sample sum (pulse height)\\
 &31: pixel 9: trigger (bool)\\
@@ -226,7 +225,7 @@ Description:&	A pixel hit, i.e. the detector effects engine applied to the ideal
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	PE � �PHE data�\\
+Key:&	PE ("PHE data")\\
 \hline
 Parameters:&	TBD.\\
 \hline
@@ -248,13 +247,14 @@ Parameters:&	1: Telescope ID\\
 &6-8: Position resolution of the above position in mm\\
 &9: Energy in keV\\
 &10: Energy resolution in keV\\
-&11: Observatory data: time in sec\\
-&12-14: Observatory data: direction of optical axis in inertial system\\
-&15-17: Observatory data: direction of event in inertial system\\
-&18-20: Observatory data: orientation of focal plane in optic bench system: translation\\
-&21-24: Observatory data: orientation of focal plane in optic bench system: quaternion\\
-&25-27: Observatory data: orientation of optic bench in inertial system: translation\\
-&28-31: Observatory data: orientation of optic bench in inertial system: quaternion\\
+&11: Trigger grade\\
+&12: Observatory data: time in sec\\
+&13-15: Observatory data: direction of optical axis in inertial system\\
+&16-18: Observatory data: direction of event in inertial system\\
+&19-21: Observatory data: orientation of focal plane in optic bench system: translation\\
+&22-25: Observatory data: orientation of focal plane in optic bench system: quaternion\\
+&26-28: Observatory data: orientation of optic bench in inertial system: translation\\
+&29-32: Observatory data: orientation of optic bench in inertial system: quaternion\\
 \hline
 Description:&	A reconstructed hit\\
 \hline
@@ -266,7 +266,7 @@ Description:&	A reconstructed hit\\
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Keyword:&	OR � the keyword is optional!\\
+Keyword:&	OR - the keyword is optional!\\
 \hline
 Parameters:&	1-7:  Space craft relative to inertial\\
 &8-14: Focal plane relative to space craft \\
