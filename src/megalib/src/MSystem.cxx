@@ -37,7 +37,8 @@ using namespace std;
 #include <TSystem.h>
 
 // MEGAlib libs:
-#include <MStreams.h>
+#include "MGlobal.h"
+#include "MStreams.h"
 
 #ifdef ___UNIX___
 #include <sys/time.h>
