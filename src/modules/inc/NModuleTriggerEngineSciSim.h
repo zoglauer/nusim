@@ -91,6 +91,11 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   //! The pixel trigger pattern
   static const int m_TriggerPattern[33];
 
+  //! Life time counter of telescope 1
+  NTime m_LifeTime1;
+  //! Life time counter of telescope 2
+  NTime m_LifeTime2;
+  
 
 #ifdef ___CINT___
  public:
