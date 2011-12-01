@@ -3,20 +3,20 @@
 
 # Examples:
 
-Mono                  1  266.20  -29.00   1  40.0                     0.00001
-Linear                1  266.25  -29.00   2  30.0  35.0               0.00002
-Plaw                  1  266.30  -29.00   3  3.0  80.0   0.3          0.00003
-BrokenPlaw            1  266.40  -29.00   4  5.0  80.0  20.0 0.6 2.4  0.00004
-FileDifferentialFlux  1  266.35  -29.00   5  $(NUSIM)/resource/configurations/SourceGenerator.examplespectrum.dat 0.00004
-BlackBody             1  266.35  -29.05   6  5.0  20.0 80.0           0.00004
-SomethingAbsorbed     1  266.30  -29.05   7  10.0 80.0 7.0e-6*pow(x/10,-1.1)*exp(-sqrt(x/2.2))
-AGauss                1  266.25  -29.05   7  10.0 80.0 4.3e-6*TMath::Gaus(x,67.9,2.1)
+Mono          1  266.20  -29.00   1  40.0                     0.00001            1
+Linear        1  266.25  -29.00   2  30.0  35.0               0.00002            1
+Plaw          1  266.30  -29.00   3  3.0  80.0   0.3          0.00003            1
+BrokenPlaw    1  266.40  -29.00   4  5.0  80.0  20.0 0.6 2.4  0.00004            1
+FileDiffFlux  1  266.35  -29.00   5  $(NUSIM)/resource/configurations/SourceGenerator.examplespectrum.dat 0.00004       
+BlackBody     1  266.35  -29.05   6  5.0  20.0 80.0           0.00004            1 
+Absorbed      1  266.30  -29.05   7  3 82 7e-6*pow(x/10,-1.1)*exp(-sqrt(x/2.2))  1
+AGauss        1  266.25  -29.05   7  3 82 4.3e-6*TMath::Gaus(x,67.9,2.1)         1
 
-MonoPoint             1  266.20  -29.15                               1  40.0   0.000010
-MonoDisk              2  266.30  -29.15 0.05                          1  50.0   0.000015
-MonoFile              5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60.0   0.000020
+MonoPoint     1  266.20  -29.15                               1  40   0.000010   1 
+MonoDisk      2  266.30  -29.15 0.05                          1  50   0.000015   1     
+MonoFile      5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60   0.000020   1
 
-AllInOne              6  $(NUSIM)/resource/examples/Tycho/Tycho.3Ddat
+AllInOne      6  $(NUSIM)/resource/examples/Tycho/Tycho.3Ddat                    1
 
-
+CrabPulsar    1  22.01 83.63  3  3 82 2 0.363  2 $(NUSIM)/resource/examples/Crab/Crab.lgt true
 
