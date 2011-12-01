@@ -15,7 +15,7 @@ ViewFits -f <you fits file here>
 \end{verbatim}
 If a canvas with your image shows up, you are good to go.
 
-\subsection{The spe-format for input spectra}
+\subsection{The spe-format for input spectra \label{label:spectrumfile}}
 
 This format represents an input spectrum.
 It looks like this:
@@ -42,6 +42,38 @@ If your spectrum contains line features it is best to always use LIN.
 
 Data point are represented by the "DP" keyword.
 The first number represents the energy and the second the flux in something like ph/cm$^2$/s/keV.
+The normalization does not need to be correct because it is given with the "Flux" keyword in the source input.
+
+Make sure the last line in your file is "EN" for "The End".
+
+Lines starting with "\#" are interpreted as comments
+
+\subsection{The lgt-format for input light curves \label{label:lightcurvefile}}
+
+This format is basically identical to the one with a spectrum, only the second column is now a time in seconds
+It looks like this:
+\begin{verbatim}
+IP LINLIN
+
+DP 0.0 0.1
+DP 0.1 0.1
+DP 0.2 0.2
+DP 0.3 0.4
+DP 0.4 0.8
+DP 0.5 0.4
+DP 0.6 0.2
+DP 0.7 0.1
+DP 0.8 0.1
+DP 0.9 0.1
+DP 1.0 0.1
+EN
+\end{verbatim}
+
+The IP line give the interpolation type. Possible are LINLIN (equals LIN), LINLOG, LOGLIN, and LOGLOG (equals LOG). Choose the interpolation type which is most reasonable for you data (i.e in which your looks like a straight line).
+If your spectrum contains line features it is best to always use LIN.
+
+Data point are represented by the "DP" keyword.
+The first number represents the time and the second the light curve value in arbitrary units.
 The normalization does not need to be correct because it is given with the "Flux" keyword in the source input.
 
 Make sure the last line in your file is "EN" for "The End".
@@ -90,30 +122,40 @@ Lines starting with "\#" are interpreted as comments
 
 Finally it is possible to import whole source lists into the source engine.
 This is done via the src-file. the following is an example:
+{\footnotesize
 \begin{verbatim}
-Mono                  1  266.20  -29.00   1  40.0                     0.00001
-Linear                1  266.25  -29.00   2  30.0  35.0               0.00002
-Plaw                  1  266.30  -29.00   3  3.0  80.0   0.3          0.00003
-BrokenPlaw            1  266.40  -29.00   4  5.0  80.0  20.0 0.6 2.4  0.00004
-FileDifferentialFlux  1  266.35  -29.00   5  $(NUSIM)/resource/configurations/SourceGenerator.examplespectrum.dat 0.00004
-BlackBody             1  266.35  -29.05   6  5.0  20.0 80.0           0.00004
-SomethingAbsorbed     1  266.30  -29.05   7  10.0 80.0 7.0e-6*pow(x/10,-1.1)*exp(-sqrt(x/2.2))
-AGauss                1  266.25  -29.05   7  10.0 80.0 4.3e-6*TMath::Gaus(x,67.9,2.1)
+Mono          1  266.20  -29.00   1  40.0                     0.00001            1
+Linear        1  266.25  -29.00   2  30.0  35.0               0.00002            1
+Plaw          1  266.30  -29.00   3  3.0  80.0   0.3          0.00003            1
+BrokenPlaw    1  266.40  -29.00   4  5.0  80.0  20.0 0.6 2.4  0.00004            1
+FileDiffFlux  1  266.35  -29.00   5  $(NUSIM)/resource/configs/SourceGen.dat 0.4 1       
+BlackBody     1  266.35  -29.05   6  5.0  20.0 80.0           0.00004            1 
+Absorbed      1  266.30  -29.05   7  3 82 7e-6*pow(x/10,-1.1)*exp(-sqrt(x/2.2))  1
+AGauss        1  266.25  -29.05   7  3 82 4.3e-6*TMath::Gaus(x,67.9,2.1)         1
 
-MonoPoint             1  266.20  -29.15                               1  40.0   0.000010
-MonoDisk              2  266.30  -29.15 0.05                          1  50.0   0.000015
-MonoFile              5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60.0   0.000020
+MonoPoint     1  266.20  -29.15                               1  40   0.000010   1 
+MonoDisk      2  266.30  -29.15 0.05                          1  50   0.000015   1     
+MonoFile      5  $(NUSIM)/resource/examples/Tycho/Tycho.fits  1  60   0.000020   1
+
+AllInOne      6  $(NUSIM)/resource/examples/Tycho/Tycho.3Ddat                    1
+
+CrabPulsar    1  22.0 83.6  4  3 82 2 0.36  2 $(NUSIM)/res/examp/Crab/Crab.lgt true
 \end{verbatim}
+}
 
 Each line represents a source (due to tex file formating one line might look as multiple in your printout) and each line consists of up to four sections:
 \begin{enumerate}
 \item The source name
 \item The beam options
-\item The spectral options
-\item The flux
+\item The spectral and flux options
+\item The light curve options
 \end{enumerate}
 
+\subsubsection{Source name}
+
 The first column is always the name of the source. It must not contain any spaces.
+
+\subsubsection{Beam}
 
 In general, different beam and spectral options result in different number of columns.
 Therefore the beam and spectral options section is always preceeded by a number representing the beam type:
@@ -138,7 +180,9 @@ The far field fits file is followed by a file name. Currently it must not contai
 The far field normalized combined energy-spectrum-flux function is only followed by file name since the file contains already all other options: (1) File name. Currently it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory
 
 
-The spectral options are
+\subsubsection{Spectrum and flux}
+
+The spectral options are:
 \begin{enumerate}
 \item Monoenergetic
 \item Linear
@@ -151,26 +195,60 @@ The spectral options are
 \end{enumerate}
 
 
-The monoenergetic option is followed by one number: (1) Energy in keV.
+The monoenergetic option is followed by 2 numbers: 
+(1) Energy in keV, 
+(2) Flux in ph/cm2/s.
 
-The linear option is followed by two numbers: (1) Minimum energy in keV, (2) Maximum energy in keV.
+The linear option is followed by 3 numbers: 
+(1) Minimum energy in keV, 
+(2) Maximum energy in keV, 
+(3) Flux in ph/cm2/s within the given spectral band.
 
-The powerlaw option is followed by three numbers: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Photon index.
+The powerlaw option is followed by 4 numbers: 
+(1) Minimum energy in keV, 
+(2) Maximum energy in keV, 
+(3) Photon index, 
+(4) Flux in ph/cm2/s within the given spectral band.
 
-The broken powerlaw option is followed by five numbers: (1) Minimum energy in keV,  (2) Maximum energy in keV, (3) Break energy in keV, (4) Photon index low, (5) Photon index high.
+The broken powerlaw option is followed by 6 numbers: 
+(1) Minimum energy in keV,  
+(2) Maximum energy in keV, 
+(3) Break energy in keV, 
+(4) Photon index low, 
+(5) Photon index high, 
+(6) Flux in ph/cm2/s within the given spectral band.
 
-The file with the differential flux is given by only one file name: (1) File name. Again it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory.
+The file with the differential flux is given by only one file name and one flux: 
+(1) File name. Again it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory.  The format is described in \ref{label:spectrumfile}.
+(2) Flux in ph/cm2/s within the given spectral band in the file.
 
-The black body option is followed by three numbers: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Temperature energy in keV.
+The black body option is followed by 4 numbers: 
+(1) Minimum energy in keV, 
+(2) Maximum energy in keV, 
+(3) Temperature energy in keV, 
+(4) Flux in ph/cm2/s within the given spectral band.
 
-The normalized function in ph/cm2/s/keV is given by two number and a string: (1) Minimum energy in keV, (2) Maximum energy in keV, (3) Function string.
+The normalized function in ph/cm2/s/keV is given by two number and a string (no flux required!): 
+(1) Minimum energy in keV, 
+(2) Maximum energy in keV, 
+(3) Function string.
 The string represents a function and must not contain any spaces!
 You can use all C/C++ (pow, exp, sqrt, cos, sin, etc.) and all ROOT functions, such as TMath:Gaus(...), etc.
 
 
-For all options but the normalized spectrum, the final column is the flux in ph/cm2/s within the given spectral band
+\subsubsection{Light curve}
 
+The light curve options are:
+\begin{enumerate}
+\item Flat light curve
+\item Light curve from file
+\end{enumerate}
 
+The flat light curve has no additional entries.
+
+The option light curve from file has two entries:
+(1) File name. Again it must not contain any spaces! You can use \$(NUSIM) to represent the NuSIM directory. The format is described in \ref{label:lightcurvefile}.
+(2) Boolean ("true" or "false") indicating if the light curve repeats (e.g. for pulsars)
 
 \section{For the pointing engine \label{inputformats:pointing}}
 

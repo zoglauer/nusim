@@ -108,7 +108,21 @@ Example 2: TMath::Gaus(x, 67.9, 1.5)
 Pay attention to use of "x" for energy and "e" not "E" for the exponent. This is the only spectral option which does not need a flux input, because it is assumed to be correctly normalized.
 \end{itemize}
 
-The final required parameter is the flux in $ph/cm^2/s$. This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$. This final input is not required for the spectral option "Normalized function in ph/cm2/s/keV" or the beam \"FarFieldNormalizedEnergyBeamFluxFunction\".
+The light curve options are:
+\begin{itemize} 
+\item \textbf{Flat - no light curve}: Do not perform any flux variations based on a light curve.
+\item \textbf{From file}: The light curve is given in a file (see \ref{label:lightcurvefile}). 
+The values given in the file have arbitrary units, since the total normalization is performed by the flux. 
+Therefore, the given flux is always an average value. 
+The file also contains the start and the stop value, which ultimately correspond to start and stop values of the source.
+This allows to simulate, e.g., flares.
+If the option "Should light-curve loop" is selected, the the light-curve is in an infinite loop, which allows the simulation of, e.g., pulsars. 
+\end{itemize}
+
+The final required parameter is the flux in $ph/cm^2/s$, which is always the average flux (i.e. also averaged over the light curve).
+This format instead of e.g. $ph/cm^2/s/keV/sr$ had to be chosen to allow to combine each spectrum with each beam. 
+Therefore don't forget to integrate over keV, if you use non-mono-energetic spectra which are given in $keV^{-1}$. 
+This final input is not required for the spectral option "Normalized function in $ph/cm^2/s/keV$" or the beam "FarFieldNormalizedEnergyBeamFluxFunction".
 
 
 For the sources at infinite distance the photons are started randomly from a disk on a sphere surrounding the opening of the optics modules (the module is chosen randomly) to enable the correct simulation of the effective area as a function of incidence angle. The start time is randomly determined (Poisson distribution) according to the source flux. When the start position, start direction and photon energy are determined, the photon is handed over to the optics module for further simulation.
@@ -356,7 +370,7 @@ available.
 \end{figure}
 
 \subsection{Event selector}
-The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first section gives you options to store the events --- the file name and path are set in the supervisor GUI. Saving as FITS file will produce a simple level 2 fits file that can be loaded into DS9. Saving as ROOT will produce a ROOT file format, and saving as ASCII will prodice the human readable dat file format. In addition, you can create an energy response (incident vs. measured energy) in ROOT file format.
+The Event Selector allows the user to filter the output and produce event-list files. The GUI for this module is shown in Figure \ref{eventgui} The first section gives you options to store the events --- the file name and path are set in the supervisor GUI. Saving as FITS file will produce a simple level 2 fits file that can be loaded into DS9. Saving as ROOT will produce a ROOT file format, and saving as ASCII will produce the human readable dat file format. In addition, you can create an energy response (incident vs. measured energy) in ROOT file format.
 
 An energy range can be entered to bound the range of the output. If there is no entry then the input range is used.
 The top check box allows the user to decide whether they want to save the file before or after the energy filter. The reason is that there is a high energy background which otherwise would be excluded.

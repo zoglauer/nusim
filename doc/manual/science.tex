@@ -98,6 +98,7 @@ The user has to take care of the integration.
 An exception is the special spectral option "Normalized function in ph/cm2/s/keV". 
 There you give the spectrum in mathematical form, which must contain the correct normalization in a C/C++ compatible form such as "7.0e-6*pow(x/10, -1)*exp(-sqrt(x/2.2))".
 Pay attention to use of "x" for energy and "e" not "E" for the exponent.
+Finally one can give a light curve, either a flat one (which means no light curve) or a light curve from file with the additional option to loop over the light curve (e.g. for pulars).
 To set many sources at once, it is also possible to read them from an ASCII file using the "Import from file" button. 
 The file is a space-delimited csv file with different columns. If you only have point sources with simple power laws, the columns are: source name (no white spaced allowed), beam type (1 = far-field point source), RA (deg), DEC (deg), spectral type (3 = power law), minimum energy (keV), maximum energy (keV), photon index, flux (ph/s/cm$^2$).
 An example can be found in the resource/configurations directory: GalacticCenter.ImportExample.txt
