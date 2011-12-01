@@ -251,7 +251,7 @@ public:
   virtual MXmlNode* CreateXmlConfiguration();
 
   // This is NOT a universal parser - just a quick hack to convert some data
-  bool ParseLine(TString Line);
+  bool ParseLine(TString Line, int Version);
 
 
   //! Id of an invalid type

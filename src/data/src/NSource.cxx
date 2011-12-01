@@ -1604,7 +1604,7 @@ double NSource::BandFunction(const double Energy, double Alpha,
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NSource::ParseLine(TString Line)
+bool NSource::ParseLine(TString Line, int Version)
 {
   // This is NOT a universal parser - just a quick hack to convert some data
   // Format: 164700.1-460559  1  251.75063  -46.10000  3   5.0  80.0  2.0  0.000035200
@@ -1726,6 +1726,27 @@ bool NSource::ParseLine(TString Line)
     m_InputFlux = 1.0;
   }
   
+  // Light curve section
+  if (T.GetNTokens() == Pos) {
+    m_LightCurveType = NSource::c_LightCurveFlat;
+  } else {
+    m_LightCurveType = T.GetTokenAtAsInt(Pos++);
+    if (m_LightCurveType == NSource::c_LightCurveFlat) {
+      // nothing...
+    } else if (m_LightCurveType == NSource::c_LightCurveFile) {
+      if (T.GetNTokens() < Pos + 2) {
+        cout<<m_Name<<": Line parser source: Not enough tokens to parse for light curve by file"<<endl;
+        return false;
+      }
+      m_LightCurveFileName = T.GetTokenAtAsString(Pos++);
+      m_IsRepeatingLightCurve = T.GetTokenAtAsBoolean(Pos++);      
+    } else {
+      cout<<m_Name<<": Line parser source: This light curve type is not yet implemented: "<<m_LightCurveType<<endl;
+      return false;
+    }
+  }
+  
+  
   // Do an official "set" to initialize all the other variables:
   if (SetSpectralType(m_SpectralType) == false) return false;
   if (SetEnergy(m_EnergyParam1, m_EnergyParam2, m_EnergyParam3, m_EnergyParam4, m_EnergyParam5) == false) return false;
@@ -1739,6 +1760,10 @@ bool NSource::ParseLine(TString Line)
   if (SetEnergy(m_EnergyFileName) == false) return false;
   if (SetEnergyFunctionString(m_EnergyFunctionString) == false) return false;
   if (SetNormalizedEnergyPositionFluxFunction(m_NormalizedEnergyPositionFluxFileName) == false) return false;
+  if (SetLightCurveType(m_LightCurveType) == false) return false;
+  if (m_LightCurveType == NSource::c_LightCurveFile) {
+    if (SetLightCurve(m_LightCurveFileName, m_IsRepeatingLightCurve) == false) return false;
+  }
 
   return true;
 }
