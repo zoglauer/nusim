@@ -875,7 +875,7 @@ bool NSupervisor::Run()
     }
 
 
-    if ((EventID % m_UpdateInterval == 0 || m_DiagnosticsGUI->NeedsUpdate()) && gROOT->IsBatch() == false) {
+    if (gROOT->IsBatch() == false && (EventID % m_UpdateInterval == 0 || (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->NeedsUpdate()))) {
       gSystem->ProcessEvents();
       if (m_DiagnosticsGUI != 0 && m_DiagnosticsGUI->IsMapped()) {
         m_DiagnosticsGUI->Update();
