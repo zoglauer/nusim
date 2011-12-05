@@ -1122,11 +1122,16 @@ int main(int argc, char** argv)
   Usage<<endl;
   Usage<<"  Usage: MakeARF <arg1> <arg2>"<<endl;
   Usage<<"    arguments:"<<endl;
-  Usage<<"         arg1:   full path and name of nusim event fits file"<<endl;
-  Usage<<"         arg2:   full path and name of the ds9 region file"<<endl;
+  Usage<<"           arg1: full path and name of nusim event fits file"<<endl;
+  Usage<<"           arg2: full path and name of the ds9 region file"<<endl;
+  Usage<<"    optional arguments:"<<endl;
+  Usage<<"      -o <name>: full path and base name for the output files"<<endl;
   Usage<<endl;
 
   string Option;
+  
+  int specifiedOut = 0; /* If an output file is give, this will point to the 
+			   name of the file in the argv array*/
 
   // Check for help
   for (int i = 1; i < argc; i++) {
@@ -1134,6 +1139,11 @@ int main(int argc, char** argv)
     if (Option == "-h" || Option == "--help" || Option == "?" || Option == "-?") {
       cout<<Usage.str()<<endl;
       return false;
+    }
+    
+    if (Option == "-o") {
+      specifiedOut = i+1;
+      i++;
     }
   }
 
@@ -1143,16 +1153,24 @@ int main(int argc, char** argv)
      
   TString InFile = argv[1];
   MTokenizer T;
+
   T.AllowComposed(false);
   T.AllowEmpty(true);
   T.SetSeparator('.');
   T.Analyze(InFile, false);
+  TString OutFile = T.GetTokenAtAsString(0);
+  
+  // If we have used the "-o" option, we change the name of 
+  // the output file
+  if (specifiedOut > 0) {
+    OutFile = argv[specifiedOut]; 
+  }
   
   src.SourceInFile = InFile;
   src.DS9File = argv[2];
-  src.SourceOutFile = T.GetTokenAtAsString(0) + ".pi";
-  src.BkgFile = T.GetTokenAtAsString(0) + "_bkg.fits";
-  src.ARFFile = T.GetTokenAtAsString(0) + ".arf";
+  src.SourceOutFile = OutFile + ".pi";
+  src.BkgFile = OutFile + "_bkg.fits";
+  src.ARFFile = OutFile + ".arf";
     
   src.GenerateARF();
 
