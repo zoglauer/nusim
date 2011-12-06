@@ -230,31 +230,41 @@ bool PulsationViewer::Analyze()
   NTime ObsTime = Sat.GetEffectiveObservationTime();
   
   double DeadTime = 0.0025;
+  cout<<"Attention: Using a hard-coded dead time of "<<DeadTime<<" sec."<<endl;
   
+  // Step 1: Create the initial uncorrected pulse and dead time profiles by loading them from file
+  
+  // The bin size shuld be >= 0.1*DeadTime to get a correct dead-time correction,
+  // without having to account for half filled pixels.
   int NBins = m_PhaseDuration.GetAsSeconds()/(0.1*DeadTime);
   double BinWidth = m_PhaseDuration.GetAsSeconds()/NBins;
+  
   TH1D* Profile1 = new TH1D("Profile1", "Pulse profile (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile1->SetXTitle("phase time [sec]");
   Profile1->SetYTitle("Counts");
   TH1D* Profile2 = new TH1D("Profile2", "Pulse profile (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile2->SetXTitle("phase time [sec]");
   Profile2->SetYTitle("Counts");
+  
   TH1D* Profile1DeadTime = new TH1D("Profile1DeadTime", "Profile of dead time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   TH1D* Profile2DeadTime = new TH1D("Profile2DeadTime", "Profile of dead time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   
   NEvent Event;
   while (Loader.AnalyzeEvent(Event) == true) {
     if (Event.IsEmpty() == true) break;
-    if (Event.GetTelescope() == 2) continue;
     NTime Time = Event.GetTime();
-    long Cycle = static_cast<int>((Time-m_PhaseStart)/m_PhaseDuration);
+    long Cycle = static_cast<long>((Time-m_PhaseStart)/m_PhaseDuration);
     
+    // Fill the event at the correct phase time and for the correct pixels
     double PhaseTime = ((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds();
     if (Event.GetTelescope() == 1) {
       Profile1->Fill(PhaseTime);
     } else {
       Profile2->Fill(PhaseTime);     
     }
+    
+    // Now fill the dead time histogram:
+    // Start at the current bin and fill each bin with the value 1 until we have exceeded the dead-time
     double CurrentTime = PhaseTime;
     while (CurrentTime < PhaseTime + DeadTime) {
       double FillTime = CurrentTime;
@@ -278,6 +288,13 @@ bool PulsationViewer::Analyze()
   //Profile1DeadTime->Draw();
   //ProfileDeadTimeCanvas->Update();
 
+  // Step 2: Correct for dead time:
+  
+  // We know how many phases we have within our observation time, 
+  // and we know in how many phases we had a dead time in the given bin:
+  // Thus we can easily calculate the lifetime as
+  // (# Cycles - # Dead time counts) / # Cycles
+  
   double Cycles = ObsTime.GetAsSeconds()/m_PhaseDuration.GetAsSeconds();
   TH1D* Profile1LifeTimeRatio = new TH1D("Profile1LifeTimeRatio", "Life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile1LifeTimeRatio->SetXTitle("phase time [sec]");
@@ -294,6 +311,8 @@ bool PulsationViewer::Analyze()
   //ProfileLifeTimeRatio->Draw();
   //ProfileLifeTimeRatioCanvas->Update();
 
+  // Now correct the profile with the life-time and add up both histograms
+  
   TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile (telescope 1 & 2)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   ProfileLifeTimeCorrected->SetXTitle("phase time [sec]");
   ProfileLifeTimeCorrected->SetYTitle("Life-time corrected counts");
@@ -305,6 +324,8 @@ bool PulsationViewer::Analyze()
   ProfileLifeTimeCorrected->Draw();
   ProfileLifeTimeCorrectedCanvas->Update();
 
+  // Step 3: (optional) Fit the original light curve
+  
   if (g_ComparisonLightCurve.GetSize() > 0) {
     TF1* Fit = new TF1("LightCurveFit", LightCurveFitFunction, 0, m_PhaseDuration.GetAsSeconds(), 2);
 
