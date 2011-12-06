@@ -202,6 +202,11 @@ bool PulsationViewer::ParseCommandLine(int argc, char** argv)
     return false;
   }
 
+  if (g_ComparisonLightCurve.GetSize() > 0) {
+    cout<<"Aligning the phase start with the phase start in the comparison file..."<<endl;
+    m_PhaseStart.Set(g_ComparisonLightCurve.GetXMin());
+  }
+  
   if (m_PhaseDuration.IsMax() == true) {
     cout<<"Error: You need to give a phase duration!"<<endl;
     return false;
@@ -223,14 +228,19 @@ bool PulsationViewer::Analyze()
   Loader.SetFileName(m_InputFileName);
   if (Loader.Initialize() == false) return false;
   NTime ObsTime = Sat.GetEffectiveObservationTime();
-  cout<<"Eff obs time: "<<ObsTime<<endl;
   
   double DeadTime = 0.0025;
   
   int NBins = m_PhaseDuration.GetAsSeconds()/(0.1*DeadTime);
   double BinWidth = m_PhaseDuration.GetAsSeconds()/NBins;
-  TH1D* Profile = new TH1D("Profile", "Profile", NBins, 0, m_PhaseDuration.GetAsSeconds());
-  TH1D* ProfileDeadTime = new TH1D("ProfileDeadTime", "Profile of dead time", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1 = new TH1D("Profile1", "Pulse profile (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  Profile1->SetXTitle("phase time [sec]");
+  Profile1->SetYTitle("Counts");
+  TH1D* Profile2 = new TH1D("Profile2", "Pulse profile (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  Profile2->SetXTitle("phase time [sec]");
+  Profile2->SetYTitle("Counts");
+  TH1D* Profile1DeadTime = new TH1D("Profile1DeadTime", "Profile of dead time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile2DeadTime = new TH1D("Profile2DeadTime", "Profile of dead time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   
   NEvent Event;
   while (Loader.AnalyzeEvent(Event) == true) {
@@ -240,39 +250,55 @@ bool PulsationViewer::Analyze()
     long Cycle = static_cast<int>((Time-m_PhaseStart)/m_PhaseDuration);
     
     double PhaseTime = ((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds();
-    Profile->Fill(PhaseTime);
+    if (Event.GetTelescope() == 1) {
+      Profile1->Fill(PhaseTime);
+    } else {
+      Profile2->Fill(PhaseTime);     
+    }
     double CurrentTime = PhaseTime;
     while (CurrentTime < PhaseTime + DeadTime) {
       double FillTime = CurrentTime;
       while (FillTime > m_PhaseDuration.GetAsSeconds()) FillTime -= m_PhaseDuration.GetAsSeconds();
-      ProfileDeadTime->Fill(FillTime);
+      if (Event.GetTelescope() == 1) {
+        Profile1DeadTime->Fill(FillTime);
+      } else {
+        Profile2DeadTime->Fill(FillTime);       
+      }
       CurrentTime += BinWidth;
     }
   }
   
-  TCanvas* ProfileCanvas = new TCanvas();
-  ProfileCanvas->cd();
-  Profile->Draw();
-  ProfileCanvas->Update();
+  //TCanvas* ProfileCanvas = new TCanvas();
+  //ProfileCanvas->cd();
+  //Profile1->Draw();
+  //ProfileCanvas->Update();
   
-  TCanvas* ProfileDeadTimeCanvas = new TCanvas();
-  ProfileDeadTimeCanvas->cd();
-  ProfileDeadTime->Draw();
-  ProfileDeadTimeCanvas->Update();
+  //TCanvas* ProfileDeadTimeCanvas = new TCanvas();
+  //ProfileDeadTimeCanvas->cd();
+  //Profile1DeadTime->Draw();
+  //ProfileDeadTimeCanvas->Update();
 
   double Cycles = ObsTime.GetAsSeconds()/m_PhaseDuration.GetAsSeconds();
-  TH1D* ProfileLifeTimeRatio = new TH1D("ProfileLifeTimeRatio", "Life time", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1LifeTimeRatio = new TH1D("Profile1LifeTimeRatio", "Life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  Profile1LifeTimeRatio->SetXTitle("phase time [sec]");
+  Profile1LifeTimeRatio->SetYTitle("Life time (100% = 1)");
+  TH1D* Profile2LifeTimeRatio = new TH1D("Profile2LifeTimeRatio", "Life time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  Profile2LifeTimeRatio->SetXTitle("phase time [sec]");
+  Profile2LifeTimeRatio->SetYTitle("Life time (100% = 1)");
   for (int bx = 1; bx <= NBins; ++bx) {
-    ProfileLifeTimeRatio->SetBinContent(bx, (Cycles-ProfileDeadTime->GetBinContent(bx))/Cycles);
+    Profile1LifeTimeRatio->SetBinContent(bx, (Cycles-Profile1DeadTime->GetBinContent(bx))/Cycles);
+    Profile2LifeTimeRatio->SetBinContent(bx, (Cycles-Profile2DeadTime->GetBinContent(bx))/Cycles);
   }
   //TCanvas* ProfileLifeTimeRatioCanvas = new TCanvas();
   //ProfileLifeTimeRatioCanvas->cd();
   //ProfileLifeTimeRatio->Draw();
   //ProfileLifeTimeRatioCanvas->Update();
 
-  TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile (telescope 1 & 2)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  ProfileLifeTimeCorrected->SetXTitle("phase time [sec]");
+  ProfileLifeTimeCorrected->SetYTitle("Life-time corrected counts");
   for (int bx = 1; bx <= NBins; ++bx) {
-    ProfileLifeTimeCorrected->SetBinContent(bx, Profile->GetBinContent(bx)/ProfileLifeTimeRatio->GetBinContent(bx));
+    ProfileLifeTimeCorrected->SetBinContent(bx, Profile1->GetBinContent(bx)/Profile1LifeTimeRatio->GetBinContent(bx) + Profile2->GetBinContent(bx)/Profile2LifeTimeRatio->GetBinContent(bx));
   }
   TCanvas* ProfileLifeTimeCorrectedCanvas = new TCanvas();
   ProfileLifeTimeCorrectedCanvas->cd();
