@@ -229,14 +229,11 @@ bool PulsationViewer::Analyze()
   if (Loader.Initialize() == false) return false;
   NTime ObsTime = Sat.GetEffectiveObservationTime();
   
-  double DeadTime = 0.0025;
-  cout<<"Attention: Using a hard-coded dead time of "<<DeadTime<<" sec."<<endl;
-  
   // Step 1: Create the initial uncorrected pulse and dead time profiles by loading them from file
   
   // The bin size shuld be >= 0.1*DeadTime to get a correct dead-time correction,
   // without having to account for half filled pixels.
-  int NBins = m_PhaseDuration.GetAsSeconds()/(0.1*DeadTime);
+  int NBins = 100;
   double BinWidth = m_PhaseDuration.GetAsSeconds()/NBins;
   
   TH1D* Profile1 = new TH1D("Profile1", "Pulse profile (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
@@ -246,12 +243,16 @@ bool PulsationViewer::Analyze()
   Profile2->SetXTitle("phase time [sec]");
   Profile2->SetYTitle("Counts");
   
-  TH1D* Profile1DeadTime = new TH1D("Profile1DeadTime", "Profile of dead time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
-  TH1D* Profile2DeadTime = new TH1D("Profile2DeadTime", "Profile of dead time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1LifeTime = new TH1D("Profile1LifeTime", "Profile of life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile2LifeTime = new TH1D("Profile2LifeTime", "Profile of life time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
   
   NEvent Event;
+  long NUsedBins = 0;
+  long NEvents = 0;
   while (Loader.AnalyzeEvent(Event) == true) {
+    //cout<<NEvents<<endl; if (NEvents == 2000) break;
     if (Event.IsEmpty() == true) break;
+    NEvents++;
     NTime Time = Event.GetTime();
     long Cycle = static_cast<long>((Time-m_PhaseStart)/m_PhaseDuration);
     
@@ -263,37 +264,77 @@ bool PulsationViewer::Analyze()
       Profile2->Fill(PhaseTime);     
     }
     
-    // Now fill the dead time histogram:
-    // Start at the current bin and fill each bin with the value 1 until we have exceeded the dead-time
-    double CurrentTime = PhaseTime;
-    while (CurrentTime < PhaseTime + DeadTime) {
-      double FillTime = CurrentTime;
-      while (FillTime > m_PhaseDuration.GetAsSeconds()) FillTime -= m_PhaseDuration.GetAsSeconds();
-      if (Event.GetTelescope() == 1) {
-        Profile1DeadTime->Fill(FillTime);
+    // Now fill the Life time histogram:
+    // Start at the current bin and fill each bin with the value 1 *backwards* until we have exceeded the Life-time
+    double LifeTime = Event.GetDetectorLifeTime().GetAsSeconds();
+    double CurrentTime = Time.GetAsSeconds();
+    double StartLifeTime = CurrentTime - LifeTime;
+    int CurrentBin = Profile1LifeTime->FindFixBin(PhaseTime); // Accurate enough for ms-pulsars
+    bool IsFirstBin = true;
+    double Value = 0.0;
+    do {
+      double LowEdge = Profile1LifeTime->GetXaxis()->GetBinLowEdge(CurrentBin);
+      //cout<<"Current time: "<<CurrentTime<<" Bin: "<<CurrentBin<<" low edge: "<<LowEdge<<"  life time: "<<LifeTime<<endl;
+      if (CurrentTime - BinWidth < StartLifeTime) {
+        if (IsFirstBin == true) {
+          Value = LifeTime/BinWidth;
+        } else {
+          Value = (CurrentTime - StartLifeTime)/BinWidth;
+        }
+        //cout<<"Adding: "<<Value<<" to "<<CurrentBin<<endl;
+        if (Event.GetTelescope() == 1) {
+          Profile1LifeTime->SetBinContent(CurrentBin, Profile1LifeTime->GetBinContent(CurrentBin) + Value);
+        } else {
+          Profile2LifeTime->SetBinContent(CurrentBin, Profile2LifeTime->GetBinContent(CurrentBin) + Value);          
+        }
+        break; // Done!
       } else {
-        Profile2DeadTime->Fill(FillTime);       
+        if (IsFirstBin == true) {
+          Value = (CurrentTime - m_PhaseDuration.GetAsSeconds()*Cycle - LowEdge)/BinWidth;
+        } else {
+          Value = 1;
+        }
+        //cout<<"Adding: "<<Value<<" to "<<CurrentBin<<endl;
+        if (Event.GetTelescope() == 1) {
+          Profile1LifeTime->SetBinContent(CurrentBin, Profile1LifeTime->GetBinContent(CurrentBin) + Value);
+        } else {
+          Profile2LifeTime->SetBinContent(CurrentBin, Profile2LifeTime->GetBinContent(CurrentBin) + Value);          
+        }
       }
-      CurrentTime += BinWidth;
-    }
+      if (IsFirstBin == true) {
+        CurrentTime = m_PhaseDuration.GetAsSeconds()*Cycle + LowEdge;
+        IsFirstBin = false;
+      } else {
+        CurrentTime -= BinWidth;
+      }
+      CurrentBin--;
+      if (CurrentBin == 0) {
+        CurrentBin = Profile1LifeTime->GetXaxis()->GetNbins();
+      }
+    } while (true);
   }
   
-  //TCanvas* ProfileCanvas = new TCanvas();
-  //ProfileCanvas->cd();
-  //Profile1->Draw();
-  //ProfileCanvas->Update();
+  if (NUsedBins > 0) {
+    cout<<"Life time correction accuracy due to binning: "<<100.0 * NEvents / NUsedBins<<" %"<<endl;
+  }
+  /*
+  TCanvas* ProfileCanvas = new TCanvas();
+  ProfileCanvas->cd();
+  Profile1->Draw();
+  ProfileCanvas->Update();
   
-  //TCanvas* ProfileDeadTimeCanvas = new TCanvas();
-  //ProfileDeadTimeCanvas->cd();
-  //Profile1DeadTime->Draw();
-  //ProfileDeadTimeCanvas->Update();
-
-  // Step 2: Correct for dead time:
+  TCanvas* ProfileLifeTimeCanvas = new TCanvas();
+  ProfileLifeTimeCanvas->cd();
+  Profile1LifeTime->Draw();
+  ProfileLifeTimeCanvas->Update();
+  */
+  
+  // Step 2: Correct for life time:
   
   // We know how many phases we have within our observation time, 
-  // and we know in how many phases we had a dead time in the given bin:
-  // Thus we can easily calculate the lifetime as
-  // (# Cycles - # Dead time counts) / # Cycles
+  // and we know in how many phases we had a life time in the given bin:
+  // Thus we can easily calculate the lifetime ratio as
+  // # LifeTimes / # Cycles
   
   double Cycles = ObsTime.GetAsSeconds()/m_PhaseDuration.GetAsSeconds();
   TH1D* Profile1LifeTimeRatio = new TH1D("Profile1LifeTimeRatio", "Life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
@@ -303,14 +344,17 @@ bool PulsationViewer::Analyze()
   Profile2LifeTimeRatio->SetXTitle("phase time [sec]");
   Profile2LifeTimeRatio->SetYTitle("Life time (100% = 1)");
   for (int bx = 1; bx <= NBins; ++bx) {
-    Profile1LifeTimeRatio->SetBinContent(bx, (Cycles-Profile1DeadTime->GetBinContent(bx))/Cycles);
-    Profile2LifeTimeRatio->SetBinContent(bx, (Cycles-Profile2DeadTime->GetBinContent(bx))/Cycles);
+    Profile1LifeTimeRatio->SetBinContent(bx, Profile1LifeTime->GetBinContent(bx)/Cycles);
+    Profile2LifeTimeRatio->SetBinContent(bx, Profile2LifeTime->GetBinContent(bx)/Cycles);
   }
-  //TCanvas* ProfileLifeTimeRatioCanvas = new TCanvas();
-  //ProfileLifeTimeRatioCanvas->cd();
-  //ProfileLifeTimeRatio->Draw();
-  //ProfileLifeTimeRatioCanvas->Update();
-
+  /*
+  TCanvas* Profile1LifeTimeRatioCanvas = new TCanvas();
+  Profile1LifeTimeRatioCanvas->cd();
+  Profile1LifeTimeRatio->Draw();
+  Profile1LifeTimeRatioCanvas->Update();
+  */
+  
+  
   // Now correct the profile with the life-time and add up both histograms
   
   TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile (telescope 1 & 2)", NBins, 0, m_PhaseDuration.GetAsSeconds());
