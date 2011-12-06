@@ -30,6 +30,7 @@ using namespace std;
 #include <TApplication.h>
 #include <TStyle.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TMarker.h>
@@ -37,12 +38,26 @@ using namespace std;
 
 // NuSIM
 #include "NExtractFitsImage.h"
-#include "MFunction2D.h"
+#include "MFunction.h"
 #include "NModuleEventLoader.h"
 #include "NModuleEventSaver.h"
 #include "NModuleTimeEngine.h"
 #include "NTime.h"
 #include "NSatellite.h"
+
+
+/******************************************************************************/
+
+/// Input file names
+MFunction g_ComparisonLightCurve;
+
+double LightCurveFitFunction(double* x, double* par)
+{
+  // 0: Height
+  // 1: Function scaler
+
+  return par[0] + par[1]*g_ComparisonLightCurve.Eval(x[0]);
+}
 
 
 /******************************************************************************/
@@ -110,8 +125,9 @@ bool PulsationViewer::ParseCommandLine(int argc, char** argv)
   Usage<<"  Usage: PulsationViewer <options>"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"         -i:   Input file name"<<endl;
-  Usage<<"         -s:   Start of Phase"<<endl;
-  Usage<<"         -d:   Duration of Phase"<<endl;
+  Usage<<"         -d:   Duration of Phase (in sec)"<<endl;
+  Usage<<"         -s:   Start of Phase (default: 0 sec)"<<endl;
+  Usage<<"         -c:   File for comparison (if skipped: no comparison)"<<endl;
   Usage<<"         -h:   print this help"<<endl;
   Usage<<endl;
 
@@ -152,6 +168,17 @@ bool PulsationViewer::ParseCommandLine(int argc, char** argv)
     if (Option == "-i") {
       m_InputFileName = argv[++i];
       cout<<"Accepting input file name: "<<m_InputFileName<<endl;
+    } else if (Option == "-c") {
+      TString ComparisonFileName = argv[++i];
+      cout<<"Accepting input file name: "<<ComparisonFileName<<endl;
+      if (MFile::Exists(ComparisonFileName) == true) {
+        if (g_ComparisonLightCurve.Set(ComparisonFileName, "DP") == false) {
+          mout<<"LightCurveFile: Unable to load light curve!"<<endl;
+          return false;
+        }
+      } else {
+        return false;
+      }
     } else if (Option == "-s") {
       m_PhaseStart.Set(atof(argv[++i]));
       cout<<"Accepting start of phase: "<<m_PhaseStart<<endl;
@@ -195,20 +222,76 @@ bool PulsationViewer::Analyze()
   NModuleEventLoader Loader(Sat);
   Loader.SetFileName(m_InputFileName);
   if (Loader.Initialize() == false) return false;
+  NTime ObsTime = Sat.GetEffectiveObservationTime();
+  cout<<"Eff obs time: "<<ObsTime<<endl;
   
-  TH1D* Profile = new TH1D("Profile", "Profile", 100, 0, m_PhaseDuration.GetAsSeconds());
+  double DeadTime = 0.0025;
+  
+  int NBins = m_PhaseDuration.GetAsSeconds()/(0.1*DeadTime);
+  double BinWidth = m_PhaseDuration.GetAsSeconds()/NBins;
+  TH1D* Profile = new TH1D("Profile", "Profile", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* ProfileDeadTime = new TH1D("ProfileDeadTime", "Profile of dead time", NBins, 0, m_PhaseDuration.GetAsSeconds());
   
   NEvent Event;
   while (Loader.AnalyzeEvent(Event) == true) {
-    if (Event.IsEmpty() == true) break; 
+    if (Event.IsEmpty() == true) break;
+    if (Event.GetTelescope() == 2) continue;
     NTime Time = Event.GetTime();
     long Cycle = static_cast<int>((Time-m_PhaseStart)/m_PhaseDuration);
     
-    Profile->Fill(((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds());
+    double PhaseTime = ((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds();
+    Profile->Fill(PhaseTime);
+    double CurrentTime = PhaseTime;
+    while (CurrentTime < PhaseTime + DeadTime) {
+      double FillTime = CurrentTime;
+      while (FillTime > m_PhaseDuration.GetAsSeconds()) FillTime -= m_PhaseDuration.GetAsSeconds();
+      ProfileDeadTime->Fill(FillTime);
+      CurrentTime += BinWidth;
+    }
   }
   
+  TCanvas* ProfileCanvas = new TCanvas();
+  ProfileCanvas->cd();
   Profile->Draw();
+  ProfileCanvas->Update();
+  
+  TCanvas* ProfileDeadTimeCanvas = new TCanvas();
+  ProfileDeadTimeCanvas->cd();
+  ProfileDeadTime->Draw();
+  ProfileDeadTimeCanvas->Update();
 
+  double Cycles = ObsTime.GetAsSeconds()/m_PhaseDuration.GetAsSeconds();
+  TH1D* ProfileLifeTimeRatio = new TH1D("ProfileLifeTimeRatio", "Life time", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  for (int bx = 1; bx <= NBins; ++bx) {
+    ProfileLifeTimeRatio->SetBinContent(bx, (Cycles-ProfileDeadTime->GetBinContent(bx))/Cycles);
+  }
+  //TCanvas* ProfileLifeTimeRatioCanvas = new TCanvas();
+  //ProfileLifeTimeRatioCanvas->cd();
+  //ProfileLifeTimeRatio->Draw();
+  //ProfileLifeTimeRatioCanvas->Update();
+
+  TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  for (int bx = 1; bx <= NBins; ++bx) {
+    ProfileLifeTimeCorrected->SetBinContent(bx, Profile->GetBinContent(bx)/ProfileLifeTimeRatio->GetBinContent(bx));
+  }
+  TCanvas* ProfileLifeTimeCorrectedCanvas = new TCanvas();
+  ProfileLifeTimeCorrectedCanvas->cd();
+  ProfileLifeTimeCorrected->Draw();
+  ProfileLifeTimeCorrectedCanvas->Update();
+
+  if (g_ComparisonLightCurve.GetSize() > 0) {
+    TF1* Fit = new TF1("LightCurveFit", LightCurveFitFunction, 0, m_PhaseDuration.GetAsSeconds(), 2);
+
+    Fit->SetParNames("Offset", "Scaler");
+    Fit->SetParameters(1, 1);
+
+    ProfileLifeTimeCorrectedCanvas->cd();
+    ProfileLifeTimeCorrected->Fit(Fit, "RQI");
+    Fit->Draw("SAME");
+    ProfileLifeTimeCorrectedCanvas->Modified();
+    ProfileLifeTimeCorrectedCanvas->Update();
+  }
+  
   return true;
 }
 
