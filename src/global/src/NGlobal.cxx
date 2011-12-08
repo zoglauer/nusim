@@ -162,6 +162,8 @@ bool NGlobal::Initialize()
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1, 0);
 
+  gSystem->Setenv("TZ", "GMT");
+
   
   // Ignore ROOT messages up to kError
   gErrorIgnoreLevel = kError;
@@ -182,7 +184,7 @@ bool NGlobal::Initialize()
   } else {
     cout<<"Error: Cannot find NuSim revision file..."<<endl;
   }
-
+  
   return true;
 }
 

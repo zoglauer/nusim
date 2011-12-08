@@ -283,7 +283,7 @@ bool NTime::Set(unsigned int Year, unsigned int Month, unsigned int Day,
   tp.tm_hour = Hour;
   tp.tm_min = Minute;
   tp.tm_sec = Second;
-  tp.tm_isdst = -1; // ignore daylight saving stuff
+  tp.tm_isdst = 0; // GMT: no daylight savings!
 
   m_Seconds = mktime(&tp);
   
