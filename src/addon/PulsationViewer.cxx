@@ -250,7 +250,7 @@ bool PulsationViewer::Analyze()
   long NUsedBins = 0;
   long NEvents = 0;
   while (Loader.AnalyzeEvent(Event) == true) {
-    //cout<<NEvents<<endl; if (NEvents == 2000) break;
+    if (NEvents % 10000 == 0 && NEvents > 0) cout<<"\rAnalyzing event "<<Event.GetID()<<" ..."<<flush;
     if (Event.IsEmpty() == true) break;
     NEvents++;
     NTime Time = Event.GetTime();
@@ -269,7 +269,7 @@ bool PulsationViewer::Analyze()
     double LifeTime = Event.GetDetectorLifeTime().GetAsSeconds();
     double CurrentTime = Time.GetAsSeconds();
     double StartLifeTime = CurrentTime - LifeTime;
-    int CurrentBin = Profile1LifeTime->FindFixBin(PhaseTime); // Accurate enough for ms-pulsars
+    int CurrentBin = Profile1LifeTime->FindBin(PhaseTime); // Accurate enough for ms-pulsars
     bool IsFirstBin = true;
     double Value = 0.0;
     do {
@@ -313,6 +313,7 @@ bool PulsationViewer::Analyze()
       }
     } while (true);
   }
+  cout<<endl;
   
   if (NUsedBins > 0) {
     cout<<"Life time correction accuracy due to binning: "<<100.0 * NEvents / NUsedBins<<" %"<<endl;
