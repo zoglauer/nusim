@@ -554,8 +554,9 @@ void MFunction2D::GetRandom(double& x, double& y)
   if (m_Maximum == g_DoubleNotDefined) {
     m_Maximum = GetZMax();
   }
-
-  // Old, simple and slooowwww:
+  
+  /*
+  // Old, simple, absolutely accurate, but slooowwww in some cases with high, singular maxima:
   double z = 0;
   double xmax = GetXMax();
   double ymax = GetYMax();
@@ -564,73 +565,74 @@ void MFunction2D::GetRandom(double& x, double& y)
   do {
     x = xmin + gRandom->Rndm()*(xmax - xmin);
     y = ymin + gRandom->Rndm()*(ymax - ymin);
-//     x = gRandom->Rndm()*(GetXMax() - GetXMin()) + GetXMin();
-//     y = gRandom->Rndm()*(GetYMax() - GetYMin()) + GetYMin();
-
     z = Eval(x, y);
   } while (m_Maximum*gRandom->Rndm() > z);
-
-
-
+  
+  return;
+  */
+  
   // The following is WRONG but left in just in case I find once a good solution....
   // Key problem: 3 points define a plane not 4 ...
 
-//   // Check if we have to (re-) determine the cumulative function:
-//   if (m_Cumulative.size() == 0) {
-//     m_Cumulative.push_back(0);
-//     for (unsigned int x = 1; x < m_X.size(); ++x) {
-//       for (unsigned int y = 1; y < m_Y.size(); ++y) {
-//         // Determine volume below each box - since we only do linear interpolation just calculate the pyramid height
-//         double Max = -numeric_limits<double>::max();
-//         if (m_Z[x+y*m_X.size()] > Max) Max = m_Z[x+y*m_X.size()];
-//         if (m_Z[(x-1)+y*m_X.size()] > Max) Max = m_Z[(x-1)+y*m_X.size()];
-//         if (m_Z[x+(y-1)*m_X.size()] > Max) Max = m_Z[x+(y-1)*m_X.size()];
-//         if (m_Z[(x-1)+(y-1)*m_X.size()] > Max) Max = m_Z[(x-1)+(y-1)*m_X.size()];
-//         double Min = numeric_limits<double>::max();
-//         if (m_Z[x+y*m_X.size()] < Min) Min = m_Z[x+y*m_X.size()];
-//         if (m_Z[(x-1)+y*m_X.size()] < Min) Min = m_Z[(x-1)+y*m_X.size()];
-//         if (m_Z[x+(y-1)*m_X.size()] < Min) Min = m_Z[x+(y-1)*m_X.size()];
-//         if (m_Z[(x-1)+(y-1)*m_X.size()] < Min) Min = m_Z[(x-1)+(y-1)*m_X.size()];
+  // Check if we have to (re-) determine the cumulative function:
+  if (m_Cumulative.size() == 0) {
+    m_Cumulative.push_back(0);
+    for (unsigned int x = 1; x < m_X.size(); ++x) {
+      for (unsigned int y = 1; y < m_Y.size(); ++y) {
+        m_Cumulative.push_back(m_Cumulative.back() + Eval(0.5*(m_X[x-1]+m_X[x]), 0.5*(m_Y[y-1] + m_Y[y])));
+      }
+    }
+  }
 
-//         double Volume = 1.0/3.0 * (m_X[x] - m_X[x-1])*(m_Y[y] - m_Y[y-1]) *  (Max-Min);  <-- WRONG!! Shape can not be approximated easily (problem is overdetermined!!!)
+  // Determine a random integral value in m_Cumulative
+  double Integral = gRandom->Rndm()*m_Cumulative.back();
 
-//         m_Cumulative.push_back(m_Cumulative.back() + Volume);
-//       }
-//     }
-//   }
-
-//   // Determine a random integral value in m_Cumulative
-//   double Integral = gRandom->Rndm()*m_Cumulative.back();
-
-//   // Find the correct bin in m_Cumulative
-//   int Bin = find_if(m_Cumulative.begin(), m_Cumulative.end(), bind2nd(greater_equal<double>(), Integral)) - m_Cumulative.begin();
-
-//   // Find the UPPER x and y value
-//   int yBin = Bin%m_X.size();
-//   int xBin = Bin - yBin; 
-
-//   // Find the minimum and maximum in this bin (might be stored to increase speed)
-//   double Max = -numeric_limits<double>::max();
-//   if (m_Z[xBin+yBin*m_X.size()] > Max) Max = m_Z[xBin+yBin*m_X.size()];
-//   if (m_Z[(xBin-1)+yBin*m_X.size()] > Max) Max = m_Z[(xBin-1)+yBin*m_X.size()];
-//   if (m_Z[xBin+(yBin-1)*m_X.size()] > Max) Max = m_Z[xBin+(yBin-1)*m_X.size()];
-//   if (m_Z[(xBin-1)+(yBin-1)*m_X.size()] > Max) Max = m_Z[(xBin-1)+(yBin-1)*m_X.size()];
-//   double Min = numeric_limits<double>::max();
-//   if (m_Z[xBin+yBin*m_X.size()] < Min) Min = m_Z[xBin+yBin*m_X.size()];
-//   if (m_Z[(xBin-1)+yBin*m_X.size()] < Min) Min = m_Z[(xBin-1)+yBin*m_X.size()];
-//   if (m_Z[xBin+(yBin-1)*m_X.size()] < Min) Min = m_Z[xBin+(yBin-1)*m_X.size()];
-//   if (m_Z[(xBin-1)+(yBin-1)*m_X.size()] < Min) Min = m_Z[(xBin-1)+(yBin-1)*m_X.size()];
+  // Find the correct bin in m_Cumulative
+  int Bin = FindBin(m_Cumulative, Integral);
+  // find_if is horrible slow: int Bin = find_if(m_Cumulative.begin(), m_Cumulative.end(), bind2nd(greater_equal<double>(), Integral)) - m_Cumulative.begin();
   
-//   // Do a simple random lookup in this bin only
-//   // If somebody knows a better solution let me know - the solution is not a simple integration over a plane
-//   double z = 0;
-//   do {
-//     x = gRandom->Rndm()*(m_X[xBin] - m_X[xBin-1]) + m_X[xBin-1];
-//     y = gRandom->Rndm()*(m_Y[yBin] - m_Y[yBin-1]) + m_Y[yBin-1];
+  // Find the UPPER x and y value
+  int xBin = Bin/(m_Y.size()-1); 
+  int yBin = Bin - xBin*(m_Y.size()-1);
+  xBin++;
+  yBin++;
+  
+  // Do random position within the pixel:
+  //x = gRandom->Rndm()*(m_X[xBin] - m_X[xBin-1]) + m_X[xBin-1];
+  //y = gRandom->Rndm()*(m_Y[yBin] - m_Y[yBin-1]) + m_Y[yBin-1];
+  
+  //return;
+  
+  // Find the minimum and maximum in this bin (might be stored to increase speed)
+  double Max = -numeric_limits<double>::max();
+  double Min = numeric_limits<double>::max();
+  double Value;
+  Value = m_Z[xBin+yBin*m_X.size()];
+  if (Value > Max) Max = Value;
+  if (Value < Min) Min = Value;
+  Value = m_Z[(xBin-1)+yBin*m_X.size()];
+  if (Value > Max) Max = Value;
+  if (Value < Min) Min = Value;
+  Value = m_Z[xBin+(yBin-1)*m_X.size()];
+  if (Value > Max) Max = Value;
+  if (Value < Min) Min = Value;
+  Value = m_Z[(xBin-1)+(yBin-1)*m_X.size()];
+  if (Value > Max) Max = Value;
+  if (Value < Min) Min = Value;
+  
+  // Do a simple random lookup in this bin only
+  // If somebody knows a better solution let me know - the solution is not a simple integration over a plane
+  double z = 0;
+  int NRandoms = 0;
+  do {
+    NRandoms++;
+    x = gRandom->Rndm()*(m_X[xBin] - m_X[xBin-1]) + m_X[xBin-1];
+    y = gRandom->Rndm()*(m_Y[yBin] - m_Y[yBin-1]) + m_Y[yBin-1];
 
-//     z = Eval(x, y);
-//   } while (Min + (Max-Min)*gRandom->Rndm() > z);
-
+    z = Eval(x, y);
+    if (NRandoms > 1000) break; // Safety net...
+  } while (Max*gRandom->Rndm() > z);
+  
   return;
 }
 
