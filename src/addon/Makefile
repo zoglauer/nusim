@@ -18,6 +18,9 @@
 PRGS = \
 	$(BN)/ConcatDat \
 	$(BN)/PulsationViewer \
+	$(BN)/LightCurveViewer \
+	$(BN)/FitsViewer \
+	$(BN)/FitsCleaner \
 	$(BN)/MakeARF \
 
 

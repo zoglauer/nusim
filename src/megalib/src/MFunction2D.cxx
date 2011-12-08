@@ -731,10 +731,10 @@ void MFunction2D::Plot()
 
     TH2D* Hist = new TH2D("Diagnostics", "Diagnostics", 
                           m_X.size(), m_X.front() - 0.5*(m_X[1]-m_X[0]), m_X.back() + 0.5*(m_X[1]-m_X[0]), 
-                          m_Y.size(), m_Y.front() - 0.5*(m_Y[1]-m_Y[0]), m_Y.back() - 0.5*(m_Y[1]-m_Y[0]));
-    for (int bx = 1; bx <= Hist->GetXaxis()->GetNbins(); ++bx) {
-      for (int by = 1; by <= Hist->GetYaxis()->GetNbins(); ++by) {
-        Hist->SetBinContent(bx, by, Eval(Hist->GetXaxis()->GetBinCenter(bx), Hist->GetYaxis()->GetBinCenter(by)));
+                          m_Y.size(), m_Y.front() - 0.5*(m_Y[1]-m_Y[0]), m_Y.back() + 0.5*(m_Y[1]-m_Y[0]));
+    for (unsigned int bx = 0; bx < m_X.size(); ++bx) {
+      for (unsigned int by = 0; by < m_Y.size(); ++by) {
+        Hist->SetBinContent(bx, by, Eval(m_X[bx], m_Y[by]));
       }
     }
 

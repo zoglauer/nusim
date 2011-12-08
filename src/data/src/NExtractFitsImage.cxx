@@ -20,6 +20,8 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TH2D.h"
+#include "TCanvas.h"
 
 // HEAsoft
 #include "fitsio.h"
@@ -207,19 +209,21 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   // Finally create the Function2D
   vector<double> xAxis;
   for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
-    xAxis.push_back(xCenterValue + xDelta*(xCenterPixel - x));
+    xAxis.insert(xAxis.begin(), xCenterValue + xDelta*(x - xCenterPixel));
   }
   vector<double> yAxis;
   for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
     yAxis.push_back(yCenterValue + yDelta*(yCenterPixel - y));
   }
+  
   vector<double> zAxis;
+  zAxis.resize(NPixel);
   // Filled later
   
   
   // Extract the data from the fits image
-  int AnyNull;  
-  if (DataType == LONG_IMG) {
+  int AnyNull;
+  if (DataType == LONG_IMG) { // 32
     int IntNullVal = 0;
     int* IntArray = new int[NPixel];
     fits_read_pix(File, TINT, StartPixel, NPixel, &IntNullVal, IntArray, &AnyNull, &Status);
@@ -227,16 +231,26 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
       mgui<<"Failed to read data from fits file: "<<Status<<show;
       return false;
     }
-
+    
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
-        zAxis.push_back(IntArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+        int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        if (FitsIndex < 0 || FitsIndex >= NPixel) {
+          cout<<"Fits index out of bounds"<<endl;
+          continue;
+        }
+        if (FunctionIndex < 0 || FunctionIndex >= NPixel) {
+          cout<<"Function index out of bounds"<<endl;
+          continue;
+        }
+        zAxis[FunctionIndex] = IntArray[FitsIndex];
       }
     }
     
     delete [] IntArray;
     
-  } else if (DataType == FLOAT_IMG) {
+  } else if (DataType == FLOAT_IMG) { // -32
     float FloatNullVal = 0;
     float* FloatArray = new float[NPixel];
     fits_read_pix(File, TFLOAT, StartPixel, NPixel, &FloatNullVal, FloatArray, &AnyNull, &Status);
@@ -247,12 +261,48 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
 
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
-        zAxis.push_back(FloatArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+        int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        if (FitsIndex < 0 || FitsIndex >= NPixel) {
+          cout<<"Fits index out of bounds"<<endl;
+          continue;
+        }
+        if (FunctionIndex < 0 || FunctionIndex >= NPixel) {
+          cout<<"Function index out of bounds"<<endl;
+          continue;
+        }
+        zAxis[FunctionIndex] = FloatArray[FitsIndex];
       }
     }
     delete [] FloatArray;
     
-  } else if (DataType == SHORT_IMG) {
+  } else if (DataType == DOUBLE_IMG) { // -64
+    double FloatNullVal = 0;
+    double* FloatArray = new double[NPixel];
+    fits_read_pix(File, TDOUBLE, StartPixel, NPixel, &FloatNullVal, FloatArray, &AnyNull, &Status);
+    if (Status != 0) {
+      mgui<<"Failed to read data from fits file: "<<Status<<show;
+      return false;
+    }
+
+    for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
+      for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
+        int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        if (FitsIndex < 0 || FitsIndex >= NPixel) {
+          cout<<"Fits index out of bounds"<<endl;
+          continue;
+        }
+        if (FunctionIndex < 0 || FunctionIndex >= NPixel) {
+          cout<<"Function index out of bounds"<<endl;
+          continue;
+        }
+        zAxis[FunctionIndex] = FloatArray[FitsIndex];
+      }
+    }
+    delete [] FloatArray;
+    
+  } else if (DataType == SHORT_IMG) { // 16
     short ShortNullVal = 0;
     short* ShortArray = new short[NPixel];
     fits_read_pix(File, TSHORT, StartPixel, NPixel, &ShortNullVal, ShortArray, &AnyNull, &Status);
@@ -263,12 +313,22 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
 
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
-        zAxis.push_back(ShortArray[(y-StartPixel[1]) + (x-StartPixel[0])*(AxisDimension[1]-StartPixel[1]+1)]);
+        int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        if (FitsIndex < 0 || FitsIndex >= NPixel) {
+          cout<<"Fits index out of bounds"<<endl;
+          continue;
+        }
+        if (FunctionIndex < 0 || FunctionIndex >= NPixel) {
+          cout<<"Function index out of bounds"<<endl;
+          continue;
+        }
+        zAxis[FunctionIndex] = ShortArray[FitsIndex];
       }
     }
     delete [] ShortArray;
   } else {
-    mgui<<"The fits image contains an unhandled data type..."<<show;
+    mgui<<"The fits image contains an unhandled data type: "<<DataType<<" vs. "<<FLOAT_IMG<<show;
     return false;
   }
   
@@ -288,6 +348,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
   
   // Set the image
   Image.Set(xAxis, yAxis, zAxis);
+  
   //Image.Plot();
   
   return true;
