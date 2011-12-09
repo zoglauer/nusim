@@ -158,7 +158,7 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
       return false;
     }
   }
-  double xDelta = -fabs(atof(Dummy));
+  double xDelta = atof(Dummy);
   //cout<<"xDelta: "<<xDelta<<endl;
 
   
@@ -199,21 +199,27 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
       return false;
     }
   }
-  double yDelta = -fabs(atof(Dummy));
-  //cout<<"yDelta: "<<yDelta<<endl;
-   
+  double yDelta = atof(Dummy);
+  if (yDelta < 0) {
+    mgui<<"The fits reader only handles fits file where the dec axis goes from small to large values..."<<show;
+    return false;
+  }
+
   // Approximate projection on spherical coordinates:
   xDelta /= cos(yCenterValue*c_Rad);
-  
   
   // Finally create the Function2D
   vector<double> xAxis;
   for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
-    xAxis.insert(xAxis.begin(), xCenterValue + xDelta*(x - xCenterPixel));
+    if (xDelta < 0) {
+      xAxis.insert(xAxis.begin(), xCenterValue + xDelta*(x - xCenterPixel));
+    } else {
+      xAxis.push_back(xCenterValue + xDelta*(x - xCenterPixel));
+    }
   }
   vector<double> yAxis;
   for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
-    yAxis.push_back(yCenterValue + yDelta*(yCenterPixel - y));
+    yAxis.push_back(yCenterValue + yDelta*(y - yCenterPixel));
   }
   
   vector<double> zAxis;
@@ -235,7 +241,12 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
         int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
-        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex;
+        if (xDelta < 0) {
+          FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        } else {
+          FunctionIndex = (x-StartPixel[0]) + (y-StartPixel[1])*AxisDimension[0];          
+        }
         if (FitsIndex < 0 || FitsIndex >= NPixel) {
           cout<<"Fits index out of bounds"<<endl;
           continue;
@@ -262,7 +273,12 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
         int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
-        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex;
+        if (xDelta < 0) {
+          FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        } else {
+          FunctionIndex = (x-StartPixel[0]) + (y-StartPixel[1])*AxisDimension[0];          
+        }
         if (FitsIndex < 0 || FitsIndex >= NPixel) {
           cout<<"Fits index out of bounds"<<endl;
           continue;
@@ -288,7 +304,12 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
         int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
-        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex;
+        if (xDelta < 0) {
+          FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        } else {
+          FunctionIndex = (x-StartPixel[0]) + (y-StartPixel[1])*AxisDimension[0];          
+        }
         if (FitsIndex < 0 || FitsIndex >= NPixel) {
           cout<<"Fits index out of bounds"<<endl;
           continue;
@@ -314,7 +335,12 @@ bool NExtractFitsImage::Extract(TString FileName, MFunction2D& Image)
     for (int x = StartPixel[0]; x <= AxisDimension[0]; ++x) {
       for (int y = StartPixel[1]; y <= AxisDimension[1]; ++y) {
         int FitsIndex = x-StartPixel[0] + (y-StartPixel[1])*AxisDimension[0];
-        int FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        int FunctionIndex;
+        if (xDelta < 0) {
+          FunctionIndex = (AxisDimension[0]-x) + (y-StartPixel[1])*AxisDimension[0];
+        } else {
+          FunctionIndex = (x-StartPixel[0]) + (y-StartPixel[1])*AxisDimension[0];          
+        }
         if (FitsIndex < 0 || FitsIndex >= NPixel) {
           cout<<"Fits index out of bounds"<<endl;
           continue;

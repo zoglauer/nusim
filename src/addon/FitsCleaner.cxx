@@ -354,7 +354,6 @@ bool FitsCleaner::Analyze()
     for (unsigned int i = 0; i < NPixel; ++i) {
       IntArray[i] = 0;  
     }
-    cout<<"NPixels: "<<NPixel<<endl;
     for (int bx = 1; bx <= CleanedImage->GetXaxis()->GetNbins(); ++bx) {
       for (int by = 1; by <= CleanedImage->GetYaxis()->GetNbins(); ++by) {
         //int Entry = (bx+StartPixel[0]) + (by+StartPixel[1])*(AxisDimension[0]-StartPixel[0]+1);
@@ -372,6 +371,33 @@ bool FitsCleaner::Analyze()
    
     fits_write_pix(File, TINT, StartPixel, NPixel, IntArray, &Status);
     delete [] IntArray;
+    if (Status != 0) {
+      mgui<<"Failed to read data from fits file: "<<Status<<show;
+      return false;
+    }
+    
+  } else if (DataType == FLOAT_IMG) { // -32
+    float* FloatArray = new float[NPixel];
+    for (unsigned int i = 0; i < NPixel; ++i) {
+      FloatArray[i] = 0;  
+    }
+    for (int bx = 1; bx <= CleanedImage->GetXaxis()->GetNbins(); ++bx) {
+      for (int by = 1; by <= CleanedImage->GetYaxis()->GetNbins(); ++by) {
+        //int Entry = (bx+StartPixel[0]) + (by+StartPixel[1])*(AxisDimension[0]-StartPixel[0]+1);
+        //int Entry = (bx+StartPixel[0]) + (by+StartPixel[1])*AxisDimension[0];
+        int Entry = (bx-1) + (by-1)*AxisDimension[0];
+        if (Entry < 0 || Entry >= NPixel) {
+          cout<<"Index out of bounds: "<<Entry<<" "<<bx<<":"<<by<<endl;
+          continue;
+        }
+        //cout<<"x="<<1 + (CleanedImage->GetXaxis()->GetNbins()-bx)<<" - "<<by<<endl;
+        if (FloatArray[Entry] == 1) cout<<Entry<<" "<<bx<<" "<<by<<endl;
+        FloatArray[Entry] = CleanedImage->GetBinContent(1 + (CleanedImage->GetXaxis()->GetNbins()-bx), by);
+      }
+    }
+   
+    fits_write_pix(File, TFLOAT, StartPixel, NPixel, FloatArray, &Status);
+    delete [] FloatArray;
     if (Status != 0) {
       mgui<<"Failed to read data from fits file: "<<Status<<show;
       return false;

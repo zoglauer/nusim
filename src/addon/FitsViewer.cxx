@@ -30,6 +30,7 @@ using namespace std;
 #include <TApplication.h>
 #include <TStyle.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TMarker.h>
@@ -171,6 +172,7 @@ bool SphericalPattern::Analyze()
   
   F.Plot();
   
+  /*
   double Sum = 0;
   vector<double> X = F.GetXAxis();
   vector<double> Y = F.GetYAxis();
@@ -180,7 +182,25 @@ bool SphericalPattern::Analyze()
     }
   }
   cout<<"Sum: "<<Sum<<endl;
-      
+  
+  TH2D* Hist = new TH2D("Randoms", "Randoms", 
+                        3*X.size(), X.front(), X.back(), 
+                        3*Y.size(), Y.front(), Y.back());
+  TCanvas* Canvas = new TCanvas();
+  Canvas->cd();
+  double x, y;
+  unsigned int i_max = 10*3*X.size()*3*Y.size();
+  for (unsigned int i = 1; i < i_max; ++i) {
+    F.GetRandom(x, y);
+    Hist->Fill(x, y);
+    if (i % 10000 == 0) {
+      Hist->Draw("colz");
+      Canvas->Update();
+      gSystem->ProcessEvents();
+    }
+  }
+  */
+  
   return true;
 }
 
