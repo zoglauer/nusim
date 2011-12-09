@@ -138,6 +138,10 @@ changelog:
 texdoc:
 	@$(MAKE) -C doc 
 
+update:
+	@svn update
+	@$(MAKE) clean
+	@$(MAKE) all
 
 
 #
