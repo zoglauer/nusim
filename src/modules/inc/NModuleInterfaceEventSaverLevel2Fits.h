@@ -116,7 +116,9 @@ class NModuleInterfaceEventSaverLevel2Fits : public NModuleInterfaceObservation
   vector<short>  m_Reject;
   vector<int>    m_PI;
   vector<short>  m_Grade;
-  
+ 
+  vector<float> m_Det1X;
+  vector<float> m_Det1Y;
   vector<float> m_QfbobX;
   vector<float> m_QfbobY;
   vector<float> m_QfbobZ;

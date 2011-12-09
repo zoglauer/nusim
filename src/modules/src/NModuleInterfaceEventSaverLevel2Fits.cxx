@@ -98,10 +98,10 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
   //! create binary table extension
   char ExtensionName[] = "EVENTS";
   long nrow = 0;
-  int tfield = 21;
-  char* ttype[] = {"Time","LifeTime","Module","X","Y","PI","E","grade","phottype","reject","Qx","Qy","Qz","Qr","Tx","Ty","Tz","QSx","QSy","QSz","QSr"};
-  char* tform[] = {"1D","1D","1J","1E","1E","1J","1E","1I","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
-  char* tunit[] = {"s","s","unit","pixel","pixel","channel","keV","grade","photon type","rejection type","unit","unit","unit","unit","mm","mm","mm","unit","unit","unit","unit"};
+  int tfield = 23;
+  char* ttype[] = {"Time","LifeTime","Module","X","Y","PI","E","grade","phottype","reject","Det1X","Det1Y","Qx","Qy","Qz","Qr","Tx","Ty","Tz","QSx","QSy","QSz","QSr"};
+  char* tform[] = {"1D","1D","1J","1E","1E","1J","1E","1I","1I","1I","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E","1E"};
+  char* tunit[] = {"s","s","unit","pixel","pixel","channel","keV","grade","photon type","rejection type","mm","mm","unit","unit","unit","unit","mm","mm","mm","unit","unit","unit","unit"};
   
   
   fits_create_tbl(m_File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
@@ -114,6 +114,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::OpenLevel2FitsFile(TString FileName)
 
   m_Ra.clear();
   m_Dec.clear();
+  m_Det1X.clear();
+  m_Det1Y.clear();
   m_Module.clear();
   m_Energy.clear();
   m_Time.clear();
@@ -145,8 +147,11 @@ bool NModuleInterfaceEventSaverLevel2Fits::SaveEventLevel2Fits(NEvent& Event)
   //! Main data analysis routine, which updates the event to a new level 
   
   for (unsigned int i = 0; i < Event.GetNHits(); ++i) {
+    MVector DetEvent = Event.GetHit(i).GetPosition();
     m_Ra.push_back(Event.GetHit(i).GetObservatoryData().GetRa());
     m_Dec.push_back(Event.GetHit(i).GetObservatoryData().GetDec());
+    m_Det1X.push_back(DetEvent[0]);
+    m_Det1Y.push_back(DetEvent[1]);
     m_Module.push_back(Event.GetTelescope());
     m_Energy.push_back(Event.GetHit(i).GetEnergy());
     m_Time.push_back(m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds());
@@ -283,6 +288,8 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
       m_Origin.erase(m_Origin.begin() + Diff);
       m_Reject.erase(m_Reject.begin() + Diff);
       m_Grade.erase(m_Grade.begin() + Diff);
+      m_Det1X.erase(m_Det1X.begin() + Diff);
+      m_Det1Y.erase(m_Det1Y.begin() + Diff);
       m_QfbobX.erase(m_QfbobX.begin() + Diff);
       m_QfbobY.erase(m_QfbobY.begin() + Diff);
       m_QfbobZ.erase(m_QfbobZ.begin() + Diff);
@@ -454,7 +461,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 11, 1, 1, m_Ra.size(), &m_QfbobX[0], &Status);
+  fits_write_col(m_File, TFLOAT, 11, 1, 1, m_Ra.size(), &m_Det1X[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
@@ -462,7 +469,23 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 12, 1, 1, m_Ra.size(), &m_QfbobY[0], &Status);
+  fits_write_col(m_File, TFLOAT, 12, 1, 1, m_Ra.size(), &m_Det1Y[0], &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 13, 1, 1, m_Ra.size(), &m_QfbobX[0], &Status);
+  if (Status != 0) {
+    fits_get_errstatus(Status, Words);
+    cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
+    fits_close_file(m_File, &Status);
+    m_File = 0;
+    return false;
+  }
+ fits_write_col(m_File, TFLOAT, 14, 1, 1, m_Ra.size(), &m_QfbobY[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qy') failed (" << Words << ")" << endl;
@@ -470,7 +493,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 13, 1, 1, m_Ra.size(), &m_QfbobZ[0], &Status);
+ fits_write_col(m_File, TFLOAT, 15, 1, 1, m_Ra.size(), &m_QfbobZ[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qz') failed (" << Words << ")" << endl;
@@ -478,7 +501,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 14, 1, 1, m_Ra.size(), &m_QfbobR[0], &Status);
+ fits_write_col(m_File, TFLOAT, 16, 1, 1, m_Ra.size(), &m_QfbobR[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qr') failed (" << Words << ")" << endl;
@@ -486,7 +509,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
-   fits_write_col(m_File, TFLOAT, 15, 1, 1, m_Ra.size(), &m_TfbobX[0], &Status);
+   fits_write_col(m_File, TFLOAT, 17, 1, 1, m_Ra.size(), &m_TfbobX[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Tx') failed (" << Words << ")" << endl;
@@ -494,7 +517,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 16, 1, 1, m_Ra.size(), &m_TfbobY[0], &Status);
+ fits_write_col(m_File, TFLOAT, 18, 1, 1, m_Ra.size(), &m_TfbobY[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Ty') failed (" << Words << ")" << endl;
@@ -502,7 +525,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 17, 1, 1, m_Ra.size(), &m_TfbobZ[0], &Status);
+ fits_write_col(m_File, TFLOAT, 19, 1, 1, m_Ra.size(), &m_TfbobZ[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Tz') failed (" << Words << ")" << endl;
@@ -510,7 +533,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 18, 1, 1, m_Ra.size(), &m_QstarX[0], &Status);
+ fits_write_col(m_File, TFLOAT, 20, 1, 1, m_Ra.size(), &m_QstarX[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qx') failed (" << Words << ")" << endl;
@@ -518,7 +541,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 19, 1, 1, m_Ra.size(), &m_QstarY[0], &Status);
+ fits_write_col(m_File, TFLOAT, 21, 1, 1, m_Ra.size(), &m_QstarY[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qy') failed (" << Words << ")" << endl;
@@ -526,7 +549,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 20, 1, 1, m_Ra.size(), &m_QstarZ[0], &Status);
+ fits_write_col(m_File, TFLOAT, 22, 1, 1, m_Ra.size(), &m_QstarZ[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qz') failed (" << Words << ")" << endl;
@@ -534,7 +557,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
     m_File = 0;
     return false;
   }
- fits_write_col(m_File, TFLOAT, 21, 1, 1, m_Ra.size(), &m_QstarR[0], &Status);
+ fits_write_col(m_File, TFLOAT, 23, 1, 1, m_Ra.size(), &m_QstarR[0], &Status);
   if (Status != 0) {
     fits_get_errstatus(Status, Words);
     cerr << "Error: fits_write_col('Qr') failed (" << Words << ")" << endl;
