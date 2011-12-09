@@ -89,6 +89,21 @@ private:
   NTime m_PhaseStart;
   /// Duration of a typical phase
   NTime m_PhaseDuration;
+  
+  //! RA of cutout pulsar in deg
+  double m_CutRA;
+  //! DEC of cutout pulsar in deg
+  double m_CutDEC;
+  //! Size of cutout pulsar in deg
+  double m_CutSize;
+  
+  //! Minimum energy
+  double m_EnergyMin;
+  //! Maximum energy
+  double m_EnergyMax;
+  
+  //! number of bins
+  int m_NBins;
 };
 
 /******************************************************************************/
@@ -103,6 +118,15 @@ PulsationViewer::PulsationViewer() : m_Interrupt(false)
   
   m_PhaseStart.SetMax();
   m_PhaseDuration.SetMax();
+  
+  m_CutRA = 0.0;
+  m_CutDEC = 0.0;
+  m_CutSize = 0.0;
+  
+  m_EnergyMin = 3;
+  m_EnergyMax = 80;
+  
+  m_NBins = 100;
 }
 
 
@@ -128,6 +152,9 @@ bool PulsationViewer::ParseCommandLine(int argc, char** argv)
   Usage<<"         -d:   Duration of Phase (in sec)"<<endl;
   Usage<<"         -s:   Start of Phase (default: 0 sec)"<<endl;
   Usage<<"         -c:   File for comparison (if skipped: no comparison)"<<endl;
+  Usage<<"         -r:   Source extraction region (RA, DEC, Size in deg, default: no extraction)"<<endl;
+  Usage<<"         -e:   Energy range (Emin, Emax in keV, default: 3-80 keV)"<<endl;
+  Usage<<"         -b:   Bins (default: 100)"<<endl;
   Usage<<"         -h:   print this help"<<endl;
   Usage<<endl;
 
@@ -179,9 +206,24 @@ bool PulsationViewer::ParseCommandLine(int argc, char** argv)
       } else {
         return false;
       }
+    } else if (Option == "-r") {
+      m_CutRA = atof(argv[++i])*deg;
+      m_CutDEC = atof(argv[++i])*deg;
+      m_CutSize = atof(argv[++i])*deg;
+      cout<<"Accepting cut: RA="<<m_CutRA/deg<<" deg, DEC="<<m_CutDEC/deg<<" deg, Size="<<m_CutSize/arcsec<<" arcsec"<<endl;
+    } else if (Option == "-e") {
+      m_EnergyMin = atof(argv[++i]);
+      m_EnergyMax = atof(argv[++i]);
+      cout<<"Accepting energy range: "<<m_EnergyMin<<"-"<<m_EnergyMax<<endl;
     } else if (Option == "-s") {
       m_PhaseStart.Set(atof(argv[++i]));
       cout<<"Accepting start of phase: "<<m_PhaseStart<<endl;
+    } else if (Option == "-s") {
+      m_PhaseStart.Set(atof(argv[++i]));
+      cout<<"Accepting start of phase: "<<m_PhaseStart<<endl;
+    } else if (Option == "-b") {
+      m_NBins = atoi(argv[++i]);
+      cout<<"Accepting number of bins: "<<m_NBins<<endl;
     } else if (Option == "-d") {
       m_PhaseDuration.Set(atof(argv[++i]));
       cout<<"Accepting duration of phase: "<<m_PhaseDuration<<endl;
@@ -233,18 +275,20 @@ bool PulsationViewer::Analyze()
   
   // The bin size shuld be >= 0.1*DeadTime to get a correct dead-time correction,
   // without having to account for half filled pixels.
-  int NBins = 100;
-  double BinWidth = m_PhaseDuration.GetAsSeconds()/NBins;
+  double BinWidth = m_PhaseDuration.GetAsSeconds()/m_NBins;
   
-  TH1D* Profile1 = new TH1D("Profile1", "Pulse profile (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1 = new TH1D("Profile1", "Pulse profile (telescope 1 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile1->SetXTitle("phase time [sec]");
   Profile1->SetYTitle("Counts");
-  TH1D* Profile2 = new TH1D("Profile2", "Pulse profile (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile2 = new TH1D("Profile2", "Pulse profile (telescope 2 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile2->SetXTitle("phase time [sec]");
   Profile2->SetYTitle("Counts");
   
-  TH1D* Profile1LifeTime = new TH1D("Profile1LifeTime", "Profile of life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
-  TH1D* Profile2LifeTime = new TH1D("Profile2LifeTime", "Profile of life time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1LifeTime = new TH1D("Profile1LifeTime", "Profile of life time (telescope 1 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile2LifeTime = new TH1D("Profile2LifeTime", "Profile of life time (telescope 2 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
+  
+  MVector CutDirection;
+  CutDirection.SetMagThetaPhi(1.0, c_Pi/2 - m_CutDEC/rad, m_CutRA/rad);
   
   NEvent Event;
   long NUsedBins = 0;
@@ -256,6 +300,22 @@ bool PulsationViewer::Analyze()
     NTime Time = Event.GetTime();
     long Cycle = static_cast<long>((Time-m_PhaseStart)/m_PhaseDuration);
     
+    
+    // Check if we are in the selcted direction:
+    if (Event.GetNHits() != 1) continue;
+    NHit& Hit = Event.GetHitRef(0);
+    if (m_CutSize > 0) {
+      MVector HitDir;
+      HitDir.SetMagThetaPhi(1.0, 
+                            c_Pi/2 - Hit.GetObservatoryData().GetDec()/rad, 
+                            Hit.GetObservatoryData().GetRa()/rad);
+      if (HitDir.Angle(CutDirection)*rad > m_CutSize) {
+        continue;
+      }
+    }
+    if (Hit.GetEnergy() < m_EnergyMin || Hit.GetEnergy() > m_EnergyMax) continue;
+    
+
     // Fill the event at the correct phase time and for the correct pixels
     double PhaseTime = ((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds();
     if (Event.GetTelescope() == 1) {
@@ -338,13 +398,13 @@ bool PulsationViewer::Analyze()
   // # LifeTimes / # Cycles
   
   double Cycles = ObsTime.GetAsSeconds()/m_PhaseDuration.GetAsSeconds();
-  TH1D* Profile1LifeTimeRatio = new TH1D("Profile1LifeTimeRatio", "Life time (telescope 1 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile1LifeTimeRatio = new TH1D("Profile1LifeTimeRatio", "Life time (telescope 1 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile1LifeTimeRatio->SetXTitle("phase time [sec]");
   Profile1LifeTimeRatio->SetYTitle("Life time (100% = 1)");
-  TH1D* Profile2LifeTimeRatio = new TH1D("Profile2LifeTimeRatio", "Life time (telescope 2 only)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* Profile2LifeTimeRatio = new TH1D("Profile2LifeTimeRatio", "Life time (telescope 2 only)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
   Profile2LifeTimeRatio->SetXTitle("phase time [sec]");
   Profile2LifeTimeRatio->SetYTitle("Life time (100% = 1)");
-  for (int bx = 1; bx <= NBins; ++bx) {
+  for (int bx = 1; bx <= m_NBins; ++bx) {
     Profile1LifeTimeRatio->SetBinContent(bx, Profile1LifeTime->GetBinContent(bx)/Cycles);
     Profile2LifeTimeRatio->SetBinContent(bx, Profile2LifeTime->GetBinContent(bx)/Cycles);
   }
@@ -358,10 +418,10 @@ bool PulsationViewer::Analyze()
   
   // Now correct the profile with the life-time and add up both histograms
   
-  TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile (telescope 1 & 2)", NBins, 0, m_PhaseDuration.GetAsSeconds());
+  TH1D* ProfileLifeTimeCorrected = new TH1D("ProfileLifeTimeCorrected", "Life-time corrected pulse profile (telescope 1 & 2)", m_NBins, 0, m_PhaseDuration.GetAsSeconds());
   ProfileLifeTimeCorrected->SetXTitle("phase time [sec]");
   ProfileLifeTimeCorrected->SetYTitle("Life-time corrected counts");
-  for (int bx = 1; bx <= NBins; ++bx) {
+  for (int bx = 1; bx <= m_NBins; ++bx) {
     ProfileLifeTimeCorrected->SetBinContent(bx, Profile1->GetBinContent(bx)/Profile1LifeTimeRatio->GetBinContent(bx) + Profile2->GetBinContent(bx)/Profile2LifeTimeRatio->GetBinContent(bx));
   }
   TCanvas* ProfileLifeTimeCorrectedCanvas = new TCanvas();
