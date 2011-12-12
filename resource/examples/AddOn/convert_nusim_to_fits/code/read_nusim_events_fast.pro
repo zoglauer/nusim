@@ -1,12 +1,12 @@
 PRO read_nusim_events_fast
 
 
+COMMON nusim_data, data, err, header_data, infile
+
 infile = getenv('FILENAME')
 f = file_info(infile)
 IF ~f.exists THEN message, 'File does not exist!'
 
-
-COMMON nusim_data, data, err, header_data
 
 ; Reads in a NuSIM ASCII file and returns a structure with the
 ; relevant information.
@@ -36,8 +36,7 @@ tlast = systime(1)
 WHILE(~EOF(lun)) DO begin
    dataline = 'string'
    readf, lun, dataline
-
-
+;   if n_elements(data) gt 2e4 then break 
    IF stregex(dataline, "TARGETNAME", /boolean) THEN BEGIN
       split = strsplit(dataline, /extract)
       header_data.target_name = split[1]
@@ -88,7 +87,8 @@ WHILE(~EOF(lun)) DO begin
          data_block[n].pos[i] = float(thisline[3+i])
 
       data_block[n].energy = float(thisline[9])
-      data_block[n].time = float(thisline[11])
+      data_block[n].time = float(thisline[12])
+      
 
    ENDIF
 
@@ -113,17 +113,17 @@ WHILE(~EOF(lun)) DO begin
 endwhile
 
 
-if n_elements(data) eq 0 and n lt blocksize then begin
-   data = data_block
-endif
+; Get the last chunk. This also accounts for the case
+; when you have input events < blocksize.
+if n_elements(data) eq 0 then data = data_block[0:n] else $
+   if n ge 0 then $
+      data = [temporary(data), data_block[0:n]]
 
-
-
-
-print, 'Done parsing ASCII file...'
-print, 'Read in ', n, ' counts...'
+print, 'Done parsing: '+infile
+print, 'Read in ', n_elements(data) , ' counts...'
 close, lun
 free_lun, lun
+
 
 END
 

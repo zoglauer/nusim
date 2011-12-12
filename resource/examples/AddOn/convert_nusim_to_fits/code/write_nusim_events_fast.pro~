@@ -1,12 +1,17 @@
 PRO write_nusim_events_fast
 
 
-COMMON nusim_data, data, err, header_data, infile
+COMMON nusim_data, data, err, header_data
+
 
 conv_path = getenv('CONV_PATH')
 ;print, conv_path
-outpath = getenv('OUTPATH')+'/'+file_basename(infile, '.dat')
-
+outpath = getenv('OUTPATH')
+;print, outpath
+;stop
+;path = '/users/bwgref/nusim/'
+;outpath = '/home/nustar1/Web'
+;outpath = '/users/bwgref/nusim/DC1/'+header_data.obsid+'/event_uf/'
 outpath = outpath +'/'+header_data.obsid+'/event_uf'
 print, outpath
 
@@ -14,7 +19,7 @@ file_mkdir, outpath
 
 ; Read in the template for the L1A file:
 template_a = conv_path+'/templates/NUSTAR_L2_post_env_stim_HV_on_2_EVENTS_FPMA.fits'
-template_b = conv_path+'/templates/NUSTAR_L2_post_env_stim_HV_on_2_EVENTS_FPMB.fits'
+template_b = conv_path+'/templates/NUSTAR_L2_post_env_stim_HV_on_2_EVENTS_FPMA.fits'
 ; Get the headers and the data formats
 data_a = mrdfits(template_a,'EVENTS', header_a, range = [0, 10], /silent)
 data_b = mrdfits(template_b, 'EVENTS', header_b, range = [0, 10], /silent)
@@ -44,7 +49,7 @@ date_start = header_data.date_start
 ; This is in NuSTAR epoch time (relative to Jan 1, 2010), 
 ; which is how it should be...
 data.time += header_data.tstart
-
+;stop
 
 ; Figure out the last event, add 1 seconds, and declare this
 ; the end of the observation:
@@ -55,6 +60,7 @@ date_end = (strsplit(date_end, '.', /extract))[0]
 
 tstart = cmsystime(date_conv(date_start, 'Modified'), /from_mjd, /sec) - t_ref
 tend = cmsystime(max(data.time + 1.), /sec)
+
 
 
 ; Overwrite primary header keywords for time stamps:
@@ -275,7 +281,5 @@ mwrfits, data_b, out_b, $
          header_b, /no_types, /no_comment
 mwrfits, gti_b, out_b, $
          gti_header_b, /no_types, /no_comment
-
-print, 'Done with FPMB'
 
 END
