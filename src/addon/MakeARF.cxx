@@ -898,17 +898,17 @@ bool Target::GenerateARF()
   fits_read_col(m_File, TFLOAT, 5, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
   fits_read_col(m_File, TINT, 6, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
   fits_read_col(m_File, TINT, 9, 1, 1, axis2, &anynull, iType, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 11, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 12, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 20, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
-  fits_read_col(m_File, TFLOAT, 21, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 20, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 21, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 22, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 23, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
   
   fits_close_file(m_File, &Status); 
   
