@@ -291,8 +291,8 @@ bool PulsationViewer::Analyze()
   CutDirection.SetMagThetaPhi(1.0, c_Pi/2 - m_CutDEC/rad, m_CutRA/rad);
   
   NEvent Event;
-  long NUsedBins = 0;
   long NEvents = 0;
+  long NSelectedEvents = 0;
   while (Loader.AnalyzeEvent(Event) == true) {
     if (NEvents % 10000 == 0 && NEvents > 0) cout<<"\rAnalyzing event "<<Event.GetID()<<" ..."<<flush;
     if (Event.IsEmpty() == true) break;
@@ -301,8 +301,9 @@ bool PulsationViewer::Analyze()
     long Cycle = static_cast<long>((Time-m_PhaseStart)/m_PhaseDuration);
     
     
-    // Check if we are in the selcted direction:
-    if (Event.GetNHits() != 1) continue;
+    // Check if we are in the selected direction:
+    bool Deselected = false;
+    if (Event.GetNHits() != 1) Deselected = true;
     NHit& Hit = Event.GetHitRef(0);
     if (m_CutSize > 0) {
       MVector HitDir;
@@ -310,18 +311,20 @@ bool PulsationViewer::Analyze()
                             c_Pi/2 - Hit.GetObservatoryData().GetDec()/rad, 
                             Hit.GetObservatoryData().GetRa()/rad);
       if (HitDir.Angle(CutDirection)*rad > m_CutSize) {
-        continue;
+        Deselected = true;
       }
     }
-    if (Hit.GetEnergy() < m_EnergyMin || Hit.GetEnergy() > m_EnergyMax) continue;
-    
-
+    if (Hit.GetEnergy() < m_EnergyMin || Hit.GetEnergy() > m_EnergyMax) Deselected = true;
+        
     // Fill the event at the correct phase time and for the correct pixels
     double PhaseTime = ((Time-m_PhaseStart) - m_PhaseDuration*Cycle).GetAsSeconds();
-    if (Event.GetTelescope() == 1) {
-      Profile1->Fill(PhaseTime);
-    } else {
-      Profile2->Fill(PhaseTime);     
+    if (Deselected == false) {
+      NSelectedEvents++;
+      if (Event.GetTelescope() == 1) {
+        Profile1->Fill(PhaseTime);
+      } else {
+        Profile2->Fill(PhaseTime);     
+      }
     }
     
     // Now fill the Life time histogram:
@@ -375,10 +378,6 @@ bool PulsationViewer::Analyze()
   }
   cout<<endl;
   
-  if (NUsedBins > 0) {
-    cout<<"Life time correction accuracy due to binning: "<<100.0 * NEvents / NUsedBins<<" %"<<endl;
-  }
-  /*
   TCanvas* ProfileCanvas = new TCanvas();
   ProfileCanvas->cd();
   Profile1->Draw();
@@ -388,7 +387,7 @@ bool PulsationViewer::Analyze()
   ProfileLifeTimeCanvas->cd();
   Profile1LifeTime->Draw();
   ProfileLifeTimeCanvas->Update();
-  */
+ 
   
   // Step 2: Correct for life time:
   
@@ -408,12 +407,12 @@ bool PulsationViewer::Analyze()
     Profile1LifeTimeRatio->SetBinContent(bx, Profile1LifeTime->GetBinContent(bx)/Cycles);
     Profile2LifeTimeRatio->SetBinContent(bx, Profile2LifeTime->GetBinContent(bx)/Cycles);
   }
-  /*
+  
   TCanvas* Profile1LifeTimeRatioCanvas = new TCanvas();
   Profile1LifeTimeRatioCanvas->cd();
   Profile1LifeTimeRatio->Draw();
   Profile1LifeTimeRatioCanvas->Update();
-  */
+ 
   
   
   // Now correct the profile with the life-time and add up both histograms
@@ -438,7 +437,7 @@ bool PulsationViewer::Analyze()
     Fit->SetParameters(1, 1);
 
     ProfileLifeTimeCorrectedCanvas->cd();
-    ProfileLifeTimeCorrected->Fit(Fit, "RQI");
+    ProfileLifeTimeCorrected->Fit(Fit, "RI");
     Fit->Draw("SAME");
     ProfileLifeTimeCorrectedCanvas->Modified();
     ProfileLifeTimeCorrectedCanvas->Update();
