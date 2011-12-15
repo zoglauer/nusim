@@ -178,8 +178,10 @@ data_b = replicate(data_b, nfpmb)
 
 ; Copy over all of the times, livetimes, and energy for each FPM:
 
-data_a.pi = round(data[fpma].energy * 100.)
-data_b.pi = round(data[fpmb].energy * 100.)
+; Set the energy resolution here:
+eres = 0.1 ; keV / channel. for now 100 eV / PI channel
+data_a.pi = round(data[fpma].energy / eres)
+data_b.pi = round(data[fpmb].energy / eres)
 
 data_a.time = data[fpma].time
 data_a.prior = data[fpma].livetime
