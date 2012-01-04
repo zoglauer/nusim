@@ -270,9 +270,9 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
   } 
   ++m_ScatteredPhotons;
   // Set as source photon
-  if (Code == 1) Event.SetOrigin(1);
+  if (Code == 1) Event.SetOrigin(NEvent::c_OriginSource);
   // Set as ghostray source photon 
-  if (Code == 2) Event.SetOrigin(3);
+  if (Code == 2) Event.SetOrigin(NEvent::c_OriginGhostRay);
 
   //cout<<"Passed ray trace"<<endl;
 
