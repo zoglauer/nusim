@@ -69,6 +69,9 @@ private:
 
   /// Input file names
   TString m_InputFileName;
+    
+  //! number of bins
+  int m_NBins;
 };
 
 /******************************************************************************/
@@ -80,6 +83,8 @@ private:
 LightCurveViewer::LightCurveViewer() : m_Interrupt(false)
 {
   gStyle->SetPalette(1, 0);
+    
+  m_NBins = 100;
 }
 
 
@@ -102,6 +107,7 @@ bool LightCurveViewer::ParseCommandLine(int argc, char** argv)
   Usage<<"  Usage: LightCurveViewer <options>"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"         -i:   Input file name"<<endl;
+  Usage<<"         -b:   Bins (default: 100)"<<endl;
   Usage<<"         -h:   print this help"<<endl;
   Usage<<endl;
 
@@ -142,6 +148,9 @@ bool LightCurveViewer::ParseCommandLine(int argc, char** argv)
     if (Option == "-i") {
       m_InputFileName = argv[++i];
       cout<<"Accepting input file name: "<<m_InputFileName<<endl;
+    } else if (Option == "-b") {
+      m_NBins = atoi(argv[++i]);
+      cout<<"Accepting number of bins: "<<m_NBins<<endl;
     } else {
       cout<<"Error: Unknown option \""<<Option<<"\"!"<<endl;
       cout<<Usage.str()<<endl;
@@ -170,7 +179,7 @@ bool LightCurveViewer::Analyze()
   Loader.SetFileName(m_InputFileName);
   if (Loader.Initialize() == false) return false;
   
-  TH1D* Profile = new TH1D("Light curve", "LightCurve", 100, 
+  TH1D* Profile = new TH1D("Light curve", "LightCurve", m_NBins, 
                            0, 
                            Loader.GetAbsoluteObservationEndTime().GetAsSeconds() - Loader.GetAbsoluteObservationStartTime().GetAsSeconds());
   Profile->SetXTitle("Obs. Time [sec]");
