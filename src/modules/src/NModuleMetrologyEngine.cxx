@@ -111,6 +111,9 @@ bool NModuleMetrologyEngine::Initialize()
     mgui<<"Metrology engine:\nUnable to open file: \""<<m_PositionShiftFileName<<"\""<<show;
     return false;
   }
+  
+  // Clear the old data
+  m_MetrologyDetectorShifts.clear();
 
   // Let's read until we find the first delimeter, then rewind
   char Delimeter = '\n'; //FindDelimeter(in);
