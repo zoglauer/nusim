@@ -38,6 +38,7 @@ LOBJS = $(LB)/NTime.o \
 	$(LB)/NExtractFitsImage.o \
 	$(LB)/NDetectorMap.o \
 	$(LB)/NExposureMap.o \
+	$(LB)/NHotPixel.o \
 
 
 SOBJ = $(LB)/libData.$(DLL)

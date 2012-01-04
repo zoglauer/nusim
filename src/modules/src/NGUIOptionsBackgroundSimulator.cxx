@@ -100,7 +100,16 @@ void NGUIOptionsBackgroundSimulator::Create()
   m_ShieldFile = new MGUIEFileSelector(this, "Choose the shield distribution:", 
                                        dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->GetShieldHitSpectrum());
   m_ShieldFile->SetFileType("Shield distribution", "*.dat");
-	AddFrame(m_ShieldFile, FileLayout);
+  AddFrame(m_ShieldFile, FileLayout);
+
+
+  TGLabel* HotPixelLabel = new TGLabel(this, "Hot pixels (leave empty unless interested in hot pixels):");
+  AddFrame(HotPixelLabel, LabelLayout);
+
+  m_HotPixelDB = new MGUIEFileSelector(this, "Choose the hot pixel data base:", 
+                                       dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->GetHotPixelDataBase());
+  m_HotPixelDB->SetFileType("Hot-pixel data base", "*.dat");
+  AddFrame(m_HotPixelDB, FileLayout);
 
   PostCreate();
 }
@@ -148,6 +157,7 @@ bool NGUIOptionsBackgroundSimulator::OnApply()
   dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->SetApertureFieldOfView(m_ApertureFieldOfViewFile->GetFileName());
   dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->SetDetectorDataBase(m_DetectorDB->GetFileName());
   dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->SetShieldHitSpectrum(m_ShieldFile->GetFileName());
+  dynamic_cast<NModuleBackgroundSimulator*>(m_Module)->SetHotPixelDataBase(m_HotPixelDB->GetFileName());
 
 	return true;
 }

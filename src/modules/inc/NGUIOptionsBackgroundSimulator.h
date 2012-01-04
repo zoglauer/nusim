@@ -66,6 +66,7 @@ class NGUIOptionsBackgroundSimulator : public NGUIOptions
   MGUIEFileSelector* m_ApertureFieldOfViewFile;
   MGUIEFileSelector* m_DetectorDB;
   MGUIEFileSelector* m_ShieldFile;
+  MGUIEFileSelector* m_HotPixelDB;
 
   // private members:
  private:

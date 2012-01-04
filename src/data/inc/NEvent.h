@@ -253,6 +253,10 @@ class NEvent
   static const unsigned int c_OriginSource     = 1;
   //! ID representing a background photon
   static const unsigned int c_OriginBackground = 2;
+  //! ID representing a source photon which is a ghost ray
+  static const unsigned int c_OriginGhostRay   = 3;
+  //! ID representing a detector noise event
+  static const unsigned int c_OriginNoise      = 4;
 
   
 

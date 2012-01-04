@@ -486,56 +486,63 @@ NTime NModuleOrbitEngineTLE::GetEffectiveObservationTime(NTime t1, NTime t2)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NTime NModuleOrbitEngineTLE::FindIdealTime(NTime ObservationTime)
+NTime NModuleOrbitEngineTLE::FindIdealTime(NTime EffectiveObservationTime)
 {
-  //! Get the ideal time as a function of observation time starting from 0
+  //! Get the absolute observation time as a function of effective observation time starting from 0
   
-  NTime T(0.0);
-  NTime Accum(0.0);
+  cout<<"Finding absolute observation time for effective observation time: "<<EffectiveObservationTime<<endl;
   
-  while (m_BeginOccultationTime.back() < T) AdvanceTime();
-  while (m_EndOccultationTime.back() < T) AdvanceTime();
+  NTime AbsoluteObservationTime(0.0);
+  
+  while (m_BeginOccultationTime.back() < AbsoluteObservationTime) AdvanceTime();
+  while (m_EndOccultationTime.back() < AbsoluteObservationTime) AdvanceTime();
   
   unsigned int FirstStart = 0;
   unsigned int FirstEnd = 0;
   
   // Find the first start which is larger than this one:
   for (unsigned int i = m_BeginOccultationTime.size() - 2; i < m_BeginOccultationTime.size(); --i) {
-    if (m_BeginOccultationTime[i] < T) {
+    if (m_BeginOccultationTime[i] < AbsoluteObservationTime) {
       FirstStart = i+1;
       break;
     }
   }
   // Find the first End after begin
   for (unsigned int i = m_EndOccultationTime.size() - 2; i < m_EndOccultationTime.size(); --i) {
-    if (m_EndOccultationTime[i] < T) {
+    if (m_EndOccultationTime[i] < AbsoluteObservationTime) {
       FirstEnd = i+1;
       break;
     }
   }
+
   
+  NTime AccumEffObsTime(0.0);
   
-  while (T < ObservationTime) {
-    while (m_BeginOccultationTime.back() < T) AdvanceTime();
-    while (m_EndOccultationTime.back() < T) AdvanceTime();
+  while (AccumEffObsTime < EffectiveObservationTime) {
+    while (m_BeginOccultationTime.size() < FirstStart+1) AdvanceTime();
+    while (m_EndOccultationTime.size() < FirstEnd+1) AdvanceTime();
     
+    // We count observation time:
     if (m_BeginOccultationTime[FirstStart] < m_EndOccultationTime[FirstEnd]) {
-      if (Accum + (m_BeginOccultationTime[FirstStart] - T) >= ObservationTime) {
-        T += ObservationTime - Accum;
-        Accum = ObservationTime;
+      // If we would exceed the effetive observation time, we have to stop:
+      if (AccumEffObsTime + (m_BeginOccultationTime[FirstStart] - AbsoluteObservationTime) >= EffectiveObservationTime) {
+        AbsoluteObservationTime += EffectiveObservationTime - AccumEffObsTime;
+        AccumEffObsTime = EffectiveObservationTime;
         break;
       } else {
-        Accum += m_BeginOccultationTime[FirstStart] - T;
-        T = m_BeginOccultationTime[FirstStart];
+        AccumEffObsTime += m_BeginOccultationTime[FirstStart] - m_EndOccultationTime[FirstEnd-1];
+        AbsoluteObservationTime = m_BeginOccultationTime[FirstStart];
         ++FirstStart;
       }
-    } else {
-      T = m_EndOccultationTime[FirstEnd];
+    } 
+    // We count occultation time -- easy
+    else {
+      AbsoluteObservationTime = m_EndOccultationTime[FirstEnd];
       ++FirstEnd;
     }
   }
   
-  return T;
+  return AbsoluteObservationTime;
 }
 
 
@@ -554,7 +561,7 @@ NTime NModuleOrbitEngineTLE::StartOfPreviousBlackout(NTime t)
     if (m_BeginOccultationTime[i] < t) return m_BeginOccultationTime[i];
   }
  
-  merr<<"By design, we sould never reach this part of the code..."<<fatal;
+  merr<<"By design, we should never reach this part of the code..."<<fatal;
  
   return NTime(0);
 }

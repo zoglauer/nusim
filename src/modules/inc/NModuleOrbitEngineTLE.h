@@ -84,8 +84,8 @@ class NModuleOrbitEngineTLE : public NModule, public NModuleInterfaceOrbit, publ
 
   //! Get the start time of the next black-out
   virtual NTime StartOfPreviousBlackout(NTime t);
-  //! Get the ideal time as a function of observation time
-  virtual NTime FindIdealTime(NTime ObservationTime);
+  //! Get the ideal time as a function of effective observation time Besser: GetAbsoluteObservationTime
+  virtual NTime FindIdealTime(NTime EffectiveObservationTime);
   
   //! Get time of next switch to night
   virtual NTime GetNextEndNightTime(NTime t);

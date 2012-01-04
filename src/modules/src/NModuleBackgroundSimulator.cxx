@@ -32,6 +32,7 @@
 #include "NModuleBackgroundSimulatorShieldOnly.h"
 #include "NModuleBackgroundSimulatorDataBase.h"
 #include "NModuleBackgroundSimulatorAperture.h"
+#include "NModuleBackgroundSimulatorHotPixel.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,11 +73,13 @@ NModuleBackgroundSimulator::NModuleBackgroundSimulator(NSatellite& Satellite) : 
   m_ShieldOnly = new NModuleBackgroundSimulatorShieldOnly(Satellite);
   m_Aperture = new NModuleBackgroundSimulatorAperture(Satellite);
   m_DataBase = new NModuleBackgroundSimulatorDataBase(Satellite);  
+  m_HotPixels = new NModuleBackgroundSimulatorHotPixel(Satellite);  
 
   m_ApertureSpectrum = "$(NUSIM)/resource/data/Background.ApertureSpectrum.dat";
   m_ApertureFieldOfView = "$(NUSIM)/resource/data/Background.ApertureFieldOfView.dat";
   m_DetectorDataBase = "$(NUSIM)/resource/data/Background.Detector.dat";
   m_ShieldHitSpectrum = "$(NUSIM)/resource/data/Background.Shield.dat";
+  m_DetectorDataBase = "$(NUSIM)/resource/data/Background.HotPixel.dat";
 }
 
 
@@ -129,6 +132,11 @@ bool NModuleBackgroundSimulator::Initialize()
     return false;
   }
 
+  if (m_HotPixelDataBase != "" && MFile::Exists(m_HotPixelDataBase) == false) {
+    cerr<<"Error: Background: Hot-pixel data base file does not exist: "<<m_HotPixelDataBase<<endl;
+    return false;
+  }
+  
   if (m_ApertureSpectrum != "" || m_ApertureFieldOfView != "") {
     MFile::ExpandFileName(m_ApertureSpectrum);
     m_Aperture->SetFileNameSpectrum(m_ApertureSpectrum);
@@ -149,11 +157,18 @@ bool NModuleBackgroundSimulator::Initialize()
     if (m_ShieldOnly->Initialize() == false) return false;
   }
 
+  if (m_HotPixelDataBase != "") {
+    MFile::ExpandFileName(m_HotPixelDataBase);
+    m_HotPixels->SetFileName(m_HotPixelDataBase);
+    if (m_HotPixels->Initialize() == false) return false;
+  }
+
   DetermineNext();
 
   m_NApertureHits = 0;
   m_NDetectorHits = 0;
   m_NShieldOnlyHits = 0;
+  m_NHotPixelHits = 0;
   
   return true;
 }
@@ -169,6 +184,7 @@ bool NModuleBackgroundSimulator::Finalize()
   cout<<"  Detector DB hits:  "<<m_NDetectorHits<<endl;
   cout<<"  Aperture hits:     "<<m_NApertureHits<<endl;
   cout<<"  Shield-only hits:  "<<m_NShieldOnlyHits<<endl;
+  cout<<"  Hot-pixel hits:    "<<m_NHotPixelHits<<endl;
 
   return true;
 }
@@ -193,6 +209,8 @@ bool NModuleBackgroundSimulator::AnalyzeEvent(NEvent& Event)
       ++m_NApertureHits;
     } else if (m_NextComponent == m_DataBase) {
       ++m_NDetectorHits;
+    } else if (m_NextComponent == m_HotPixels) {
+      ++m_NHotPixelHits;
     }
   }
   
@@ -200,6 +218,7 @@ bool NModuleBackgroundSimulator::AnalyzeEvent(NEvent& Event)
 
   return Return;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -211,6 +230,7 @@ void NModuleBackgroundSimulator::PerformTimeJump(const NTime& TimeJump)
   m_ShieldOnly->PerformTimeJump(TimeJump);
   m_Aperture->PerformTimeJump(TimeJump);
   m_DataBase->PerformTimeJump(TimeJump);
+  m_HotPixels->PerformTimeJump(TimeJump);
 
   m_Time += TimeJump;
 }
@@ -242,6 +262,12 @@ void NModuleBackgroundSimulator::DetermineNext()
     if (m_DataBase->GetTimeOfNextEvent() < m_Time) {
       m_Time = m_DataBase->GetTimeOfNextEvent();
       m_NextComponent = m_DataBase;
+    }
+  }
+  if (m_HotPixelDataBase != "") {
+    if (m_HotPixels->GetTimeOfNextEvent() < m_Time) {
+      m_Time = m_HotPixels->GetTimeOfNextEvent();
+      m_NextComponent = m_HotPixels;
     }
   }
 }
@@ -289,6 +315,11 @@ bool NModuleBackgroundSimulator::ReadXmlConfiguration(MXmlNode* Node)
     m_ShieldHitSpectrum = ShieldHitSpectrumNode->GetValue();
   }
 
+  MXmlNode* HotPixelBaseNode = Node->GetNode("HotPixelDataBase");
+  if (HotPixelBaseNode != 0) {
+    m_HotPixelDataBase = HotPixelBaseNode->GetValue();
+  }
+
   return true;
 }
 
@@ -306,6 +337,7 @@ MXmlNode* NModuleBackgroundSimulator::CreateXmlConfiguration()
   new MXmlNode(Node, "ApertureFieldOfView", CleanPath(m_ApertureFieldOfView));
   new MXmlNode(Node, "DetectorDataBase", CleanPath(m_DetectorDataBase));
   new MXmlNode(Node, "ShieldHitSpectrum", CleanPath(m_ShieldHitSpectrum));
+  new MXmlNode(Node, "HotPixelDataBase", CleanPath(m_HotPixelDataBase));
 
   return Node;
 }

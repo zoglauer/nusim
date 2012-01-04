@@ -29,6 +29,7 @@
 class NModuleBackgroundSimulatorShieldOnly;
 class NModuleBackgroundSimulatorDataBase;
 class NModuleBackgroundSimulatorAperture;
+class NModuleBackgroundSimulatorHotPixel;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,11 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   //! Set the file name of the shield hit distribution
   void SetShieldHitSpectrum(const TString FileName) { m_ShieldHitSpectrum = FileName; }
 
+  //! Get the file name of the hot pixel data base
+  TString GetHotPixelDataBase() const { return m_HotPixelDataBase; }
+  //! Set the file name of the hot pixel data base
+  void SetHotPixelDataBase(const TString FileName) { m_HotPixelDataBase = FileName; }
+
   //! Perform a time jump:
   virtual void PerformTimeJump(const NTime& TimeJump);
 
@@ -107,6 +113,8 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   NModuleBackgroundSimulatorAperture* m_Aperture;
   //! The shield only part of the distribution (hits which happen only in the shield)
   NModuleBackgroundSimulatorShieldOnly* m_ShieldOnly;
+  //! The hot-pixel of the background
+  NModuleBackgroundSimulatorHotPixel* m_HotPixels;
   
   //! The module which is next:
   NModuleInterfaceEvent* m_NextComponent;
@@ -119,6 +127,8 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   TString m_DetectorDataBase;
   //! The shield hit distribution file name
   TString m_ShieldHitSpectrum;
+  //! The data base file name
+  TString m_HotPixelDataBase;
 
   //! The number of generated aperture hits
   unsigned int m_NApertureHits;
@@ -126,6 +136,9 @@ class NModuleBackgroundSimulator : public NModule, public NModuleInterfaceEvent,
   unsigned int m_NDetectorHits;
   //! The number of generated shield-only hits
   unsigned int m_NShieldOnlyHits;
+  //! The number of generated hot-pixel hits
+  unsigned int m_NHotPixelHits;
+
   
 #ifdef ___CINT___
  public:

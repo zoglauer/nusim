@@ -394,8 +394,6 @@ bool NSupervisor::Run()
     }
   }
 
-
-
   // Set up the diagnostics GUI
   delete m_DiagnosticsGUI; // we do not delete but just unmap the GUI when pressing X or cancel
   m_DiagnosticsGUI = 0;
@@ -624,9 +622,19 @@ bool NSupervisor::Run()
     }
 
     // If time == numeric_limits<double>::max() the module might determine that it is Out of events - or have a function which checks this...
-    if (TimeOfNextEvent.IsEmpty() == true) {
+    if (TimeOfNextEvent.IsEmpty() == true || TimeOfNextEvent.IsMax() == true) {
       mout<<"Supervisor: No start module has events left. Ending run."<<endl;
       break;
+    }
+    
+    if (TimeOfNextEvent > m_ObservationTime*4.0) {
+      mout<<"Supervisor: The next event will not happen more than 4 times after the observation time. Checking for quick exit..."<<endl;
+      mout<<"But I still need to calculate a bunch of orbits, occultations, etc. This may take a while..."<<endl;
+      NTime NewTimeOfNextEvent = m_Satellite.FindIdealTime(m_ObservationTime); // This is a safety: If we have very large numbers we might wait forever...
+      TimeOfNextEvent += 1*ms;
+      if (NewTimeOfNextEvent < TimeOfNextEvent) {
+        TimeOfNextEvent = NewTimeOfNextEvent;
+      }
     }
      
     // Take care of blackouts:
@@ -893,8 +901,17 @@ bool NSupervisor::Run()
 
     if (m_Interrupt == true) break;
   }
+  
+  if (m_Interrupt == false) {
+    NTime AbsoluteObservationTime = m_Satellite.FindIdealTime(m_ObservationTime);
+    if (m_Satellite.GetTime() > AbsoluteObservationTime) {
+      m_Satellite.SetTime(AbsoluteObservationTime);
+      m_Satellite.SetEffectiveObservationTime(m_ObservationTime - m_ObservationStartTime);
+      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() - AbsoluteObservationTime);
+    }
+  }
 
-
+  
   // Finalize the module data:
   cout<<endl;
   cout<<"  Summary"<<endl;

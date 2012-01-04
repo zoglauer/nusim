@@ -60,6 +60,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleBackgroundSimulatorAperture.o \
 	$(LB)/NModuleBackgroundSimulatorShieldOnly.o \
 	$(LB)/NModuleBackgroundSimulatorDataBase.o \
+	$(LB)/NModuleBackgroundSimulatorHotPixel.o \
 	$(LB)/NGUIOptionsTriggerEngine.o \
 	$(LB)/NModuleTriggerEngineIdeal.o \
 	$(LB)/NModuleTriggerEnginePHE.o \
