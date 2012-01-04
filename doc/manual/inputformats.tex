@@ -267,3 +267,47 @@ RD 6.41 64.16 48 10
 \end{verbatim}
 
 The first number represents the right ascension in degree, the second number the declination in degree, the third number the Roll of the space craft in degree and the final number the relative or absolute observation time.
+
+
+\section{For the background engine\label{label:hotpixelformat}}
+
+The only user modifiable file in the background engine is the hot-pixel file.
+One line in the file starting with "HP" is one hot pixel entry. The columns of the line have the following meaning:
+
+\subsubsection{Format}
+
+\begin{enumerate}
+\item Telescope ID: 1, 2, or "-" if random
+\item Detector ID: 1, 2, 3, 4, or "-" if random
+\item x-position: in mm within wafer, or "-" if random
+\item y-position: in mm within wafer, or "-" if random
+\item z-position: in mm within wafer, or "-" if random
+\item Start time in sec in NuSIM time (not absolute); if "-" then it is randomly determined by on and off duration 
+\item On duration (after first event, so that always one event is created even if the duration is zero)
+\item On duration uncertainty (Gaussian, 1 sigma) in sec
+\item Off duration in sec, "-" means infinity, i.e. pixel is only on once
+\item Off duration uncertainty (Gaussian, 1 sigma) of hotpixel in sec
+\item Choose random pixel after off ("true"/"false"): if true, switch telescope, detector and position for the next firing sequence
+\item Firing frequency in Hz (individual start times are Poisson distributed)
+\item Firing frequency uncertainty (Gaussian, 1 sigma) in Hz
+\item Mean energy in keV
+\item Energy uncertainty (Gaussian, 1 sigma) in keV
+\end{enumerate}
+
+\subsubsection{Examples}
+
+\noindent Random noise: Choose a random pixel, which only fires once
+\begin{verbatim}
+HP - - - - - - 0 0 0.01 0.02 true 1.0 0.0 2.5 2
+\end{verbatim}
+
+\noindent One pixel misbehaves from time-to-time for a certain amount of time
+\begin{verbatim}
+HP 2 3 6 -4 0.5 - 25 40 200 200.0 false 100 200.0 2.5 2
+\end{verbatim}
+
+\noindent A random pixel behaves badly for a certain amount of time and a different one after the next firing sequence
+\begin{verbatim}
+HP - - - - - - 100 200 100 200 true 100 200.0 2.5 2
+\end{verbatim}
+

@@ -196,6 +196,23 @@ The energy, however, is not modified.
 
 The second component is the aperture component, i.e. cosmic diffuse photons which which have an unobscured path to the detector because the aperture is not perfect. However, Beryllium absorption, etc. is taken into account. The input is split into two files, a spectrum and a position pattern on the detectors (which is uneven due to obscuration of the optics). The original input for the data was the Gruber et al. cosmic diffuse spectrum.
 
+The final component is the hot-pixel engine and steered by a hot-pixel file described in section \ref{label:hotpixelformat}.
+For all normal simulations this should be left empty.
+The hot-pixel engine is capable to simulate random noise with random fire frequency 
+but also individual pixels with high fire frequency for a certain amount of time.
+The user has the option to choose:
+\begin{itemize}
+\item the telescope, detector, and position or to choose a random telescope, detector, and position.
+\item a given or a random start time
+\item an on-duration with an Gaussian randomization
+\item an off-duration with an Gaussian randomization or the option that the pixel stays off
+\item the option to randomly select a new pixel in each fire sequence
+\item the fire frequency and a Gaussian randomization (in the next fire frequency)
+\item an energy with a Gaussian width --- since the random noise usually has an energy at the lower energy threshold, the maximum is usually choosen below the trigger threshold in order to get the typical quick fall-off of the noise energy values.
+\end{itemize}
+
+
+
 
 \subsection{Detector interactions engine}
 
