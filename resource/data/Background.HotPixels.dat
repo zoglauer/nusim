@@ -1,0 +1,34 @@
+# Hot pixel file (example)
+#
+# Format:
+#  (1) Telescope ID: 1, 2, or - if random
+#  (2) Detector ID: 1, 2, 3, 4, or - if random
+#  (3) x-position: in mm within wafer, or - if random
+#  (4) y-position: in mm within wafer, or - if random
+#  (5) z-position: in mm within wafer, or - if random
+#  (6) Start time in sec in NuSIM time (not absolute) if - then randomly determined by on/off duration 
+#  (7) On Duration (after first event, so that always one event is created even if the duration is zero)
+#  (8) On Duration uncertainty in sec
+#  (9) Off duration in sec, - means infinity, i.e. pixel is only on once
+# (10) Off duration uncertainty of hotpixel in sec (Gaussian, 1 sigma)
+# (11) Random pixel after off ("true"/"false") - if true, switch telescope, detector and position
+# (11) Fire frequency in Hz (Poisson distributed)
+# (12) Fire frequency uncertainty (Gaussian, 1 sigma) in Hz
+# (13) Mean energy in keV
+# (14) Energy uncertainty (Gaussian, 1 sigma) in keV
+
+# Random noise example
+#HP - - - - - - 0 0 0.01 0.02 true 1.0 0.0 2.5 2
+
+# One pixel behaving from time-to-time badly
+#HP 2 3 6 -4 0.5 - 25 40 200 200.0 false 100 200.0 2.5 2
+
+# One pixel on only once for 100 sec
+#HP 1 2 -3 -2 0.5 100.0 100.0 0.0 - - false 200 0.0 5.0 0.0
+
+# Random pixel behaving badly for a certain time
+#HP - - - - - - 100 200 100 200 true 100 200.0 2.5 2
+
+
+
+
