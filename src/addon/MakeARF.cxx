@@ -953,18 +953,20 @@ bool Target::GenerateARF()
     Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
 	if (iModule[i] == 1) {
 	  dt = fT[i]-last_t1; 
+    last_t1 = fT[i];
+    if (dt > 100) continue;
 	  exposure1 += dt;
 	  if (fL[i] > 0) lifetime1 += fL[i];
 	  else lifetime1+=dt;
-	  last_t1 = fT[i];
 	}
 	if (iModule[i] == 2) {
 	  dt = fT[i]-last_t2; 
+    last_t2 = fT[i];
+    if (dt > 100) continue;
 	  exposure2 += dt;
 	  if (fL[i] > 0) lifetime2 += fL[i];
 	  else lifetime2+=dt;
-	  last_t2 = fT[i];
-    }
+  }
 	SetTarget(region);
 	
 	// Check what effective area bin the event falls in 
@@ -995,13 +997,13 @@ bool Target::GenerateARF()
 	    if (iModule[i] == 1) {
 	      DetIndex1.push_back(GetDetIndex());  // first index, using 0.02 resolution
 	      TotalTime1.push_back(dt);
-		  oaa1.push_back(round(m_oaa));
+		  oaa1.push_back(round(m_oaa*2));
 	      continue;
 		}
 		if (iModule[i] == 2) {
 	      DetIndex2.push_back(GetDetIndex());  // first index, using 0.02 resolution
 	      TotalTime2.push_back(dt);
-		  oaa2.push_back(round(m_oaa));
+		  oaa2.push_back(round(m_oaa*2));
 	      continue;
 		}
 	  }
@@ -1013,7 +1015,7 @@ bool Target::GenerateARF()
       // of that transform with dt
 	  if (iModule[i] == 1) {
 	    for (int j=0;j < (int)DetIndex1.size(); j++){
-		  if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa)) {
+		  if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa*2)) {
 			exists1 = 1;
 		    TotalTime1[j] += dt;
 		  }
@@ -1022,12 +1024,12 @@ bool Target::GenerateARF()
 	    if (exists1 == 0) {
 		  DetIndex1.push_back(GetDetIndex());  // pixel
 	      TotalTime1.push_back(dt);
-	      oaa1.push_back(round(m_oaa));
+	      oaa1.push_back(round(m_oaa*2));
 	    }
 	  }
 	  if (iModule[i] == 2) {
 	    for (int j=0;j < (int)DetIndex2.size(); j++){
-		  if (DetIndex2[j] == GetDetIndex() && oaa2[j] == round(m_oaa)) {
+		  if (DetIndex2[j] == GetDetIndex() && oaa2[j] == round(m_oaa*2)) {
 		    exists2 = 1;
 		    TotalTime2[j] += dt;
 		  }
@@ -1035,7 +1037,7 @@ bool Target::GenerateARF()
 		if (exists2 == 0) {
 	      DetIndex2.push_back(GetDetIndex());  // pixel
 	      TotalTime2.push_back(dt);
- 	      oaa2.push_back(round(m_oaa));
+ 	      oaa2.push_back(round(m_oaa*2));
 	    }
 	  }
 	  	  
@@ -1057,22 +1059,29 @@ bool Target::GenerateARF()
   cout<<"Number of different transforms ="<<DetIndex1.size()<<endl;    
 
   float average_oaa=0;
+  float average_psf=0;
+  float SumTime = 0;
+  float PSFfrac=0;
   for (int j=0;j<(int)DetIndex1.size();j++){ 
-    oaat_hist1[int(oaa1[j]*2)] += TotalTime1[j]*GetPSFFraction(regionAtDet, int(oaa1[j]*2), DetIndex1[j]);
-    average_oaa += oaa1[j]*TotalTime1[j];
+    PSFfrac = GetPSFFraction(regionAtDet, int(oaa1[j]), DetIndex1[j]);
+    oaat_hist1[int(oaa1[j])] += TotalTime1[j];//*PSFfrac;
+    average_oaa += oaa1[j]*0.5*TotalTime1[j];
+    average_psf += PSFfrac*TotalTime1[j];
+    SumTime += TotalTime1[j];
   }       
   for (int j=0;j<(int)DetIndex2.size();j++) 
-    oaat_hist2[int(oaa2[j]*2)] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]*2), DetIndex2[j]);
+    oaat_hist2[int(oaa2[j])] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
   
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
 	    ARF1[i] += AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1; 
 	    ARF2[i] += AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2; 
+      //cout<<j*0.5<<" "<<oaat_hist1[j]<<endl;
 	  }
   }
 
-  cout<<"average oaa = "<<average_oaa/lifetime1<<endl;
-  cout<<"PSFfraction = "<<GetPSFFraction(regionAtDet,int(oaa1[0]*2), DetIndex1[0])<<endl;
+  cout<<"average oaa = "<<average_oaa/SumTime<<endl;
+  cout<<"PSFfraction = "<<average_psf/SumTime<<endl;
   cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
   cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
   cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
@@ -1159,7 +1168,7 @@ int main(int argc, char** argv)
   T.SetSeparator('.');
   T.Analyze(InFile, false);
   TString OutFile = T.GetTokenAtAsString(0);
-  
+ 
   // If we have used the "-o" option, we change the name of 
   // the output file
   if (specifiedOut > 0) {

@@ -307,11 +307,16 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   }
   
   //! Write WCS header keywords   
-  float tcrvl1=RaMax/deg;
-  float tcrvl2=DecMin/deg;
-  float tcdlt1=-PixelSize/deg;
-  float tcdlt2=-tcdlt1;
-  float tcrpx1=0.0, tcrpx2=0.0;
+  float tcrvl4=RaMax/deg;
+  float tcrvl5=DecMin/deg;
+  float tcdlt4=-PixelSize/deg;
+  float tcdlt5=-tcdlt4;
+  float tcrpx4=0.0, tcrpx5=0.0;
+  float tcrvl11=0;
+  float tcrvl12=0;
+  float tcdlt11=0.1;
+  float tcdlt12=0.1;
+  float tcrpx11=0.0, tcrpx12=0.0;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
   long targ_id = 0; 
@@ -342,17 +347,26 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TDOUBLE, "TSTOP", &tend, "end time", &Status); 	
   fits_write_key(m_File, TSTRING, "DATE-OBS", const_cast<char*>(m_Satellite.GetAbsoluteObservationStartTime().GetDateInString().Data()), " ", &Status);
   fits_write_key(m_File, TSTRING, "DATE-END", const_cast<char*>(m_Satellite.GetAbsoluteObservationEndTime().GetDateInString().Data()), " ", &Status);  
-  fits_write_key(m_File, TFLOAT, "TCDLT4", &tcdlt1, "Platescale", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TCDLT5", &tcdlt2, "Platescale", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TCRVL4", &tcrvl1, "Transform to celestrial coords", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TCRVL5", &tcrvl2, "Transform to celestrial coords", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TCRPX4", &tcrpx1, "Pixel reference point", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TCRPX5", &tcrpx2, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCDLT4", &tcdlt4, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCDLT5", &tcdlt5, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRVL4", &tcrvl4, "Transform to celestrial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRVL5", &tcrvl5, "Transform to celestrial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRPX4", &tcrpx4, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRPX5", &tcrpx5, "Pixel reference point", &Status); 	  
   fits_write_key(m_File, TSTRING, "TCRUNI4", const_cast<char*>("deg")," ", &Status);
   fits_write_key(m_File, TSTRING, "TCRUNI5", const_cast<char*>("deg")," ", &Status);
   fits_write_key(m_File, TSTRING, "TCTYP4", const_cast<char*>("RA---TAN")," ", &Status);
   fits_write_key(m_File, TSTRING, "TCTYP5", const_cast<char*>("DEC--TAN")," ", &Status); 
   fits_write_key(m_File, TSTRING, "RADESYS", const_cast<char*>("FK5"), " ", &Status);
+  fits_write_key(m_File, TFLOAT, "TCDLT11", &tcdlt11, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCDLT12", &tcdlt12, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRVL11", &tcrvl11, "Transform to celestrial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRVL12", &tcrvl12, "Transform to celestrial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRPX11", &tcrpx11, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TCRPX12", &tcrpx12, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TSTRING, "TCRUNI11", const_cast<char*>("mm")," ", &Status);
+  fits_write_key(m_File, TSTRING, "TCRUNI12", const_cast<char*>("mm")," ", &Status);
+
 
   if (Status != 0) {
     mgui<<"Error in creating header for events table "<<endl;
@@ -575,24 +589,32 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   }
   
   
-  float tlmin1 = 0;
-  float tlmin2 = 0;
-  float tlmin3 = 0;
+  float tlmin4 = 0;
   float tlmin5 = 0;
+  float tlmin6 = 0;
+  float tlmin9 = 0;
+  float tlmin11 = -20;
+  float tlmin12 = -20;
 
-  float tlmax1 = ceil((RaMax-RaMin)*cos(DecAvg/rad)/PixelSize);
-  float tlmax2 = ceil((DecMax-DecMin)/PixelSize);
-  float tlmax3 = 819;
-  float tlmax5 = 3;
+  float tlmax4 = ceil((RaMax-RaMin)*cos(DecAvg/rad)/PixelSize);
+  float tlmax5 = ceil((DecMax-DecMin)/PixelSize);
+  float tlmax6 = 819;
+  float tlmax9 = 3;
+  float tlmax11 = 20;
+  float tlmax12 = 20;
 
-  fits_write_key(m_File, TFLOAT, "TLMIN4", &tlmin1, "Min value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMIN5", &tlmin2, "Min value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMIN6", &tlmin3, "Min value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMIN9", &tlmin5, "Min value", &Status); 	   
-  fits_write_key(m_File, TFLOAT, "TLMAX4", &tlmax1, "Max value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMAX5", &tlmax2, "Max value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMAX6", &tlmax3, "Max value", &Status); 	  
-  fits_write_key(m_File, TFLOAT, "TLMAX9", &tlmax5, "Max value", &Status); 	   
+  fits_write_key(m_File, TFLOAT, "TLMIN4", &tlmin4, "Min value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMIN5", &tlmin5, "Min value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMIN6", &tlmin6, "Min value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMIN9", &tlmin9, "Min value", &Status);
+  fits_write_key(m_File, TFLOAT, "TLMIN11", &tlmin11, "Min value", &Status);
+  fits_write_key(m_File, TFLOAT, "TLMIN12", &tlmin12, "Min value", &Status);
+  fits_write_key(m_File, TFLOAT, "TLMAX4", &tlmax4, "Max value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMAX5", &tlmax5, "Max value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMAX6", &tlmax6, "Max value", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "TLMAX9", &tlmax9, "Max value", &Status); 	 
+  fits_write_key(m_File, TFLOAT, "TLMAX11", &tlmax11, "Max value", &Status); 	 
+  fits_write_key(m_File, TFLOAT, "TLMAX12", &tlmax12, "Max value", &Status); 	 
    
   if (Status != 0) {
     mgui<<"Error writing event table header: TLInfo!"<<endl;
@@ -639,7 +661,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   
   // Save also the exposure map
   if (m_CreateExposureMap == true) {
-    m_ExposureMap.SetImageParameters(tcrvl1, tcdlt1, tlmax1, tcrvl2, tcdlt2, tlmax2);
+    m_ExposureMap.SetImageParameters(tcrvl4, tcdlt4, tlmax4, tcrvl5, tcdlt5, tlmax5);
     NQuaternion Qfbob;
     MVector Tfbob;
     NQuaternion Qstar;
