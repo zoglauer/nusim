@@ -39,16 +39,24 @@ class nusim_cfg(ElementTree):
         self.tottime = float(t.text)
        
         self.pointings = self.find("ModuleOptions/XmlTagModulePointingPredefined/Pointings")
+        
         try: # first try python 2.7 version of xml.etree
-            self.pointings_list = list(self.pointings.iter("Pointing"))
+            self.pointings_iter = list(self.pointings.iter("Pointing"))
         except:
-            self.pointings_list = list(self.pointings.getiterator("Pointing"))
+            self.pointings_iter = list(self.pointings.getiterator("Pointing"))
+        self.pointings_list = list(self.pointings_iter)
         self.sources = self.find("ModuleOptions/XmlTagSourceDistribution/Sources")
         try: # first try python 2.7 version of xml.etree
             self.src_list = list(self.sources.iter("Source"))
         except:
             self.src_list = list(self.sources.getiterator("Source"))
-    
+            
+    def reset_srclist(self):
+        try: # first try python 2.7 version of xml.etree
+            self.src_list = list(self.sources.iter("Source"))
+        except:
+            self.src_list = list(self.sources.getiterator("Source"))
+            
     def report(self):
         """ Dump some supposedly relevant info """
         print "NuSIM version that saved this configuration file = %d" % self.version
@@ -102,7 +110,22 @@ class nusim_cfg(ElementTree):
                 d = p.Dist(pc)*60.
                 print "    Pointing %d: offset = %.3f'" % (i, d)
                 i = i + 1
-            
+
+
+# functions for helping with power laws
+def pl_photflux(E1, E2, gamma, norm):
+    """ Returns photon flux between E1 and E2 """
+    return(norm*(E2**(-gamma+1) - E1**(-gamma+1))/(-gamma+1))
+
+
+def pl_flux(E1, E2, gamma, norm):
+    """ Returns photon flux between E1 and E2, converted to ergs/cm^2/s """
+    return(1.6e-9*norm*(E2**(-gamma+2) - E1**(-gamma+2))/(-gamma+2))
+
+
+def pl_norm(E1, E2, gamma, flux):
+    return(flux/(1.6e-9*(E2**(-gamma+2) - E1**(-gamma+2))/(-gamma+2)))
+ 
 if __name__ == "__main__":
     
     argv = sys.argv
