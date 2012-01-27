@@ -492,7 +492,7 @@ NTime NModuleOrbitEngineTLE::FindIdealTime(NTime EffectiveObservationTime)
   
   cout<<"Finding absolute observation time for effective observation time: "<<EffectiveObservationTime<<endl;
   
-  NTime AbsoluteObservationTime(0.0);
+  NTime AbsoluteObservationTime(0.0); // We start at T=0.0 in NuSIM time
   
   while (m_BeginOccultationTime.back() < AbsoluteObservationTime) AdvanceTime();
   while (m_EndOccultationTime.back() < AbsoluteObservationTime) AdvanceTime();
@@ -524,13 +524,17 @@ NTime NModuleOrbitEngineTLE::FindIdealTime(NTime EffectiveObservationTime)
     
     // We count observation time:
     if (m_BeginOccultationTime[FirstStart] < m_EndOccultationTime[FirstEnd]) {
-      // If we would exceed the effetive observation time, we have to stop:
+      // If we would exceed the effective observation time, we have to stop:
       if (AccumEffObsTime + (m_BeginOccultationTime[FirstStart] - AbsoluteObservationTime) >= EffectiveObservationTime) {
         AbsoluteObservationTime += EffectiveObservationTime - AccumEffObsTime;
         AccumEffObsTime = EffectiveObservationTime;
         break;
       } else {
-        AccumEffObsTime += m_BeginOccultationTime[FirstStart] - m_EndOccultationTime[FirstEnd-1];
+        if (m_EndOccultationTime[FirstEnd-1] < 0) { // Start condition: we always start at 0
+          AccumEffObsTime += m_BeginOccultationTime[FirstStart];          
+        } else {
+          AccumEffObsTime += m_BeginOccultationTime[FirstStart] - m_EndOccultationTime[FirstEnd-1];
+        }
         AbsoluteObservationTime = m_BeginOccultationTime[FirstStart];
         ++FirstStart;
       }
@@ -541,7 +545,7 @@ NTime NModuleOrbitEngineTLE::FindIdealTime(NTime EffectiveObservationTime)
       ++FirstEnd;
     }
   }
-  
+
   return AbsoluteObservationTime;
 }
 

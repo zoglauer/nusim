@@ -533,6 +533,9 @@ bool NSupervisor::Run()
   
   m_Running = true;
   
+  //cout<<"Absolute: "<<m_Satellite.FindIdealTime(m_ObservationTime)<<endl;
+  
+  
   // Keep track of the star tracker time, since we might have to do intermediate times to take care of pointing slews
   NTime LastStarTrackerTime(-100);
 
@@ -668,6 +671,7 @@ bool NSupervisor::Run()
           m_Satellite.SetTime(TimeOfNextEvent);
           m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime - m_ObservationStartTime);
           m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent);
+          //cout<<"SetAbsoluteObservationEndTime (1): "<<m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent<<endl;
           continue;
         } else if (BackgroundNext == true) {
           // keep to prevent compiler warning... 
@@ -680,6 +684,7 @@ bool NSupervisor::Run()
       m_Satellite.SetTime(m_ObservationTime + BlackoutTime);
       m_Satellite.SetEffectiveObservationTime(m_ObservationTime - m_ObservationStartTime);
       m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + m_ObservationTime + BlackoutTime);
+      //cout<<"SetAbsoluteObservationEndTime (2): "<<m_Satellite.GetAbsoluteObservationStartTime() + m_ObservationTime + BlackoutTime<<endl;
       mout<<"Supervisor: Observation time exceeded."<<endl;
       break;
     }
@@ -688,6 +693,7 @@ bool NSupervisor::Run()
     m_Satellite.SetTime(TimeOfNextEvent);
     m_Satellite.SetEffectiveObservationTime(TimeOfNextEvent - BlackoutTime - m_ObservationStartTime);
     m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent);
+    //cout<<"SetAbsoluteObservationEndTime (3): "<<m_Satellite.GetAbsoluteObservationStartTime() + TimeOfNextEvent<<endl;
     
 
     if (HasSourcePipe == true || HasBackgroundPipe == true) {
@@ -903,11 +909,14 @@ bool NSupervisor::Run()
   }
   
   if (m_Interrupt == false) {
+    // If all sources are out of events our current time might be ... infinite
+    // Fix it at the observation time
     NTime AbsoluteObservationTime = m_Satellite.FindIdealTime(m_ObservationTime);
     if (m_Satellite.GetTime() > AbsoluteObservationTime) {
       m_Satellite.SetTime(AbsoluteObservationTime);
       m_Satellite.SetEffectiveObservationTime(m_ObservationTime - m_ObservationStartTime);
-      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() - AbsoluteObservationTime);
+      m_Satellite.SetAbsoluteObservationEndTime(m_Satellite.GetAbsoluteObservationStartTime() + AbsoluteObservationTime);
+      //cout<<"SetAbsoluteObservationEndTime (4): "<<m_Satellite.GetAbsoluteObservationStartTime() + AbsoluteObservationTime<<endl;
     }
   }
 
