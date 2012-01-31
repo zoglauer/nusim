@@ -153,7 +153,7 @@ bool NModuleMetrologyEngine::Initialize()
   //ShowDetectorShifts();
 
   if (m_SaveAsFits == true) {
-    if (OpenLevel1FitsFile(NModuleInterfaceIO::GetBaseFileName() + ".metrology.fits") == false) return false;
+    if (OpenLevel1FitsFile(NModuleInterfaceIO::GetBaseFileName() + "_psdcorr.fits") == false) return false;
   }
   
   return true;
