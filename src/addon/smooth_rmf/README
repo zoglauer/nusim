@@ -1,0 +1,7 @@
+This code uses Keith Arnaud's c++ classes for x-ray spectral files
+based on CCFits.In principle it can use more than one matrix extension
+in an rmf but there is a bug right now.  Instead the script
+smooth_rmfs.sh splits out each rmf extension first.  smooth_rmf is
+then a standalone program that smooths the rmf with a Gaussian where
+the Gaussian sigma is given in ev.  The first row of the ebounds
+extension is assumed to give the (constant) channel size in eV.
