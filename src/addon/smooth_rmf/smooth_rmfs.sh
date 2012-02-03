@@ -18,6 +18,12 @@ if test ! -f NuSTAR_FPMB_AveMuTau_4.rmf; then
     fdelhdu "NuSTAR_FPMB_AveMuTau_4.rmf[1]" y y
 fi
 
+
+#fparkey 1 "NuSTAR_FPMB_AveMuTau.rmf[1]" EXTVERS add=yes
+#fparkey 2 "NuSTAR_FPMB_AveMuTau.rmf[2]" EXTVERS add=yes
+#fparkey 3 "NuSTAR_FPMB_AveMuTau.rmf[3]" EXTVERS add=yes
+#fparkey 4 "NuSTAR_FPMB_AveMuTau.rmf[4]" EXTVERS add=yes
+
 echo "Smoothing 1st rmf"
 echo "tail -f NuSTAR_FPMB_AveMuTau_1_wnoise.log"
 smooth_rmf NuSTAR_FPMB_AveMuTau.rmf NuSTAR_FPMB_1_wnoise.rmf 400. >& NuSTAR_FPMB_AveMuTau_1_wnoise.log
