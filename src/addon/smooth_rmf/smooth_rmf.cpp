@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 	  if (zz < 10.)
 	    tmpdata[j] += rmf.Matrix[irow + k]*exp(-zz)/norm;
 	  if (tmpdata[j] < 0.)
-	    tmpdata[j] = 0.
+	    tmpdata[j] = 0.;
       }
     }
 
