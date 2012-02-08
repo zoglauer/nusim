@@ -193,9 +193,9 @@ bool PSF::LoadPSF(int noaa)
   for (int i=0;i < noaa; ++i) {
   
     char FileName[50]; 
-	sprintf(FileName,"resource/data/responsefiles/PSF%d.fits",i);
+	  sprintf(FileName,"resource/data/responsefiles/NUSTAR_2DPSF_%d.fits",i+1);
   
-	fits_open_file(&File, FileName, READONLY, &Status);
+	  fits_open_file(&File, FileName, READONLY, &Status);
     if (Status != 0) {
       mgui<<"Unable to open file: "<<endl;
       mgui<<FileName<<show;
@@ -801,34 +801,34 @@ int Target::GetDetIndex()
 float Target::GetPSFFraction(float region, int oaa, int DetIndex)
 {
 
-  // one PSF image pixel is 0.2x0.2 mm
-
+  // one PSF image pixel is 1/5 of a physical nominal pixel 604.8 um
+  float pitch = 0.12096; //mm
   
   float AccumulatedPSF=0;
     
   float DetY = floor(DetIndex/250);
   float DetX = DetIndex - DetY*250;
-  DetX = DetX*0.2-25;
-  DetY = DetY*0.2-25;
+  DetX = DetX*pitch-25;
+  DetY = DetY*pitch-25;
  
   //cout<<"DetX "<<DetX<<" DetY "<<DetY<<endl;
   
-  for (int i=0;i < 40401; i++) {
-    float pixX = floor(i/201); 
-	float pixY = i - pixX*201;
-	pixX = (pixX-100)*0.2; // mm
-	pixY = (pixY-100)*0.2; // mm
-	float radius = sqrt(pow(pixX,2)+pow(pixY,2));
-  pixX += DetX;
-	pixY += DetY;
+  for (int i=0;i < 105625; i++) {
+    float pixX = floor(i/325); 
+	  float pixY = i - pixX*325;
+	  pixX = (pixX-162)*pitch; // mm
+	  pixY = (pixY-162)*pitch; // mm
+	  float radius = sqrt(pow(pixX,2)+pow(pixY,2));
+    pixX += DetX;
+	  pixY += DetY;
      
-	if (radius > region) continue;
-  //cout<<pixX<<" "<<pixY<<" "<<oaa*0.5<<endl;
+	  if (radius > region) continue;
+    //cout<<pixX<<" "<<pixY<<" "<<oaa*0.5<<endl;
   
-	//Check gaps and edges
-	if ((pixX > -20.25 && pixX < -0.25) || (pixX > 0.25 && pixX < 20.25)) {
-	  if ((pixY > -20.25 && pixY < -0.25) || (pixY > 0.25 && pixY < 20.25)) {
-  	    int n = 40401*oaa+i;
+	  //Check gaps and edges
+	  if ((pixX > -20.25 && pixX < -0.25) || (pixX > 0.25 && pixX < 20.25)) {
+	    if ((pixY > -20.25 && pixY < -0.25) || (pixY > 0.25 && pixY < 20.25)) {
+  	    int n = 105625*oaa+i;
         AccumulatedPSF += psfimg.cube[n];
         //cout<<psfimg.cube[n]<<endl;
       }
