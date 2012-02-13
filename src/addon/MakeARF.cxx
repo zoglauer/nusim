@@ -808,8 +808,8 @@ float Target::GetPSFFraction(float region, int oaa, int DetIndex)
     
   float DetY = floor(DetIndex/250);
   float DetX = DetIndex - DetY*250;
-  DetX = DetX*pitch-25;
-  DetY = DetY*pitch-25;
+  DetX = DetX*0.2-25;
+  DetY = DetY*0.2-25;
  
   //cout<<"DetX "<<DetX<<" DetY "<<DetY<<endl;
   
