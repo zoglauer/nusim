@@ -174,8 +174,10 @@ fpmb = where(data.fpm EQ 2, nfpmb)
 data_a = replicate(data_a, nfpma)
 data_b = replicate(data_b, nfpmb)
 
-data_a.pi = round(data[fpma].energy * 100.)
-data_b.pi = round(data[fpmb].energy * 100.)
+gain = 0.100 ; eV / PI channel
+offset = 30 ; 
+data_a.pi = round(data[fpma].energy  / gain) - offset
+data_b.pi = round(data[fpmb].energy  / gain) - offset
 
 data_a.time = data[fpma].time
 data_a.prior = data[fpma].livetime
@@ -582,7 +584,7 @@ FOR i = 0l, nfpmb - 1 DO BEGIN
    data_b[i].rawy = rawpos[1]
    data_b[i].det_id = found[thisone]
    data_b[i].grade = grade   
-   data_b[i].pi = round(data[fpmb[i]].energy * 100.)
+;   data_b[i].pi = round(data[fpmb[i]].energy * 100.) - 30.
    data_b[i].prior = data[fpmb[i]].livetime
 
  

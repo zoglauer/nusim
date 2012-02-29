@@ -3,6 +3,9 @@ PRO write_nusim_events_fast
 
 COMMON nusim_data, data, err, header_data, infile
 
+; Max number of count dues to memory issues...
+limit = 2.5e6
+
 conv_path = getenv('CONV_PATH')
 ;print, conv_path
 outpath = getenv('OUTPATH')+'/'+file_basename(infile, '.dat')
@@ -29,8 +32,11 @@ primary_header_a = headfits(template_a, exten = 0)
 primary_header_b = headfits(template_b, exten = 0)
 
 ; Setup the output file names
-out_a = outpath+'/nu'+header_data.obsid+'A.evt'
-out_b = outpath+'/nu'+header_data.obsid+'B.evt'
+out_a = outpath+'/nu'+header_data.obsid+'A_uf.evt'
+out_b = outpath+'/nu'+header_data.obsid+'B_uf.evt'
+;bad_a = outpath+'/nu'+header_data.obsid+'A_bad.sav'
+;bad_b = outpath+'/nu'+header_data.obsid+'B_bad.sav'
+badfile = outpath+'/nu'+header_data.obsid+'_bad.sav'
 
 print, out_a
 print, out_b
@@ -164,33 +170,50 @@ fpm_origin = 180 * fpm_res; microns
 
 
 ; Trim the event data to just a single example of each...
-data_a = data_a[0]
-data_b = data_b[0]
+;data_a = data_a[0]
+;data_b = data_b[0]
+
+template_a = (temporary(data_a))[0]
+template_b = (temporary(data_b))[0]
 
 
 ; Sort into FPMA and FPMB data from the NuSIM input...
 fpma = where(data.fpm EQ 1, nfpma)
 fpmb = where(data.fpm EQ 2, nfpmb)
 
+print, 'Number of FPMA events: ', nfpma
+print, 'Number of FPMB events: ', nfpmb
+print, 'Total events: ', nfpma+nfpmb
+
 ; Replicate the L1A arrays into the right number of events...
-data_a = replicate(data_a, nfpma)
-data_b = replicate(data_b, nfpmb)
+;data_a = replicate(data_a, nfpma)
+;data_b = replicate(data_b, nfpmb)
+
+
+blocksize = 1e5
+data_block = replicate(template_a, blocksize)
+
+
 
 ; Copy over all of the times, livetimes, and energy for each FPM:
 
 ; Set the energy resolution here:
 eres = 0.1 ; keV / channel. for now 100 eV / PI channel
-data_a.pi = round(data[fpma].energy / eres)
-data_b.pi = round(data[fpmb].energy / eres)
+pioffset = 30 ; to shift the PI channels to the left..WHY?!?!?!?!
+; ...because I said so?
 
-data_a.time = data[fpma].time
-data_a.prior = data[fpma].livetime
 
-data_b.time = data[fpmb].time
-data_b.prior = data[fpmb].livetime
+;data_a.pi = round(data[fpma].energy / eres) - pioffset
+;data_b.pi = round(data[fpmb].energy / eres) - pioffset
 
-data_a.shield = data[fpma].shield
-data_b.shield = data[fpmb].shield
+;data_a.time = data[fpma].time
+;data_a.prior = data[fpma].livetime
+
+;data_b.time = data[fpmb].time
+;data_b.prior = data[fpmb].livetime
+
+;data_a.shield = data[fpma].shield
+;data_b.shield = data[fpmb].shield
 
 
 ; This is the main loop where you do all the heavy lifting...
@@ -199,14 +222,17 @@ data_b.shield = data[fpmb].shield
 ; distribution for each software pixel and tells you where the count
 ; likely actually hit. For now, just have invert_fpmb.sav. Once you
 ; get the FPMA stuff, this call will be to load invert_fpma.sav
-restore, 'invert_fpmb.sav'
+restore, 'invert_new_fpmb.sav'
 ; loads invert_data
 
 
-use = fltarr(nfpma)
+badones = [-1]
+badimage_a = fltarr(360, 360)
+n_a = 0.d
+blocks = 0.
 FOR i = 0l, nfpma - 1 DO BEGIN
    ; First step, figure out which pixel/grade you've hit...
-
+   if n_elements(data_a)  gt limit then break
 
    ; Convert to DET1 coordinates...
    thisx = round( (data[fpma[i]].pos[0] * 1e3 + fpm_origin) / fpm_res)
@@ -214,9 +240,15 @@ FOR i = 0l, nfpma - 1 DO BEGIN
 
 
    thispdf = invert_data[thisx, thisy].pdf
-   if max(thispdf) eq 0 then continue
+
+   if max(thispdf) eq 0 then begin
+      badones = [badones, fpma[i]]
+      badimage_a[thisx, thisy]++
+      continue
+   endif
+
+
    ; If you made it here, good for you.
-   use[i] = 1
    thispdf = total(thispdf, /cumu)
    thispdf /= max(thispdf)
    foo = randomu(seed)
@@ -224,14 +256,39 @@ FOR i = 0l, nfpma - 1 DO BEGIN
    if ngood eq 0 then pick = n_elements(thispdf) -1 else $
       pick = min(goodones)
 
-   data_a[i].rawx = invert_data[thisx, thisy].rawx[pick]
-   data_a[i].rawy = invert_data[thisx, thisy].rawy[pick]
-   data_a[i].det_id = invert_data[thisx, thisy].det[pick]
-   data_a[i].grade = invert_data[thisx, thisy].grade[pick]
+
+
+   ;; if n_a eq 0 then data_a = template_a else $
+   ;;    data_a = [temporary(data_a), template_a]
+
+
+   data_block[n_a].pi = round(data[fpma[i]].energy / eres) - pioffset
+   data_block[n_a].time = data[fpma[i]].time
+   data_block[n_a].prior = data[fpma[i]].livetime
+   data_block[n_a].shield = data[fpma[i]].shield
+   data_block[n_a].rawx = invert_data[thisx, thisy].rawx[pick]
+   data_block[n_a].rawy = invert_data[thisx, thisy].rawy[pick]
+   data_block[n_a].det_id = invert_data[thisx, thisy].det[pick]
+   data_block[n_a].grade = invert_data[thisx, thisy].grade[pick]
+   
+   if n_a eq blocksize - 1 then begin
+      if n_elements(data_a) eq 0 then data_a = data_block else $
+         data_a = [temporary(data_a), data_block]
+      print, blocks, n_elements(data_a), i 
+      blocks++
+;      stop
+      n_a = -1.d
+   endif
+      
+   n_a++
+
 
 ENDFOR
+;stop
 
-data_a = data_a[where(use EQ 1)]
+if n_elements(data_a) eq 0 then data_a = data_block[0:n_a-1] else $
+   if n_a gt 0 then data_a = [temporary(data_a), data_block[0:n_a-1]]
+
 ; Write the EVENT data and the EVENT header
 mwrfits, data_a, out_a, $
          header_a, /no_types, /no_comment
@@ -239,11 +296,24 @@ mwrfits, gti_a, out_a, $
          gti_header_a, /no_types, /no_comment
 
 print, 'Done with FPMA...'
+print, 'Used: ', n_elements(data_a) 
+print, 'Bad ones: ', total(badimage_a)
+print, 'Sum: ',  n_elements(data_a) + total(badimage_a)
+print, 'Input: ', nfpma
 
-restore, 'invert_fpmb.sav'
-use = fltarr(nfpmb)
+; Free the memory from the first run...
+foo = n_elements(temporary(data_a))
+
+restore, 'invert_new_fpmb.sav'
+;use = fltarr(nfpmb)
+badimage_b = fltarr(360, 360)
+n_b = 0.d
+
+blocks = 0
 FOR i = 0l, nfpmb - 1 DO BEGIN
 
+
+   if n_elements(data_b)  gt limit then break
    ; First step, figure out which pixel/grade you've hit...
 ;   IF i MOD 1e4 EQ 0 THEN print, i, " of ", nfpmb
 
@@ -253,9 +323,14 @@ FOR i = 0l, nfpmb - 1 DO BEGIN
 
 
    thispdf = invert_data[thisx, thisy].pdf
-   if max(thispdf) eq 0 then continue
+   if max(thispdf) eq 0 then begin
+      badones = [badones, fpmb[i]]
+      badimage_b[thisx, thisy]++
+
+      continue
+   endif
+
    ; If you made it here, good for you.
-   use[i] = 1
    thispdf = total(thispdf, /cumu)
    thispdf /= max(thispdf)
    foo = randomu(seed)
@@ -263,21 +338,57 @@ FOR i = 0l, nfpmb - 1 DO BEGIN
    if ngood eq 0 then pick = n_elements(thispdf) -1 else $
       pick = min(goodones)
 
-   data_b[i].rawx = invert_data[thisx, thisy].rawx[pick]
-   data_b[i].rawy = invert_data[thisx, thisy].rawy[pick]
-   data_b[i].det_id = invert_data[thisx, thisy].det[pick]
-   data_b[i].grade = invert_data[thisx, thisy].grade[pick]
+   ;; if n_b eq 0 then data_b = template_a else $
+   ;;    data_b = [temporary(data_b), template_a]
 
+
+   data_block[n_b].pi = round(data[fpmb[i]].energy / eres) - pioffset
+   data_block[n_b].time = data[fpmb[i]].time
+   data_block[n_b].prior = data[fpmb[i]].livetime
+   data_block[n_b].shield = data[fpmb[i]].shield
+   data_block[n_b].rawx = invert_data[thisx, thisy].rawx[pick]
+   data_block[n_b].rawy = invert_data[thisx, thisy].rawy[pick]
+   data_block[n_b].det_id = invert_data[thisx, thisy].det[pick]
+   data_block[n_b].grade = invert_data[thisx, thisy].grade[pick]
+   
+   if n_b eq blocksize - 1 then begin
+      if n_elements(data_b) eq 0 then data_b = data_block else $
+         data_b = [temporary(data_b), data_block]
+      print, 'Block: ', blocks, n_elements(data_b), i 
+      blocks++
+;      stop
+      n_b = -1.d
+   endif
+      
+   n_b++
 
 
 ENDFOR
 
-data_b = data_b[where(use EQ 1)]
+if n_elements(data_b) eq 0 then data_b = data_block[0:n_b-1] else  $
+   if n_b gt 0 then data_b = [temporary(data_b), data_block[0:n_b-1]]
+
 mwrfits, data_b, out_b, $
          header_b, /no_types, /no_comment
 mwrfits, gti_b, out_b, $
          gti_header_b, /no_types, /no_comment
 
 print, 'Done with FPMB'
+print, 'Used: ', n_elements(data_b) 
+print, 'Bad ones: ', total(badimage_b)
+print, 'Sum: ',  n_elements(data_b) +n_elements(badimage_b)
+print, 'Input: ', nfpmb
+
+
+
+if n_elements(badones) gt 1 then begin
+   badones = badones[1:*]
+   badtimes = data[badones].time
+   save, badones,badimage_a, badimage_b, badtimes, file = badfile
+   print, 'Total bad ones: ', n_elements(badones)
+endif else print, 'No bad ones!'
+
+;print, 'Total used for FPMA: ', n_elements(data_a) , ' of ', nfpma
+;print, 'Total used for FPMB: ', n_elements(data_b) , ' of' ,nfpmb 
 
 END

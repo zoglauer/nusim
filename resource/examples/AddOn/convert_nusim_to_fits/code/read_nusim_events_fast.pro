@@ -80,6 +80,8 @@ WHILE(~EOF(lun)) DO begin
 
       thisline = strsplit(dataline, /extract)
       IF n_elements(thisline) LT 11 THEN stop 
+      if n lt 0 or n gt blocksize -1 then stop
+ 
       data_block[n].fpm = fix(thisline[1])
 ;      data[n].detid = fix(thisline[2])
 
@@ -100,13 +102,13 @@ WHILE(~EOF(lun)) DO begin
       IF n eq blocksize-1 THEN begin
          if n_elements(data) eq 0 then data = data_block else $
             data = [temporary(data), data_block]
-         n = -1
+         n = -1.
          tnow = systime(1)
          print, 'Time to process last '+string(blocksize)+': ', tnow - tlast
          tlast = tnow
 
          print, 'Number of photons read in: ', n_elements(data) 
-;         break
+         
       endif
    endif
 

@@ -1,0 +1,48 @@
+PRO invert_pixpos
+
+
+; Read in the positions...
+pospath = getenv('CALDB')+'/data/nustar/fpm/bcf/pixpos/'
+pos_a_0 = mrdfits(pospath+'nuApixpos20100101v001.fits', 1, /silent)
+pos_a_1 =  mrdfits(pospath+'nuApixpos20100101v001.fits', 2, /silent)
+pos_a_2 =  mrdfits(pospath+'nuApixpos20100101v001.fits', 3, /silent)
+pos_a_3 =  mrdfits(pospath+'nuApixpos20100101v001.fits', 4, /silent)
+
+pos_b_0 = mrdfits(pospath+'nuBpixpos20100101v001.fits', 1, /silent)
+pos_b_1 =  mrdfits(pospath+'nuBpixpos20100101v001.fits', 2, /silent)
+pos_b_2 =  mrdfits(pospath+'nuBpixpos20100101v001.fits', 3, /silent)
+pos_b_3 =  mrdfits(pospath+'nuBpixpos20100101v001.fits', 4, /silent)
+
+
+; Define the transformation from the DET1 origin to the
+; FPM origin. This is in the alignments FITS file, but
+; we can just use the real number here. FPM is offset wrt
+; DET1 by 180 subcells, or...
+fpm_res = 604.8 / 5.
+fpm_origin = 180 * fpm_res; microns
+
+invert_struct = {rawx:intarr(10), rawy:intarr(10), pdf:fltarr(10)}
+invert_data = replicate(invert_struct, (360, 360))
+for thisx = 0, 359 do begin
+   for thisy = 0, 359 do begin
+      for p = 0, 1023 do begin
+         if thisx - pos_b_0[p].ref_det1x lt 7 and thisx ge pos_b_0[p].ref_det1x and $
+            thisy - pos_b_0[p].ref_det1y lt 7 and thisy ge pos_b_0[p].ref_dety then begin
+            for x = 0, 6 do begin
+               for y = 0, 6 do begin
+                 if pos_b_0[p].pdf[x, y] gt min(invert_data[thisx, thisy].pdf, minind) then begin
+                    invert_data[thisx, thisy].rawx = x + pos_b_0[p].ref_det1x
+                    invert_data[thisx, thisy].rawy = y + pos_b_0[p].ref_det1y
+                    invert_data[thisx, thisy].pdf[minind] = pos_b_0[p].pdf[x, y]
+                 endif
+              endfor
+            endfor
+         endfor
+      endfor
+      stop
+   endfor
+endfor
+
+
+
+END
