@@ -34,6 +34,7 @@ using namespace std;
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TMarker.h>
+#include <TLine.h>
 #include <TString.h>
 #include <TVector3.h>
 
@@ -226,17 +227,26 @@ bool Pointer::Analyze()
   vector<double> pRAs;
   vector<double> pDECs;
   
-  double FrameSize = 6.5/60;
-  double Angle = 0;
+  /* Best for dual pointing
+  double FrameSize = 6.7/60;
+  double Angle = 40;
   
   double RefDEC = -27.8;
   double RefRA = 53.02;
+  */
+  
+  double FrameSize = 6.6/60;
+  double Angle = 40;
+  double AngleOffsetForNuSIM = 27.5;
+  
+  double RefDEC = -27.82;
+  double RefRA = 52.93;
   
   vector<int> sRAs;
   vector<int> sDECs;
   
-  for (int r = -1; r <= 2; ++r) {  
-    for (int d = -1; d <= 2; ++d) {  
+  for (int r = 0; r <= 2; ++r) {  
+    for (int d = 0; d <= 2; ++d) {  
       sRAs.push_back(r); sDECs.push_back(d);
     }
   }  
@@ -259,9 +269,14 @@ bool Pointer::Analyze()
   ofstream fout;
   fout.open("Pointings.pat");
   for (unsigned int s = 0; s < pRAs.size(); ++s) {
-    fout<<"RD "<<pRAs[s]<<" "<<pDECs[s]<<" "<<Angle<<" 10"<<endl;
+    fout<<"RD "<<pRAs[s]<<" "<<pDECs[s]<<" "<<Angle-AngleOffsetForNuSIM<<" 10"<<endl;
   }  
   fout.close();
+
+  TCanvas* Canvas = new TCanvas();
+  Canvas->cd();
+  Hist->Draw("colz");
+  Canvas->Update();
 
 
   for (unsigned int s = 0; s < pRAs.size(); ++s) {
@@ -311,13 +326,21 @@ bool Pointer::Analyze()
     mdprDir.Rotate(Angle*c_Rad, Dir);
     Hist->Fill(mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg, 3);
    
+    TLine* mD = new TLine(mdmrDir.Phi()*c_Deg, (mdmrDir.Theta()-c_Pi/2)*c_Deg, mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg);
+    mD->Draw();
+    
+    TLine* pD = new TLine(pdmrDir.Phi()*c_Deg, (pdmrDir.Theta()-c_Pi/2)*c_Deg, pdprDir.Phi()*c_Deg, (pdprDir.Theta()-c_Pi/2)*c_Deg);
+    pD->Draw();
+    
+    TLine* mR = new TLine(pdmrDir.Phi()*c_Deg, (pdmrDir.Theta()-c_Pi/2)*c_Deg, mdmrDir.Phi()*c_Deg, (mdmrDir.Theta()-c_Pi/2)*c_Deg);
+    mR->Draw();
+    
+    TLine* pR = new TLine(mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg, pdprDir.Phi()*c_Deg, (pdprDir.Theta()-c_Pi/2)*c_Deg);
+    pR->Draw();
   }
-  
-  TCanvas* Canvas = new TCanvas();
-  Canvas->cd();
-  Hist->Draw("colz");
+  Canvas->Modified();
   Canvas->Update();
-  
+
   return true;
 }
 
