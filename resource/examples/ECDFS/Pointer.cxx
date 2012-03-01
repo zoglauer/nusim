@@ -200,6 +200,7 @@ bool Pointer::Analyze()
 
   vector<double> RAs;
   vector<double> DECs;
+  vector<double> Fluxs;
   
   double m_MinRA = numeric_limits<double>::max();
   double m_MaxRA = -numeric_limits<double>::max();
@@ -215,13 +216,16 @@ bool Pointer::Analyze()
       DECs.push_back(Sources[s]->GetPositionParameter1()/deg);
       if (DECs.back() < m_MinDEC) m_MinDEC = DECs.back();
       if (DECs.back() > m_MaxDEC) m_MaxDEC = DECs.back();
+      Fluxs.push_back(Sources[s]->GetFlux());
     }
   }
   
   double Tol = 0.1;
-  TH2D* Hist = new TH2D("Randoms", "Randoms", 200, m_MinRA-Tol, m_MaxRA+Tol, 200, m_MinDEC-Tol, m_MaxDEC+Tol);
+  TH2D* Hist = new TH2D("Pointings", "Pointings", 200, m_MinRA-Tol, m_MaxRA+Tol, 200, m_MinDEC-Tol, m_MaxDEC+Tol);
+  Hist->SetXTitle("RA [deg]");
+  Hist->SetYTitle("DEC [deg]");
   for (unsigned int s = 0; s < RAs.size(); ++s) {
-    Hist->Fill(RAs[s], DECs[s]);  
+    Hist->Fill(RAs[s], DECs[s], Fluxs[s]);  
   }
 
   vector<double> pRAs;
@@ -235,18 +239,18 @@ bool Pointer::Analyze()
   double RefRA = 53.02;
   */
   
-  double FrameSize = 6.6/60;
+  double FrameSize = 6.5/60;
   double Angle = 40;
   double AngleOffsetForNuSIM = 27.5;
   
-  double RefDEC = -27.82;
+  double RefDEC = -27.8;
   double RefRA = 52.93;
   
   vector<int> sRAs;
   vector<int> sDECs;
   
-  for (int r = 0; r <= 2; ++r) {  
-    for (int d = 0; d <= 2; ++d) {  
+  for (int d = 0; d <= 2; ++d) {  
+    for (int r = 0; r <= 2; ++r) {  
       sRAs.push_back(r); sDECs.push_back(d);
     }
   }  
@@ -281,50 +285,25 @@ bool Pointer::Analyze()
 
   for (unsigned int s = 0; s < pRAs.size(); ++s) {
     cout<<pRAs[s]<<":"<<pDECs[s]<<endl;
-    Hist->Fill(pRAs[s], pDECs[s], 5);
 
     TVector3 Dir;
     Dir.SetMagThetaPhi(1.0, pDECs[s]*c_Rad+c_Pi/2, pRAs[s]*c_Rad);
-
-    TVector3 pdzrDir;
-    pdzrDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize)*c_Rad+c_Pi/2, pRAs[s]*c_Rad);
-    pdzrDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(pdzrDir.Phi()*c_Deg, (pdzrDir.Theta()-c_Pi/2)*c_Deg, 3);
-
-    TVector3 mdzrDir;
-    mdzrDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize)*c_Rad+c_Pi/2, pRAs[s]*c_Rad);
-    mdzrDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(mdzrDir.Phi()*c_Deg, (mdzrDir.Theta()-c_Pi/2)*c_Deg, 3);
-
-    TVector3 zdprDir;
-    zdprDir.SetMagThetaPhi(1.0, pDECs[s]*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
-    zdprDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(zdprDir.Phi()*c_Deg, (zdprDir.Theta()-c_Pi/2)*c_Deg, 3);
-
-    TVector3 zdmrDir;
-    zdmrDir.SetMagThetaPhi(1.0, pDECs[s]*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
-    zdmrDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(zdmrDir.Phi()*c_Deg, (zdmrDir.Theta()-c_Pi/2)*c_Deg, 3);
  
     TVector3 pdmrDir;
     pdmrDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
     pdmrDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(pdmrDir.Phi()*c_Deg, (pdmrDir.Theta()-c_Pi/2)*c_Deg, 3);
   
     TVector3 pdprDir;
     pdprDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
     pdprDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(pdprDir.Phi()*c_Deg, (pdprDir.Theta()-c_Pi/2)*c_Deg, 3);
  
     TVector3 mdmrDir;
     mdmrDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
     mdmrDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(mdmrDir.Phi()*c_Deg, (mdmrDir.Theta()-c_Pi/2)*c_Deg, 3);
   
     TVector3 mdprDir;
     mdprDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
     mdprDir.Rotate(Angle*c_Rad, Dir);
-    Hist->Fill(mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg, 3);
    
     TLine* mD = new TLine(mdmrDir.Phi()*c_Deg, (mdmrDir.Theta()-c_Pi/2)*c_Deg, mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg);
     mD->Draw();
