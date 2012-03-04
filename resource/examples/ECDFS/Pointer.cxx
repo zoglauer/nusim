@@ -83,6 +83,39 @@ private:
 Pointer::Pointer() : m_Interrupt(false)
 {
   gStyle->SetPalette(1, 0);
+
+  gStyle->SetTitleBorderSize(0);
+  gStyle->SetTitleFillColor(0);
+
+  gStyle->SetTitleAlign(13);
+  gStyle->SetTitleX(0.15);
+  gStyle->SetTitleW(0.7);
+  gStyle->SetTitleY(0.95);
+  gStyle->SetTitleFont(72, "");
+
+  gStyle->SetTitleFont(42, "XYZ");
+  gStyle->SetTitleOffset(1.2, "X");
+  gStyle->SetTitleOffset(1.8, "Y");
+  gStyle->SetTitleOffset(1.2, "Z");
+  
+  gStyle->SetLabelFont(42, "XYZ");
+  gStyle->SetLabelSize(0.03, "XYZ");
+  
+  gStyle->SetFrameBorderSize(0);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetPadBorderSize(0);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetCanvasBorderSize(0);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetCanvasColor(0);
+
+  double Margin = 0.15;
+  gStyle->SetPadLeftMargin(Margin);
+  gStyle->SetPadRightMargin(Margin);
+  gStyle->SetPadTopMargin(Margin);
+  gStyle->SetPadBottomMargin(Margin);
+
+  gStyle->SetOptStat(0);
 }
 
 
@@ -224,6 +257,7 @@ bool Pointer::Analyze()
   TH2D* Hist = new TH2D("Pointings", "Pointings", 200, m_MinRA-Tol, m_MaxRA+Tol, 200, m_MinDEC-Tol, m_MaxDEC+Tol);
   Hist->SetXTitle("RA [deg]");
   Hist->SetYTitle("DEC [deg]");
+  Hist->SetStats(false);
   for (unsigned int s = 0; s < RAs.size(); ++s) {
     Hist->Fill(RAs[s], DECs[s], Fluxs[s]);  
   }
@@ -239,18 +273,21 @@ bool Pointer::Analyze()
   double RefRA = 53.02;
   */
   
-  double FrameSize = 6.5/60;
-  double Angle = 40;
-  double AngleOffsetForNuSIM = 27.5;
+  double FrameSize = 6.6/60;
+  double Angle = 0;
+  double AngleOffsetForNuSIM = 37;
   
-  double RefDEC = -27.8;
+  double RefDEC = -27.98;
   double RefRA = 52.93;
+  
+  double PointingShiftForNuSIMRA = 0.02;
+  double PointingShiftForNuSIMDEC = 0.02;
   
   vector<int> sRAs;
   vector<int> sDECs;
   
-  for (int d = 0; d <= 2; ++d) {  
-    for (int r = 0; r <= 2; ++r) {  
+  for (int d = 0; d <= 3; ++d) {  
+    for (int r = 0; r <= 3; ++r) {  
       sRAs.push_back(r); sDECs.push_back(d);
     }
   }  
@@ -273,7 +310,7 @@ bool Pointer::Analyze()
   ofstream fout;
   fout.open("Pointings.pat");
   for (unsigned int s = 0; s < pRAs.size(); ++s) {
-    fout<<"RD "<<pRAs[s]<<" "<<pDECs[s]<<" "<<Angle-AngleOffsetForNuSIM<<" 10"<<endl;
+    fout<<"RD "<<pRAs[s]+PointingShiftForNuSIMRA<<" "<<pDECs[s]+PointingShiftForNuSIMDEC<<" "<<Angle-AngleOffsetForNuSIM<<" 10"<<endl;
   }  
   fout.close();
 
