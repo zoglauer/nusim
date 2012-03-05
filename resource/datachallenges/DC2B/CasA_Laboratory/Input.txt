@@ -1,0 +1,21 @@
+Input for CasA-Laboratory - DC2B sims:
+
+(1)
+SNR:
+Image: Chandra 4-6 keV (shrunk by 65.85% of its original value)
+Spectrum: 1.5*E^-3 ph/cm2/s/keV (expected value from Stephen Reynolds EXCLUDING thermal component!)
+
+Ti:
+Image: Chandra Fe-K (shrunk by 65.85% of its original value)
+Spectrum: 67.9 keV with Gaussian-broadening of ~2 keV FWHM (0.85 keV = 1 sigma)
+Flux: 5.0*10^-4 ph/cm2/s -- 20x stronger than expected (2.5*10^-5 ph/cm2/s)
+
+(2)
+Disk with 0.03 degree radius and the CasA (SNR + Ti) flux and spectrum as in (1) on differemt wafer
+
+(3)
+Ti as in (1) on different wafer with doubled flux
+
+
+Pointing
+Single pointing putting SNR from (1) in center of wafer optical-axis wafer is on
