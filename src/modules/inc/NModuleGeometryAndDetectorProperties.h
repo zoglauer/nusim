@@ -39,6 +39,11 @@ class NModuleGeometryAndDetectorProperties : public NModule, public NModuleInter
   NModuleGeometryAndDetectorProperties(NSatellite& Satellite);
   //! Default destructor
   virtual ~NModuleGeometryAndDetectorProperties();
+  
+  //! Enable or disable the detector gaps
+  void SetUseDetectorGaps(bool UseDetectorGaps) { m_UseDetectorGaps = UseDetectorGaps; }
+  //! Return true if the detector gaps enabled
+  bool GetUseDetectorGaps() const { return m_UseDetectorGaps; }
 
   //! Initialize the module
   virtual bool Initialize();
@@ -66,6 +71,9 @@ class NModuleGeometryAndDetectorProperties : public NModule, public NModuleInter
 
   // private members:
  private:
+   
+  //! Use the detector gaps
+  bool m_UseDetectorGaps;
 
 
 

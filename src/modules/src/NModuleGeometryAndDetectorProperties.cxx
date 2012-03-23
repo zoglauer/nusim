@@ -26,7 +26,7 @@
 #include "MFile.h"
 
 // NuSTAR libs:
-#include "NGUIOptions.h"
+#include "NGUIOptionsGeometryAndDetectorProperties.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,6 +65,8 @@ NModuleGeometryAndDetectorProperties::NModuleGeometryAndDetectorProperties(NSate
   //m_Diagnostics = new MGUIDiognosticsGeometryAndDetectorProperties();
 
   // Add additional initializations here:
+  
+  m_UseDetectorGaps = true;
 }
 
 
@@ -84,6 +86,11 @@ bool NModuleGeometryAndDetectorProperties::Initialize()
 {
   // Initialize the module 
 
+  if (m_UseDetectorGaps == false) {
+    cout<<"Information: Using NO detector gaps! I hope you know what you are doing!"<<endl;
+    m_HalfDimension = MVector(10.25, 10.25, 1.0);
+  }
+  
   if (LoadCrossSections() == false) return false;
 
   return true;
@@ -102,10 +109,7 @@ void NModuleGeometryAndDetectorProperties::ShowOptionsGUI()
   // If you want your own option dialog derive one from NGUIOptions
   // (probably you might want to use the template) and replace the following line
 
-  NGUIOptions* Options = new NGUIOptions(this);
-
-  // with something like:
-  // NGUIOptionsGeometryAndDetectorProperties* Options = new NGUIOptionsGeometryAndDetectorProperties(this);
+  NGUIOptionsGeometryAndDetectorProperties* Options = new NGUIOptionsGeometryAndDetectorProperties(this);
 
   // this stays always the same:
   Options->Create();
@@ -120,12 +124,10 @@ bool NModuleGeometryAndDetectorProperties::ReadXmlConfiguration(MXmlNode* Node)
 {
   //! Read the configuration data from an XML node
 
-  /*
-  MXmlNode* SomeTagNode = Node->GetNode("SomeTag");
-  if (SomeTagNode != 0) {
-    m_SomeTagValue = SomeTagNode->GetValue();
+  MXmlNode* UseDetectorGapsNode = Node->GetNode("UseDetectorGaps");
+  if (UseDetectorGapsNode != 0) {
+    m_UseDetectorGaps = UseDetectorGapsNode->GetValue();
   }
-  */
 
   return true;
 }
@@ -139,10 +141,7 @@ MXmlNode* NModuleGeometryAndDetectorProperties::CreateXmlConfiguration()
   //! Create an XML node tree from the configuration
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
-  
-  /*
-  MXmlNode* SomeTagNode = new MXmlNode(Node, "SomeTag", "SomeValue");
-  */
+  new MXmlNode(Node, "UseDetectorGaps", m_UseDetectorGaps);
 
   return Node;
 }
