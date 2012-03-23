@@ -663,7 +663,7 @@ bool NSupervisor::Run()
         // Time jump only the source engine and the pointing engine:
         NTime BlackoutDuration = m_Satellite.GetBlackoutDuration(m_Satellite.GetTime(), TimeOfNextEvent);
         BlackoutTime += BlackoutDuration;
-        if (SourceStart->GetTimeOfNextEvent() < m_Satellite.EndOfNextBlackout(TimeOfNextEvent)) {
+        if (SourceStart != 0 && SourceStart->GetTimeOfNextEvent() < m_Satellite.EndOfNextBlackout(TimeOfNextEvent)) {
           SourceStart->PerformTimeJump(BlackoutDuration + 100*ns);
         }
         Pointing->StartNewOrbit(TimeOfNextEvent, BlackoutDuration);
