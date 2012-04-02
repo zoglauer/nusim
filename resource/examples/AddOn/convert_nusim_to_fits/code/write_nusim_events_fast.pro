@@ -222,7 +222,7 @@ pioffset = 30 ; to shift the PI channels to the left..WHY?!?!?!?!
 ; distribution for each software pixel and tells you where the count
 ; likely actually hit. For now, just have invert_fpmb.sav. Once you
 ; get the FPMA stuff, this call will be to load invert_fpma.sav
-restore, 'invert_new_fpmb.sav'
+restore, 'invert_new_fpma.sav'
 ; loads invert_data
 
 
