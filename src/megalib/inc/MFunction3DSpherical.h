@@ -54,15 +54,27 @@ class MFunction3DSpherical : public MFunction3D
            const TString KeyWord,
            const unsigned int InterpolationType = c_InterpolationLinear);
 
-  bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, const vector<double>& Values, 
-           unsigned int InterpolationType = c_InterpolationLinear) { return MFunction3D::Set(X, Y, Z, Values, InterpolationType); }
-
   //! Return the total content of the function
   //! This is a simplified integration which uses the value at the bin centers and the (3D) bin size
   double Integrate() const;
 
   //! Return random numbers x, y, z distributed as the underlying function
   void GetRandom(double& x, double& y, double& z);
+
+  //! Evaluate the data for a specific x value 
+  double Eval(double x, double y, double z) const;
+
+  //! Scale the x-axis to it's new min and max
+  void RescaleY(double YMin, double YMax) { MFunction3D::RescaleY(YMin+90, YMax+90); }
+  
+  //! Get the minimum y-value
+  double GetYMin() const { return MFunction3D::GetYMin() - 90; } 
+  
+  //! Get the maximum y-value
+  double GetYMax() const { return MFunction3D::GetYMax() - 90; } 
+  
+  //! Return the y-axis
+  vector<double> GetYAxis() const;
 
   //! Plot the function in a Canvas (diagnostics only)
   void Plot(bool Random = false);

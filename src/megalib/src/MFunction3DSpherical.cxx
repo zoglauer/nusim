@@ -143,6 +143,10 @@ bool MFunction3DSpherical::Set(const TString FileName, const TString KeyWord,
     if (Parser.GetTokenizerAt(i)->IsTokenAt(0, "TA") == true) {
       if (Parser.GetTokenizerAt(i)->GetNTokens() >= 2) {
         m_Y = Parser.GetTokenizerAt(i)->GetTokenAtAsDoubleVector(1);
+        // Conversion to theta:
+        for (unsigned int y = 0; y < m_Y.size(); ++y) {
+           m_Y[y] += 90;
+        }
       } else {
         mout<<"In the function defined by: "<<FileName<<endl;
         mout<<"TA keyword (theta axis) has not enough parameters!"<<endl;
@@ -334,7 +338,8 @@ void MFunction3DSpherical::Save(TString FileName)
 
   out<<"TA ";
   for (unsigned int y = 0; y < m_Y.size(); ++y) {
-    out<<m_Y[y]<<" ";
+    // Conversion to DEC
+    out<<m_Y[y]-90<<" ";
   }
   out<<endl;
 
@@ -357,8 +362,30 @@ void MFunction3DSpherical::Save(TString FileName)
   
   out.close();
 }
-  
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+double MFunction3DSpherical::Eval(double x, double y, double z) const
+{
+  return MFunction3D::Eval(x, y+90, z);
+}
+ 
+
+////////////////////////////////////////////////////////////////////////////////
+
+ 
+vector<double> MFunction3DSpherical::GetYAxis() const
+{  
+  //! Return the y-axis
+
+  vector<double> Y = m_Y;
+  for (unsigned int y = 0; y < Y.size(); ++y) Y[y] -= 90;
+  return Y;
+}
+  
+  
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -378,7 +405,7 @@ double MFunction3DSpherical::Integrate() const
       for (unsigned int z = 0; z < m_Z.size()-1; ++z) {
         double zCenter = 0.5*(m_Z[z+1] + m_Z[z]);
         double zSize = fabs(m_Z[z+1] - m_Z[z]);
-        Integral += xSize*ySize*zSize*Eval(xCenter, yCenter, zCenter);
+        Integral += xSize*ySize*zSize*MFunction3D::Eval(xCenter, yCenter, zCenter);
       }
     }
   }
@@ -399,14 +426,26 @@ void MFunction3DSpherical::GetRandom(double& x, double& y, double& z)
     m_Maximum = GetVMax();
   }
 
+  double x_min = GetXMin();
+  double x_diff = GetXMax() - GetXMin();
+  
+  double y_min = cos(m_Y[0]*c_Rad);
+  double y_diff = cos(m_Y[0]*c_Rad) - cos(m_Y.back()*c_Rad);
+  
+  double z_min = GetZMin();
+  double z_diff = GetZMax() - GetZMin();
+  
   double v = 0;
   do {
-    x = gRandom->Rndm()*(GetXMax() - GetXMin()) + GetXMin();
-    y = acos(cos(GetYMin()*c_Rad) - gRandom->Rndm()*(cos(GetYMin()*c_Rad) - cos(GetYMax()*c_Rad)))*c_Deg;
-    z = gRandom->Rndm()*(GetZMax() - GetZMin()) + GetZMin();
-
-    v = Eval(x, y, z);
+    x = gRandom->Rndm()*x_diff + x_min;
+    y = acos(y_min - gRandom->Rndm()*y_diff)*c_Deg;
+    z = gRandom->Rndm()*z_diff + z_min;
+    
+    v = MFunction3D::Eval(x, y, z);
   } while (m_Maximum*gRandom->Rndm() > v);
+  
+  // Conversion to DEC
+  y -= 90;
 }
 
 
@@ -419,7 +458,7 @@ void MFunction3DSpherical::Plot(bool Random)
   
   if (m_X.size() >= 2 && m_Y.size() >= 2 && m_Z.size() >= 2) {
 
-    TH3D* Hist = new TH3D("MFunction3DSpherical", "MFunction3DSpherical", 50, m_X.front(), m_X.back(), 50, m_Y.front(), m_Y.back(), 50, m_Z.front(), m_Z.back());
+    TH3D* Hist = new TH3D("MFunction3DSpherical", "MFunction3DSpherical", m_X.size(), m_X.front(), m_X.back(), m_Y.size(), m_Y.front()-90, m_Y.back()-90, m_Z.size(), m_Z.front(), m_Z.back());
     Hist->SetXTitle("phi in degree");
     Hist->SetYTitle("theta in degree");
     Hist->SetZTitle("energy in keV");
@@ -427,10 +466,13 @@ void MFunction3DSpherical::Plot(bool Random)
     TCanvas* Canvas = new TCanvas("DiagnosticsCanvas", "DiagnosticsCanvas");
     Canvas->cd();
 
+    cout<<"Vmax: "<<GetVMax()<<endl;
+    
     if (Random == true) {
       double x, y, z;
       unsigned int i_max = 100000;
       for (unsigned int i = 0; i < 100000; ++i) {
+        cout<<"i: "<<i<<endl;
         if (i % (i_max/1000) == 0) {
           cout<<"\rSimulation progress: "<<100.0 * i/i_max<<"     "<<flush;
           Hist->Draw("colz");
