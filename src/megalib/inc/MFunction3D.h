@@ -1,7 +1,7 @@
 /*
  * MFunction3D.h
  *
- * Copyright (C) 2008-2010 by Andreas Zoglauer.
+ * Copyright (C) by Andreas Zoglauer.
  * All rights reserved.
  *
  * Please see the source-file for the copyright-notice.
@@ -50,8 +50,8 @@ class MFunction3D
 
   //! Set the basic data, load the file and parse it
   virtual bool Set(const TString FileName,
-           const TString KeyWord,
-           const unsigned int InterpolationType = c_InterpolationLinear);
+                   const TString KeyWord,
+                   const unsigned int InterpolationType = c_InterpolationLinear);
 
   //! Set the basic data from four vectors
   virtual bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, const vector<double>& Values, unsigned int InterpolationType = c_InterpolationLinear);
@@ -74,6 +74,12 @@ class MFunction3D
   //! Scale the x-axis to it's new min and max
   void RescaleZ(double ZMin, double ZMax);
 
+  //! Invert the x-axis content
+  void InvertX();
+
+  //! Invert the y-axis content
+  void InvertY();
+
   //! Invert the z-axis content
   void InvertZ();
 
@@ -81,7 +87,7 @@ class MFunction3D
   void ScaleV(double Scaler);
 
   //! Evaluate the data for a specific x value 
-  double Eval(double x, double y, double z) const;
+  virtual double Eval(double x, double y, double z) const;
 
   //! Return random numbers x, y distributed as the underlying function
   virtual void GetRandom(double& x, double& y, double& z);
@@ -91,9 +97,9 @@ class MFunction3D
   //! Get the maximum x-value
   double GetXMax() const;
   //! Get the minimum y-value
-  double GetYMin() const;
+  virtual double GetYMin() const;
   //! Get the maximum y-value
-  double GetYMax() const;
+  virtual double GetYMax() const;
   //! Get the minimum z-value
   double GetZMin() const;
   //! Get the maximum z-value
@@ -101,7 +107,16 @@ class MFunction3D
   //! Get the minimum value
   double GetVMin() const;
   //! Get the maximum value
-  double GetVMax() const;
+  double GetVMax();
+
+  //! Return the x-axis
+  vector<double> GetXAxis() const { return m_X; }
+  //! Return the y-axis
+  vector<double> GetYAxis() const { return m_Y; }
+  //! Return the z-axis
+  vector<double> GetZAxis() const { return m_Z; }
+  //! Return all values
+  vector<double> GetValues() const { return m_V; }
 
   //! ID representing an unknown interpolation
   static const unsigned int c_InterpolationUnknown;
@@ -111,10 +126,19 @@ class MFunction3D
   static const unsigned int c_InterpolationLinear;
 
   //! Plot the function in a Canvas (diagnostics only)
-  virtual void Plot();
+  virtual void Plot(bool Random = false);
+
+  //! Save the data:
+  virtual bool Save(const TString FileName, const TString Keyword = "DP");
 
   // protected methods:
  protected:
+  //! Find the x bin fast (switches between linear search and binary search)
+  int FindXBin(double x) const;
+  //! Find the y bin fast (switches between linear search and binary search)
+  int FindYBin(double y) const;
+  //! Find the z bin fast (switches between linear search and binary search)
+  int FindZBin(double z) const;
 
   // private methods:
  private:

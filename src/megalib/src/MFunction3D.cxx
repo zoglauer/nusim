@@ -2,7 +2,7 @@
  * MFunction3D.cxx
  *
  *
- * Copyright (C) 2008-2010 by Andreas Zoglauer.
+ * Copyright (C) by Andreas Zoglauer.
  * All rights reserved.
  *
  *
@@ -27,7 +27,8 @@
 #include "MFunction3D.h"
 
 // Standard libs:
-#include <algorithm>
+#include <fstream>
+#include <iomanip>
 #include <limits>
 using namespace std;
 
@@ -156,7 +157,7 @@ bool MFunction3D::Set(const TString FileName, const TString KeyWord,
         m_Z = Parser.GetTokenizerAt(i)->GetTokenAtAsDoubleVector(1);
       } else {
         mout<<"In the function defined by: "<<FileName<<endl;
-        mout<<"YA keyword has not enough parameters!"<<endl;
+        mout<<"ZA keyword has not enough parameters!"<<endl;
         return false;
       }
     }
@@ -428,9 +429,55 @@ void MFunction3D::RescaleY(double YMin, double YMax)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+void MFunction3D::InvertX()
+{
+  // Invert the x-axis
+
+  vector<double> Temp = m_V;
+
+  for (unsigned int x = 0; x < m_X.size(); ++x) {
+    unsigned int x_inv = m_X.size() - x - 1;
+    for (unsigned int y = 0; y < m_Y.size(); ++y) {
+      for (unsigned int z = 0; z < m_Z.size(); ++z) {
+        m_V[x + m_X.size()*y + m_X.size()*m_Y.size()*z] = Temp[x_inv + m_X.size()*y + m_X.size()*m_Y.size()*z];
+      }
+    }
+  }
+
+  // Clean up:
+  m_Maximum = g_DoubleNotDefined;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void MFunction3D::InvertY()
+{
+  // Invert the y-axis
+
+  vector<double> Temp = m_V;
+
+  for (unsigned int x = 0; x < m_X.size(); ++x) {
+    for (unsigned int y = 0; y < m_Y.size(); ++y) {
+      unsigned int y_inv = m_Y.size() - y - 1;
+      for (unsigned int z = 0; z < m_Z.size(); ++z) {
+        m_V[x + m_X.size()*y + m_X.size()*m_Y.size()*z] = Temp[x + m_X.size()*y_inv + m_X.size()*m_Y.size()*z];
+      }
+    }
+  }
+
+  // Clean up:
+  m_Maximum = g_DoubleNotDefined;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void MFunction3D::InvertZ()
 {
-  // Invert the z-content
+  // Invert the z-axis
 
   vector<double> Temp = m_V;
 
@@ -442,7 +489,6 @@ void MFunction3D::InvertZ()
       }
     }
   }
-
 
   // Clean up:
   m_Maximum = g_DoubleNotDefined;
@@ -523,65 +569,49 @@ double MFunction3D::Eval(double x, double y, double z) const
   } else if (m_InterpolationType == c_InterpolationLinear) {
 
     // Get Position:
-    int xPosition = -1; 
-    for (unsigned int i = 0; i < m_X.size(); ++i) {
-      if (m_X[i] > x) {
-        break;
-      } 
-      xPosition = (int) i;
-    }
+    int xPosition = FindXBin(x);
+    int yPosition = FindYBin(y);
+    int zPosition = FindZBin(z);
 
-    int yPosition = -1; 
-    for (unsigned int i = 0; i < m_Y.size(); ++i) {
-      if (m_Y[i] > y) {
-        break;
-      } 
-      yPosition = (int) i;
-    }
-
-    int zPosition = -1; 
-    for (unsigned int i = 0; i < m_Z.size(); ++i) {
-      if (m_Z[i] > z) {
-        break;
-      } 
-      zPosition = (int) i;
-    }
+    int xMax = m_X.size();
+    int yMax = m_Y.size();
+    int zMax = m_Z.size();
 
     //cout<<x<<" --> "<<xPosition<<"|"<<y<<" --> "<<yPosition<<"|"<<z<<" --> "<<zPosition<<": "<<m_V[xPosition + m_X.size()*yPosition + m_X.size()*m_Y.size()*zPosition]<<endl;
 
     if (xPosition < 0) xPosition = 0;
     if (yPosition < 0) yPosition = 0;
     if (zPosition < 0) zPosition = 0;
-    if (xPosition >= (int) m_X.size()-1) xPosition = (int) (m_X.size()-2);
-    if (yPosition >= (int) m_Y.size()-1) yPosition = (int) (m_Y.size()-2);
-    if (zPosition >= (int) m_Z.size()-1) zPosition = (int) (m_Z.size()-2);
+    if (xPosition >= xMax-1) xPosition = xMax-2;
+    if (yPosition >= yMax-1) yPosition = yMax-2;
+    if (zPosition >= zMax-1) zPosition = zMax-2;
 
 //     return m_V[xPosition + m_X.size()*yPosition + m_X.size()*m_Y.size()*zPosition];
 
     double m, t;
 
     // Interpolate at ymin/zmin
-    m = (m_V[(xPosition+1) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition)] - m_V[(xPosition) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition)]) 
+    m = (m_V[(xPosition+1) + xMax*(yPosition) + xMax*yMax*(zPosition)] - m_V[(xPosition) + xMax*(yPosition) + xMax*yMax*(zPosition)]) 
       / (m_X[xPosition+1] - m_X[xPosition]);
-    t = m_V[(xPosition) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition)] - m*m_X[xPosition];
+    t = m_V[(xPosition) + xMax*(yPosition) + xMax*yMax*(zPosition)] - m*m_X[xPosition];
     double V_yminzmin = m*x + t;
 
     // Interpolate at ymax/zmin
-    m = (m_V[(xPosition+1) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition)] - m_V[(xPosition) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition)]) 
+    m = (m_V[(xPosition+1) + xMax*(yPosition+1) + xMax*yMax*(zPosition)] - m_V[(xPosition) + xMax*(yPosition+1) + xMax*yMax*(zPosition)]) 
       / (m_X[xPosition+1] - m_X[xPosition]);
-    t = m_V[(xPosition) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition)] - m*m_X[xPosition];
+    t = m_V[(xPosition) + xMax*(yPosition+1) + xMax*yMax*(zPosition)] - m*m_X[xPosition];
     double V_ymaxzmin = m*x + t;
 
     // Interpolate at ymin/zmax
-    m = (m_V[(xPosition+1) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition+1)] - m_V[(xPosition) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition+1)]) 
+    m = (m_V[(xPosition+1) + xMax*(yPosition) + xMax*yMax*(zPosition+1)] - m_V[(xPosition) + xMax*(yPosition) + xMax*yMax*(zPosition+1)]) 
       / (m_X[xPosition+1] - m_X[xPosition]);
-    t = m_V[(xPosition) + m_X.size()*(yPosition) + m_X.size()*m_Y.size()*(zPosition+1)] - m*m_X[xPosition];
+    t = m_V[(xPosition) + xMax*(yPosition) + xMax*yMax*(zPosition+1)] - m*m_X[xPosition];
     double V_yminzmax = m*x + t;
 
     // Interpolate at ymax/zmax
-    m = (m_V[(xPosition+1) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition+1)] - m_V[(xPosition) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition+1)]) 
+    m = (m_V[(xPosition+1) + xMax*(yPosition+1) + xMax*yMax*(zPosition+1)] - m_V[(xPosition) + xMax*(yPosition+1) + xMax*yMax*(zPosition+1)]) 
       / (m_X[xPosition+1] - m_X[xPosition]);
-    t = m_V[(xPosition) + m_X.size()*(yPosition+1) + m_X.size()*m_Y.size()*(zPosition+1)] - m*m_X[xPosition];
+    t = m_V[(xPosition) + xMax*(yPosition+1) + xMax*yMax*(zPosition+1)] - m*m_X[xPosition];
     double V_ymaxzmax = m*x + t;
 
 
@@ -615,10 +645,6 @@ void MFunction3D::GetRandom(double& x, double& y, double& z)
   // Return a random number distributed as the underlying function
   // The follwoing is accurate and safe version but rather slow...
 
-  if (m_Maximum == g_DoubleNotDefined) {
-    m_Maximum = GetVMax();
-  }
-
   double v = 0;
   do {
     x = gRandom->Rndm()*(GetXMax() - GetXMin()) + GetXMin();
@@ -626,7 +652,7 @@ void MFunction3D::GetRandom(double& x, double& y, double& z)
     z = gRandom->Rndm()*(GetZMax() - GetZMin()) + GetZMin();
 
     v = Eval(x, y, z);
-  } while (m_Maximum*gRandom->Rndm() > v);
+  } while (GetVMax()*gRandom->Rndm() > v);
 }
 
 
@@ -715,23 +741,157 @@ double MFunction3D::GetVMin() const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-double MFunction3D::GetVMax() const
+double MFunction3D::GetVMax()
 {
   //! Get the maximum z-value
 
-  double Max = -numeric_limits<double>::max();
-  for (unsigned int i = 0; i < m_V.size(); ++i) {
-    if (m_V[i] > Max) Max = m_V[i];
+  if (m_Maximum == g_DoubleNotDefined) {
+    m_Maximum = -numeric_limits<double>::max();
+    for (unsigned int i = 0; i < m_V.size(); ++i) {
+      if (m_V[i] > m_Maximum) m_Maximum = m_V[i];
+    }
   }
-
-  return Max;
+  
+  return m_Maximum;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void MFunction3D::Plot()
+int MFunction3D::FindXBin(double x) const 
+{
+  //! Find the z bin fast (switches between linear search and binary search)
+
+  massert(m_X.size() >= 2);
+
+  if (x < m_X.front()) return -1;
+  if (x >= m_X.back()) return m_X.size(); 
+
+  if (m_X.size() < 16) {
+    int xPosition = -1;
+    unsigned int x_max = m_X.size();
+    for (unsigned int i = 0; i < x_max; ++i) {
+      if (m_X[i] > x) {
+        break;
+      } 
+      xPosition = (int) i;
+    }
+    return xPosition;
+  } else {
+    // Binary search:
+    unsigned int upper = m_X.size();
+    unsigned int center = 1;
+    unsigned int lower = 0;
+
+    while (upper-lower > 1) {
+      center = (upper+lower) >> 1;
+      if (x == m_X[center]) {
+        return int(center);
+      }
+      if (x < m_X[center]) {
+        upper = center;
+      } else {
+        lower = center;
+      }
+    }
+    return int(lower);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+int MFunction3D::FindYBin(double y) const 
+{
+  //! Find the z bin fast (switches between linear search and binary search)
+
+  massert(m_Y.size() >= 2);
+
+  if (y < m_Y.front()) return -1;
+  if (y >= m_Y.back()) return m_Y.size(); 
+
+  if (m_Y.size() < 16) {
+    int yPosition = -1;
+    unsigned int y_max = m_Y.size();
+    for (unsigned int i = 0; i < y_max; ++i) {
+      if (m_Y[i] > y) {
+        break;
+      } 
+      yPosition = (int) i;
+    }
+    return yPosition;
+  } else {
+    // Binary search:
+    unsigned int upper = m_Y.size();
+    unsigned int center = 1;
+    unsigned int lower = 0;
+
+    while (upper-lower > 1) {
+      center = (upper+lower) >> 1;
+      if (y == m_Y[center]) {
+        return int(center);
+      }
+      if (y < m_Y[center]) {
+        upper = center;
+      } else {
+        lower = center;
+      }
+    }
+    return int(lower);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+int MFunction3D::FindZBin(double z) const 
+{
+  //! Find the z bin fast (switches between linear search and binary search)
+
+  massert(m_Z.size() >= 2);
+
+  if (z < m_Z.front()) return -1;
+  if (z >= m_Z.back()) return m_Z.size(); 
+
+  if (m_Z.size() < 16) {
+    int zPosition = -1;
+    unsigned int z_max = m_Z.size();
+    for (unsigned int i = 0; i < z_max; ++i) {
+      if (m_Z[i] > z) {
+        break;
+      } 
+      zPosition = (int) i;
+    }
+    return zPosition;
+  } else {
+    // Binary search:
+    unsigned int upper = m_Z.size();
+    unsigned int center = 1;
+    unsigned int lower = 0;
+
+    while (upper-lower > 1) {
+      center = (upper+lower) >> 1;
+      if (z == m_Z[center]) {
+        return int(center);
+      }
+      if (z < m_Z[center]) {
+        upper = center;
+      } else {
+        lower = center;
+      }
+    }
+    return int(lower);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void MFunction3D::Plot(bool Random)
 {
   // Plot the function in a Canvas (diagnostics only)
   
@@ -761,6 +921,54 @@ void MFunction3D::Plot()
   } else {
     mout<<"Not enough data points for diagnostics: x="<<m_X.size()<<" y="<<m_Y.size()<<" z="<<m_Z.size()<<endl;
   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool MFunction3D::Save(const TString FileName, const TString Keyword)
+{
+  // Save the data:
+
+  ofstream out;
+  out.open(FileName);
+  if (out.is_open() == false) {
+    mout<<"Unable to open file \""<<FileName<<"\" for writting."<<endl;
+    return false;
+  }
+  
+  out<<scientific;
+  out<<setprecision(8);
+  
+  out<<"IP LIN"<<endl;
+  
+  // x-axis
+  out<<"XA ";
+  for (unsigned int x = 0 ; x < m_X.size(); ++x) out<<m_X[x]<<" ";
+  out<<endl;
+  // y-axis
+  out<<"YA ";
+  for (unsigned int y = 0 ; y < m_Y.size(); ++y) out<<m_Y[y]<<" ";
+  out<<endl;
+  // z-axis
+  out<<"ZA ";
+  for (unsigned int z = 0 ; z < m_Z.size(); ++z) out<<m_Z[z]<<" ";
+  out<<endl;
+  
+  // Value:
+  for (unsigned int x = 0 ; x < m_X.size(); ++x) {
+    for (unsigned int y = 0 ; y < m_Y.size(); ++y) {
+      for (unsigned int z = 0 ; z < m_Z.size(); ++z) {
+        out<<Keyword<<" "<<x<<" "<<y<<" "<<z<<" "<<m_V[x + m_X.size()*y + m_X.size()*m_Y.size()*z]<<endl;
+      }
+    }
+  }
+  out<<"EN"<<endl;
+  out<<endl;
+  out.close();
+
+  return true;
 }
 
 
