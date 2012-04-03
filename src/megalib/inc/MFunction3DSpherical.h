@@ -54,6 +54,9 @@ class MFunction3DSpherical : public MFunction3D
            const TString KeyWord,
            const unsigned int InterpolationType = c_InterpolationLinear);
 
+  //! Set the basic data from four vectors
+  bool Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, const vector<double>& Values, unsigned int InterpolationType = c_InterpolationLinear);
+  
   //! Return the total content of the function
   //! This is a simplified integration which uses the value at the bin centers and the (3D) bin size
   double Integrate() const;

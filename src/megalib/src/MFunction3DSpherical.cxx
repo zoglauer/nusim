@@ -318,6 +318,29 @@ bool MFunction3DSpherical::Set(const TString FileName, const TString KeyWord,
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool MFunction3DSpherical::Set(const vector<double>& X, const vector<double>& Y, const vector<double>& Z, const vector<double>& V, unsigned int InterpolationType)
+{
+  //! Set the basic data from a 1D ResponseMatrix
+
+  m_X = X;
+  m_Y = Y;
+  for (unsigned int y = 0; y < m_Y.size(); ++y) m_Y[y] += 90;
+  m_Z = Z;
+  
+  m_V = V;
+  
+  m_InterpolationType = InterpolationType;
+
+  // Clean up:
+  m_Maximum = g_DoubleNotDefined;
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 void MFunction3DSpherical::Save(TString FileName) 
 {
   // Save to a file:
