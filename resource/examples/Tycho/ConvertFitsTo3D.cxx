@@ -181,7 +181,7 @@ bool ConvertFits::Analyze()
   // Spectrum:
   double EnergyMin = 2;
   double EnergyMax = 82;
-  unsigned int EnergyBins = (unsigned int) 2*(EnergyMax - EnergyMin);
+  unsigned int EnergyBins = (unsigned int) (EnergyMax - EnergyMin);
   TF1* Flux = new TF1("Convert", "0.001", EnergyMin, EnergyMax);
 
   
@@ -331,7 +331,7 @@ bool ConvertFits::Analyze()
    
   cout<<"Saving..."<<endl;
 
-  S.Save("Tycho.v3.3Ddat");
+  S.Save("Tycho.3Ddat");
   
   //S.Plot(true);
 
