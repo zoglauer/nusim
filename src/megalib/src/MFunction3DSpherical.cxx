@@ -371,13 +371,13 @@ double MFunction3DSpherical::Integrate() const
 
   for (unsigned int x = 0; x < m_X.size()-1; ++x) {
     double xCenter = 0.5*(m_X[x+1] + m_X[x]);
-    double xSize = (m_X[x+1] - m_X[x])*c_Rad;
+    double xSize = fabs((m_X[x+1] - m_X[x]))*c_Rad;
     for (unsigned int y = 0; y < m_Y.size()-1; ++y) {
       double yCenter = 0.5*(m_Y[y+1] + m_Y[y]);
-      double ySize = cos(m_Y[y]*c_Rad) - cos(m_Y[y+1]*c_Rad);
+      double ySize = fabs(cos(m_Y[y]*c_Rad) - cos(m_Y[y+1]*c_Rad));
       for (unsigned int z = 0; z < m_Z.size()-1; ++z) {
         double zCenter = 0.5*(m_Z[z+1] + m_Z[z]);
-        double zSize = m_Z[z+1] - m_Z[z];
+        double zSize = fabs(m_Z[z+1] - m_Z[z]);
         Integral += xSize*ySize*zSize*Eval(xCenter, yCenter, zCenter);
       }
     }
