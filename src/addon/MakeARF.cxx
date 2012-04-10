@@ -34,7 +34,7 @@ using namespace std;
 
 // MEGAlib
 #include "MTokenizer.h"
-
+#include "MFile.h"
 
 // NuSIM
 #include <NQuaternion.h>
@@ -173,11 +173,12 @@ bool Target::Initialize()
   }
   LoadEffArea();
   LoadVignet();
-  psfimg.LoadPSF(16);
-
+  if (psfimg.LoadPSF(16) == false) {  
+    return false;
+  }
   //cout<<psfimg.oaa0[100*201+100]<<endl;
   
-  return 0;
+  return true;
 
 }
 
@@ -192,13 +193,15 @@ bool PSF::LoadPSF(int noaa)
   
   for (int i=0;i < noaa; ++i) {
   
-    char FileName[50]; 
-	  sprintf(FileName,"resource/data/responsefiles/NUSTAR_2DPSF_%d.fits",i+1);
+    char cFileName[512]; 
+	  sprintf(cFileName,"$(NUSIM)/resource/data/responsefiles/NuSTAR_2DPSF_%d.fits",i+1);
+  
+    TString FileName(cFileName);
+    MFile::ExpandFileName(FileName);
   
 	  fits_open_file(&File, FileName, READONLY, &Status);
     if (Status != 0) {
-      mgui<<"Unable to open file: "<<endl;
-      mgui<<FileName<<show;
+      mgui<<"Unable to open file: \""<<FileName<<"\""<<show;
       return false;
     }
 
@@ -243,7 +246,7 @@ bool PSF::LoadPSF(int noaa)
     delete [] FloatArray;
   }
 
-  return 0;
+  return true;
 	
 }
 /******************************************************************************/
@@ -259,10 +262,12 @@ bool Target::LoadEffArea()
   int anynull = 0;
   m_File = 0;
   
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_effarea_v2.1.fits", READONLY, &Status);
+  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_effarea_v2.1.fits";
+  MFile::ExpandFileName(FileName);
+  
+  fits_open_file(&m_File, FileName, READONLY, &Status);
   if (Status != 0) {
-    cout<<"Unable to open file: "<<endl;
-    //cout<<FileName<<endl;
+    cout<<"Unable to open file: \""<<FileName<<"\""<<endl;
     return false;
   }
   
@@ -296,11 +301,13 @@ bool Target::LoadVignet()
   float floatnull=0;
   int anynull=0;
   m_File = 0;
-  
-  fits_open_file(&m_File, "resource/data/responsefiles/nustar_vign_v2.1.fits", READONLY, &Status);
+    
+  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_vign_v2.1.fits";
+  MFile::ExpandFileName(FileName);
+
+  fits_open_file(&m_File, FileName, READONLY, &Status);
   if (Status != 0) {
-    cout<<"Unable to open file: "<<endl;
-    //cout<<FileName<<endl;
+    cout<<"Unable to open file: \""<<FileName<<"\""<<endl;
     return false;
   }
   
@@ -384,8 +391,7 @@ bool Target::OpenEvtFile()
   
   fits_open_file(&m_File, SourceInFile, READONLY, &Status);
   if (Status != 0) {
-    cout<<"Unable to open file: "<<endl;
-    cout<<SourceInFile<<endl;
+    cout<<"Unable to open file: \""<<SourceInFile<<"\""<<endl;
     return false;
   }
 
@@ -404,7 +410,8 @@ bool Target::OpenEvtFile()
 	return false;
   }
   DataBase = Dummy;
-  DataBase = "resource/data/AlignmentDatabases/"+DataBase;
+  DataBase = "$(NUSIM)/resource/data/AlignmentDatabases/"+DataBase;
+  MFile::ExpandFileName(DataBase);
 
   fits_read_keyword(m_File, "TCRVL4", Dummy, NULL, &Status);
   if (Status != 0) {
@@ -846,8 +853,8 @@ bool Target::GenerateARF()
 {
 
   
-  OpenEvtFile();
-  ReadCalibratedAlignmentsDB();
+  if (OpenEvtFile() == false) return false;
+  if (ReadCalibratedAlignmentsDB() == false) return false;
 
   int Status = 0;
   float floatnull=0;
@@ -1158,7 +1165,7 @@ int main(int argc, char** argv)
 
 
   Target src;
-  src.Initialize();
+  if (src.Initialize() == false) return 1;
      
   TString InFile = argv[1];
   MTokenizer T;
