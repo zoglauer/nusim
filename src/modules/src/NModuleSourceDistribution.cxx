@@ -313,13 +313,22 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
 {
   //! Generate an optimized pointing pattern
 
-  // We have to initialize a few modules here:
+  // We have to initialize a few modules here - sequence matters
   if (m_Satellite.Initialize() == false) {
     mgui<<"Unable to initialize the satellite - aborting..."<<error;
     return false;
   }
+  if (dynamic_cast<NModule*>(m_Satellite.GetTimeModule())->Initialize() == false) {
+    mgui<<"Unable to initialize the pointing module - aborting..."<<error;
+    return false;
+  }
+  m_Satellite.GetPointingModule()->SetObservationTime(1000000);
   if (dynamic_cast<NModule*>(m_Satellite.GetPointingModule())->Initialize() == false) {
-    mgui<<"Unable to initialize the pointing modulee - aborting..."<<error;
+    mgui<<"Unable to initialize the pointing module - aborting..."<<error;
+    return false;
+  }
+  if (dynamic_cast<NModule*>(m_Satellite.GetOrbitModule())->Initialize() == false) {
+    mgui<<"Unable to initialize the pointing module - aborting..."<<error;
     return false;
   }
   if (dynamic_cast<NModule*>(m_Satellite.GetOrientationsModule())->Initialize() == false) {
@@ -350,12 +359,12 @@ bool NModuleSourceDistribution::GeneratePointingPattern()
   vector<MVector> Tests;
   unsigned int s_max = m_NTestPhotons;
   for (unsigned int s = 0; s < s_max; ++s) {
-    if (s % (s_max/10) == 0) {
+    if (s % (s_max/1000) == 0) {
       cout<<"Simulated "<<s<<"/"<<s_max<<" events"<<endl;
     }
 
     m_Sources[m_NextComponent]->Generate(Photon, 1);
-
+    
     // Need the reverse direction, to find out where the photon came from.  
     MVector SP = Photon.GetDirection();
     SP=-SP;
