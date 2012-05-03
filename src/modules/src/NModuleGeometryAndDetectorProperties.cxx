@@ -126,7 +126,7 @@ bool NModuleGeometryAndDetectorProperties::ReadXmlConfiguration(MXmlNode* Node)
 
   MXmlNode* UseDetectorGapsNode = Node->GetNode("UseDetectorGaps");
   if (UseDetectorGapsNode != 0) {
-    m_UseDetectorGaps = UseDetectorGapsNode->GetValue();
+    m_UseDetectorGaps = UseDetectorGapsNode->GetValueAsBoolean();
   }
 
   return true;
