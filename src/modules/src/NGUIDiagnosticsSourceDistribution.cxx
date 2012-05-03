@@ -46,7 +46,7 @@ NGUIDiagnosticsSourceDistribution::NGUIDiagnosticsSourceDistribution() : NGUIDia
   m_TabTitle = "Source";
 
   // Add all histograms and canvases below
-  m_Origin = new TH2D("Origin distribution", "Origin distribution", 200, -10, 10, 200, -10, 10);
+  m_Origin = new TH2D("OriginDistribution", "Origin Distribution", 200, -10, 10, 200, -10, 10);
   m_Origin->SetXTitle("RA - relative to initial pointing [arcmin]");
   m_Origin->SetYTitle("DEC - relative to initial pointing [arcmin]");
   m_Origin->SetZTitle("counts");
