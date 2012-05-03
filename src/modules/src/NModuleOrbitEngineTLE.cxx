@@ -135,7 +135,7 @@ bool NModuleOrbitEngineTLE::Initialize()
   unsigned int e = 0;
   for (unsigned int i = 0; i < m_BeginNightTime.size(); ++i) {
     cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginNightTime[i]).GetASCIIFileString()<<" ("<<m_BeginNightTime[i]<<")";
-    while (m_EndNightTime[e] < m_BeginNightTime[i] && e < m_EndNightTime.size()) ++e;
+    while (m_EndNightTime[e] < m_BeginNightTime[i] && e < m_EndNightTime.size()-1) ++e;
     if (e < m_EndNightTime.size()) {
       cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndNightTime[e]).GetASCIIFileString()<<" ("<<m_EndNightTime[e]<<")"<<endl;
     } else {
@@ -147,7 +147,7 @@ bool NModuleOrbitEngineTLE::Initialize()
   e = 0;
   for (unsigned int i = 0; i < m_BeginOccultationTime.size(); ++i) {
     cout<<m_Satellite.ConvertToAbsoluteTime(m_BeginOccultationTime[i]).GetASCIIFileString()<<" ("<<m_BeginOccultationTime[i]<<")";
-    while (m_EndOccultationTime[e] < m_BeginOccultationTime[i] && e < m_EndOccultationTime.size()) ++e;
+    while (m_EndOccultationTime[e] < m_BeginOccultationTime[i] && e < m_EndOccultationTime.size()-1) ++e;
     if (e < m_EndOccultationTime.size()) {
       cout<<" - "<<m_Satellite.ConvertToAbsoluteTime(m_EndOccultationTime[e]).GetASCIIFileString()<<" ("<<m_EndOccultationTime[e]<<")"<<endl;
     } else {
