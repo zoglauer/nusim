@@ -108,7 +108,7 @@ bool NModuleDetectorEffectsEngineSciSimCIE::Initialize()
   if ( m_ChargeInductionEfficiencyFileName.Contains("CIE_500V.root") == true ) {
     mgui << " ERROR in " << m_Name << "\n"
          << "  " << m_ChargeInductionEfficiencyFileName.Data() << " is obsolete CIE ROOT file!\n"
-	 << "  Choose the latest CIE ROOT file." << error;
+   << "  Choose the latest CIE ROOT file." << error;
     return false;
   }
 
@@ -198,30 +198,24 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
 
   m_ChargeInductionEfficiencyHistName = "CIE";
 
-  if ( m_ChargeInductionEfficiencyROOTFile != 0 ) {
-    if ( m_ChargeInductionEfficiencyROOTFile->GetName() == m_ChargeInductionEfficiencyFileName ) {
-      mdebug << "CIE ROOT file name is the same. Skip to load CIE ROOT file." << show;
-      return true;
-    } else {
-      m_ChargeInductionEfficiencyROOTFile->Close();
-      delete m_ChargeInductionEfficiencyROOTFile;
-      m_ChargeInductionEfficiencyROOTFile = 0;
-      m_ChargeInductionEfficiency = 0;
-    }
+  if (m_ChargeInductionEfficiencyROOTFile != 0) {
+    m_ChargeInductionEfficiencyROOTFile->Close();
+    delete m_ChargeInductionEfficiencyROOTFile;
+    m_ChargeInductionEfficiencyROOTFile = 0;
+    m_ChargeInductionEfficiency = 0;
   }
 
   if ( MFile::Exists(m_ChargeInductionEfficiencyFileName) == false) {
     cout << "ERROR: unable to find charge induction efficiency file \""
-	 << m_ChargeInductionEfficiencyFileName << "\"" << endl;
+         << m_ChargeInductionEfficiencyFileName << "\"" << endl;
     gDirectory = OrgDirectory;
     return false;
   }
 
   m_ChargeInductionEfficiencyROOTFile = new TFile(m_ChargeInductionEfficiencyFileName.Data(), "READONLY");
-  if (    m_ChargeInductionEfficiencyROOTFile == 0
-       || m_ChargeInductionEfficiencyROOTFile->IsZombie() ) {
+  if (m_ChargeInductionEfficiencyROOTFile == 0 || m_ChargeInductionEfficiencyROOTFile->IsZombie() ) {
     cout << "ERROR: unable to open charge induction efficiency file \""
-	 << m_ChargeInductionEfficiencyFileName << "\"" << endl;
+         << m_ChargeInductionEfficiencyFileName << "\"" << endl;
     gDirectory = OrgDirectory;
     return false;
   }
@@ -231,7 +225,7 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
   if (    m_ChargeInductionEfficiency == 0
        || m_ChargeInductionEfficiency->IsZombie() ) {
     cout << "ERROR: unable to get charge induction efficiency histogram \""
-	 << m_ChargeInductionEfficiencyHistName << "\"" << endl;
+         << m_ChargeInductionEfficiencyHistName << "\"" << endl;
     m_ChargeInductionEfficiencyROOTFile->Print();
     gDirectory = OrgDirectory;
     return false;
@@ -245,24 +239,24 @@ bool NModuleDetectorEffectsEngineSciSimCIE::LoadChargeInductionEfficiency()
   if ( m_ChargeInductionEfficiency->GetNbinsX() % 3 == 0 ) {
     m_PixelWidthScaleFactorX
       = ((m_ChargeInductionEfficiency->GetXaxis()->GetXmax()
-	  - m_ChargeInductionEfficiency->GetXaxis()->GetXmin()) / 3.0)
-      / m_Satellite.GetDetectorAveragePixelSizeX();
+       - m_ChargeInductionEfficiency->GetXaxis()->GetXmin()) / 3.0)
+       / m_Satellite.GetDetectorAveragePixelSizeX();
   } else {
   m_PixelWidthScaleFactorX
     = ((m_ChargeInductionEfficiency->GetXaxis()->GetBinLowEdge(m_ChargeInductionEfficiency->GetNbinsX())
-	- m_ChargeInductionEfficiency->GetXaxis()->GetBinUpEdge(1)) / 3.0)
+    - m_ChargeInductionEfficiency->GetXaxis()->GetBinUpEdge(1)) / 3.0)
     / m_Satellite.GetDetectorAveragePixelSizeX();
   }
 
   if ( m_ChargeInductionEfficiency->GetNbinsY() % 3 == 0 ) {
     m_PixelWidthScaleFactorY
       = ((m_ChargeInductionEfficiency->GetYaxis()->GetXmax()
-	  - m_ChargeInductionEfficiency->GetYaxis()->GetXmin()) / 3.0)
+    - m_ChargeInductionEfficiency->GetYaxis()->GetXmin()) / 3.0)
       / m_Satellite.GetDetectorAveragePixelSizeY();
   } else {
     m_PixelWidthScaleFactorY
       = ((m_ChargeInductionEfficiency->GetYaxis()->GetBinLowEdge(m_ChargeInductionEfficiency->GetNbinsY())
-	  - m_ChargeInductionEfficiency->GetYaxis()->GetBinUpEdge(1)) / 3.0)
+    - m_ChargeInductionEfficiency->GetYaxis()->GetBinUpEdge(1)) / 3.0)
       / m_Satellite.GetDetectorAveragePixelSizeY();
   }
 
@@ -307,9 +301,9 @@ double NModuleDetectorEffectsEngineSciSimCIE::InterpolateTH3(TH3* Histogram, dou
 
 
   Double_t v[] = { Histogram->GetBinContent( ubx, uby, ubz ), Histogram->GetBinContent( ubx, uby, obz ),
-		   Histogram->GetBinContent( ubx, oby, ubz ), Histogram->GetBinContent( ubx, oby, obz ),
-		   Histogram->GetBinContent( obx, uby, ubz ), Histogram->GetBinContent( obx, uby, obz ),
-		   Histogram->GetBinContent( obx, oby, ubz ), Histogram->GetBinContent( obx, oby, obz ) };
+       Histogram->GetBinContent( ubx, oby, ubz ), Histogram->GetBinContent( ubx, oby, obz ),
+       Histogram->GetBinContent( obx, uby, ubz ), Histogram->GetBinContent( obx, uby, obz ),
+       Histogram->GetBinContent( obx, oby, ubz ), Histogram->GetBinContent( obx, oby, obz ) };
 
 
   Double_t i1 = v[0] * (1 - zd) + v[1] * zd;
@@ -339,9 +333,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
     if (Event.GetInteraction(i).IsDetector() == true) {
       // (a) Create the BEFORE info for the diagnostics window
       NOrientation O
-	= m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(),
-								Event.GetInteraction(i).GetTelescope(),
-								Event.GetInteraction(i).GetDetector());
+  = m_Satellite.GetOrientationDetectorRelFocalPlaneModule(Event.GetTime(),
+                Event.GetInteraction(i).GetTelescope(),
+                Event.GetInteraction(i).GetDetector());
       MVector Pos = Event.GetInteraction(i).GetPosition();
       O.TransformOut(Pos);
       if (gROOT->IsBatch() == false) {
@@ -380,9 +374,9 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
       IdealEnergy = Event.GetInteraction(i).GetEnergy();
 
       xPixel = int((Event.GetInteraction(i).GetPosition().X() + m_Satellite.GetDetectorHalfDimension().X())
-		   / (2*m_Satellite.GetDetectorHalfDimension().X() / NPixelsX));
+       / (2*m_Satellite.GetDetectorHalfDimension().X() / NPixelsX));
       yPixel = int((Event.GetInteraction(i).GetPosition().Y() + m_Satellite.GetDetectorHalfDimension().Y())
-		   / (2*m_Satellite.GetDetectorHalfDimension().Y() / NPixelsY));
+       / (2*m_Satellite.GetDetectorHalfDimension().Y() / NPixelsY));
 
       massert(xPixel >= 0 && xPixel < NPixelsX);
       massert(yPixel >= 0 && yPixel < NPixelsY);
@@ -391,23 +385,23 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
 
       // Out of expected interaction range (-1 -- 1 mm)
       if (    InteractionPositionZ < -m_Satellite.GetDetectorHalfDimension().Z()
-	   || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
+     || InteractionPositionZ >  m_Satellite.GetDetectorHalfDimension().Z() ) {
 
-	mdebug << "Interaction position Z (" << InteractionPositionZ << " mm) is out of range (-1 -- 1 mm)." << show;
+  mdebug << "Interaction position Z (" << InteractionPositionZ << " mm) is out of range (-1 -- 1 mm)." << show;
 
-	if ( InteractionPositionZ > m_Satellite.GetDetectorHalfDimension().Z() ) {
-	  InteractionPositionZ =  m_Satellite.GetDetectorHalfDimension().Z() - 1.0e-10;
-	} else {
-	  InteractionPositionZ = -m_Satellite.GetDetectorHalfDimension().Z() + 1.0e-10;
-	}
+  if ( InteractionPositionZ > m_Satellite.GetDetectorHalfDimension().Z() ) {
+    InteractionPositionZ =  m_Satellite.GetDetectorHalfDimension().Z() - 1.0e-10;
+  } else {
+    InteractionPositionZ = -m_Satellite.GetDetectorHalfDimension().Z() + 1.0e-10;
+  }
 
-	/*
-	Event.GetInteraction(i).SetPosition(MVector(Event.GetInteraction(i).GetPosition().X(),
-						    Event.GetInteraction(i).GetPosition().Y(),
-						    InteractionPositionZ));
-	*/
+  /*
+  Event.GetInteraction(i).SetPosition(MVector(Event.GetInteraction(i).GetPosition().X(),
+                Event.GetInteraction(i).GetPosition().Y(),
+                InteractionPositionZ));
+  */
 
-	mdebug << "Dummy interaction position Z (" << InteractionPositionZ << " mm) is set"  << show;
+  mdebug << "Dummy interaction position Z (" << InteractionPositionZ << " mm) is set"  << show;
       }
 
       DistanceZFromCathode = m_Satellite.GetDetectorHalfDimension().Z() - InteractionPositionZ; // Anode: 2 mm <--> Cathode:0 mm
@@ -418,41 +412,41 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
           if (xp < 0 || xp >= NPixelsX) continue;
           if (yp < 0 || yp >= NPixelsY) continue;
 
-	  DistanceXFromPixelCenter = Event.GetInteraction(i).GetPosition().X() - m_PixelCenterPositionX[xp];
-	  DistanceYFromPixelCenter = Event.GetInteraction(i).GetPosition().Y() - m_PixelCenterPositionY[yp];
+    DistanceXFromPixelCenter = Event.GetInteraction(i).GetPosition().X() - m_PixelCenterPositionX[xp];
+    DistanceYFromPixelCenter = Event.GetInteraction(i).GetPosition().Y() - m_PixelCenterPositionY[yp];
 
-	  DistanceXFromPixelCenter *= m_PixelWidthScaleFactorX;
-	  DistanceYFromPixelCenter *= m_PixelWidthScaleFactorY;
+    DistanceXFromPixelCenter *= m_PixelWidthScaleFactorX;
+    DistanceYFromPixelCenter *= m_PixelWidthScaleFactorY;
 
-	  int binX = m_ChargeInductionEfficiency->GetXaxis()->FindBin(DistanceXFromPixelCenter);
-	  int binY = m_ChargeInductionEfficiency->GetYaxis()->FindBin(DistanceYFromPixelCenter);
+    int binX = m_ChargeInductionEfficiency->GetXaxis()->FindBin(DistanceXFromPixelCenter);
+    int binY = m_ChargeInductionEfficiency->GetYaxis()->FindBin(DistanceYFromPixelCenter);
 
-	  if (    binX <= 1 || binX >= m_ChargeInductionEfficiency->GetNbinsX()
-	       || binY <= 1 || binY >= m_ChargeInductionEfficiency->GetNbinsY() ) { // Out of CIE histogram range
-	    ChargeInductionEfficiency = 0;
-	  } else {
-	    if ( gROOT->GetVersionInt() >= 52600 ) {
-	      ChargeInductionEfficiency
-		= m_ChargeInductionEfficiency->Interpolate(DistanceXFromPixelCenter,
-							   DistanceYFromPixelCenter,
-							   DistanceZFromCathode);
-	    } else { // ROOT version 5.22.00 or earlier does not have Interpolate method in TH3 class
-	      ChargeInductionEfficiency
-		= InterpolateTH3(m_ChargeInductionEfficiency,
-				 DistanceXFromPixelCenter,
-				 DistanceYFromPixelCenter,
-				 DistanceZFromCathode);
-	    }
-	  }
+    if (    binX <= 1 || binX >= m_ChargeInductionEfficiency->GetNbinsX()
+         || binY <= 1 || binY >= m_ChargeInductionEfficiency->GetNbinsY() ) { // Out of CIE histogram range
+      ChargeInductionEfficiency = 0;
+    } else {
+      if ( gROOT->GetVersionInt() >= 52600 ) {
+        ChargeInductionEfficiency
+    = m_ChargeInductionEfficiency->Interpolate(DistanceXFromPixelCenter,
+                 DistanceYFromPixelCenter,
+                 DistanceZFromCathode);
+      } else { // ROOT version 5.22.00 or earlier does not have Interpolate method in TH3 class
+        ChargeInductionEfficiency
+    = InterpolateTH3(m_ChargeInductionEfficiency,
+         DistanceXFromPixelCenter,
+         DistanceYFromPixelCenter,
+         DistanceZFromCathode);
+      }
+    }
 
-	  // NoisedEnergy = IdealEnergy * ChargeInductionEfficiency;
-	  NoisedEnergy = IdealEnergy * ChargeInductionEfficiency * m_CIECorrectionFactor;
-	  /* Do NOT add electric noise
-	  if ( NoisedEnergy > 0.0 )
-	    NoisedEnergy = gRandom->Gaus(NoisedEnergy, m_EnergyResolution.Eval(NoisedEnergy));
-	  else
-	    NoisedEnergy = gRandom->Gaus(NoisedEnergy, m_EnergyResolution.Eval(0.0));
-	  */
+    // NoisedEnergy = IdealEnergy * ChargeInductionEfficiency;
+    NoisedEnergy = IdealEnergy * ChargeInductionEfficiency * m_CIECorrectionFactor;
+    /* Do NOT add electric noise
+    if ( NoisedEnergy > 0.0 )
+      NoisedEnergy = gRandom->Gaus(NoisedEnergy, m_EnergyResolution.Eval(NoisedEnergy));
+    else
+      NoisedEnergy = gRandom->Gaus(NoisedEnergy, m_EnergyResolution.Eval(0.0));
+    */
 
           NPixelHit P;
           P.SetTelescope(Event.GetInteraction(i).GetTelescope());
@@ -460,17 +454,17 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
           P.SetXPixel(xp);
           P.SetYPixel(yp);
 
-	  P.SetPreTriggerSampleSum(0.0);
-	  P.SetPostTriggerSampleSum(NoisedEnergy);
+    P.SetPreTriggerSampleSum(0.0);
+    P.SetPostTriggerSampleSum(NoisedEnergy);
 
           // Zero values mean no trigger
-	  P.SetIdealAverageDepth(InteractionPositionZ);
-	  P.SetIdealEnergy(IdealEnergy);
+    P.SetIdealAverageDepth(InteractionPositionZ);
+    P.SetIdealEnergy(IdealEnergy);
 
-	  P.SetNoisedAverageDepth(InteractionPositionZ);
-	  P.SetNoisedEnergy(NoisedEnergy);
+    P.SetNoisedAverageDepth(InteractionPositionZ);
+    P.SetNoisedEnergy(NoisedEnergy);
 
-	  PixelHits.push_back(P);
+    PixelHits.push_back(P);
         }
       }
     } else {
@@ -501,13 +495,13 @@ bool NModuleDetectorEffectsEngineSciSimCIE::AnalyzeEvent(NEvent& Event)
         // Use energy weighted depths:
         if (Event.GetPixelHit(e).GetIdealEnergy() + PixelHits[p].GetIdealEnergy() > 0.0) {
           Event.GetPixelHitRef(e).SetIdealAverageDepth((Event.GetPixelHit(e).GetIdealAverageDepth() * Event.GetPixelHit(e).GetIdealEnergy()
-							+ PixelHits[p].GetIdealAverageDepth() * PixelHits[p].GetIdealEnergy())
-						       / (Event.GetPixelHit(e).GetIdealEnergy() + PixelHits[p].GetIdealEnergy()));
+              + PixelHits[p].GetIdealAverageDepth() * PixelHits[p].GetIdealEnergy())
+                   / (Event.GetPixelHit(e).GetIdealEnergy() + PixelHits[p].GetIdealEnergy()));
         }
         if (Event.GetPixelHit(e).GetNoisedEnergy() + PixelHits[p].GetNoisedEnergy() > 0.0) {
           Event.GetPixelHitRef(e).SetNoisedAverageDepth((Event.GetPixelHit(e).GetNoisedAverageDepth() * Event.GetPixelHit(e).GetNoisedEnergy()
-							 + PixelHits[p].GetNoisedAverageDepth() * PixelHits[p].GetNoisedEnergy())
-							/ (Event.GetPixelHit(e).GetNoisedEnergy() + PixelHits[p].GetNoisedEnergy()));
+               + PixelHits[p].GetNoisedAverageDepth() * PixelHits[p].GetNoisedEnergy())
+              / (Event.GetPixelHit(e).GetNoisedEnergy() + PixelHits[p].GetNoisedEnergy()));
         }
 
         Event.GetPixelHitRef(e).SetIdealEnergy(Event.GetPixelHit(e).GetIdealEnergy() + PixelHits[p].GetIdealEnergy());
