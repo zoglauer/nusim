@@ -27,8 +27,11 @@ for i = 0l, nfpma - 1 do begin
    thisy = round( (data[fpma[i]].pos[1] * 1e3 + fpm_origin) / fpm_res)
    if gaps_a[thisx, thisy] eq 0 then continue
    dt = data[fpma[i]].time - lasttime
-   if dt lt 2.5e-3  then continue
-   
+   if dt lt 2.5e-3  then begin
+      use[fpma[i]] = -1
+      continue
+   endif
+
    ; If you made it here, then use this one.
    use[fpma[i]] = 1
 
@@ -44,8 +47,11 @@ for i = 0l, nfpmb - 1 do begin
    thisy = round( (data[fpmb[i]].pos[1] * 1e3 + fpm_origin) / fpm_res)
    if gaps_b[thisx, thisy] eq 0 then continue
    dt = data[fpmb[i]].time - lasttime
-   if dt lt 2.5e-3  then continue
-   
+   if dt lt 2.5e-3  then begin
+      use[fpmb[i]] = -1
+      continue
+   endif
+
    ; If you made it here, then use this one.
    use[fpmb[i]] = 1
 
@@ -54,13 +60,23 @@ for i = 0l, nfpmb - 1 do begin
                                 ; less 2.5 ms
 endfor
 
-goodones = where(use eq 1)
-lost = where(use eq 0, nlost)
+goodones = where(use eq 1, ngood)
+gaps = where(use eq 0, nlost)
+dead = where(use eq -1, ndead)
+
+ntot = n_elements(data) 
+print, 'Total events: ', ntot
+print, 'Lost in gaps: ', nlost, 100. * nlost/ ntot
+print, 'Lost in deadtime: ', ndead, 100. * ndead / ntot
 
 data = (temporary(data))[goodones]
 
+; Ensure that events are time-ordered:
+sortInd = sort(data.time)
+data = (temporary(data))[sortInd]
 
-print, 'Done applying deadtime.'
+
+print, 'Done applying deadtime and sorting...'
 print, 'Took: ', systime(1) - t0
 
 

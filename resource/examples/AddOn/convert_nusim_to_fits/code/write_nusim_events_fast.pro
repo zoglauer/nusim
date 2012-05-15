@@ -62,6 +62,7 @@ date_end = (strsplit(date_end, '.', /extract))[0]
 tstart = cmsystime(date_conv(date_start, 'Modified'), /from_mjd, /sec) - t_ref
 tend = cmsystime(max(data.time + 1.), /sec)
 
+telapse = tend - tstart
 
 ; Overwrite primary header keywords for time stamps:
 tstart_string = string(tstart, format = '(i0)')
@@ -69,20 +70,25 @@ tend_string = string(tend, format = '(i0)')
 
 SXADDPAR, primary_header_a, "TSTART", tstart, /SaveComment, format = 'F12.0'
 SXADDPAR, primary_header_a, "TSTOP", tend, /SaveComment, format = 'F12.0'
+SXADDPAR, primary_header_a, "TELAPSE", telapse, /SaveComment, format = 'F12.0'
+
 SXADDPAR, primary_header_a, "DATE-OBS", date_start, /SaveComment
 SXADDPAR, primary_header_a, "DATE-END", date_end, /SaveComment
 SXADDPAR, header_a, "TSTART", tstart, /SaveComment, format = 'F12.0'
 SXADDPAR, header_a, "TSTOP", tend, /SaveComment, format = 'F12.0'
+SXADDPAR, header_a, "TELAPSE", telapse, /SaveComment, format = 'F12.0'
 SXADDPAR, header_a, "DATE-OBS", date_start, /SaveComment
 SXADDPAR, header_a, "DATE-END", date_end, /SaveComment
 
 
 SXADDPAR, primary_header_b, "TSTART", tstart, /SaveComment, format = 'F12.0'
 SXADDPAR, primary_header_b, "TSTOP", tend, /SaveComment, format = 'F12.0'
+SXADDPAR, primary_header_b, "TELAPSE", telapse, /SaveComment, format = 'F12.0'
 SXADDPAR, primary_header_b, "DATE-OBS", date_start, /SaveComment
 SXADDPAR, primary_header_b, "DATE-END", date_end, /SaveComment
 SXADDPAR, header_b, "TSTART", tstart, /SaveComment, format = 'F12.0'
 SXADDPAR, header_b, "TSTOP", tend, /SaveComment, format = 'F12.0'
+SXADDPAR, header_b, "TELAPSE", telapse, /SaveComment, format = 'F12.0'
 SXADDPAR, header_b, "DATE-OBS", date_start, /SaveComment
 SXADDPAR, header_b, "DATE-END", date_end, /SaveComment
 
@@ -96,7 +102,6 @@ SXADDPAR, header_b, "TLMAX29", 2e4,after ="TLMIN29" ,'200 keV' ; 200 keV
 
 ; Now do the GTI header changes. Set the default GTI to [TSTART, TEND]
 
-telapse = tend - tstart
 SXADDPAR, gti_header_a, "TSTART", tstart, /SaveComment, format = 'F12.0'
 SXADDPAR, gti_header_a, "TSTOP", tend, /SaveComment, format = 'F12.0'
 SXADDPAR, gti_header_a, "TELAPSE", telapse, /SaveComment, format = 'F12.0'
@@ -112,8 +117,6 @@ SXADDPAR, gti_header_b, "DATE-OBS", date_start, /SaveComment
 SXADDPAR, gti_header_b, "DATE-END", date_end, /SaveComment
 gti_b.start = double(tstart)
 gti_b.stop = double(tend)
-
-
 
 ; Write the primary header
 writefits, out_a, 0, primary_header_a
