@@ -184,10 +184,8 @@ bool Convert::Analyze()
         if (T->GetTokenAtAsDouble(0) > 2 && T->GetTokenAtAsDouble(0) < 100) {
           spec<<"DP "<<T->GetTokenAtAsDouble(0)<<" "<<T->GetTokenAtAsDouble(1)<<endl;
           if (l+1 < P.GetNLines() && P.GetTokenizerAt(l+1)->GetNTokens() == 2) {
-            // Input flux is in ph/cm2/s/keV * keV !!
+            // Input flux is in ph/cm2/s/keV !!
             double Conversion = 0.5*(T->GetTokenAtAsDouble(1)+P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(1)); // the average flux
-            // Conversion /= (0.5*(P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) + T->GetTokenAtAsDouble(0))); // --> ph/cm2/s/keV * keV
-            // Conversion /= (0.5*(P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) + T->GetTokenAtAsDouble(0))); // --> ph/cm2/s/keV
             Conversion *= (P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) - T->GetTokenAtAsDouble(0)); // --> ph/cm2/s
             Flux += Conversion;
           }
@@ -204,8 +202,6 @@ bool Convert::Analyze()
         if (T->GetTokenAtAsDouble(0) > 10 && T->GetTokenAtAsDouble(0) < 30) {
           // Input flux is in ph/cm2/s/keV * keV !!
           double Conversion = 0.5*(T->GetTokenAtAsDouble(1)+P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(1)); // the average flux
-          // Conversion /= (0.5*(P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) + T->GetTokenAtAsDouble(0))); // --> ph/cm2/s/keV * keV
-          // Conversion /= (0.5*(P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) + T->GetTokenAtAsDouble(0))); // --> ph/cm2/s/keV
           Conversion *= (P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) - T->GetTokenAtAsDouble(0)); // --> ph/cm2/s
           Conversion *= (0.5*(P.GetTokenizerAt(l+1)->GetTokenAtAsDouble(0) + T->GetTokenAtAsDouble(0))); // --> keV/cm2/s
           Conversion /= 624150974; // --> erg/cm2/s
