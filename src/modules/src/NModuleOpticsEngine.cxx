@@ -264,9 +264,9 @@ bool NModuleOpticsEngine::AnalyzeEvent(NEvent& Event)
     return true;
   }
   if (m_UseGhostRays == 0 && Code == 2){
-	Event.SetBlocked(true);
-	++m_BlockedPhotonsDoNotExitOptics;
-	return true;
+	  Event.SetBlocked(true);
+	  ++m_BlockedPhotonsDoNotExitOptics;
+	  return true;
   } 
   ++m_ScatteredPhotons;
   // Set as source photon
@@ -322,15 +322,17 @@ bool NModuleOpticsEngine::Finalize()
   if (m_ScatteredPhotons + m_BlockedPhotonsDoNotExitOptics > 0) {
     EffectiveArea = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     EffectiveAreaError = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
-	EffectiveAreaMLI = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
-	EffectiveAreaErrorMLI = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
+	  EffectiveAreaMLI = m_ScatteredPhotons*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
+	  EffectiveAreaErrorMLI = sqrt(m_ScatteredPhotons)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons+m_BlockedPhotonsMLI)/100;
     EffectiveAreaApp = (m_ScatteredPhotons-m_ApertureClip)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
-	EffectiveAreaErrorApp = sqrt(m_ScatteredPhotons-m_ApertureClip)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
+	  EffectiveAreaErrorApp = sqrt(m_ScatteredPhotons-m_ApertureClip)*c_Pi*(m_Rm1[133]*m_Rm1[133]-m_Rm1[0]*m_Rm1[0])/(m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons)/100;
     MLIatt = double(m_BlockedPhotonsMLI)/(m_BlockedPhotonsMLI+m_BlockedPhotonsDoNotExitOptics+m_ScatteredPhotons);
   }
+  cout<<"  Rmin = "<<m_Rm1[0]<<"  Rmax = "<<m_Rm1[133]<<endl;
   cout<<"  Effective Area (average per module): ("<<EffectiveArea<<" +- "<<EffectiveAreaError<<") cm2"<<endl;
-  cout<<"  Effective Area with Aperture clip (average per module): ("<<EffectiveAreaApp<<" +- "<<EffectiveAreaErrorApp<<") cm2"<<endl;
   cout<<"  Effective Area with MLI(average per module): ("<<EffectiveAreaMLI<<" +- "<<EffectiveAreaErrorMLI<<") cm2"<<endl;
+  cout<<"  Only true with ghostrays activated: "<<endl;
+  cout<<"  Effective Area with Aperture clip (average per module): ("<<EffectiveAreaApp<<" +- "<<EffectiveAreaErrorApp<<") cm2"<<endl;
   cout<<endl;
   cout<<"  Number of upper mirror single reflections: "<<m_UpperGhosts<<endl;
   cout<<"  Number of lower mirror single reflections: "<<m_LowerGhosts<<endl;
@@ -404,10 +406,11 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   shell_index = FindIndexReverse(r0,m_Rm1,m_NShells); /* returns which shell photon will hit */
   apex1 = (m_Rm1[shell_index]-m_ShellLength*m_Alpha1[shell_index]) / tan(m_Alpha1[shell_index]);
   apex2 = (m_Rm1[shell_index]-m_ShellLength*m_Alpha1[shell_index]) / tan(m_Alpha2[shell_index]);
-  if (shell_index == 66 || shell_index == 67 || shell_index == 68){
-    //cout<<"Block 1: Shell index: "<<shell_index<<endl;
+  /*if (shell_index == 66 || shell_index == 67 || shell_index == 68){
+    cout<<"Block 1: Shell index: "<<shell_index<<endl;
     return 0;
-  }
+  }*/
+  
   if (r0 < (m_Rm1[shell_index - 1] + m_SubstrateThickness)){
     //cout<<"Block 2: "<<r0<<":"<<(m_Rm1[shell_index - 1] + m_SubstrateThickness)<<endl;
     return 0;
@@ -461,16 +464,16 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   MovePhoton(r,k,m_Gap); /* move to upper part of lower mirror */
   
   if (z_interaction >=m_ShellLength) {
-	// Ghost: Miss lower reflection and flag it.
-	flag = 3;
+	  // Ghost: Miss lower reflection and flag it.
+	  flag = 3;
   }
   
   if (z_interaction < m_ShellLength && z_interaction > m_Gap){
     /*calculate reflected vector (new k,r)*/
     MovePhoton(r,k,z_interaction);
     incidence_angle2 = Reflection(r,k,m_Alpha2[shell_index],scatter);
-	if (incidence_angle2 > m_MaxAngle) return 0;
-	/*get the reflectivity and decide whether to kill the photon*/
+	  if (incidence_angle2 > m_MaxAngle) return 0;
+	  /*get the reflectivity and decide whether to kill the photon*/
     RR = AverageReflection(incidence_angle2,mirror_group,e_index); 
     if (gRandom->Rndm() > RR)  {
       //cout<<"Block 8: "<<RR<<endl;
@@ -654,6 +657,8 @@ bool NModuleOpticsEngine::LoadReflectivity()
     fclose(infile);
   } /* for (i=0; i < m_NGroups; i++) */
 
+  //cout<<"Refelctivity = "<<m_Reflectivity[1][100][100]<<endl;
+  
 
   return true;
 }
@@ -840,9 +845,10 @@ int NModuleOpticsEngine::GetMirrorGroup(float alpha, int n)
   int i;
 
   i = 1;
-  while (alpha > m_ShellRange[i]) {
+  while (alpha > m_ShellRange[i] && i < n) {
     i++;
   }
+  //printf("alpha %f shellrange %f  %d \n", alpha, m_ShellRange[i],i-1);
   return i-1;
 }
 
@@ -887,8 +893,8 @@ float NModuleOpticsEngine::AverageReflection(float inc_angle, unsigned int group
   float R, ref_t_lo, ref_t_hi;
 
   R = 0.;
-  t_index_lo = (unsigned int) floor(inc_angle / m_AngularMesh);
-  t_index_hi = (unsigned int) ceil(inc_angle / m_AngularMesh);
+  t_index_lo = (int) floor(inc_angle / m_AngularMesh);
+  t_index_hi = (int) ceil(inc_angle / m_AngularMesh);
 
   // Sanity checks:
   if (group > m_Reflectivity.size()) {
@@ -911,8 +917,10 @@ float NModuleOpticsEngine::AverageReflection(float inc_angle, unsigned int group
   ref_t_lo = m_Reflectivity[group][e_idx][t_index_lo];
   ref_t_hi = m_Reflectivity[group][e_idx][t_index_hi];
 
-  R = (ref_t_lo - ref_t_hi)/(t_index_lo - t_index_hi)*(inc_angle/m_AngularMesh - t_index_hi) + ref_t_hi;
-//printf(" R = %f %f %f group %d ang %f \n",R,ref_t_lo, ref_t_hi, group, inc_angle);
+  R = (ref_t_lo - ref_t_hi)/((float)t_index_lo - (float)t_index_hi)*(inc_angle/m_AngularMesh - t_index_hi) + ref_t_hi;
+  //printf(" R = %f %f %f group %d ang %f \n",R,ref_t_lo, ref_t_hi, group, inc_angle);
+  //printf(" R = %f %d %d group %d ang %f \n",R, t_index_hi, t_index_lo, group, inc_angle*1000.);
+  //printf(" R = %f %f %f %f \n",R,(ref_t_lo-ref_t_hi),(inc_angle/m_AngularMesh - t_index_hi),((float)t_index_lo-(float)t_index_hi));
   return R;
 }
 

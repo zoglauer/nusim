@@ -65,6 +65,7 @@ public:
   bool Initialize();
   bool OpenEvtFile();
   bool GenerateARF();
+  bool GenerateExtendedARF();
   bool ReadCalibratedAlignmentsDB();
   MVector LoadDSRegion(TString FileName);
   bool LoadEffArea();
@@ -82,6 +83,8 @@ public:
   TString SourceOutFile;
   TString BkgFile;
   TString ARFFile;
+  
+  int PSFon;
 
   
 protected:
@@ -115,6 +118,8 @@ private:
   float ARF1[820];
   float oaat_hist2[29];
   float ARF2[820];
+  float ARFTOT1[820];
+  float ARFTOT2[820];
   float AE[820];
   float Elow[820];
   float Ehigh[820];
@@ -167,6 +172,7 @@ Target::~Target()
 bool Target::Initialize()
 {
 
+  PSFon = 0;
   for (int i=0; i<29; i++) {
         oaat_hist1[i] = 0;
         oaat_hist2[i] = 0;
@@ -262,7 +268,7 @@ bool Target::LoadEffArea()
   int anynull = 0;
   m_File = 0;
   
-  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_effarea_v2.1.fits";
+  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_effarea_v3.0.fits";
   MFile::ExpandFileName(FileName);
   
   fits_open_file(&m_File, FileName, READONLY, &Status);
@@ -302,7 +308,7 @@ bool Target::LoadVignet()
   int anynull=0;
   m_File = 0;
     
-  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_vign_v2.1.fits";
+  TString FileName = "$(NUSIM)/resource/data/responsefiles/nustar_vign_v3.0.fits";
   MFile::ExpandFileName(FileName);
 
   fits_open_file(&m_File, FileName, READONLY, &Status);
@@ -355,6 +361,7 @@ MVector Target::LoadDSRegion(TString FileName)
   Line.ReadToDelim(in, Delimeter); // region coordinates
 
   MTokenizer T;
+  MTokenizer A;
   // trim string in a silly away
   T.AllowComposed(false);
   T.AllowEmpty(true);
@@ -371,7 +378,9 @@ MVector Target::LoadDSRegion(TString FileName)
   Src[0] = T.GetTokenAtAsFloat(0); 
   Src[1] = T.GetTokenAtAsFloat(1); 
   Src[2] = T.GetTokenAtAsFloat(2); 
+  ///if (A.GetTokenAtAsString(0) == 'annulus') Src[3] = T.GetTokenAtAsFloat(2); 
 
+  
   //cout<<Src<<endl;
 
   return Src;
@@ -933,11 +942,11 @@ bool Target::GenerateARF()
   long* bkg2 = new long[820];
   for (int i=0; i<820;i++) {
     source1[i] = 0;
-	bkg1[i] = 0;
-	source2[i] = 0;
-	bkg2[i] = 0;
-	ARF1[i] = 0;
-	ARF2[i] = 0;
+	  bkg1[i] = 0;
+	  source2[i] = 0;
+	  bkg2[i] = 0;
+	  ARF1[i] = 0;
+	  ARF2[i] = 0;
   }
   
   
@@ -955,26 +964,26 @@ bool Target::GenerateARF()
   double dt = 0;
  
   for (int i=0;i<axis2-1;i++){
-	Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
-	Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
+	  Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
+	  Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
     Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
-	if (iModule[i] == 1) {
-	  dt = fT[i]-last_t1; 
-    last_t1 = fT[i];
-    if (dt > 100) continue;
-	  exposure1 += dt;
-	  if (fL[i] > 0) lifetime1 += fL[i];
-	  else lifetime1+=dt;
-	}
-	if (iModule[i] == 2) {
-	  dt = fT[i]-last_t2; 
-    last_t2 = fT[i];
-    if (dt > 100) continue;
-	  exposure2 += dt;
-	  if (fL[i] > 0) lifetime2 += fL[i];
-	  else lifetime2+=dt;
-  }
-	SetTarget(region);
+	  if (iModule[i] == 1) {
+	    dt = fT[i]-last_t1; 
+      last_t1 = fT[i];
+      if (dt > 100) continue;
+	    exposure1 += dt;
+	    if (fL[i] > 0) lifetime1 += fL[i];
+	    else lifetime1+=dt;
+  	}
+	  if (iModule[i] == 2) {
+	    dt = fT[i]-last_t2; 
+      last_t2 = fT[i];
+      if (dt > 100) continue;
+	    exposure2 += dt;
+	    if (fL[i] > 0) lifetime2 += fL[i];
+	    else lifetime2+=dt;
+    }
+	  SetTarget(region);
 	
 	// Check what effective area bin the event falls in 
 	// and add the PSF fraction to the other PSF fractions
@@ -991,7 +1000,7 @@ bool Target::GenerateARF()
 	
 	
 	
-	if (m_oaa < 11.5) {
+	  if (m_oaa < 11.5) {
     
       // cout<<"m_oaa ="<<m_oaa<<endl;
       // cout<<Vdet<<endl;
@@ -1019,7 +1028,7 @@ bool Target::GenerateARF()
       if (iModule[i] == 2) exists2 = 0;
 	 
 	  // Check that this pixel is already exposed and at what oaa. If it already exists then increase time 
-      // of that transform with dt
+     // of that transform with dt
 	  if (iModule[i] == 1) {
 	    for (int j=0;j < (int)DetIndex1.size(); j++){
 		  if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa*2)) {
@@ -1053,7 +1062,7 @@ bool Target::GenerateARF()
 	//  In here add to the source spectrum and background spectrum. 
 	float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
 	if (rr < region[2] && iPHA[i] >= 0 && iPHA[i] < 820) {
-	  if (iModule[i] == 1) source1[iPHA[i]] += 1;
+    if (iModule[i] == 1) source1[iPHA[i]] += 1;
 	  if (iModule[i] == 2) source2[iPHA[i]] += 1;
 	  if (iType[i] == 2) {
 	    if (iModule[i] == 1) bkg1[iPHA[i]] += 1;
@@ -1071,20 +1080,23 @@ bool Target::GenerateARF()
   float PSFfrac=0;
   for (int j=0;j<(int)DetIndex1.size();j++){ 
     PSFfrac = GetPSFFraction(regionAtDet, int(oaa1[j]), DetIndex1[j]);
-    oaat_hist1[int(oaa1[j])] += TotalTime1[j]*PSFfrac;
+    if (PSFon) oaat_hist1[int(oaa1[j])] += TotalTime1[j]*PSFfrac;
+    else oaat_hist1[int(oaa1[j])] += TotalTime1[j];
     average_oaa += oaa1[j]*0.5*TotalTime1[j];
     average_psf += PSFfrac*TotalTime1[j];
     SumTime += TotalTime1[j];
   }       
-  for (int j=0;j<(int)DetIndex2.size();j++) 
-    oaat_hist2[int(oaa2[j])] += TotalTime2[j]*GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
-  
+  for (int j=0;j<(int)DetIndex2.size();j++) { 
+    PSFfrac = GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
+    if (PSFon) oaat_hist2[int(oaa2[j])] += TotalTime2[j]*PSFfrac;
+    else oaat_hist2[int(oaa2[j])] += TotalTime2[j];
+  }
   for (int i=0; i<820;i++) {
     for (int j=0; j<29; j++) {
 	    ARF1[i] += AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1; 
 	    ARF2[i] += AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2; 
       //cout<<j*0.5<<" "<<oaat_hist1[j]<<endl;
-	  }
+    }
   }
 
   cout<<"average oaa = "<<average_oaa/SumTime<<endl;
@@ -1128,7 +1140,346 @@ bool Target::GenerateARF()
 }
 
 /****************************************************************************/
+bool Target::GenerateExtendedARF()
+{
+  
+  
+  if (OpenEvtFile() == false) return false;
+  if (ReadCalibratedAlignmentsDB() == false) return false;
+  
+  int Status = 0;
+  float floatnull=0;
+  double doublenull=0;
+  int anynull=0;
+  m_File = 0;
+  
+  fits_open_file(&m_File, SourceInFile, READONLY, &Status);
+  if (Status != 0) {
+    cout<<"Unable to open file: "<<endl;
+    cout<<SourceInFile<<endl;
+    return false;
+  }
+  
+  // Switch to the right extension:
+  int HDUNumber = 2;
+  fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
+  if (Status != 0) {
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    return false;
+  }
+  
+  cout<<"Calculate ARF..."<<endl;
+  
+  double* fT= new double[axis2];
+  double* fL= new double[axis2];
+  int* iModule = new int[axis2];
+  float* fX = new float[axis2];
+  float* fY = new float[axis2];
+  int* iPHA = new int[axis2];
+  int* iType = new int[axis2];
+  float* fQx = new float[axis2];
+  float* fQy = new float[axis2];
+  float* fQz = new float[axis2];
+  float* fQr = new float[axis2];
+  float* fTx = new float[axis2];
+  float* fTy = new float[axis2];
+  float* fTz = new float[axis2];
+  float* fQSx = new float[axis2];
+  float* fQSy = new float[axis2];
+  float* fQSz = new float[axis2];
+  float* fQSr = new float[axis2];
+  
+  fits_read_col(m_File, TDOUBLE, 1, 1, 1, axis2, &doublenull, fT, &anynull,&Status);
+  fits_read_col(m_File, TDOUBLE, 2, 1, 1, axis2, &doublenull, fL, &anynull,&Status); 
+  fits_read_col(m_File, TINT, 3, 1, 1, axis2, &anynull, iModule, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 4, 1, 1, axis2, &floatnull, fX, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 5, 1, 1, axis2, &floatnull, fY, &anynull,&Status);
+  fits_read_col(m_File, TINT, 6, 1, 1, axis2, &anynull, iPHA, &anynull,&Status);
+  fits_read_col(m_File, TINT, 9, 1, 1, axis2, &anynull, iType, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 13, 1, 1, axis2, &floatnull, fQx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 14, 1, 1, axis2, &floatnull, fQy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 15, 1, 1, axis2, &floatnull, fQz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 16, 1, 1, axis2, &floatnull, fQr, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 17, 1, 1, axis2, &floatnull, fTx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 18, 1, 1, axis2, &floatnull, fTy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 19, 1, 1, axis2, &floatnull, fTz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 20, 1, 1, axis2, &floatnull, fQSx, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 21, 1, 1, axis2, &floatnull, fQSy, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 22, 1, 1, axis2, &floatnull, fQSz, &anynull,&Status);
+  fits_read_col(m_File, TFLOAT, 23, 1, 1, axis2, &floatnull, fQSr, &anynull,&Status);
+  
+  fits_close_file(m_File, &Status); 
+  
+  MVector region;
+  region = LoadDSRegion(DS9File);
+  float regionAtDet = region[2]*yDelta/c_Deg*10150.;
+  int dr = 2*(region[2]/10);
+  float* cells = new float(dr*dr);
+  float allcells;
+  
+  cout<<"dr = "<<dr<<endl;
+  
+  float exposure1=0;
+  float exposure2=0;
+  float lifetime1 = 0;
+  float lifetime2 = 0;
+  long* source1 = new long[820];
+  long* bkg1 = new long[820];
+  long* source2 = new long[820];
+  long* bkg2 = new long[820];
+  for (int i=0; i<820;i++) {
+    source1[i] = 0;
+	  bkg1[i] = 0;
+	  source2[i] = 0;
+	  bkg2[i] = 0;
+	  ARF1[i] = 0;
+	  ARF2[i] = 0;
+    ARFTOT1[i] = 0;
+	  ARFTOT2[i] = 0;
+  }
+  for (int i=0; i<dr*dr;i++) {
+    cells[i] = 0;
+  }
+  
+  vector <int> DetIndex1;
+  vector <float> TotalTime1;
+  vector <int> oaa1;
+  vector <int> DetIndex2;
+  vector <float> TotalTime2;
+  vector <int> oaa2;
+  
+  int exists1 = 0;
+  int exists2 = 0;
+  double last_t1 = fT[0];
+  double last_t2 = fT[0];
+  double dt = 0;
+  float oaa0 = 0;
+  
+  for (int i=0;i<axis2-1;i++){
+	  Rfbob.SetTranslation((double)fTx[i],(double)fTy[i],(double)fTz[i]);
+	  Rfbob.SetRotation((double)fQx[i],(double)fQy[i],(double)fQz[i],(double)fQr[i]);
+    Rstar.SetRotation((double)fQSx[i],(double)fQSy[i],(double)fQSz[i],(double)fQSr[i]);
+	  if (iModule[i] == 1) {
+	    dt = fT[i]-last_t1; 
+      last_t1 = fT[i];
+      if (dt > 100) continue;
+	    exposure1 += dt;
+	    if (fL[i] > 0) lifetime1 += fL[i];
+	    else lifetime1+=dt;
+  	}
+	  if (iModule[i] == 2) {
+	    dt = fT[i]-last_t2; 
+      last_t2 = fT[i];
+      if (dt > 100) continue;
+	    exposure2 += dt;
+	    if (fL[i] > 0) lifetime2 += fL[i];
+	    else lifetime2+=dt;
+    }
+	  
+    
+    // Check what effective area bin the event falls in 
+    // and add the PSF fraction to the other PSF fractions
+    // for the same bin.
+    // The idea here is that EA(t,alpha) can be devided into
+    // N*EA'(t,1) + M*EA'(t,2) + .... 
+    // and that 
+    // EA'(t,1) = EA(t,1)*(PSF(1)*i + PSF(2)*j + ....)*dt
+    // where PSF(n)*tn is PSF of shape n that appeared i times.
+    // We here assumed a constant time step which is ofcourse not the
+    // case. Instead we will factor in the duration the PSF fraction 
+    // so that PSF(1)*t1 and all the t = t1 + t2 + .... will add up to
+    // the total time spend at EA(t,1).
+    
+    
+    SetTarget(region);
+    if (i == 0) oaa0 = m_oaa;
+    
+	  if (m_oaa < 11.5) {
+ 
+      // cout<<"m_oaa ="<<m_oaa<<endl;
+      // cout<<Vdet<<endl;
+      // If the offaxis angle is within the window then check how many times that particular
+      // transfrom repeats itself, and how many different transforms exist as a function of
+      // offaxis angle.
+      
+      // fill in first entry
+      if (i==0){
+        if (iModule[i] == 1) {
+          DetIndex1.push_back(GetDetIndex());  // first index, using 0.02 resolution
+          TotalTime1.push_back(dt);
+          oaa1.push_back(round(m_oaa*2));
+          continue;
+        }
+        if (iModule[i] == 2) {
+          DetIndex2.push_back(GetDetIndex());  // first index, using 0.02 resolution
+          TotalTime2.push_back(dt);
+          oaa2.push_back(round(m_oaa*2));
+          continue;
+        }
+      }
+      
+      if (iModule[i] == 1) exists1 = 0;
+      if (iModule[i] == 2) exists2 = 0;
+      
+      // Check that this pixel is already exposed and at what oaa. If it already exists then increase time 
+      // of that transform with dt
+      if (iModule[i] == 1) {
+        for (int j=0;j < (int)DetIndex1.size(); j++){
+          if (DetIndex1[j] == GetDetIndex() && oaa1[j] == round(m_oaa*2)) {
+            exists1 = 1;
+            TotalTime1[j] += dt;
+          }
+        }
+        // if it doesn't exist fill in new entry for transform
+        if (exists1 == 0) {
+          DetIndex1.push_back(GetDetIndex());  // pixel
+          TotalTime1.push_back(dt);
+          oaa1.push_back(round(m_oaa*2));
+        }
+      }
+      if (iModule[i] == 2) {
+        for (int j=0;j < (int)DetIndex2.size(); j++){
+          if (DetIndex2[j] == GetDetIndex() && oaa2[j] == round(m_oaa*2)) {
+            exists2 = 1;
+            TotalTime2[j] += dt;
+          }
+        }
+        if (exists2 == 0) {
+          DetIndex2.push_back(GetDetIndex());  // pixel
+          TotalTime2.push_back(dt);
+          oaa2.push_back(round(m_oaa*2));
+        }
+      }
+      
+    } //end loop oaa<11.5 arcmin
+    
+    //  In here add to the source spectrum and background spectrum. 
+    float rr = sqrt(pow(fX[i]-region[0],2)+pow(fY[i]-region[1],2));	 
+    if (rr < region[2] && iPHA[i] >= 0 && iPHA[i] < 820) {
+      int rx = ((fX[i]-region[0])/10)+dr*0.5;
+      int ry = ((fY[i]-region[1])/10)+dr*0.5;
+      cells[ry*dr+rx] += 1;
+      allcells += 1;
+      if (iModule[i] == 1) source1[iPHA[i]] += 1;
+      if (iModule[i] == 2) source2[iPHA[i]] += 1;
+      if (iType[i] == 2) {
+        if (iModule[i] == 1) bkg1[iPHA[i]] += 1;
+        if (iModule[i] == 2) bkg2[iPHA[i]] += 1;
+      }
+    }
+    
+  } //End loop over transforms
 
+  cout<<"Number of different transforms ="<<DetIndex1.size()<<endl;    
+  
+  // Deal with extended ARF
+  // Calculate offset in oaa in the surrounding cells from center cell and shift oaahist
+  
+  MVector newregion;
+  Rfbob.SetTranslation((double)fTx[0],(double)fTy[0],(double)fTz[0]);
+  Rfbob.SetRotation((double)fQx[0],(double)fQy[0],(double)fQz[0],(double)fQr[0]);
+  Rstar.SetRotation((double)fQSx[0],(double)fQSy[0],(double)fQSz[0],(double)fQSr[0]);
+  int doaa=0;
+  float average_oaa=0;
+  float average_psf=0;
+  float SumTime = 0;
+  float PSFfrac=0;
+  float ncells=0;
+
+  for (int k=0;k<dr;k++){ 
+    for (int l=0;l<dr;l++){
+      //cout<<cells[k*dr+l]<<" "<<allcells<<endl;
+      newregion[0] = region[0]+k*10-(dr*0.5);
+      newregion[1] = region[1]+l*10-(dr*0.5);
+      float radius = sqrt(pow((newregion[0]-region[0]),2)+pow((newregion[1]-region[1]),2));
+      if (radius > region[2]) continue;
+      ncells += cells[k*dr+l];
+      SetTarget(newregion);
+      doaa = int((m_oaa - oaa0)*2.0);
+      //cout<<doaa<<" "<<m_oaa<<" "<<oaa0<<endl;
+  
+      for (int j=0;j<(int)DetIndex1.size();j++){ 
+        PSFfrac = GetPSFFraction(regionAtDet, int(oaa1[j]), DetIndex1[j]);
+        oaat_hist1[int(oaa1[j])+doaa] += TotalTime1[j];//*PSFfrac;
+        average_oaa += (oaa1[j]+doaa)*0.5*TotalTime1[j];
+        average_psf += PSFfrac*TotalTime1[j];
+        SumTime += TotalTime1[j];
+        //cout<<"here"<<endl;
+      }       
+      for (int j=0;j<(int)DetIndex2.size();j++) {
+        PSFfrac = GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
+        oaat_hist2[int(oaa2[j])+doaa] += TotalTime2[j];//*GetPSFfrac;
+      }
+        
+      for (int i=0; i<820;i++) {
+        for (int j=0; j<29; j++) {
+	        ARF1[i] += (AE[i]*vignet[j*820+i]*oaat_hist1[j]/exposure1)*(cells[k*dr+l]); 
+	        ARF2[i] += (AE[i]*vignet[j*820+i]*oaat_hist2[j]/exposure2)*(cells[k*dr+l]);
+	      }
+      }
+      cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
+      cout<<"Effective Area @ 10 keV "<<ARF1[71]<<"  , IDEAL@ 0oaa: "<<AE[71]<<endl;
+      
+      for (int i=0; i<820;i++) {
+        ARFTOT1[i]+=ARF1[i];
+        ARFTOT2[i]+=ARF2[i];
+        ARF1[i] = 0;
+        ARF1[i] = 0;
+      }  
+      for (int j=0; j<29; j++) {
+        //cout<<j*0.5<<" "<<oaat_hist1[j]<<endl;
+        oaat_hist1[j] = 0; 
+        oaat_hist2[j] = 0; 
+      }
+
+    } //loop over x cells
+  }  // loop over y cells
+  
+  for (int i=0; i<820;i++) {
+    ARFTOT1[i]=ARFTOT1[i]/ncells;
+    ARFTOT2[i]=ARFTOT2[i]/ncells;
+  }
+  
+  cout<<"average oaa = "<<average_oaa/SumTime<<endl;
+  cout<<"PSFfraction = "<<average_psf/SumTime<<endl;
+  cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
+  cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
+  cout<<"Effective Area @ 3 keV "<< ARFTOT1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
+  cout<<"Effective Area @ 10 keV "<<ARFTOT1[71]<<"  , IDEAL@ 0oaa: "<<AE[71]<<endl;
+  
+  WriteFitsSpectrum(SourceOutFile, "source", source1, lifetime1);
+  WriteFitsSpectrum(BkgFile, "bkg", bkg1, lifetime1);
+  WriteARF(Elow,Ehigh,ARFTOT1);
+  
+  // We now have a histogram of dimensions offaxis angle that matches the loaded 
+  // effective area. And we have a cumulative PSF fraction with duration.
+  // Now we multiply the whole thing together and normalize.
+  
+  // Finally write out all files to FITS.
+  //
+  delete [] fT;
+  delete [] fL;
+  delete [] iModule;
+  delete [] fX;
+  delete [] fY;
+  delete [] iPHA;
+  delete [] iType;
+  delete [] fQx;
+  delete [] fQy;
+  delete [] fQz;
+  delete [] fQr;
+  delete [] fTx;
+  delete [] fTy;
+  delete [] fTz;
+  delete [] fQSx;
+  delete [] fQSy;
+  delete [] fQSz;
+  delete [] fQSr;
+  
+  
+  return true;
+}
+ /**********************************************************************/
 
 int main(int argc, char** argv)
 {
@@ -1138,8 +1489,8 @@ int main(int argc, char** argv)
   Usage<<endl;
   Usage<<"  Usage: MakeARF <arg1> <arg2>"<<endl;
   Usage<<"    arguments:"<<endl;
-  Usage<<"           arg1: full path and name of nusim event fits file"<<endl;
-  Usage<<"           arg2: full path and name of the ds9 region file"<<endl;
+  Usage<<"           arg1:  name of nusim event fits file"<<endl;
+  Usage<<"           arg2:  name of the ds9 region file"<<endl;
   Usage<<"    optional arguments:"<<endl;
   Usage<<"      -o <name>: full path and base name for the output files"<<endl;
   Usage<<endl;
@@ -1148,7 +1499,11 @@ int main(int argc, char** argv)
   
   int specifiedOut = 0; /* If an output file is give, this will point to the 
 			   name of the file in the argv array*/
-
+  int extended = 0;
+  
+  Target src;
+  if (src.Initialize() == false) return 1;
+  
   // Check for help
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
@@ -1161,11 +1516,17 @@ int main(int argc, char** argv)
       specifiedOut = i+1;
       i++;
     }
+    if (Option == "-e") {
+      extended = 1;
+      i++;
+    }
+    if (Option == "-p") {
+      src.PSFon = 1;
+      i++;
+    }
   }
 
 
-  Target src;
-  if (src.Initialize() == false) return 1;
      
   TString InFile = argv[1];
   MTokenizer T;
@@ -1188,7 +1549,8 @@ int main(int argc, char** argv)
   src.BkgFile = OutFile + "_bkg.fits";
   src.ARFFile = OutFile + ".arf";
     
-  src.GenerateARF();
+  if (extended) src.GenerateExtendedARF();
+  else src.GenerateARF();
 
   cout<<"Files written: "<<endl;
   cout<<src.SourceOutFile<<endl;
