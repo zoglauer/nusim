@@ -317,6 +317,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   float tcdlt11=0.1;
   float tcdlt12=0.1;
   float tcrpx11=0.0, tcrpx12=0.0;
+  float equinox=2000;
   long MDJREFI = 55197;
   float MDJREFF =7.6601852000000E-04;
   long targ_id = 0; 
@@ -358,6 +359,7 @@ bool NModuleInterfaceEventSaverLevel2Fits::CloseLevel2FitsFile()
   fits_write_key(m_File, TSTRING, "TCTYP4", const_cast<char*>("RA---TAN")," ", &Status);
   fits_write_key(m_File, TSTRING, "TCTYP5", const_cast<char*>("DEC--TAN")," ", &Status); 
   fits_write_key(m_File, TSTRING, "RADESYS", const_cast<char*>("FK5"), " ", &Status);
+  fits_write_key(m_File, TFLOAT, "EQUINOX", &equinox, " ", &Status);
   fits_write_key(m_File, TFLOAT, "TCDLT11", &tcdlt11, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCDLT12", &tcdlt12, "Platescale", &Status); 	  
   fits_write_key(m_File, TFLOAT, "TCRVL11", &tcrvl11, "Transform to celestrial coords", &Status); 	  

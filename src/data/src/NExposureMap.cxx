@@ -233,6 +233,7 @@ bool NExposureMap::WriteExposureMap(int index)
 	//float one = 1.0;
     float tcrpx1 = 0;
 	float tcrpx2 = 0;
+  float equinox = 2000.;
  
  	fits_write_key(m_File, TSTRING, "HDUVERS", hduvers," ", &Status);
  	fits_write_key(m_File, TSTRING, "HDUCLASS", hduclass," ", &Status);
@@ -241,17 +242,18 @@ bool NExposureMap::WriteExposureMap(int index)
 	fits_write_key(m_File, TSTRING, "HDUNAME", hduname," ", &Status);
 	fits_write_key(m_File, TSTRING, "BUNIT", bunit," ", &Status);
 	
-    fits_write_key(m_File, TFLOAT, "CDELT1", &xDelta, "Platescale", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "CDELT2", &yDelta, "Platescale", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "CRVAL1", &xCenterValue, "Transform to celestial coords", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "CRVAL2", &yCenterValue, "Transform to celestial coords", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "CRPIX1", &tcrpx1, "Pixel reference point", &Status); 	  
-    fits_write_key(m_File, TFLOAT, "CRPIX2", &tcrpx2, "Pixel reference point", &Status); 	  
-    fits_write_key(m_File, TSTRING, "CUNIT1", cunit," ", &Status);
-    fits_write_key(m_File, TSTRING, "CUNIT2", cunit," ", &Status);
-    fits_write_key(m_File, TSTRING, "CTYPE1", tctyp1," ", &Status);
-    fits_write_key(m_File, TSTRING, "CTYPE2", tctyp2," ", &Status); 
+  fits_write_key(m_File, TFLOAT, "CDELT1", &xDelta, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "CDELT2", &yDelta, "Platescale", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "CRVAL1", &xCenterValue, "Transform to celestial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "CRVAL2", &yCenterValue, "Transform to celestial coords", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "CRPIX1", &tcrpx1, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TFLOAT, "CRPIX2", &tcrpx2, "Pixel reference point", &Status); 	  
+  fits_write_key(m_File, TSTRING, "CUNIT1", cunit," ", &Status);
+  fits_write_key(m_File, TSTRING, "CUNIT2", cunit," ", &Status);
+  fits_write_key(m_File, TSTRING, "CTYPE1", tctyp1," ", &Status);
+  fits_write_key(m_File, TSTRING, "CTYPE2", tctyp2," ", &Status); 
 	fits_write_key(m_File, TSTRING, "RADECSYS", radecsys," ", &Status); 
+	fits_write_key(m_File, TFLOAT, "EQIUNOX", &equinox," ", &Status); 
  
 	fits_close_file(m_File, &Status);                /* close the file */
     
