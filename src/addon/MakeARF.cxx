@@ -71,8 +71,8 @@ public:
   bool LoadEffArea();
   bool LoadVignet();
   bool SetTarget(MVector region);
-  bool WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure);
-  bool WriteARF(float* Elow, float* Ehigh, float* data);
+  bool WriteFitsSpectrum(TString FileName, int Module, TString Type, long data[], float exposure);
+  bool WriteARF(TString FileName, float* Elow, float* Ehigh, float* data);
   float GetPSFFraction(float region, int oaa, int DetIndex);
   int GetDetIndex();
   NAlignmentsDBEntry IdealAlignments;
@@ -80,9 +80,13 @@ public:
   NOrientation Rstar;  
   TString SourceInFile;
   TString DS9File;
-  TString SourceOutFile;
-  TString BkgFile;
-  TString ARFFile;
+  
+  TString SourceOut1File;
+  TString Bkg1File;
+  TString ARF1File;
+  TString SourceOut2File;
+  TString Bkg2File;
+  TString ARF2File;
   
   int PSFon;
 
@@ -480,10 +484,10 @@ bool Target::OpenEvtFile()
 
 /****************************************************************************/
 
-bool Target::WriteARF(float* Elow, float* Ehigh, float* data)
+bool Target::WriteARF(TString FileName, float* Elow, float* Ehigh, float* data)
 {
 
-  TString FileName = "!"+ARFFile; // To overwrite file
+  FileName.Prepend("!"); // To overwrite file
   
   int Status = 0;
   m_File = 0;
@@ -554,7 +558,7 @@ bool Target::WriteARF(float* Elow, float* Ehigh, float* data)
 
 /****************************************************************************/
 
-bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], float exposure)
+bool Target::WriteFitsSpectrum(TString FileName, int Module, TString Type, long data[], float exposure)
 {
   
   FileName = "!"+FileName; // To overwrite file
@@ -572,8 +576,8 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
   // create data
   for (int i=0;i<detchans;i++){
     group[i] = 1;
-	qual[i] = 0;
-	chans[i] = i;
+	  qual[i] = 0;
+	  chans[i] = i;
   }
   
   fits_create_file(&m_File, FileName, &Status);
@@ -624,12 +628,24 @@ bool Target::WriteFitsSpectrum(TString FileName, TString Type, long data[], floa
     fits_write_key(m_File, TSTRING, "ANCRFILE",  const_cast<char*>("none"), " ", &Status);  
     fits_write_key(m_File, TSTRING, "BACKFILE",  const_cast<char*>("none"), " ", &Status);  
   }
-  if (Type == "source"){
-    T.Analyze(ARFFile, false);
+  if (Type == "source") {
+    if (Module == 1) {
+      T.Analyze(ARF1File, false);
+    } else if (Module == 2) {
+      T.Analyze(ARF2File, false);
+    } else {
+      cerr << "Error : Unknown FPM module (" << Module << ")" << endl;
+    }
     fits_write_key(m_File, TSTRING, "RESPFILE",  const_cast<char*>("nustar_v3.5.rmf"), " ", &Status);  
-    fits_write_key(m_File, TSTRING, "ANCRFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
-    T.Analyze(BkgFile, false);
-	fits_write_key(m_File, TSTRING, "BACKFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
+    fits_write_key(m_File, TSTRING, "ANCRFILE ",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
+    if (Module == 1) {
+      T.Analyze(Bkg1File, false);
+    } else if (Module == 2) {
+      T.Analyze(Bkg2File, false);
+    } else {
+      cerr << "Error : Unknown FPM module (" << Module << ")" << endl;
+    }
+    fits_write_key(m_File, TSTRING, "BACKFILE",  const_cast<char*>(T.GetTokenAtAsString(T.GetNTokens()-1).Data()), " ", &Status);  
   }
   fits_write_key(m_File, TFLOAT, "EXPOSURE", &exposure, " ", &Status);
 
@@ -689,7 +705,7 @@ bool Target::ReadCalibratedAlignmentsDB()
   //MFile::ExpandFileName(FileName);
   ifstream in;
   in.open(DataBase);
-    cout<<DataBase<<endl;
+  cout<<DataBase<<endl;
   if (in.is_open() == false) {
     cerr<<"Unable to open file: \""<<DataBase<<"\""<<endl;
     return false;
@@ -1102,13 +1118,17 @@ bool Target::GenerateARF()
   cout<<"average oaa = "<<average_oaa/SumTime<<endl;
   cout<<"PSFfraction = "<<average_psf/SumTime<<endl;
   cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
-  cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
-  cout<<"Effective Area @ 3 keV "<< ARF1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
-  cout<<"Effective Area @ 10 keV "<<ARF1[71]<<"  , IDEAL@ 0oaa: "<<AE[71]<<endl;
+  cout<<"source counts @ 10 keV: FPM1="<<source1[71]<<" FPM2="<<source1[71]<<endl;
+  cout<<"Effective Area @ 3 keV: FPM1="<<ARF1[0]<<" FPM2="<<ARF2[0]<<" - IDEAL@ 0oaa: "<<AE[0]<<endl;
+  cout<<"Effective Area @ 10 keV: FPM1="<<ARF1[71]<<"  FPM2="<<ARF2[71]<<" - IDEAL@ 0oaa: "<<AE[71]<<endl;
    
-  WriteFitsSpectrum(SourceOutFile, "source", source1, lifetime1);
-  WriteFitsSpectrum(BkgFile, "bkg", bkg1, lifetime1);
-  WriteARF(Elow,Ehigh,ARF1);
+  WriteFitsSpectrum(SourceOut1File, 1, "source", source1, lifetime1);
+  WriteFitsSpectrum(Bkg1File, 1, "bkg", bkg1, lifetime1);
+  WriteARF(ARF1File, Elow, Ehigh, ARF1);
+  
+  WriteFitsSpectrum(SourceOut2File, 2, "source", source2, lifetime2);
+  WriteFitsSpectrum(Bkg2File, 2, "bkg", bkg2, lifetime2);
+  WriteARF(ARF2File, Elow, Ehigh, ARF2);
   
   // We now have a histogram of dimensions offaxis angle that matches the loaded 
   // effective area. And we have a cumulative PSF fraction with duration.
@@ -1439,18 +1459,22 @@ bool Target::GenerateExtendedARF()
     ARFTOT1[i]=ARFTOT1[i]/ncells;
     ARFTOT2[i]=ARFTOT2[i]/ncells;
   }
-  
+
   cout<<"average oaa = "<<average_oaa/SumTime<<endl;
   cout<<"PSFfraction = "<<average_psf/SumTime<<endl;
   cout<<"exposure:"<<exposure1<<" Lifetime:"<<lifetime1<<" "<<lifetime2<<endl;
-  cout<<"source counts @ 10 keV: "<<source1[71]<<endl;
-  cout<<"Effective Area @ 3 keV "<< ARFTOT1[0]<<" , IDEAL@ 0oaa: "<<AE[0]<<endl;
-  cout<<"Effective Area @ 10 keV "<<ARFTOT1[71]<<"  , IDEAL@ 0oaa: "<<AE[71]<<endl;
+  cout<<"source counts @ 10 keV: FPM1="<<source1[71]<<" FPM2="<<source1[71]<<endl;
+  cout<<"Effective Area @ 3 keV: FPM1="<<ARF1[0]<<" FPM2="<<ARF2[0]<<" - IDEAL@ 0oaa: "<<AE[0]<<endl;
+  cout<<"Effective Area @ 10 keV: FPM1="<<ARF1[71]<<"  FPM2="<<ARF2[71]<<" - IDEAL@ 0oaa: "<<AE[71]<<endl;
+   
+  WriteFitsSpectrum(SourceOut1File, 1, "source", source1, lifetime1);
+  WriteFitsSpectrum(Bkg1File, 1, "bkg", bkg1, lifetime1);
+  WriteARF(ARF1File, Elow, Ehigh, ARFTOT1);
   
-  WriteFitsSpectrum(SourceOutFile, "source", source1, lifetime1);
-  WriteFitsSpectrum(BkgFile, "bkg", bkg1, lifetime1);
-  WriteARF(Elow,Ehigh,ARFTOT1);
-  
+  WriteFitsSpectrum(SourceOut2File, 2, "source", source2, lifetime2);
+  WriteFitsSpectrum(Bkg2File, 2, "bkg", bkg2, lifetime2);
+  WriteARF(ARF2File, Elow, Ehigh, ARFTOT2);
+ 
   // We now have a histogram of dimensions offaxis angle that matches the loaded 
   // effective area. And we have a cumulative PSF fraction with duration.
   // Now we multiply the whole thing together and normalize.
@@ -1493,6 +1517,8 @@ int main(int argc, char** argv)
   Usage<<"           arg2:  name of the ds9 region file"<<endl;
   Usage<<"    optional arguments:"<<endl;
   Usage<<"      -o <name>: full path and base name for the output files"<<endl;
+  // Usage<<"      -e       : Enable extended ARF mode"<<endl;
+  // Usage<<"      -p       : Use PSF on mode"<<endl;
   Usage<<endl;
 
   string Option;
@@ -1545,17 +1571,23 @@ int main(int argc, char** argv)
   
   src.SourceInFile = InFile;
   src.DS9File = argv[2];
-  src.SourceOutFile = OutFile + ".pi";
-  src.BkgFile = OutFile + "_bkg.fits";
-  src.ARFFile = OutFile + ".arf";
+  src.SourceOut1File = OutFile + "_A.pi";
+  src.Bkg1File = OutFile + "_A_bkg.fits";
+  src.ARF1File = OutFile + "_A.arf";
+  src.SourceOut2File = OutFile + "_B.pi";
+  src.Bkg2File = OutFile + "_B_bkg.fits";
+  src.ARF2File = OutFile + "_B.arf";
     
   if (extended) src.GenerateExtendedARF();
   else src.GenerateARF();
 
   cout<<"Files written: "<<endl;
-  cout<<src.SourceOutFile<<endl;
-  cout<<src.BkgFile<<endl;
-  cout<<src.ARFFile<<endl;
+  cout<<src.SourceOut1File<<endl;
+  cout<<src.Bkg1File<<endl;
+  cout<<src.ARF1File<<endl;
+  cout<<src.SourceOut2File<<endl;
+  cout<<src.Bkg2File<<endl;
+  cout<<src.ARF2File<<endl;
     
   cout<<"Done!"<<endl;
   
