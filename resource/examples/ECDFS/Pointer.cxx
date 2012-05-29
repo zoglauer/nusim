@@ -278,12 +278,20 @@ bool Pointer::Analyze()
   double AngleOffsetForNuSIM = 37;
   
   // For 4x4:
+  // int Points = 3; 
   // double RefDEC = -27.98;
   // double RefRA = 52.93;
   
   // For 5x5:
-  double RefDEC = -28.04;
-  double RefRA = 52.86;
+  // int Points = 4; 
+  // double RefDEC = -28.04;
+  // double RefRA = 52.86;
+  
+  // For 8x8 - quarter pointing
+  int Points = 7; 
+  double RefDEC = -28.03;
+  double RefRA = 52.88;
+  FrameSize = 3.6/60;
   
   double PointingShiftForNuSIMRA = 0.02;
   double PointingShiftForNuSIMDEC = 0.02;
@@ -291,8 +299,8 @@ bool Pointer::Analyze()
   vector<int> sRAs;
   vector<int> sDECs;
   
-  for (int d = 0; d <= 4; ++d) {  
-    for (int r = 0; r <= 4; ++r) {  
+  for (int d = 0; d <= Points; ++d) {  
+    for (int r = 0; r <= Points; ++r) {  
       sRAs.push_back(r); sDECs.push_back(d);
     }
   }  
