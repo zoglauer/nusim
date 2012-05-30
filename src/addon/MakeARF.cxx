@@ -1099,16 +1099,20 @@ bool Target::GenerateARF()
   float SumTime = 0;
   float PSFfrac=0;
   for (int j=0;j<(int)DetIndex1.size();j++){ 
-    PSFfrac = GetPSFFraction(regionAtDet, int(oaa1[j]), DetIndex1[j]);
-    if (PSFon) oaat_hist1[int(oaa1[j])] += TotalTime1[j]*PSFfrac;
+    if (PSFon) {
+      PSFfrac = GetPSFFraction(regionAtDet, int(oaa1[j]), DetIndex1[j]);
+      oaat_hist1[int(oaa1[j])] += TotalTime1[j]*PSFfrac;
+    }
     else oaat_hist1[int(oaa1[j])] += TotalTime1[j];
     average_oaa += oaa1[j]*0.5*TotalTime1[j];
     average_psf += PSFfrac*TotalTime1[j];
     SumTime += TotalTime1[j];
   }       
   for (int j=0;j<(int)DetIndex2.size();j++) { 
-    PSFfrac = GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
-    if (PSFon) oaat_hist2[int(oaa2[j])] += TotalTime2[j]*PSFfrac;
+    if (PSFon) {
+      PSFfrac = GetPSFFraction(regionAtDet, int(oaa2[j]), DetIndex2[j]);
+      oaat_hist2[int(oaa2[j])] += TotalTime2[j]*PSFfrac;
+    }
     else oaat_hist2[int(oaa2[j])] += TotalTime2[j];
   }
   for (int i=0; i<820;i++) {
