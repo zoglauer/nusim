@@ -860,7 +860,11 @@ float Target::GetPSFFraction(float region, int oaa, int DetIndex)
 	  //Check gaps and edges
 	  if ((pixX > -20.25 && pixX < -0.25) || (pixX > 0.25 && pixX < 20.25)) {
 	    if ((pixY > -20.25 && pixY < -0.25) || (pixY > 0.25 && pixY < 20.25)) {
-  	    int n = 105625*oaa+i;
+  	    unsigned int n = 105625*oaa+i;
+        if (n >= psfimg.cube.size()) {
+          cerr<<"Very serious error: Index out of bounds: n="<<n<<" (n required to be < "<<psfimg.cube.size()<<", calc: n=105625*"<<oaa<<"+"<<i<<")"<<endl;
+          continue;
+        }
         AccumulatedPSF += psfimg.cube[n];
         //cout<<psfimg.cube[n]<<endl;
       }
