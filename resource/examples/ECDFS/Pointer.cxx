@@ -240,6 +240,8 @@ bool Pointer::Analyze()
   double m_MinDEC = numeric_limits<double>::max();
   double m_MaxDEC = -numeric_limits<double>::max();
   
+  unsigned int IDStrongest = 0;
+  double FluxStrongest = 0;
   for (unsigned int s = 0; s < Sources.size(); ++s) {
     if (Sources[s]->GetBeamType() == NSource::c_FarFieldPoint) {
       //cout<<Sources[s]->GetPositionParameter1()/deg<<" "<<Sources[s]->GetPositionParameter2()/deg<<endl;
@@ -250,8 +252,14 @@ bool Pointer::Analyze()
       if (DECs.back() < m_MinDEC) m_MinDEC = DECs.back();
       if (DECs.back() > m_MaxDEC) m_MaxDEC = DECs.back();
       Fluxs.push_back(Sources[s]->GetFlux());
+      if (Sources[s]->GetFlux() > FluxStrongest) {
+        FluxStrongest = Sources[s]->GetFlux();
+        IDStrongest = s;
+      }
     }
   }
+  cout<<"Strongest source: "<<IDStrongest<<" = "<<FluxStrongest<<endl;
+  
   
   double Tol = 0.1;
   TH2D* Hist = new TH2D("Pointings", "Pointings", 200, m_MinRA-Tol, m_MaxRA+Tol, 200, m_MinDEC-Tol, m_MaxDEC+Tol);
@@ -266,32 +274,63 @@ bool Pointer::Analyze()
   vector<double> pDECs;
   
   /* Best for dual pointing
-  double FrameSize = 6.7/60;
+  double FrameShift = 6.7/60;
   double Angle = 40;
   
   double RefDEC = -27.8;
   double RefRA = 53.02;
   */
   
-  double FrameSize = 6.6/60;
+  double FrameSize = 13.2/60;
+  double FrameShift = 6.6/60;
+  double PointingShift = 6.6/60;
   double Angle = 0;
   double AngleOffsetForNuSIM = 37;
   
   // For 4x4:
-  // int Points = 3; 
+  // int Points = 4; 
   // double RefDEC = -27.98;
   // double RefRA = 52.93;
   
   // For 5x5:
-  // int Points = 4; 
+  // int Points = 5; 
   // double RefDEC = -28.04;
   // double RefRA = 52.86;
   
   // For 8x8 - quarter pointing
-  int Points = 7; 
-  double RefDEC = -28.03;
-  double RefRA = 52.88;
-  FrameSize = 3.6/60;
+ 
+  int Points = 8; 
+  double RefDEC = -28.13;
+  double RefRA = 52.78;
+  FrameShift = 6.6/60;
+  PointingShift = 3.3/60;
+  TString PointFileName = "Pointing_8x8q_s3.3.pat";
+  
+  /*
+  int Points = 8; 
+  double RefDEC = -28.11;
+  double RefRA = 52.8;
+  FrameShift = 6.6/60;
+  PointingShift = 3.1/60;
+  TString PointFileName = "Pointing_8x8q_s3.1.pat";
+  */
+  /*
+  int Points = 8; 
+  double RefDEC = -28.12;
+  double RefRA = 52.79;
+  FrameShift = 6.6/60;
+  PointingShift = 3.2/60;
+  TString PointFileName = "Pointing_8x8q_s3.2.pat";
+  */
+  
+  /*
+  int Points = 8; 
+  double RefDEC = -28.125;
+  double RefRA = 52.785;
+  FrameShift = 6.6/60;
+  PointingShift = 3.25/60;
+  TString PointFileName = "Pointing_8x8q_s3.25.pat";
+  */
   
   double PointingShiftForNuSIMRA = 0.02;
   double PointingShiftForNuSIMDEC = 0.02;
@@ -299,8 +338,8 @@ bool Pointer::Analyze()
   vector<int> sRAs;
   vector<int> sDECs;
   
-  for (int d = 0; d <= Points; ++d) {  
-    for (int r = 0; r <= Points; ++r) {  
+  for (int d = 0; d < Points; ++d) {  
+    for (int r = 0; r < Points; ++r) {  
       sRAs.push_back(r); sDECs.push_back(d);
     }
   }  
@@ -312,8 +351,12 @@ bool Pointer::Analyze()
   
   for (unsigned int s = 0; s < sRAs.size(); ++s) {
     TVector3 Dir;
-    DEC = (RefDEC + sDECs[s]*FrameSize)*c_Rad+c_Pi/2;
-    RA = (RefRA + (sRAs[s]*FrameSize)/cos((RefDEC + sDECs[s]*FrameSize)*c_Rad))*c_Rad;
+    
+    cout<<sRAs[s]<<":"<<sDECs[s]<<endl;
+    
+    DEC = (RefDEC + FrameShift + sDECs[s]*PointingShift)*c_Rad+c_Pi/2;
+    RA = (RefRA + FrameShift + (sRAs[s]*PointingShift)/cos((RefDEC + FrameShift + sDECs[s]*PointingShift)*c_Rad))*c_Rad;
+    
     Dir.SetMagThetaPhi(1.0, DEC, RA);
     Dir.Rotate(Angle*c_Rad, DirRef);
     pRAs.push_back(Dir.Phi()*c_Deg);
@@ -321,7 +364,7 @@ bool Pointer::Analyze()
   }
   
   ofstream fout;
-  fout.open("Pointings.pat");
+  fout.open(PointFileName);
   for (unsigned int s = 0; s < pRAs.size(); ++s) {
     fout<<"RD "<<pRAs[s]+PointingShiftForNuSIMRA<<" "<<pDECs[s]+PointingShiftForNuSIMDEC<<" "<<Angle-AngleOffsetForNuSIM<<" 10"<<endl;
   }  
@@ -340,21 +383,22 @@ bool Pointer::Analyze()
     Dir.SetMagThetaPhi(1.0, pDECs[s]*c_Rad+c_Pi/2, pRAs[s]*c_Rad);
  
     TVector3 pdmrDir;
-    pdmrDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
+    pdmrDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize/2.0)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/2.0/cos(pDECs[s]*c_Rad))*c_Rad);
     pdmrDir.Rotate(Angle*c_Rad, Dir);
   
     TVector3 pdprDir;
-    pdprDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
+    pdprDir.SetMagThetaPhi(1.0, (pDECs[s]+FrameSize/2.0)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/2.0/cos(pDECs[s]*c_Rad))*c_Rad);
     pdprDir.Rotate(Angle*c_Rad, Dir);
  
     TVector3 mdmrDir;
-    mdmrDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
+    mdmrDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize/2.0)*c_Rad+c_Pi/2, (pRAs[s] - FrameSize/2.0/cos(pDECs[s]*c_Rad))*c_Rad);
     mdmrDir.Rotate(Angle*c_Rad, Dir);
   
     TVector3 mdprDir;
-    mdprDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/cos(pDECs[s]*c_Rad))*c_Rad);
+    mdprDir.SetMagThetaPhi(1.0, (pDECs[s]-FrameSize/2.0)*c_Rad+c_Pi/2, (pRAs[s] + FrameSize/2.0/cos(pDECs[s]*c_Rad))*c_Rad);
     mdprDir.Rotate(Angle*c_Rad, Dir);
    
+    cout<<mdmrDir.Phi()*c_Deg<<":"<<(mdmrDir.Theta()-c_Pi/2)*c_Deg<<" vs. "<<mdprDir.Phi()*c_Deg<<":"<<(mdprDir.Theta()-c_Pi/2)*c_Deg<<endl;
     TLine* mD = new TLine(mdmrDir.Phi()*c_Deg, (mdmrDir.Theta()-c_Pi/2)*c_Deg, mdprDir.Phi()*c_Deg, (mdprDir.Theta()-c_Pi/2)*c_Deg);
     mD->Draw();
     
