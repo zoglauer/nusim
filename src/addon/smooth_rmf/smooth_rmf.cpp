@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
   }
   //double E0, Escale, yE0, yEscale;
   cout << "Saving smoothed RMF to " << argv[2] << '\n';
+  rmf.compress(1.0e-10);
   rmf.writeMatrix(argv[2]);
   rmf.writeChannelBounds(argv[2]);
   return(0);
