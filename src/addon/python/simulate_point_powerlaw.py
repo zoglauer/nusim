@@ -9,15 +9,17 @@ flux = 0.
 flux_Elow = 10.
 flux_Ehi = 30.
 gamma = 1.8
+use_fn = 0
 if argc < 3:
     #print "Usage: %s outconfigfile exptime (flux)" % argv[0]
-    print "Usage: %s outconfigfile exptime (flux gamma flux_Elow flux_Ehi)" % argv[0]
+    print "Usage: %s outconfigfile exptime (flux gamma flux_Elow flux_Ehi use_fn)" % argv[0]
     print "Generates configuration to a point source based on default config in "
     print "  $NUSIM/resource/configurations/AstrophysicsMode.cfg"
     print "Sets exposure time to inputted value"
     print "If given sets flux (input in ergs/s/cm^2) and photon index,"
     print "flux in flux_Elow to flux_Ehi range (def. = %.1f - %.1f keV)" % (flux_Elow, flux_Ehi)
     print "Default photon index = %f" % gamma
+    print "If use_fn = 1 (default = 0), then use a user-defined fn. for the power-law."
     #print "simulate_bgd = 1 (yes, default) or 0 (no)"
     
     sys.exit()
@@ -52,6 +54,9 @@ if len(argv) > 5:
     flux_Elow = float(argv[5])
 if len(argv) > 6:
     flux_Ehi = float(argv[6])
+if len(argv) > 7:
+    use_fn = argv[7] == "1"
+    print "Will use a user-supplied fn. for the power-law"
 
 # Get power-law norm
 norm = nusim_cfg.pl_norm(flux_Elow, flux_Ehi, gamma, flux)
@@ -75,8 +80,14 @@ cfg.src_list[0].find("EnergyParam1").text = "%g" % 3.
 cfg.src_list[0].find("EnergyParam2").text = "%g" % 82.
 cfg.src_list[0].find("EnergyParam3").text = "%g" % gamma
 cfg.src_list[0].find("Flux").text = "%g" % (photflux/100.)
-
+if use_fn:
+    fnstr = "%g*pow(x, -%f)" % (norm, gamma)
+    print "Function = " + fnstr
+    cfg.src_list[0].find("EnergyFunctionString").text = fnstr
+    cfg.src_list[0].find("SpectralType").text = "7"
 cfg.find("TargetName").text = srcname
+if use_fn:
+    srcname += "_usefn"
 rootname = srcname
 #if not simulate_bgd:
 #    srcname += "_nobgd"
