@@ -2,20 +2,7 @@ import nusim_cfg
 import os, sys
 from numpy import *
 
-def cutoffpl(E, gamma, Ecut, norm):
-    "cut-off powerlaw fn"
-    return(norm*pow(E, -gamma)*exp(E/Ecut))
-
-def integrate_cutoffpl(E, gamma, Ecut, norm, E1, E2, n=100):
-    "integrate cut-off power-law from E1 to E2 in n steps"
-    dE = (E2-E1)/(n+1)
-    Es = arange(n)*dE + E1
-    fn = cutoffpl(Es, gamma, Ecut, norm)
-    tot = sum(fn)*dE
-    return(tot)
-
 if __name__ == "__main__":
-
     argv = sys.argv
     argc = len(argv)
     simulate_bgd = True
@@ -23,8 +10,8 @@ if __name__ == "__main__":
     flux_Elow = 10.
     flux_Ehi = 30.
     gamma = 1.8
-    use_fn = 0
-    if argc < 3:
+    Ecut = 5.
+    if argc < 6:
         #print "Usage: %s outconfigfile exptime (flux)" % argv[0]
         print "Usage: %s outconfigfile exptime flux gamma Ecut (flux_Elow flux_Ehi)" % argv[0]
         print "Generates configuration to a point source based on default config in "
@@ -59,22 +46,18 @@ if __name__ == "__main__":
     print "Background will%s be simulated" % str
 
     flux = 0.
-    if len(argv) > 3:
-        flux = float(argv[3])
+    flux = float(argv[3])
 
-    if len(argv) > 4:
-        gamma = float(argv[4])
-    if len(argv) > 5:
-        flux_Elow = float(argv[5])
+    gamma = float(argv[4])
+    Ecut = float(argv[5])
     if len(argv) > 6:
-        flux_Ehi = float(argv[6])
+        flux_Elow = float(argv[6])
     if len(argv) > 7:
-        use_fn = argv[7] == "1"
-        print "Will use a user-supplied fn. for the power-law"
+        flux_Ehi = float(argv[7])
 
     # Get power-law norm
-    norm = nusim_cfg.pl_norm(flux_Elow, flux_Ehi, gamma, flux)
-    photflux = nusim_cfg.pl_photflux(3., 82., gamma, norm)
+    norm = nusim_cfg.cutoffpl_norm(flux_Elow, flux_Ehi, gamma, Ecut, flux)
+    photflux = nusim_cfg.cutoffpl_photflux(3., 82., gamma, Ecut, norm)
     print "Power-law norm to give F(%.1f-%.1f) = %g: %g" % (flux_Elow, flux_Ehi, flux, norm)
     print "3-82 keV photon flux = %g" % photflux
 
@@ -87,21 +70,18 @@ if __name__ == "__main__":
     cfg.pointings_list[0].find("Time").text = exptime
     cfg.find("ObservationTime").text = exptime
 
-    srcname = "pointsrc_flux%g" % flux
+    srcname = "pointsrc_cutoffpl_flux%g" % flux
     # Update source
     cfg.src_list[0].find("Name").text = srcname
     cfg.src_list[0].find("EnergyParam1").text = "%g" % 3.
     cfg.src_list[0].find("EnergyParam2").text = "%g" % 82.
     cfg.src_list[0].find("EnergyParam3").text = "%g" % gamma
     cfg.src_list[0].find("Flux").text = "%g" % (photflux/100.)
-    if use_fn:
-        fnstr = "%g*pow(x, -%f)" % (norm, gamma)
-        print "Function = " + fnstr
-        cfg.src_list[0].find("EnergyFunctionString").text = fnstr
-        cfg.src_list[0].find("SpectralType").text = "7"
+    fnstr = "%g*pow(x, -%f)*exp(-x/%f)" % (norm, gamma, Ecut)
+    print "Function = " + fnstr
+    cfg.src_list[0].find("EnergyFunctionString").text = fnstr
+    cfg.src_list[0].find("SpectralType").text = "7"
     cfg.find("TargetName").text = srcname
-    if use_fn:
-        srcname += "_usefn"
     rootname = srcname
     #if not simulate_bgd:
     #    srcname += "_nobgd"
@@ -113,6 +93,18 @@ if __name__ == "__main__":
 
     cfg.write(outfile)
 
+    # Save spectrum to file
+    fil = open(outfile + "_spec.dat", 'w')
+    fil.write("Spectrum file for cutoff power-law, gamma=%.3f, Ecut=%.3f, norm=%g\n" % (gamma, Ecut, norm))
+    fil.write("\nIP LIN\n\n")
+    n = 1000
+    dE = (82.-3.)/n
+    for i in range(n):
+        E = dE*i + 0.5*dE
+        flux =nusim_cfg.cutoffpl(E, gamma, Ecut, norm)
+        fil.write("DP %g %g\n" % (E, flux))
+        
+    sys.exit()
     # Actually run nusim
     com = nusim_root + "/bin/nusim -c " + outfile + " -a"
     import popen2

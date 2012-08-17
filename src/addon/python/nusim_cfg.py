@@ -4,7 +4,7 @@ Class to manage nusim config files
 import sys, os
 from xml.etree.ElementTree import ElementTree
 from radec import radec
-
+import numpy
 # This approach will break if nusim changes these options of course!
 specoptions = ["Monoenergetic", "Linear", "PowerLaw", "BrokenPowerLaw", "FileDifferentialFlux", "BlackBody", "NormalizedFunctionInPhPerCm2PerSPerKeV", "NormalizedEnergyPositionFluxFunction"]
 
@@ -139,6 +139,31 @@ def pl_norm(E1, E2, gamma, flux):
         gamma = 2.001
     return(flux/(1.6e-9*(E2**(-gamma+2) - E1**(-gamma+2))/(-gamma+2)))
  
+def cutoffpl(E, gamma, Ecut, norm):
+    "cut-off powerlaw fn"
+    return(norm*E**(-gamma)*numpy.exp(-E/Ecut))
+
+def cutoffpl_photflux(E1, E2, gamma, Ecut, norm, n=10000):
+    "integrate cut-off power-law from E1 to E2 in n steps"
+    dE = (E2-E1)/(n+1)
+    Es = numpy.arange(n)*dE + E1
+    fn = cutoffpl(Es, gamma, Ecut, norm)
+    tot = sum(fn)*dE
+    return(tot)
+
+def cutoffpl_flux(E1, E2, gamma, Ecut, norm, n=10000):
+    "integrate cut-off power-law from E1 to E2 in n steps"
+    dE = (E2-E1)/n
+    Es = numpy.arange(n)*dE + E1 + 0.5*dE
+    #print Es[0], Es[-1]
+    fn = cutoffpl(Es, gamma, Ecut, norm)*Es*1.6e-9
+    tot = sum(fn)*dE
+    return(tot)
+
+def cutoffpl_norm(E1, E2, gamma, Ecut, flux, n=10000):
+    return(flux/cutoffpl_flux(E1, E2, gamma, Ecut, 1., n))
+ 
+
 if __name__ == "__main__":
     
     argv = sys.argv
