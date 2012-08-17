@@ -97,12 +97,21 @@ class nusim_cfg(ElementTree):
             btype = int(src.find("BeamType").text)-1
             beamtype = beamoptions[btype]
             print "  spatial option = %s" % beamtype
-            flux = float(src.find("Flux").text)
+            photflux = float(src.find("Flux").text)*100.
             ra = float(src.find("PositionParam2").text)/60.
             dec = float(src.find("PositionParam1").text)/60.
             p = radec()
             p.ra, p.dec = ra,dec
-            print "  flux = %g ph/s/cm^2" % (flux*100.)
+            print "  photon flux = %g ph/s/cm^2" % (photflux)
+            if spectype == "PowerLaw":
+                E1 = float(src.find("EnergyParam1").text)
+                E2 = float(src.find("EnergyParam2").text)
+                gamma = float(src.find("EnergyParam3").text)
+                print "  E1, E2, Gamma = %.2f, %.2f, %.2f" % (E1, E2, gamma)
+                norm = photflux/pl_photflux(E1, E2, gamma, 1.)
+                print " PL norm = ", norm
+                flux = pl_flux(E1, E2, gamma, norm)
+                print "  flux = %.2g" % flux
             print "  Position = (%f, %f) %s" % (ra, dec, p)
             print "  offsets from pointing centers:"
             i = 1
@@ -120,10 +129,14 @@ def pl_photflux(E1, E2, gamma, norm):
 
 def pl_flux(E1, E2, gamma, norm):
     """ Returns photon flux between E1 and E2, converted to ergs/cm^2/s """
+    if gamma==2.0:
+        gamma = 2.001
     return(1.6e-9*norm*(E2**(-gamma+2) - E1**(-gamma+2))/(-gamma+2))
 
 
 def pl_norm(E1, E2, gamma, flux):
+    if gamma==2.0:
+        gamma = 2.001
     return(flux/(1.6e-9*(E2**(-gamma+2) - E1**(-gamma+2))/(-gamma+2)))
  
 if __name__ == "__main__":
