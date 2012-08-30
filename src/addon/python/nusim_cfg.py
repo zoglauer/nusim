@@ -87,6 +87,8 @@ class nusim_cfg(ElementTree):
 
         print "%d source(s)" % len(self.src_list)
         srci = 1
+        totflux = 0.
+        totbatflux = 0.
         for src in self.src_list:
             name = src.find("Name").text
             print "Source %d: " % srci,  name
@@ -112,6 +114,8 @@ class nusim_cfg(ElementTree):
                 print " PL norm = ", norm
                 flux = pl_flux(E1, E2, gamma, norm)
                 print "  flux = %.2g" % flux
+                totflux += flux
+                totbatflux += pl_flux(15, 195., gamma, norm)
             print "  Position = (%f, %f) %s" % (ra, dec, p)
             print "  offsets from pointing centers:"
             i = 1
@@ -119,6 +123,7 @@ class nusim_cfg(ElementTree):
                 d = p.Dist(pc)*60.
                 print "    Pointing %d: offset = %.3f'" % (i, d)
                 i = i + 1
+        print "Total flux of power-law components: %g (%.1f-%.1f keV), %g (15-195 keV)" % (totflux, E1, E2, totbatflux)
 
 
 # functions for helping with power laws
