@@ -572,7 +572,7 @@ bool NModuleOpticsEngine::LoadMLI()
   for (int i = 0; i < NEnergy; ++i) {
     if (fscanf(infile, "%f %f\n",&MLI_energy, &MLI_attenuation) != 2) return false;
     m_MLIenergy.push_back(MLI_energy);
-	m_MLIatt.push_back(MLI_attenuation);
+    m_MLIatt.push_back(MLI_attenuation);
   }
   fclose(infile);
 
@@ -857,7 +857,7 @@ int NModuleOpticsEngine::GetMirrorGroup(float alpha, int n)
 float NModuleOpticsEngine::InterpolateMLI(float e_photon) {
 
   int energy_index = FindIndexReverse(e_photon,m_MLIenergy,15); /* returns which shell photon will hit */
-  
+
   float InterpolatedMLIatt = m_MLIatt[energy_index-1] + (m_MLIatt[energy_index]-m_MLIatt[energy_index-1])*
                              (e_photon - m_MLIenergy[energy_index-1])/(m_MLIenergy[energy_index] - m_MLIenergy[energy_index-1]);
 

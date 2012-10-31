@@ -12,17 +12,17 @@
 #------------------------------------------------------------------------------
 # Program and directories
 
-SHELL=/bin/sh
+SHELL=/bin/bash
 
 # Basic directories
-TOP						= $(shell pwd)
-SR						= $(TOP)/src
-IN						= $(TOP)/include
-LB						= $(TOP)/lib
-BN            = $(TOP)/bin
-HT            = $(TOP)/doc/html
-CT						= $(TOP)/cint
-CF						= $(TOP)/config
+TOP	= $(shell pwd)
+SR	= $(TOP)/src
+IN	= $(TOP)/include
+LB	= $(TOP)/lib
+BN      = $(TOP)/bin
+HT      = $(TOP)/doc/html
+CT	= $(TOP)/cint
+CF	= $(TOP)/config
 
 
 #------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ CF						= $(TOP)/config
 include $(TOP)/config/Makefile.options
 include $(TOP)/config/Makefile.config
 
-CXXFLAGS		+= -I$(IN)
+CXXFLAGS	+= -I$(IN)
 LDFLAGS     += -L$(LB)
 
 
@@ -39,9 +39,9 @@ LDFLAGS     += -L$(LB)
 # Commands:
 
 #.NOPARALLEL:
-.EXPORT_ALL_VARIABLES: all main megalib modules data orbit
+.EXPORT_ALL_VARIABLES: all main megalib modules data orbit nulyses
 .SILENT:
-.NOTPARALLEL: info main megalib modules data orbit
+.NOTPARALLEL: info main megalib modules data orbit nulyses
 .SUFFIXES:
 .SUFFIXES: .cxx .h .o .so
 
@@ -62,6 +62,9 @@ main: link megalib modules data orbit
 
 megalib: link
 	@$(MAKE) megalib -C src
+
+nulyses: link global megalib
+	@$(MAKE) nulyses -C src
 
 modules: link megalib orbit
 	@$(MAKE) modules -C src

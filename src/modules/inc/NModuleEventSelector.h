@@ -153,6 +153,8 @@ class NModuleEventSelector : public NModule, public NModuleInterfaceEvent,
   bool m_SaveBeforeSelections;
 
   //! The pre-selection counts in the band 5-10 keV
+  unsigned int m_Counts3To80;
+  //! The pre-selection counts in the band 5-10 keV
   unsigned int m_Counts5To10;
   //! The pre-selection counts in the band 10-20 keV
   unsigned int m_Counts10To20;

@@ -99,6 +99,7 @@ bool NModuleEventSelector::Initialize()
 {
   // Initialize the module 
 
+  m_Counts3To80 = 0.0;
   m_Counts5To10 = 0.0;
   m_Counts10To20 = 0.0;
   m_Counts20To60 = 0.0;
@@ -189,6 +190,9 @@ bool NModuleEventSelector::AnalyzeEvent(NEvent& Event)
     TotalEnergy += Event.GetHit(i).GetEnergy();
   }
 
+  if (TotalEnergy >= 3 && TotalEnergy < 80) {
+    m_Counts3To80++;
+  }
   if (TotalEnergy >= 5 && TotalEnergy < 10) {
     m_Counts5To10++;
   }
@@ -295,6 +299,7 @@ bool NModuleEventSelector::Finalize()
   cout<<"   5 - 10 keV: "<<m_Counts5To10<<endl;
   cout<<"  10 - 20 keV: "<<m_Counts10To20<<endl; 
   cout<<"  20 - 60 keV: "<<m_Counts20To60<<endl;
+  cout<<"   3 - 80 keV: "<<m_Counts3To80<<endl;
 
   return true;
 }

@@ -645,11 +645,11 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
       if (Bin < 0) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = 0;
-      } else if (Bin == m_PerturbedAlignmentsNight.size() && m_Time < High+0.0001) {
-        Bin = m_PerturbedAlignmentsNight.size() - 1;
-      } else if (Bin == m_PerturbedAlignmentsNight.size()) {
+      } else if (Bin == m_PerturbedAlignmentsNight.size()-1 && m_Time < High+0.0001) {
+        Bin = m_PerturbedAlignmentsNight.size() - 2;
+      } else if (Bin == m_PerturbedAlignmentsNight.size()-1) {
         merr<<"Bin finding failed: "<<Bin<<endl;
-        Bin = m_PerturbedAlignmentsNight.size() - 1;
+        Bin = m_PerturbedAlignmentsNight.size() - 2;
       }
       m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignmentsNight[Bin], 
                                                   m_PerturbedAlignmentsNight[Bin+1], TimeBin - Bin);      
@@ -661,11 +661,11 @@ void NModuleOrientationsDatabase::AdvanceTime(const NTime& t)
       if (Bin < 0) {
         merr<<"Bin finding failed: "<<Bin<<endl;
         Bin = 0;
-      } else if (Bin == m_PerturbedAlignmentsDay.size() && m_Time < High+0.0001) {
-        Bin = m_PerturbedAlignmentsDay.size() - 1;
-      } else if (Bin >= m_PerturbedAlignmentsDay.size()) {
+      } else if (Bin == m_PerturbedAlignmentsDay.size()-1 && m_Time < High+0.0001) {
+        Bin = m_PerturbedAlignmentsDay.size() - 2;
+      } else if (Bin >= m_PerturbedAlignmentsDay.size()-1) {
         merr<<"Bin finding failed: "<<Bin<<endl;
-        Bin = m_PerturbedAlignmentsDay.size() - 1;
+        Bin = m_PerturbedAlignmentsDay.size() - 2;
       }
       m_LatestPerturbedAlignments.SetInterpolated(m_PerturbedAlignmentsDay[Bin], 
                                                   m_PerturbedAlignmentsDay[Bin+1], TimeBin - Bin);      

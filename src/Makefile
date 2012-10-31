@@ -32,6 +32,9 @@ orbit:
 addon:
 	@$(MAKE) -C addon
 
+nulyses:
+	@$(MAKE) -C nulyses
+
 
 
 #------------------------------------------------------------------------------
@@ -44,6 +47,7 @@ link:
 	$(MAKE) link -C modules
 	$(MAKE) link -C data
 	$(MAKE) link -C orbit
+	$(MAKE) link -C nulyses
 
 all:
 	@$(MAKE) -C global
@@ -53,6 +57,7 @@ all:
 	@$(MAKE) -C modules
 	@$(MAKE) -C main
 	@$(MAKE) -C addon
+	@$(MAKE) -C nulyses
 
 clean:
 	@$(MAKE) clean -C global
@@ -62,6 +67,7 @@ clean:
 	@$(MAKE) clean -C data
 	@$(MAKE) clean -C orbit
 	@$(MAKE) clean -C addon
+	@$(MAKE) clean -C nulyses
 	@rm -f *~
 	@rm -f \#*
 

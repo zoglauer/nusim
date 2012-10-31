@@ -70,11 +70,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_Backprojection->SetYTitle("DEC [deg]");
   m_Backprojection->SetZTitle("counts");
 
-  m_Energy = new TH1D("Spectrum", "Spectrum", 194, 3, 100);
+  m_Energy = new TH1D("Spectrum", "Spectrum", 196, 2, 100);
   m_Energy->SetXTitle("keV");
   m_Energy->SetYTitle("counts");
 
-  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 194, 3, 100);
+  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 196, 2, 100);
   m_NormalizedEnergy->SetXTitle("keV");
   m_NormalizedEnergy->SetYTitle("counts/keV/s/cm^{2}");
   m_NormalizedEnergy->SetMinimum(0);
@@ -173,6 +173,7 @@ void NGUIDiagnosticsBackprojector::SetDetectorParameters(const MVector& Center, 
 
   // two telescopes, 4 detectors, ...
   m_Area = 2 * 4 * 2*HalfSize.X() * 2*HalfSize.Y();
+  cout<<"Area: "<<m_Area<<endl;
 }
 
 
@@ -368,7 +369,7 @@ void NGUIDiagnosticsBackprojector::Update()
         m_NormalizedEnergy->SetBinContent(b, m_Energy->GetBinContent(b)/m_Energy->GetBinWidth(b)/(m_Area/100)/m_Time.GetAsSeconds());
       }
 
-      /*
+      
       // Dump to file:
       ofstream out;
       out.open("BackgroundDump.txt");
@@ -393,7 +394,7 @@ void NGUIDiagnosticsBackprojector::Update()
         out<<m_NormalizedEnergy->GetBinCenter(b)<<"  "<<m_NormalizedEnergy->GetBinContent(b)<<endl;
       }
       out.close();
-      */
+      
       
 //       cout<<"Counts: "<<counts<<endl; 
 //       cout<<"Counts/sec: "<<counts/m_Time.GetAsSeconds()<<" --> "<<m_Time.GetAsSeconds()<<" s"<<endl; 
