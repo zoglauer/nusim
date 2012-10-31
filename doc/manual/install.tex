@@ -15,9 +15,12 @@ In order to read and write fits files, HEAsoft is required. A standard installat
 \begin{itemize}
 \item	NuSIMs configuration tool verifies that HEAsoft is installed only by checking of the HEADAS environment variable is set.
 \item	It seems that on the latest HEADAS installations the required libcfitsio.[so/dylib] (so: Linux, dylib: Mac) does not exist but 
-only a version one, e.g. libcfitsio\_34.so. Since NuSIM should be able to run with any version of libcfitsio you might have to make a link, e.g. do:
+only a version one, e.g. libcfitsio\_3.24.so. Since NuSIM should be able to run with any version of libcfitsio you might have to make a link, e.g. do:
 ln -s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
 in the heasoft/$<$system version$>$/lib directory.
+In the case you have many different versions of HEASOFT installed on your system, you might want to keep the version number of cfitsio in the Makefile:
+After configuring NuSIM you can exchange in the file config/Makefile.config -cfitsio with -cfitsio_3.24.
+You have to remember to update this each time you run configure or you update HEAsoft!
 \end{itemize}
 
 \subsection{Boost}
@@ -213,4 +216,13 @@ Error loading one dimensional GSL integrator
 
 Something is wrong with your ROOT installation. Either you did not compile ROOT�s MathMore library (did you say �disable-mathmore during configuring ROOT?), or the MathMore library couldn�t be compiled because GSL (�GNU scientific library�) isn�t installed on your system. Either way make sure GSL is installed on your system and you have configured ROOT to compile MathMore. Fixing this requires a recompilation of ROOT.
 
+
+Error message similar to:
+Command-line parser: Options: nusim -c Tycho.cfg 
+ERROR: Mismatch in the version of the fitsio.h include file used to build
+the CFITSIO library, and the version included by the application program:
+   Version used to build the CFITSIO library   = 3.280000
+   Version included by the application program = 3.270000
+Unable to open file: 
+/home/nustar1/nusim/soft/RAN/nusim/resource/examples/Tycho/Tycho.cleaned.fits
 
