@@ -22,8 +22,6 @@ PRGS = \
 	$(BN)/FitsViewer \
 	$(BN)/FitsCleaner \
 	$(BN)/MakeARF \
-	$(BN)/NewMakeARF \
-	$(BN)/ExtractSpectrum \
 
 
 #----------------------------------------------------------------
