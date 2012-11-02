@@ -63,7 +63,8 @@ using namespace std;
 #include "NCheckRates.h"
 #include "NQuickView.h"
 #include "NQuickViewFiltered.h"
-#include "NBackgroundMode123.h"
+#include "NBackgroundMode1.h"
+#include "NBackgroundMode23.h"
 #include "NBackgroundMode4.h"
 #include "NBackgroundMode4DataBase.h"
 
@@ -107,7 +108,8 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          quicklook: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
   Usage<<"          quicklookfiltered: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
   Usage<<"          checkrates: Check SAA rates"<<endl;
-  Usage<<"          background123: Background rates for modes 1, 2, 3"<<endl;
+  Usage<<"          background1: Background rates for mode 1"<<endl;
+  Usage<<"          background23: Background rates for modes 2 & 3"<<endl;
   Usage<<"          background4: Background rates for mode 4"<<endl;
   Usage<<"          background4database: Create data base for mode 4"<<endl;
   Usage<<"          checkrates: Check SAA rates"<<endl;
@@ -168,8 +170,13 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
         if (Q.ParseCommandLine(argc, argv) == false) return false;
         if (Q.Analyze() == false) return false; 
         return true;
-      } else if (Tool == "backgroundmode123") {
-        NBackgroundMode123 B;
+      } else if (Tool == "backgroundmode1" || Tool == "backgroundmode123") {
+        NBackgroundMode1 B;
+        if (B.ParseCommandLine(argc, argv) == false) return false;
+        if (B.Analyze() == false) return false; 
+        return true;
+      } else if (Tool == "backgroundmode23") {
+        NBackgroundMode23 B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;

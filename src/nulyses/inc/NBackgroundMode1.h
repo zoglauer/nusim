@@ -1,5 +1,5 @@
 /*
- * NBackgroundMode4.h
+ * NBackgroundMode1.h
  *
  * Copyright (C) by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NBackgroundMode4__
-#define __NBackgroundMode4__
+#ifndef __NBackgroundMode1__
+#define __NBackgroundMode1__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,7 +17,6 @@
 // Standard libs:
 
 // ROOT libs:
-#include "TH3.h"
 
 // NuSTAR libs:
 #include "NGlobal.h"
@@ -31,14 +30,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NBackgroundMode4 : public NBackgroundModes
+class NBackgroundMode1 : public NBackgroundModes
 {
   // public interface:
  public:
   //! Standard constructor
-  NBackgroundMode4();
+  NBackgroundMode1();
   //! Default destructor
-  virtual ~NBackgroundMode4();
+  virtual ~NBackgroundMode1();
 
   /// Parse the module specific parts of the command line
   virtual bool ParseCommandLine(int argc, char** argv);
@@ -47,13 +46,11 @@ class NBackgroundMode4 : public NBackgroundModes
 
   // protected methods:
  protected:
-  //NBackgroundMode4() {};
-  //NBackgroundMode4(const NBackgroundMode4& NCTHit) {};
+  //NBackgroundMode1() {};
+  //NBackgroundMode1(const NBackgroundMode1& NCTHit) {};
 
-  bool Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-            NPhaFile& P, TH3D* DB, int SourcePosX, int SourcePosY, double DistanceCutOff);
-  bool LoadDataBase(TString FileName, TH3D* DB);
-  
+  bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+            NPhaFile& P, int SourcePosX, int SourcePosY, double DistanceCutOff);
   
   // private methods:
  private:
@@ -66,16 +63,12 @@ class NBackgroundMode4 : public NBackgroundModes
 
   // private members:
  private:
-  TString m_DataBaseNameA;
-  TString m_DataBaseNameB;
-  TH3D* m_DBA;
-  TH3D* m_DBB;
 
-  
+  bool m_InclusionMode;
 
 #ifdef ___CINT___
  public:
-  ClassDef(NBackgroundMode4, 0) // no description
+  ClassDef(NBackgroundMode1, 0) // no description
 #endif
 
 };

@@ -76,7 +76,7 @@ NBackgroundMode4::~NBackgroundMode4()
 
 bool NBackgroundMode4::ParseCommandLine(int argc, char** argv)
 {
-  if (NBaseTool::ParseCommandLine(argc, argv) == false) return false;
+  if (NBackgroundModes::ParseCommandLine(argc, argv) == false) return false;
   
   // Now parse the command line options:
   string Option;
@@ -91,69 +91,10 @@ bool NBackgroundMode4::ParseCommandLine(int argc, char** argv)
         cout<<"Error: Option "<<argv[i][1]<<" needs one argument!"<<endl;
         return false;
       }
-    } else if (Option == "-dps" || Option == "--dps" ) {
-      if (!((argc > i+10) && 
-        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
-        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0) && 
-        (argv[i+3][0] != '-' || isalpha(argv[i+3][1]) == 0) && 
-        (argv[i+4][0] != '-' || isalpha(argv[i+4][1]) == 0) && 
-        (argv[i+5][0] != '-' || isalpha(argv[i+5][1]) == 0) && 
-        (argv[i+6][0] != '-' || isalpha(argv[i+6][1]) == 0) && 
-        (argv[i+7][0] != '-' || isalpha(argv[i+7][1]) == 0) && 
-        (argv[i+8][0] != '-' || isalpha(argv[i+8][1]) == 0))){
-        cout<<"Error: Option "<<argv[i][1]<<" needs nine arguments!"<<endl;
-        return false;
-      }
-    } else if (Option == "-dpsr" || Option == "--dpsr") {
-      if (!((argc > i+10) && 
-        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
-        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0) && 
-        (argv[i+3][0] != '-' || isalpha(argv[i+3][1]) == 0) && 
-        (argv[i+4][0] != '-' || isalpha(argv[i+4][1]) == 0) && 
-        (argv[i+5][0] != '-' || isalpha(argv[i+5][1]) == 0) && 
-        (argv[i+6][0] != '-' || isalpha(argv[i+6][1]) == 0) && 
-        (argv[i+7][0] != '-' || isalpha(argv[i+7][1]) == 0) && 
-        (argv[i+8][0] != '-' || isalpha(argv[i+8][1]) == 0) && 
-        (argv[i+9][0] != '-' || isalpha(argv[i+9][1]) == 0) && 
-        (argv[i+10][0] != '-' || isalpha(argv[i+10][1]) == 0))){
-        cout<<"Error: Option "<<argv[i][1]<<" needs eleven arguments!"<<endl;
-        return false;
-      }
     }
     
     // Then fulfill the options:
-    if (Option == "-dps" || Option == "--dps") {
-      m_Directories.push_back(argv[++i]);
-      m_DetPosXA.push_back(atoi(argv[++i]));
-      m_DetPosYA.push_back(atoi(argv[++i]));
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_PhaA.push_back(argv[++i]);
-      m_RegA.push_back("");
-      m_DetPosXB.push_back(atoi(argv[++i]));
-      m_DetPosYB.push_back(atoi(argv[++i]));
-      m_DetSizeB.push_back(atoi(argv[++i]));
-      m_PhaB.push_back(argv[++i]);
-      m_RegB.push_back("");
-      cout<<"Accepting directory file name: "<<m_Directories.back()
-          <<" - (A: x="<<m_DetPosXA.back()<<", y="<<m_DetPosYA.back()<<", s="<<m_DetSizeA.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()
-          <<" -- B: x="<<m_DetPosXB.back()<<", y="<<m_DetPosYB.back()<<", s="<<m_DetSizeB.back()<<", pha="<<m_PhaB.back()<<", reg="<<m_RegB.back()<<")"<<endl;
-    } else if (Option == "-dpsr" || Option == "--dpsr") {
-      m_Directories.push_back(argv[++i]);
-      m_DetPosXA.push_back(atoi(argv[++i]));
-      m_DetPosYA.push_back(atoi(argv[++i]));
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_PhaA.push_back(argv[++i]);
-      m_RegA.push_back(argv[++i]);
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_DetPosXB.push_back(atoi(argv[++i]));
-      m_DetPosYB.push_back(atoi(argv[++i]));
-      m_DetSizeB.push_back(atoi(argv[++i]));
-      m_PhaB.push_back(argv[++i]);
-      m_RegB.push_back(argv[++i]);
-      cout<<"Accepting directory file name: "<<m_Directories.back()
-          <<" - (A: x="<<m_DetPosXA.back()<<", y="<<m_DetPosYA.back()<<", s="<<m_DetSizeA.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()
-          <<" -- B: x="<<m_DetPosXB.back()<<", y="<<m_DetPosYB.back()<<", s="<<m_DetSizeB.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()<<")"<<endl;
-    } else if (Option == "--names") {
+    if (Option == "--names") {
       m_DataBaseNameA = argv[++i];
       m_DataBaseNameB = argv[++i];
       cout<<"Accepting name for the data bases: "<<m_DataBaseNameA<<" & "<<m_DataBaseNameB<<endl;
@@ -439,8 +380,9 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SpectrumScaled->Draw();
   SpectrumScaledCanvas->Update();
 
-  double ScalingMin = 82;
-  double ScalingMax = 120;
+  double ScalingMin = m_MinFitRange;
+  double ScalingMax = m_MaxFitRange;
+  cout<<"Using fit range: "<<m_MinFitRange<<" "<<m_MaxFitRange<<endl;
   cout<<"Spectrum on source flux above before lifetime [cts/sec/cm2]: "<<SpectrumOnSourceAll->Integral(SpectrumOnSourceAll->FindBin(ScalingMin), SpectrumOnSourceAll->FindBin(ScalingMax))/FE.m_DetectorArea<<endl;
   
   // (2) Normalize

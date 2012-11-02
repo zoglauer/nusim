@@ -1,5 +1,5 @@
 /*
- * NBackgroundMode123.h
+ * NBackgroundMode23.h
  *
  * Copyright (C) by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NBackgroundMode123__
-#define __NBackgroundMode123__
+#ifndef __NBackgroundMode23__
+#define __NBackgroundMode23__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,6 +21,7 @@
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "NBaseTool.h"
+#include "NBackgroundModes.h"
 #include "NPhaFile.h"
 
 // Forward declarations:
@@ -29,14 +30,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NBackgroundMode123 : public NBaseTool
+class NBackgroundMode23 : public NBackgroundModes
 {
   // public interface:
  public:
   //! Standard constructor
-  NBackgroundMode123();
+  NBackgroundMode23();
   //! Default destructor
-  virtual ~NBackgroundMode123();
+  virtual ~NBackgroundMode23();
 
   /// Parse the module specific parts of the command line
   virtual bool ParseCommandLine(int argc, char** argv);
@@ -45,8 +46,8 @@ class NBackgroundMode123 : public NBaseTool
 
   // protected methods:
  protected:
-  //NBackgroundMode123() {};
-  //NBackgroundMode123(const NBackgroundMode123& NCTHit) {};
+  //NBackgroundMode23() {};
+  //NBackgroundMode23(const NBackgroundMode23& NCTHit) {};
 
   bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             NPhaFile& P, int SourcePosX, int SourcePosY, double DistanceCutOff);
@@ -62,17 +63,10 @@ class NBackgroundMode123 : public NBaseTool
 
   // private members:
  private:
-  vector<TString> m_PhaA;
-  vector<TString> m_PhaB;
-  
-  vector<TString> m_RegA;
-  vector<TString> m_RegB;
-
-  bool m_InclusionMode;
 
 #ifdef ___CINT___
  public:
-  ClassDef(NBackgroundMode123, 0) // no description
+  ClassDef(NBackgroundMode23, 0) // no description
 #endif
 
 };

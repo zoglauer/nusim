@@ -28,7 +28,9 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NCheckRates.o \
 	$(LB)/NQuickView.o \
 	$(LB)/NQuickViewFiltered.o \
-	$(LB)/NBackgroundMode123.o \
+	$(LB)/NBackgroundModes.o \
+	$(LB)/NBackgroundMode1.o \
+	$(LB)/NBackgroundMode23.o \
 	$(LB)/NBackgroundMode4.o \
 	$(LB)/NBackgroundMode4DataBase.o \
 

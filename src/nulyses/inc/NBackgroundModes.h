@@ -1,5 +1,5 @@
 /*
- * NBackgroundMode4.h
+ * NBackgroundModes.h
  *
  * Copyright (C) by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NBackgroundMode4__
-#define __NBackgroundMode4__
+#ifndef __NBackgroundModes__
+#define __NBackgroundModes__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,12 +17,10 @@
 // Standard libs:
 
 // ROOT libs:
-#include "TH3.h"
 
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "NBaseTool.h"
-#include "NBackgroundModes.h"
 #include "NPhaFile.h"
 
 // Forward declarations:
@@ -31,29 +29,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NBackgroundMode4 : public NBackgroundModes
+class NBackgroundModes : public NBaseTool
 {
   // public interface:
  public:
   //! Standard constructor
-  NBackgroundMode4();
+  NBackgroundModes();
   //! Default destructor
-  virtual ~NBackgroundMode4();
+  virtual ~NBackgroundModes();
 
   /// Parse the module specific parts of the command line
   virtual bool ParseCommandLine(int argc, char** argv);
-  /// Analyze what ever needs to be analyzed...
-  virtual bool Analyze();
 
   // protected methods:
  protected:
-  //NBackgroundMode4() {};
-  //NBackgroundMode4(const NBackgroundMode4& NCTHit) {};
-
-  bool Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-            NPhaFile& P, TH3D* DB, int SourcePosX, int SourcePosY, double DistanceCutOff);
-  bool LoadDataBase(TString FileName, TH3D* DB);
-  
+  //NBackgroundModes() {};
+  //NBackgroundModes(const NBackgroundModes& NCTHit) {};
   
   // private methods:
  private:
@@ -63,19 +54,22 @@ class NBackgroundMode4 : public NBackgroundModes
   // protected members:
  protected:
 
+  vector<TString> m_PhaA;
+  vector<TString> m_PhaB;
+  
+  vector<TString> m_RegA;
+  vector<TString> m_RegB;
 
+  double m_MinFitRange;
+  double m_MaxFitRange;
+  
   // private members:
  private:
-  TString m_DataBaseNameA;
-  TString m_DataBaseNameB;
-  TH3D* m_DBA;
-  TH3D* m_DBB;
 
-  
-
+   
 #ifdef ___CINT___
  public:
-  ClassDef(NBackgroundMode4, 0) // no description
+  ClassDef(NBackgroundModes, 0) // no description
 #endif
 
 };

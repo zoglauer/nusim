@@ -1,5 +1,5 @@
 /*
- * NBackgroundMode123.cxx
+ * NBackgroundMode23.cxx
  *
  * Copyright (C) by the NuSTAR team.
  * All rights reserved.
@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// NBackgroundMode123
+// NBackgroundMode23
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // Include the header:
-#include "NBackgroundMode123.h"
+#include "NBackgroundMode23.h"
 
 // Standard libs:
 #include <fstream>
@@ -42,18 +42,16 @@ using namespace std;
 
 
 #ifdef ___CINT___
-ClassImp(NBackgroundMode123)
+ClassImp(NBackgroundMode23)
 #endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NBackgroundMode123::NBackgroundMode123()
+NBackgroundMode23::NBackgroundMode23()
 {
-  // Construct an instance of NBackgroundMode123
-  
-  m_InclusionMode = false;
+  // Construct an instance of NBackgroundMode23
   
   m_SpectrumMax = 200;
   m_ReadUnfiltered = false;
@@ -64,94 +62,19 @@ NBackgroundMode123::NBackgroundMode123()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NBackgroundMode123::~NBackgroundMode123()
+NBackgroundMode23::~NBackgroundMode23()
 {
-  // Delete this instance of NBackgroundMode123
+  // Delete this instance of NBackgroundMode23
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBackgroundMode123::ParseCommandLine(int argc, char** argv)
+bool NBackgroundMode23::ParseCommandLine(int argc, char** argv)
 {
-  if (NBaseTool::ParseCommandLine(argc, argv) == false) return false;
-  
-  // Now parse the command line options:
-  string Option;
-  for (int i = 1; i < argc; i++) {
-    Option = argv[i];
-    
-    // First check if each option has sufficient arguments:
-    // Single argument
-    if (Option == "-dps" || Option == "--dps" ) {
-      if (!((argc > i+8) && 
-        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
-        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0) && 
-        (argv[i+3][0] != '-' || isalpha(argv[i+3][1]) == 0) && 
-        (argv[i+4][0] != '-' || isalpha(argv[i+4][1]) == 0) && 
-        (argv[i+5][0] != '-' || isalpha(argv[i+5][1]) == 0) && 
-        (argv[i+6][0] != '-' || isalpha(argv[i+6][1]) == 0) && 
-        (argv[i+7][0] != '-' || isalpha(argv[i+7][1]) == 0) && 
-        (argv[i+8][0] != '-' || isalpha(argv[i+8][1]) == 0))){
-        cout<<"Error: Option "<<argv[i]<<" needs nine arguments!"<<endl;
-        return false;
-      }
-    } else if (Option == "-dpsr" || Option == "--dpsr") {
-      if (!((argc > i+10) && 
-        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
-        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0) && 
-        (argv[i+3][0] != '-' || isalpha(argv[i+3][1]) == 0) && 
-        (argv[i+4][0] != '-' || isalpha(argv[i+4][1]) == 0) && 
-        (argv[i+5][0] != '-' || isalpha(argv[i+5][1]) == 0) && 
-        (argv[i+6][0] != '-' || isalpha(argv[i+6][1]) == 0) && 
-        (argv[i+7][0] != '-' || isalpha(argv[i+7][1]) == 0) && 
-        (argv[i+8][0] != '-' || isalpha(argv[i+8][1]) == 0) && 
-        (argv[i+9][0] != '-' || isalpha(argv[i+9][1]) == 0) && 
-        (argv[i+10][0] != '-' || isalpha(argv[i+10][1]) == 0))){
-        cout<<"Error: Option "<<argv[i]<<" needs eleven arguments!"<<endl;
-        return false;
-      }
-    }
-    
-    // Then fulfill the options:
-    if (Option == "-dps" || Option == "--dps") {
-      m_Directories.push_back(argv[++i]);
-      m_DetPosXA.push_back(atoi(argv[++i]));
-      m_DetPosYA.push_back(atoi(argv[++i]));
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_PhaA.push_back(argv[++i]);
-      m_RegA.push_back("");
-      m_DetPosXB.push_back(atoi(argv[++i]));
-      m_DetPosYB.push_back(atoi(argv[++i]));
-      m_DetSizeB.push_back(atoi(argv[++i]));
-      m_PhaB.push_back(argv[++i]);
-      m_RegB.push_back("");
-      cout<<"Accepting directory file name: "<<m_Directories.back()
-          <<" - (A: x="<<m_DetPosXA.back()<<", y="<<m_DetPosYA.back()<<", s="<<m_DetSizeA.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()
-          <<" -- B: x="<<m_DetPosXB.back()<<", y="<<m_DetPosYB.back()<<", s="<<m_DetSizeB.back()<<", pha="<<m_PhaB.back()<<", reg="<<m_RegB.back()<<")"<<endl;
-    } else if (Option == "-dpsr" || Option == "--dpsr") {
-      m_Directories.push_back(argv[++i]);
-      m_DetPosXA.push_back(atoi(argv[++i]));
-      m_DetPosYA.push_back(atoi(argv[++i]));
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_PhaA.push_back(argv[++i]);
-      m_RegA.push_back(argv[++i]);
-      m_DetSizeA.push_back(atoi(argv[++i]));
-      m_DetPosXB.push_back(atoi(argv[++i]));
-      m_DetPosYB.push_back(atoi(argv[++i]));
-      m_DetSizeB.push_back(atoi(argv[++i]));
-      m_PhaB.push_back(argv[++i]);
-      m_RegB.push_back(argv[++i]);
-      cout<<"Accepting directory file name: "<<m_Directories.back()
-          <<" - (A: x="<<m_DetPosXA.back()<<", y="<<m_DetPosYA.back()<<", s="<<m_DetSizeA.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()
-          <<" -- B: x="<<m_DetPosXB.back()<<", y="<<m_DetPosYB.back()<<", s="<<m_DetSizeB.back()<<", pha="<<m_PhaA.back()<<", reg="<<m_RegA.back()<<")"<<endl;
-    } else if (Option == "--inclusion-mode") {
-      m_InclusionMode = true;
-      cout<<"Accepting Inclusion-Mode (instead of default exclusion mode)"<<endl;
-    }
-  }
-    
+  if (NBackgroundModes::ParseCommandLine(argc, argv) == false) return false;
+      
   return true;
 }
 
@@ -159,7 +82,7 @@ bool NBackgroundMode123::ParseCommandLine(int argc, char** argv)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBackgroundMode123::Analyze() 
+bool NBackgroundMode23::Analyze() 
 {
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     if (Load(m_Directories[d]) == false) continue;
@@ -182,10 +105,10 @@ bool NBackgroundMode123::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBackgroundMode123::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+bool NBackgroundMode23::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
                        NPhaFile& P, int SourcePosX, int SourcePosY, double DistanceCutOff)
 {
-  cout<<"Creating a background using mode 1..."<<endl;
+  cout<<"Creating a background using mode 2 & 3..."<<endl;
     
   TString iID = "_ID_"; 
   iID += FE.m_ID;
@@ -289,54 +212,18 @@ bool NBackgroundMode123::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O,
       PosX = -RawY-0.5;
       PosY = +RawX+0.5;
     }
-    double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
     
     SpectrumOnSourceAll->Fill(FE.m_Energy[e]);
-    if (m_InclusionMode == true) {
-      if (Distance < DistanceCutOff) {
-        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
-          SpectrumHighRes->Fill(FE.m_Energy[e]);
-          PositionsBackground->Fill(PosX, PosY);
-        }
-      }        
-    } else {
-      if (Distance > DistanceCutOff) {
-        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
-          SpectrumHighRes->Fill(FE.m_Energy[e]);
-          PositionsBackground->Fill(PosX, PosY);
-        }
-      }
-    }
     
-    /*
     if (O.m_SafelyOcculted[OrbitsIndex] == true) {
       if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
+        PositionsBackground->Fill(PosX, PosY);
         SpectrumOccHighRes->Fill(FE.m_Energy[e]);
         if (O.m_DayFlag[OrbitsIndex] == 0) {
           SpectrumNightHighRes->Fill(FE.m_Energy[e]);         
         }
       }
-    } else if (O.m_SafelyOnSource[OrbitsIndex] == true && 
-        FE.IsGTI(FE.m_Time[e], true) == true && 
-        FE.m_Energy[e] > m_SpectrumMin && FE.m_Energy[e] < m_SpectrumMax) {
-      SpectrumOnSourceAll->Fill(FE.m_Energy[e]);
-      if (m_InclusionMode == true) {
-        if (Distance < DistanceCutOff) {
-          if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
-            SpectrumHighRes->Fill(FE.m_Energy[e]);
-            PositionsBackground->Fill(PosX, PosY);
-          }
-        }        
-      } else {
-        if (Distance > DistanceCutOff) {
-          if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
-            SpectrumHighRes->Fill(FE.m_Energy[e]);
-            PositionsBackground->Fill(PosX, PosY);
-          }
-        }
-      }
     }
-    */
   }
   
   int NSourcePixels = 0;
@@ -387,31 +274,15 @@ bool NBackgroundMode123::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O,
      
 
   
-  double ScalingMin = 82;
-  double ScalingMax = 120;
+  double ScalingMin = m_MinFitRange;
+  double ScalingMax = m_MaxFitRange;
+  cout<<"Using fit range: "<<m_MinFitRange<<" "<<m_MaxFitRange<<endl;
   cout<<"Spectrum on source flux above before lifetime [cts/sec/cm2]: "<<SpectrumOnSourceAll->Integral(SpectrumOnSourceAll->FindBin(ScalingMin), SpectrumOnSourceAll->FindBin(ScalingMax))/FE.m_DetectorArea<<endl;
   
   // (2) Normalize
   TH1D* SrcPha = P.m_Spectrum;
   
   double PhaSourceHighEnergyIntensity = SrcPha->Integral(SrcPha->FindBin(ScalingMin), SrcPha->FindBin(ScalingMax));
-  double PhaBackgroundHighEnergyIntensity = SpectrumHighRes->Integral(SpectrumHighRes->FindBin(ScalingMin), SpectrumHighRes->FindBin(ScalingMax));
-  double PhaScalerHighEnergy = PhaSourceHighEnergyIntensity/PhaBackgroundHighEnergyIntensity;
-  cout<<"Pha scaler (high-energy): "<<PhaScalerHighEnergy<<endl;
-  P.SaveBackground(SpectrumHighRes, PhaScalerHighEnergy, "mode1");
-
-  SrcPha->Rebin(4);
-  SpectrumHighRes->Scale(PhaScalerHighEnergy);
-  SpectrumHighRes->Rebin(4);
-    
-  TCanvas* PhaSpectrum = new TCanvas();
-  PhaSpectrum->cd();
-  PhaSpectrum->SetGridx();
-  PhaSpectrum->SetGridy();
-  PhaSpectrum->SetLogy();
-  SrcPha->Draw();
-  SpectrumHighRes->Draw("SAME");
-  PhaSpectrum->Update();
 
   double PhaBackgroundOccHighEnergyIntensity = SpectrumOccHighRes->Integral(SpectrumOccHighRes->FindBin(ScalingMin), SpectrumOccHighRes->FindBin(ScalingMax));
   double PhaScalerOccHighEnergy = 0.0;
@@ -482,5 +353,5 @@ bool NBackgroundMode123::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O,
 }
 
 
-// NBackgroundMode123.cxx: the end...
+// NBackgroundMode23.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////
