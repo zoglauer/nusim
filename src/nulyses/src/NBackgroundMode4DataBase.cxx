@@ -289,13 +289,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
       cout<<"Orbits: Index not found..."<<endl;
       continue;      
     }
-    
-    int EngIndex = E.FindClosestIndex(F.m_Time[e]);
-    if (EngIndex == -1) {
-      cout<<"Engineering: Index not found..."<<endl;
-      continue;      
-    }
-    
+     
     int DetectorID = F.m_DetectorID[e];
     int RawX = F.m_RawX[e];
     int RawY = F.m_RawY[e];
