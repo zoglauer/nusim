@@ -52,6 +52,10 @@ NBaseTool::NBaseTool()
   m_ReadUnfiltered = true;
   m_ReadFiltered01 = true;
   m_ReadFiltered02 = true;
+  m_ReadEngineering = true;
+  
+  m_ShowHistograms = "s";
+  m_FileType = ".pdf";
 }
 
 
@@ -78,7 +82,7 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     
     // First check if each option has sufficient arguments:
     // Single argument
-    if (Option == "-f" || Option == "-m" || Option == "--gti" || Option == "-d") {
+    if (Option == "-f" || Option == "-m" || Option == "--gti" || Option == "-d" || Option == "-s") {
       if (!((argc > i+1) && 
         (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0))){
         cout<<"Error: Option "<<argv[i][1]<<" needs a second argument!"<<endl;
@@ -91,15 +95,6 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
         (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
         (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0))){
         cout<<"Error: Option "<<argv[i][1]<<" needs two arguments!"<<endl;
-        return false;
-      }
-    }
-    else if (Option == "-s") {
-      if (!((argc > i+2) && 
-        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) && 
-        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0) && 
-        (argv[i+3][0] != '-' || isalpha(argv[i+3][1]) == 0))){
-        cout<<"Error: Option "<<argv[i][1]<<" needs t arguments!"<<endl;
         return false;
       }
     }
@@ -117,7 +112,7 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     }
     
     // Then fulfill the options:
-    if (Option == "-d") {
+    if (Option == "-d" || Option == "--d") {
       m_Directories.push_back(argv[++i]);
       m_DetPosXA.push_back(0);
       m_DetPosYA.push_back(0);
@@ -126,7 +121,7 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
       m_DetPosYB.push_back(0);
       m_DetSizeB.push_back(0);
       cout<<"Accepting directory file name: "<<m_Directories.back()<<endl;
-    } else if (Option == "-dp") {
+    } else if (Option == "-dp" || Option == "--dp") {
       m_Directories.push_back(argv[++i]);
       m_DetPosXA.push_back(atoi(argv[++i]));
       m_DetPosYA.push_back(atoi(argv[++i]));
@@ -140,6 +135,9 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     } else if (Option == "-m") {
       m_LookAtModule = argv[++i];
       cout<<"Accepting to look at the following module(s): "<<m_LookAtModule<<endl;
+    } else if (Option == "-s") {
+      m_ShowHistograms = argv[++i];
+      cout<<"Accepting the following show options: "<<m_ShowHistograms<<endl;
     } else if (Option == "-g") {
       m_SpecialGTIStart.push_back(atof(argv[++i]));
       m_SpecialGTIStop.push_back(atof(argv[++i]));
@@ -157,7 +155,11 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
   if (m_LookAtModule == "") {
     cout<<"Analyzing both modules!"<<endl;
     m_LookAtModule = "ab";
-  }    
+  }
+  
+  if (m_ShowHistograms.Contains("s") == false) {
+    gROOT->SetBatch(true); 
+  }
   
   return true;
 }

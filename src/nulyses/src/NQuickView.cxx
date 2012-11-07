@@ -118,7 +118,8 @@ bool NQuickView::Analyze()
   m_MergedSpectrum->Scale(1.0/m_MergedSpectrumLifetime);
   m_MergedSpectrum->Draw();
   SpectrumCanvas->Update();  
-  
+  if (m_ShowHistograms.Contains("f")) SpectrumCanvas->SaveAs(m_MergedSpectrum->GetName() + m_FileType);
+
   return true;
 }
 
@@ -133,14 +134,13 @@ bool NQuickView::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& 
   
   // Section A: Create all histograms:
 
-  TString iID = "_ID_"; 
+  TString iID = "_CheckRates_id"; 
   iID += FE.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((FE.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(FE.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += FE.m_CleanLevel;
+
   TString ID = "  (ID: ";
   ID += FE.m_ID;
   ID += ", C: L0";
@@ -319,7 +319,8 @@ bool NQuickView::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& 
   Positions->cd();
   PositionsOnSource->Draw("colz");
   Positions->Update();
-  
+  if (m_ShowHistograms.Contains("f")) Positions->SaveAs(PositionsOnSource->GetName() + m_FileType);
+
   TCanvas* RatesCanvas = new TCanvas();
   RatesCanvas->cd();
   double RatesMax = Rates->GetMaximum();
@@ -384,21 +385,25 @@ bool NQuickView::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& 
     SAA->Draw("SAME");
   }
   RatesCanvas->Update();
-  
+  if (m_ShowHistograms.Contains("f")) RatesCanvas->SaveAs(Rates->GetName() + m_FileType);
+
   TCanvas* SpectrumCanvas = new TCanvas();
   SpectrumCanvas->cd();
   Spectrum->Draw();
   SpectrumCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumCanvas->SaveAs(Spectrum->GetName() + m_FileType);
   
   TCanvas* SpectrumSourceCanvas = new TCanvas();
   SpectrumSourceCanvas->cd();
   SpectrumSource->Draw();
   SpectrumSourceCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumSourceCanvas->SaveAs(SpectrumSource->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundCanvas = new TCanvas();
   SpectrumBackgroundCanvas->cd();
   SpectrumBackground->Draw();
   SpectrumBackgroundCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundCanvas->SaveAs(SpectrumBackground->GetName() + m_FileType);
   
   
   m_MergedSpectrum->Add(SpectrumBackground);
@@ -406,8 +411,9 @@ bool NQuickView::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& 
   
   TCanvas* SpectrumVsDepthCanvas = new TCanvas();
   SpectrumVsDepthCanvas->cd();
-  SpectrumVsDepth->Draw();
+  SpectrumVsDepth->Draw("colz");
   SpectrumVsDepthCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumVsDepthCanvas->SaveAs(SpectrumVsDepth->GetName() + m_FileType);
 
   return true;
 }

@@ -33,6 +33,8 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NBackgroundMode23.o \
 	$(LB)/NBackgroundMode4.o \
 	$(LB)/NBackgroundMode4DataBase.o \
+	$(LB)/NLineFitter.o \
+	$(LB)/NDetectorHealth.o \
 
 SOBJ = $(LB)/libNulyses.$(DLL)
 

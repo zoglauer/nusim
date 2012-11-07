@@ -458,14 +458,12 @@ bool NPhaFile::SaveBackground(TH1D* ScaledSpectrum, double Scaler, TH1D* Spectru
   }
   // Move to the second hdu
   fits_movabs_hdu(sFile, 2, NULL, &status);
-  double V = 1.0;
   TString ShortBkgFileName = BkgFileName;
   if (ShortBkgFileName[ShortBkgFileName.Length() - 1] == '/') {
     ShortBkgFileName = ShortBkgFileName.Remove(ShortBkgFileName.Last('/'), ShortBkgFileName.Length()); 
   }
   ShortBkgFileName = ShortBkgFileName.Remove(0, ShortBkgFileName.Last('/')+1);
   fits_update_key(sFile, TSTRING, "BACKFILE", const_cast<char*>(ShortBkgFileName.Data()), const_cast<char*>("Updated background file"), &status);
-  //fits_update_key(sFile, TDOUBLE, "BACKSCAL", &V, const_cast<char*>("Updated background scaler"), &status);    
   
   // Get the number of columns
   int sNColumns = 0;

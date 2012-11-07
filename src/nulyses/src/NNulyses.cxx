@@ -67,6 +67,8 @@ using namespace std;
 #include "NBackgroundMode23.h"
 #include "NBackgroundMode4.h"
 #include "NBackgroundMode4DataBase.h"
+#include "NLineFitter.h"
+#include "NDetectorHealth.h"
 
 // Special
 #include "fitsio.h"
@@ -112,17 +114,18 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          background23: Background rates for modes 2 & 3"<<endl;
   Usage<<"          background4: Background rates for mode 4"<<endl;
   Usage<<"          background4database: Create data base for mode 4"<<endl;
-  Usage<<"          checkrates: Check SAA rates"<<endl;
+  Usage<<"          linefitter: Check SAA rates"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"      -d:  directory containing all files"<<endl;
   Usage<<"      -dp: directory containing all files plus exclusion region ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels]  [radius of exclusion region on B]"<<endl;
-  Usage<<"      -g:  good time interval min max time"<<endl;
+  Usage<<"      -g:  good (mandatory) time interval min max time"<<endl;
   Usage<<"      -b:  min max time"<<endl;
+  Usage<<"      -s:  show the histograms: s on screen (default), f to file, can be combined, -s \" \" will don't show anything"<<endl;
   Usage<<"      -h:  print this help"<<endl;
   Usage<<"    Tool specific options:"<<endl;
   Usage<<"      checkrates:"<<endl;
   Usage<<"        --write-gti:  dump a fits based gti file"<<endl;
-  Usage<<"      background123 & background 4:"<<endl; 
+  Usage<<"      backgroundX:"<<endl; 
   Usage<<"        -dps: directory containing all files plus exclusion region plus pha file ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [source pha file for A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels] [radius of exclusion region on B] [source pha file for B]"<<endl;
   Usage<<endl;
 
@@ -156,42 +159,61 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
     if (Option == "--tool") {
       string Tool = argv[++i];
       if (Tool == "checkrates") {
+        cout<<"Found tool: "<<Tool<<endl;
         NCheckRates R;
         if (R.ParseCommandLine(argc, argv) == false) return false;
         if (R.Analyze() == false) return false; 
         return true;
+      } else if (Tool == "detectorhealth") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NDetectorHealth D;
+        if (D.ParseCommandLine(argc, argv) == false) return false;
+        if (D.Analyze() == false) return false; 
+        return true;
       } else if (Tool == "quickview" || Tool == "quicklook") {
+        cout<<"Found tool: "<<Tool<<endl;
         NQuickView Q;
         if (Q.ParseCommandLine(argc, argv) == false) return false;
         if (Q.Analyze() == false) return false; 
         return true;
       } else if (Tool == "quickviewfiltered" || Tool == "quicklookfiltered") {
+        cout<<"Found tool: "<<Tool<<endl;
         NQuickViewFiltered Q;
         if (Q.ParseCommandLine(argc, argv) == false) return false;
         if (Q.Analyze() == false) return false; 
         return true;
       } else if (Tool == "backgroundmode1" || Tool == "backgroundmode123") {
+        cout<<"Found tool: "<<Tool<<endl;
         NBackgroundMode1 B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
       } else if (Tool == "backgroundmode23") {
+        cout<<"Found tool: "<<Tool<<endl;
         NBackgroundMode23 B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
       } else if (Tool == "backgroundmode4") {
+        cout<<"Found tool: "<<Tool<<endl;
         NBackgroundMode4 B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
       } else if (Tool == "backgroundmode4database") {
+        cout<<"Found tool: "<<Tool<<endl;
         NBackgroundMode4DataBase B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
+      } else if (Tool == "linefitter") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NLineFitter F;
+        if (F.ParseCommandLine(argc, argv) == false) return false;
+        if (F.Analyze() == false) return false; 
+        return true;
       } else {
-        cout<<"Error: Unknown tool: "<<argv[i]<<"!"<<endl;
+        cout<<"Error: Unknown tool: "<<Tool<<"!"<<endl;
         cout<<Usage.str()<<endl;
         return false;
       }
@@ -246,7 +268,9 @@ int main(int argc, char** argv)
     return -1;
   } 
 
-  NulysesApp.Run();
+  if (gROOT->IsBatch() == false) {
+    NulysesApp.Run();
+  }
 
   cout<<"Program exited normally!"<<endl;
 

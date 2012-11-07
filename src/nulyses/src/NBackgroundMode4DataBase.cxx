@@ -51,6 +51,7 @@ NBackgroundMode4DataBase::NBackgroundMode4DataBase()
   m_SpectrumMax = 200;
   m_ReadUnfiltered = false;
   m_ReadFiltered02 = false; 
+  m_ReadEngineering = false;
   
   m_DataBaseName = "WhyDoIHaveNoNameDB";
 }
@@ -134,6 +135,7 @@ bool NBackgroundMode4DataBase::Analyze()
   DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas->cd();
   m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID->Draw();
   DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas->SaveAs(m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID->GetName() + m_FileType);
   
   TFile f(m_DataBaseName, "recreate");
   m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID->Write();
@@ -143,11 +145,13 @@ bool NBackgroundMode4DataBase::Analyze()
   DBGeomagneticCutOffVsSpectrumCanvas->cd();
   m_DBInternalGeomagneticCutOffVsSpectrum->Draw("colz");
   DBGeomagneticCutOffVsSpectrumCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) DBGeomagneticCutOffVsSpectrumCanvas->SaveAs(m_DBInternalGeomagneticCutOffVsSpectrum->GetName() + m_FileType);
   
   TCanvas* DBSpectrumCanvas = new TCanvas(TString("DBSpectrumCanvas"), "DBSpectrumCanvas");
   DBSpectrumCanvas->cd();
   m_DBInternalSpectrum->Draw();
   DBSpectrumCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) DBSpectrumCanvas->SaveAs(m_DBInternalSpectrum->GetName() + m_FileType);
   
   return true;
 }
@@ -162,14 +166,13 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
   
   // Section A: Create all histograms:
 
-  TString iID = "_ID_"; 
+  TString iID = "_BackgroundMode4DataBase_id"; 
   iID += F.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((F.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(F.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += F.m_CleanLevel;
+
   TString ID = " (id";
   ID += F.m_ID;
   ID += "-cl0";
@@ -229,23 +232,23 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
   GeomagneticCutOffVsSpectrumVsPixelID->SetXTitle("Pixel ID (long-format)");
   
   if (m_DBInitialized == false) {
-    m_DBInternalSpectrum = new TH1D(TString("SpectrumOnSource") + iID, TString("Background spectrum all") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
+    m_DBInternalSpectrum = new TH1D(TString("SpectrumOnSource"), TString("Background spectrum all") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
     m_DBInternalSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalSpectrum->SetYTitle("cts");
     //m_DBInternalSpectrum->SetLineColor(kBlue);
     m_DBInternalSpectrumLifetime = 0;
     
-    m_DBInternalRates = new TH1D(TString("m_DBInternalRates") + iID, TString("m_DBInternalRates") + ID, RatesBins, MinTime, MaxTime);
+    m_DBInternalRates = new TH1D(TString("DBInternalRates"), TString("m_DBInternalRates") + ID, RatesBins, MinTime, MaxTime);
     m_DBInternalRates->SetXTitle("Time [s]");
     m_DBInternalRates->SetYTitle("cts");
     //m_DBInternalRates->SetLineColor(kBlue);
     
-    m_DBInternalRatesLifetime = new TH1D(TString("m_DBInternalRatesLifetime") + iID, TString("m_DBInternalRatesLifetime") + ID, RatesBins, MinTime, MaxTime);
+    m_DBInternalRatesLifetime = new TH1D(TString("DBInternalRatesLifetime"), TString("m_DBInternalRatesLifetime") + ID, RatesBins, MinTime, MaxTime);
     m_DBInternalRatesLifetime->SetXTitle("Time [s]");
     m_DBInternalRatesLifetime->SetYTitle("cts");
     //m_DBInternalRatesLifetime->SetLineColor(kBlue);
     
-    m_DBInternalGeomagneticCutOffVsSpectrum = new TH2D(TString("m_DBInternalRatesByGeomagneticCutOff"), 
+    m_DBInternalGeomagneticCutOffVsSpectrum = new TH2D(TString("DBInternalRatesByGeomagneticCutOff"), 
                                                        TString("DB 2D"), 
                                                        BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                                                        SpectrumBins, SpectrumMin, SpectrumMax);
@@ -253,7 +256,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("cts");
     m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID = 
-      new TH3D(TString("m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID"), 
+      new TH3D(TString("DBInternalGeomagneticCutOffVsSpectrumVsPixelID"), 
                TString("DB 3D (looks always empty...)"), 
                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                SpectrumBins, SpectrumMin, SpectrumMax,
@@ -262,7 +265,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Pixel ID (long-format)");
 
-    m_DBInternalGeomagneticCutOffLifetime = new TH1D(TString("m_DBInternalGeomagneticCutOffLifetime") + iID, 
+    m_DBInternalGeomagneticCutOffLifetime = new TH1D(TString("DBInternalGeomagneticCutOffLifetime") + iID, 
                                                                TString("Filtered event rate by geomagnetic cut off") + ID, 
                                                                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff);
     m_DBInitialized = true;
@@ -360,16 +363,19 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
   SpectrumCanvas->cd();
   Spectrum->Draw();
   SpectrumCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumCanvas->SaveAs(Spectrum->GetName() + m_FileType);
  
   TCanvas* RatesCanvas = new TCanvas(TString("RatesCanvas") + iID, "RatesCanvas");
   RatesCanvas->cd();
   Rates->Draw();
   RatesCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesCanvas->SaveAs(Rates->GetName() + m_FileType);
   
   TCanvas* GeomagneticCutOffVsSpectrumCanvas = new TCanvas(TString("GeomagneticCutOffVsSpectrumCanvas") + iID, "GeomagneticCutOffVsSpectrumCanvas");
   GeomagneticCutOffVsSpectrumCanvas->cd();
   GeomagneticCutOffVsSpectrum->Draw("colz");
   GeomagneticCutOffVsSpectrumCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) GeomagneticCutOffVsSpectrumCanvas->SaveAs(GeomagneticCutOffVsSpectrum->GetName() + m_FileType);
   
   
   // (4) Merge

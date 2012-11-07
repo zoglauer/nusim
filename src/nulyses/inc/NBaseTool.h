@@ -136,6 +136,7 @@ class NBaseTool
   vector<double> m_SpecialBTIStop;
   
   TString m_LookAtModule;
+  TString m_ShowHistograms;
 
   double m_SpectrumMin;
   double m_SpectrumMax;
@@ -144,6 +145,9 @@ class NBaseTool
   bool m_ReadUnfiltered;
   bool m_ReadFiltered01;
   bool m_ReadFiltered02;
+  bool m_ReadEngineering;
+  
+  TString m_FileType;
   
   // private members:
  private:

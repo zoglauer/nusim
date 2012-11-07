@@ -194,14 +194,13 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
 {
   cout<<"Creating a background using mode 4..."<<long(DB)<<endl;
     
-  TString iID = "_ID_"; 
+  TString iID = "_BackgroundMode4_id"; 
   iID += FE.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((FE.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(FE.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += FE.m_CleanLevel;
+
   TString ID = " (id";
   ID += FE.m_ID;
   ID += "-cl0";
@@ -258,7 +257,6 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   
   
   // Section B: Fill (and normalize) histograms
-  double LiveTime = 0;
   
   // Fill histograms which require filling by event
   for (unsigned int e = 0; e < FE.m_Time.size(); ++e) {
@@ -379,6 +377,7 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SpectrumScaledCanvas->SetLogy();
   SpectrumScaled->Draw();
   SpectrumScaledCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumScaledCanvas->SaveAs(SpectrumScaled->GetName() + m_FileType);
 
   double ScalingMin = m_MinFitRange;
   double ScalingMax = m_MaxFitRange;
@@ -407,6 +406,7 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SrcPha->Draw();
   SpectrumScaled->Draw("SAME");
   PhaSpectrum->Update();
+  if (m_ShowHistograms.Contains("f")) PhaSpectrum->SaveAs(TString("Pha") + iID + m_FileType);
     
   
   TCanvas* SpectrumOnSourceAllCanvas = new TCanvas();
@@ -416,11 +416,13 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SpectrumOnSourceAllCanvas->SetLogy();
   SpectrumOnSourceAll->Draw();
   SpectrumOnSourceAllCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumOnSourceAllCanvas->SaveAs(SpectrumOnSourceAll->GetName() + m_FileType);
      
   TCanvas* PositionsSourceCanvas = new TCanvas(TString("PositionsSourceCanvas") + iID, TString("PositionsBackgroundCanvas") + ID, 600, 600);
   PositionsSourceCanvas->cd();
   PositionsSource->Draw("colz");
   PositionsSourceCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) PositionsSourceCanvas->SaveAs(PositionsSource->GetName() + m_FileType);
  
   
   return true;

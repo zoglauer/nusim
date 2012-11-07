@@ -107,14 +107,13 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
   
   // Section A: Create all histograms:
 
-  TString iID = "_ID_"; 
+  TString iID = "_CheckRates_id"; 
   iID += F.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((F.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(F.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += F.m_CleanLevel;
+
   TString ID = "  (ID: ";
   ID += F.m_ID;
   ID += ", C: L0";
@@ -296,7 +295,8 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
   Positions->cd();
   PositionsOnSource->Draw("colz");
   Positions->Update();
-  
+  if (m_ShowHistograms.Contains("f")) Positions->SaveAs(PositionsOnSource->GetName() + m_FileType);
+
   
   TCanvas* RatesCanvas = new TCanvas();
   RatesCanvas->cd();
@@ -362,41 +362,49 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
     SAA->Draw("SAME");
   }
   RatesCanvas->Update();
-  
+  if (m_ShowHistograms.Contains("f")) RatesCanvas->SaveAs(Rates->GetName() + m_FileType);
+
   TCanvas* SpectrumCanvas = new TCanvas();
   SpectrumCanvas->cd();
   Spectrum->Draw();
   SpectrumCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumCanvas->SaveAs(Spectrum->GetName() + m_FileType);
   
   TCanvas* SpectrumSourceCanvas = new TCanvas();
   SpectrumSourceCanvas->cd();
   SpectrumSource->Draw();
   SpectrumSourceCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumSourceCanvas->SaveAs(SpectrumSource->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundCanvas = new TCanvas();
   SpectrumBackgroundCanvas->cd();
   SpectrumBackground->Draw();
   SpectrumBackgroundCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundCanvas->SaveAs(SpectrumBackground->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundWafer0Canvas = new TCanvas();
   SpectrumBackgroundWafer0Canvas->cd();
   SpectrumBackgroundWafer0->Draw();
   SpectrumBackgroundWafer0Canvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundWafer0Canvas->SaveAs(SpectrumBackgroundWafer0->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundWafer1Canvas = new TCanvas();
   SpectrumBackgroundWafer1Canvas->cd();
   SpectrumBackgroundWafer1->Draw();
   SpectrumBackgroundWafer1Canvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundWafer1Canvas->SaveAs(SpectrumBackgroundWafer1->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundWafer2Canvas = new TCanvas();
   SpectrumBackgroundWafer2Canvas->cd();
   SpectrumBackgroundWafer2->Draw();
   SpectrumBackgroundWafer2Canvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundWafer2Canvas->SaveAs(SpectrumBackgroundWafer2->GetName() + m_FileType);
   
   TCanvas* SpectrumBackgroundWafer3Canvas = new TCanvas();
   SpectrumBackgroundWafer3Canvas->cd();
   SpectrumBackgroundWafer3->Draw();
   SpectrumBackgroundWafer3Canvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumBackgroundWafer3Canvas->SaveAs(SpectrumBackgroundWafer3->GetName() + m_FileType);
   
   return true;
 }

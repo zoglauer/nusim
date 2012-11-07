@@ -129,11 +129,18 @@ int NBase::FindIndex(double Time) {
     return -1;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 int NBase::FindClosestIndex(double Time) {
   
   unsigned int Size = m_Time.size();
   
-  if (Size == 0) return -1;
+  if (Size == 0) {
+    cout<<"Find closest: The size of this data set is zero!"<<endl;
+    return -1;
+  }
   if (Time < m_Time[0]) return 0;
   if (Time > m_Time.back()) return Size - 1; 
   

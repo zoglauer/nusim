@@ -109,15 +109,14 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
 
   double SpectrumMin = 3;
   double SpectrumMax = 120;  
-  
-  TString iID = "_ID_"; 
+    
+  TString iID = "_CheckRates_id"; 
   iID += FE.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((FE.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(FE.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += FE.m_CleanLevel;
+
   TString ID = "  (ID: ";
   ID += FE.m_ID;
   ID += ", C: L0";
@@ -387,6 +386,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   PositionsOnSourceCanvas->cd();
   PositionsOnSource->Draw("colz");
   PositionsOnSourceCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) PositionsOnSourceCanvas->SaveAs(PositionsOnSource->GetName() + m_FileType);
   
   TCanvas* RatesSAANoTentacleNoCanvas = new TCanvas();
   RatesSAANoTentacleNoCanvas->cd();
@@ -394,6 +394,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAANoTentacleNo->Draw("SAME");
   RatesSAANoTentacleNoCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoCanvas->SaveAs(RatesSAANoTentacleNo->GetName() + m_FileType);
   
   TCanvas* RatesSAAOptimizedTentacleNoCanvas = new TCanvas();
   RatesSAAOptimizedTentacleNoCanvas->cd();
@@ -401,6 +402,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAAOptimizedTentacleNo->Draw("SAME");
   RatesSAAOptimizedTentacleNoCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAAOptimizedTentacleNoCanvas->SaveAs(RatesSAAOptimizedTentacleNo->GetName() + m_FileType);
   
   TCanvas* RatesSAAStrictTentacleNoCanvas = new TCanvas();
   RatesSAAStrictTentacleNoCanvas->cd();
@@ -408,6 +410,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAAStrictTentacleNo->Draw("SAME");
   RatesSAAStrictTentacleNoCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleNoCanvas->SaveAs(RatesSAAStrictTentacleNo->GetName() + m_FileType);
   
   TCanvas* RatesSAANoTentacleYesCanvas = new TCanvas();
   RatesSAANoTentacleYesCanvas->cd();
@@ -415,6 +418,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAANoTentacleYes->Draw("SAME");
   RatesSAANoTentacleYesCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleYesCanvas->SaveAs(RatesSAANoTentacleYes->GetName() + m_FileType);
   
   TCanvas* RatesSAAOptimizedTentacleYesCanvas = new TCanvas();
   RatesSAAOptimizedTentacleYesCanvas->cd();
@@ -422,6 +426,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAAOptimizedTentacleYes->Draw("SAME");
   RatesSAAOptimizedTentacleYesCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAAOptimizedTentacleYesCanvas->SaveAs(RatesSAAOptimizedTentacleYes->GetName() + m_FileType);
   
   TCanvas* RatesSAAStrictTentacleYesCanvas = new TCanvas();
   RatesSAAStrictTentacleYesCanvas->cd();
@@ -429,12 +434,14 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   SAARegion->Draw("SAME");
   RatesSAAStrictTentacleYes->Draw("SAME");
   RatesSAAStrictTentacleYesCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleYesCanvas->SaveAs(RatesSAAStrictTentacleYes->GetName() + m_FileType);
   
   TCanvas* RatesSAANoTentacleNoByOrbitCanvas = new TCanvas(TString("RatesSAANoTentacleNoByOrbitCanvas") + iID, TString("RatesSAANoTentacleNoByOrbitCanvas") + ID, 1200, 400);
   RatesSAANoTentacleNoByOrbitCanvas->cd();
   RatesSAANoTentacleNoByOrbitCanvas->SetLogz();
   RatesSAANoTentacleNoByOrbit->Draw("colz");
   RatesSAANoTentacleNoByOrbitCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoByOrbitCanvas->SaveAs(RatesSAANoTentacleNoByOrbit->GetName() + m_FileType);
   
   
   return true;

@@ -124,14 +124,13 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
 {
   cout<<"Creating a background using mode 1..."<<endl;
     
-  TString iID = "_ID_"; 
+  TString iID = "_BackgroundMode1_id"; 
   iID += FE.m_ID;
-  iID += "_M_";
+  iID += "_m";
   iID += ((FE.m_Module == 0) ? "A" : "B");
-  iID += "_L_";
-  iID += int(FE.m_LiveTime);
-  iID += "_C_";
+  iID += "_cl";
   iID += FE.m_CleanLevel;
+
   TString ID = " (id";
   ID += FE.m_ID;
   ID += "-cl0";
@@ -320,6 +319,7 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SrcPha->Draw();
   SpectrumHighRes->Draw("SAME");
   PhaSpectrum->Update();
+  if (m_ShowHistograms.Contains("f")) PhaSpectrum->SaveAs(TString("PhaMode1") + iID + m_FileType);
   
   TCanvas* SpectrumOnSourceAllCanvas = new TCanvas();
   SpectrumOnSourceAllCanvas->cd();
@@ -328,6 +328,7 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SpectrumOnSourceAllCanvas->SetLogy();
   SpectrumOnSourceAll->Draw();
   SpectrumOnSourceAllCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumOnSourceAllCanvas->SaveAs(SpectrumOnSourceAll->GetName() + m_FileType);
     
   TCanvas* SpectrumHighResCanvas = new TCanvas();
   SpectrumHighResCanvas->cd();
@@ -336,11 +337,13 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   SpectrumHighResCanvas->SetLogy();
   SpectrumHighRes->Draw();
   SpectrumHighResCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumHighResCanvas->SaveAs(SpectrumHighRes->GetName() + m_FileType);
     
   TCanvas* PositionsBackgroundCanvas = new TCanvas(TString("PositionsBackgroundCanvas") + iID, TString("PositionsBackgroundCanvas") + ID, 600, 600);
   PositionsBackgroundCanvas->cd();
   PositionsBackground->Draw("colz");
   PositionsBackgroundCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) PositionsBackgroundCanvas->SaveAs(PositionsBackground->GetName() + m_FileType);
     
   return true;
 }
