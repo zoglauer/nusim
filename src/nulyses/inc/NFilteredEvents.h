@@ -41,7 +41,7 @@ public:
   bool Read(const TString& FileName);
 
   
-  void Add(double Time, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY) {
+  void Add(double Time, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY, int Det1X, int Det1Y) {
     m_Time.push_back(Time);
     m_Energy.push_back(Energy);
     m_SurrEnergy.push_back(SurrEnergy);
@@ -49,6 +49,8 @@ public:
     m_DetectorID.push_back(DetectorID);
     m_RawX.push_back(RawX);
     m_RawY.push_back(RawY);
+    m_Det1X.push_back(Det1X);
+    m_Det1Y.push_back(Det1Y);
   }
   void AddGTI(double Start, double Stop, bool Good) {
     m_GTIStart.push_back(Start); 
@@ -82,6 +84,8 @@ public:
       m_DetectorID = M.m_DetectorID;
       m_RawX = M.m_RawX;
       m_RawY = M.m_RawY;
+      m_Det1X = M.m_Det1X;
+      m_Det1Y = M.m_Det1Y;
       m_GTIStart = M.m_GTIStart;
       m_GTIStop = M.m_GTIStop;
       m_GoodGTI = M.m_GoodGTI;
@@ -104,6 +108,8 @@ public:
           m_DetectorID.insert(m_DetectorID.end(), M.m_DetectorID.begin()+m, M.m_DetectorID.begin()+m_max);
           m_RawX.insert(m_RawX.end(), M.m_RawX.begin()+m, M.m_RawX.begin()+m_max);
           m_RawY.insert(m_RawY.end(), M.m_RawY.begin()+m, M.m_RawY.begin()+m_max);
+          m_Det1X.insert(m_Det1X.end(), M.m_Det1X.begin()+m, M.m_Det1X.begin()+m_max);
+          m_Det1Y.insert(m_Det1Y.end(), M.m_Det1Y.begin()+m, M.m_Det1Y.begin()+m_max);
         } else {
           m_Time.insert(m_Time.begin()+Index, M.m_Time.begin()+m, M.m_Time.begin()+m_max);
           m_Energy.insert(m_Energy.begin()+Index, M.m_Energy.begin()+m, M.m_Energy.begin()+m_max);
@@ -112,6 +118,8 @@ public:
           m_DetectorID.insert(m_DetectorID.begin()+Index, M.m_DetectorID.begin()+m, M.m_DetectorID.begin()+m_max);
           m_RawX.insert(m_RawX.begin()+Index, M.m_RawX.begin()+m, M.m_RawX.begin()+m_max);
           m_RawY.insert(m_RawY.begin()+Index, M.m_RawY.begin()+m, M.m_RawY.begin()+m_max);
+          m_Det1X.insert(m_Det1X.begin()+Index, M.m_Det1X.begin()+m, M.m_Det1X.begin()+m_max);
+          m_Det1Y.insert(m_Det1Y.begin()+Index, M.m_Det1Y.begin()+m, M.m_Det1Y.begin()+m_max);
         }
         m = m_max;
       }
@@ -136,6 +144,8 @@ public:
   vector<int> m_DetectorID;
   vector<int> m_RawX;
   vector<int> m_RawY;
+  vector<int> m_Det1X;
+  vector<int> m_Det1Y;
   
   vector<double> m_GTIStart;
   vector<double> m_GTIStop;

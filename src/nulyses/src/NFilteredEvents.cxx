@@ -69,6 +69,8 @@ void NFilteredEvents::Clean()
   m_DetectorID.clear();
   m_RawX.clear();
   m_RawY.clear();
+  m_Det1X.clear();
+  m_Det1Y.clear();
   
   m_GTIStart.clear();
   m_GTIStop.clear();
@@ -183,7 +185,19 @@ bool NFilteredEvents::Read(const TString& FileName)
     }
     int RawY = valint;
     
-    Add(Time, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY);
+    if (fits_read_col_int(File, Columns["DET1X"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (DET1X) failed!"<<endl;
+      break;
+    }
+    int Det1X = valint;
+    
+    if (fits_read_col_int(File, Columns["DET1Y"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (DET1Y) failed!"<<endl;
+      break;
+    }
+    int Det1Y = valint;
+    
+    Add(Time, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY, Det1X, Det1Y);
   } 
 
   // Move to the thris hdu - GTI

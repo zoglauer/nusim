@@ -56,6 +56,9 @@ NBackgroundMode23::NBackgroundMode23()
   m_SpectrumMax = 200;
   m_ReadUnfiltered = false;
   m_ReadFiltered02 = false;
+    
+  m_WafersA = "0123";
+  m_WafersB = "0123";
 }
 
 
@@ -75,6 +78,30 @@ bool NBackgroundMode23::ParseCommandLine(int argc, char** argv)
 {
   if (NBackgroundModes::ParseCommandLine(argc, argv) == false) return false;
       
+  // Now parse the command line options:
+  string Option;
+  for (int i = 1; i < argc; i++) {
+    Option = argv[i];
+    
+    // First check if each option has sufficient arguments:
+    // Single argument
+    if (Option == "--wafers") {
+      if (!((argc > i+1) && 
+        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) &&
+        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0))){
+        cout<<"Error: Option "<<argv[i][1]<<" needs two arguments!"<<endl;
+        return false;
+      }
+    }
+    
+    // Then fulfill the options:
+    if (Option == "--wafers") {
+      m_WafersA = argv[++i];
+      m_WafersB = argv[++i];
+      cout<<"Accepting wafers: A="<<m_WafersA<<" B="<<m_WafersB<<endl;
+    }
+  }
+
   return true;
 }
 
@@ -198,24 +225,19 @@ bool NBackgroundMode23::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, 
     
     double PosX = 0;
     double PosY = 0;
-    if (DetectorID == 0) {
-      PosX = +RawX+0.5; 
-      PosY = +RawY+0.5;
-    } else if (DetectorID == 1) {
-      PosX = +RawY+0.5; 
-      PosY = -RawX-0.5;
-    } else if (DetectorID == 2) {
-      PosX = -RawX-0.5;
-      PosY = -RawY-0.5;
-    } else if (DetectorID == 3) {
-      PosX = -RawY-0.5;
-      PosY = +RawX+0.5;
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+    
+    bool RightWafer = true;
+    if (FE.m_Module == 0) {
+      RightWafer = m_WafersA.Contains((char)(((int)'0')+DetectorID));
+    } else {
+      RightWafer = m_WafersB.Contains((char)(((int)'0')+DetectorID));      
     }
     
     SpectrumOnSourceAll->Fill(FE.m_Energy[e]);
     
     if (O.m_SafelyOcculted[OrbitsIndex] == true) {
-      if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
+      if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31 && RightWafer == true) {
         PositionsBackground->Fill(PosX, PosY);
         SpectrumOccHighRes->Fill(FE.m_Energy[e]);
         if (O.m_DayFlag[OrbitsIndex] == 0) {
@@ -233,7 +255,7 @@ bool NBackgroundMode23::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, 
       double PosY = PositionsBackground->GetYaxis()->GetBinCenter(by);
       double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
       if (Distance > DistanceCutOff) {
-        if (fabs(PosX) > 0 && fabs(PosX) < 31 && fabs(PosY) > 0 && fabs(PosY) < 31) {
+        if (PositionsBackground->GetBinContent(bx, by) > 0) {
           NBackgroundPixels++;
         }
       } else {
@@ -241,7 +263,7 @@ bool NBackgroundMode23::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, 
       }
     }
   }
-  cout<<"Source pixels: "<<NSourcePixels<<" background pixels: "<<NBackgroundPixels<<endl;
+  cout<<"Source pixels: "<<NSourcePixels<<" - Background pixels: "<<NBackgroundPixels<<endl;
     
   
   double TotalTime = 0;

@@ -228,19 +228,8 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
     
     double PosX = 0;
     double PosY = 0;
-    if (DetectorID == 0) {
-      PosX = +RawX+0.5; 
-      PosY = +RawY+0.5;
-    } else if (DetectorID == 1) {
-      PosX = +RawY+0.5; 
-      PosY = -RawX-0.5;
-    } else if (DetectorID == 2) {
-      PosX = -RawX-0.5;
-      PosY = -RawY-0.5;
-    } else if (DetectorID == 3) {
-      PosX = -RawY-0.5;
-      PosY = +RawX+0.5;
-    }
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+
     double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
     
     if (O.m_SafelyOnSource[OrbitIndex] == true && 

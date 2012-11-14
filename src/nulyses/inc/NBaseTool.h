@@ -71,7 +71,7 @@ class NBaseTool
   }
   
   //! Load all the data
-  virtual bool Load(const TString& Directory, const TString& LookAt = "ab");
+  virtual bool Load(TString Directory, const TString& LookAt = "ab");
 
   //! Find the SAA cut
   bool FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
@@ -90,6 +90,7 @@ class NBaseTool
   bool IsGoodEventByExternalDetectorEffectsFilter(double Energy, int Grade, int Veto, int Status);
   bool IsGoodEventByExternalDepthFilter(int Status);
 
+  void ConvertRawPos(int RawX, int RawY, int Detector, double& PosX, double& PosY);
   
   // private methods:
  private:

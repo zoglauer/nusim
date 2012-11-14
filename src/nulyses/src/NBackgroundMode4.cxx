@@ -285,19 +285,8 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
     
     double PosX = 0;
     double PosY = 0;
-    if (DetectorID == 0) {
-      PosX = +RawX+0.5; 
-      PosY = +RawY+0.5;
-    } else if (DetectorID == 1) {
-      PosX = +RawY+0.5; 
-      PosY = -RawX-0.5;
-    } else if (DetectorID == 2) {
-      PosX = -RawX-0.5;
-      PosY = -RawY-0.5;
-    } else if (DetectorID == 3) {
-      PosX = -RawY-0.5;
-      PosY = +RawX+0.5;
-    }
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+
     double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
     
     if (FE.IsGTI(FE.m_Time[e], true) == true && 

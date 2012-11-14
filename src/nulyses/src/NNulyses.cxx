@@ -63,12 +63,14 @@ using namespace std;
 #include "NCheckRates.h"
 #include "NQuickView.h"
 #include "NQuickViewFiltered.h"
+#include "NBackgroundVariations.h"
 #include "NBackgroundMode1.h"
 #include "NBackgroundMode23.h"
 #include "NBackgroundMode4.h"
 #include "NBackgroundMode4DataBase.h"
 #include "NLineFitter.h"
 #include "NDetectorHealth.h"
+#include "NApertureTester.h"
 
 // Special
 #include "fitsio.h"
@@ -206,11 +208,23 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
+      } else if (Tool == "backgroundvariations") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NBackgroundVariations B;
+        if (B.ParseCommandLine(argc, argv) == false) return false;
+        if (B.Analyze() == false) return false; 
+        return true;
       } else if (Tool == "linefitter") {
         cout<<"Found tool: "<<Tool<<endl;
         NLineFitter F;
         if (F.ParseCommandLine(argc, argv) == false) return false;
         if (F.Analyze() == false) return false; 
+        return true;
+      } else if (Tool == "aperturetester") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NApertureTester T;
+        if (T.ParseCommandLine(argc, argv) == false) return false;
+        if (T.Analyze() == false) return false; 
         return true;
       } else {
         cout<<"Error: Unknown tool: "<<Tool<<"!"<<endl;

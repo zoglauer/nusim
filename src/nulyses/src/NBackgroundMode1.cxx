@@ -58,6 +58,9 @@ NBackgroundMode1::NBackgroundMode1()
   m_SpectrumMax = 200;
   m_ReadUnfiltered = false;
   m_ReadFiltered02 = false;
+  
+  m_WafersA = "0123";
+  m_WafersB = "0123";
 }
 
 
@@ -82,10 +85,25 @@ bool NBackgroundMode1::ParseCommandLine(int argc, char** argv)
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
     
+    // First check if each option has sufficient arguments:
+    // Single argument
+    if (Option == "--wafers") {
+      if (!((argc > i+1) && 
+        (argv[i+1][0] != '-' || isalpha(argv[i+1][1]) == 0) &&
+        (argv[i+2][0] != '-' || isalpha(argv[i+2][1]) == 0))){
+        cout<<"Error: Option "<<argv[i][1]<<" needs two arguments!"<<endl;
+        return false;
+      }
+    }
+    
     // Then fulfill the options:
     if (Option == "--inclusion-mode") {
       m_InclusionMode = true;
       cout<<"Accepting Inclusion-Mode (instead of default exclusion mode)"<<endl;
+    } else if (Option == "--wafers") {
+      m_WafersA = argv[++i];
+      m_WafersB = argv[++i];
+      cout<<"Accepting wafers: A="<<m_WafersA<<" B="<<m_WafersB<<endl;
     }
   }
     
@@ -212,32 +230,28 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
     
     double PosX = 0;
     double PosY = 0;
-    if (DetectorID == 0) {
-      PosX = +RawX+0.5; 
-      PosY = +RawY+0.5;
-    } else if (DetectorID == 1) {
-      PosX = +RawY+0.5; 
-      PosY = -RawX-0.5;
-    } else if (DetectorID == 2) {
-      PosX = -RawX-0.5;
-      PosY = -RawY-0.5;
-    } else if (DetectorID == 3) {
-      PosX = -RawY-0.5;
-      PosY = +RawX+0.5;
-    }
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+    
     double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
+    
+    bool RightWafer = true;
+    if (FE.m_Module == 0) {
+      RightWafer = m_WafersA.Contains((char)(((int)'0')+DetectorID));
+    } else {
+      RightWafer = m_WafersB.Contains((char)(((int)'0')+DetectorID));      
+    }
     
     SpectrumOnSourceAll->Fill(FE.m_Energy[e]);
     if (m_InclusionMode == true) {
       if (Distance < DistanceCutOff) {
-        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
+        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31 && RightWafer == true) {
           SpectrumHighRes->Fill(FE.m_Energy[e]);
           PositionsBackground->Fill(PosX, PosY);
         }
       }        
     } else {
       if (Distance > DistanceCutOff) {
-        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31) {
+        if (RawX > 0 && RawX < 31 && RawY > 0 && RawY < 31 && RightWafer == true) {
           SpectrumHighRes->Fill(FE.m_Energy[e]);
           PositionsBackground->Fill(PosX, PosY);
         }
@@ -253,7 +267,7 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
       double PosY = PositionsBackground->GetYaxis()->GetBinCenter(by);
       double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
       if (Distance > DistanceCutOff) {
-        if (fabs(PosX) > 0 && fabs(PosX) < 31 && fabs(PosY) > 0 && fabs(PosY) < 31) {
+        if (PositionsBackground->GetBinContent(bx, by) > 0) {
           NBackgroundPixels++;
         }
       } else {
@@ -261,7 +275,7 @@ bool NBackgroundMode1::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
       }
     }
   }
-  cout<<"Source pixels: "<<NSourcePixels<<" background pixels: "<<NBackgroundPixels<<endl;
+  cout<<"Source pixels: "<<NSourcePixels<<" - Background pixels: "<<NBackgroundPixels<<endl;
     
   
   double TotalTime = 0;

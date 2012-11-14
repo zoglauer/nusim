@@ -1,5 +1,5 @@
 /*
- * NBackgroundMode1.h
+ * NBackgroundVariations.h
  *
  * Copyright (C) by the NuSTAR team.
  * All rights reserved.
@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __NBackgroundMode1__
-#define __NBackgroundMode1__
+#ifndef __NBackgroundVariations__
+#define __NBackgroundVariations__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,12 +17,11 @@
 // Standard libs:
 
 // ROOT libs:
+#include <TH1.h>
 
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "NBaseTool.h"
-#include "NBackgroundModes.h"
-#include "NPhaFile.h"
 
 // Forward declarations:
 
@@ -30,14 +29,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NBackgroundMode1 : public NBackgroundModes
+class NBackgroundVariations : public NBaseTool
 {
   // public interface:
  public:
   //! Standard constructor
-  NBackgroundMode1();
+  NBackgroundVariations();
   //! Default destructor
-  virtual ~NBackgroundMode1();
+  virtual ~NBackgroundVariations();
 
   /// Parse the module specific parts of the command line
   virtual bool ParseCommandLine(int argc, char** argv);
@@ -46,11 +45,11 @@ class NBackgroundMode1 : public NBackgroundModes
 
   // protected methods:
  protected:
-  //NBackgroundMode1() {};
-  //NBackgroundMode1(const NBackgroundMode1& NCTHit) {};
+  //NBackgroundVariations() {};
+  //NBackgroundVariations(const NBackgroundVariations& NCTHit) {};
 
   bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-            NPhaFile& P, int SourcePosX, int SourcePosY, double DistanceCutOff);
+            int SourcePosX, int SourcePosY, double DistanceCutOff);
   
   // private methods:
  private:
@@ -63,15 +62,15 @@ class NBackgroundMode1 : public NBackgroundModes
 
   // private members:
  private:
+  double m_LifeTime;
+  TH1D* m_SpectrumWafer0;
+  TH1D* m_SpectrumWafer1;
+  TH1D* m_SpectrumWafer2;
+  TH1D* m_SpectrumWafer3;
 
-  bool m_InclusionMode;
-
-  TString m_WafersA;
-  TString m_WafersB;
-  
 #ifdef ___CINT___
  public:
-  ClassDef(NBackgroundMode1, 0) // no description
+  ClassDef(NBackgroundVariations, 0) // no description
 #endif
 
 };

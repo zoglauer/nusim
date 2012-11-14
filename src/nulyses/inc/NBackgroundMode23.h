@@ -64,6 +64,9 @@ class NBackgroundMode23 : public NBackgroundModes
   // private members:
  private:
 
+  TString m_WafersA;
+  TString m_WafersB;
+
 #ifdef ___CINT___
  public:
   ClassDef(NBackgroundMode23, 0) // no description

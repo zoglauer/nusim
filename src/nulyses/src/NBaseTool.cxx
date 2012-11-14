@@ -23,6 +23,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
+#include "TSystem.h"
 
 // MEGAlib libs:
 
@@ -240,27 +241,39 @@ bool NBaseTool::ReadGTI(const TString& GTIFileName)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBaseTool::Load(const TString& Directory, const TString& LookAtModule)
+bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
 {
-  TString Tag = Directory;
-  if (Tag.EndsWith("/")) {
-    Tag = Tag.Remove(Tag.Last('/'), 1); 
+  if (Directory.EndsWith("/")) {
+    Directory = Directory.Remove(Directory.Last('/'), 1); 
+  }    
+  
+  // Check if we are in the main dir or the event directory
+  TString EventDir = "event_cl";
+  if (gSystem->AccessPathName(Directory + "/hk") == true) { // == it is not accessible
+    // Remove last directory
+    EventDir = Directory;
+    EventDir.Remove(0, EventDir.Last('/')+1);  
+    Directory = Directory.Remove(Directory.Last('/'), Directory.Length() - Directory.Last('/'));  
   }
+  
+  TString Tag = Directory;
   if (Tag.Last('/') != kNPOS) {
     Tag = Tag.Remove(0, Tag.Last('/')+1);      
   }
+  
+  cout<<Directory<<":"<<EventDir<<":"<<Tag<<endl;
   
   TString OrbitsFileName = Directory + "/auxil/nu" + Tag + "_orb.fits";
   TString AttitudeFileName = Directory + "/auxil/nu" + Tag + "_att.fits";
   TString EngineeringFileName = Directory + "/hk/nu" + Tag + "_eng.hk";
   TString HKFileNameA = Directory + "/hk/nu" + Tag + "A_fpm.hk";
   TString HKFileNameB = Directory + "/hk/nu" + Tag + "B_fpm.hk";
-  TString UFFileNameA = Directory + "/event_cl/nu" + Tag + "A_uf.evt";
-  TString UFFileNameB = Directory + "/event_cl/nu" + Tag + "B_uf.evt";
-  TString FIFileNameA01 = Directory + "/event_cl/nu" + Tag + "A01_cl.evt";
-  TString FIFileNameB01 = Directory + "/event_cl/nu" + Tag + "B01_cl.evt";
-  TString FIFileNameA02 = Directory + "/event_cl/nu" + Tag + "A02_cl.evt";
-  TString FIFileNameB02 = Directory + "/event_cl/nu" + Tag + "B02_cl.evt";
+  TString UFFileNameA = Directory + "/" + EventDir + "/nu" + Tag + "A_uf.evt";
+  TString UFFileNameB = Directory + "/" + EventDir + "/nu" + Tag + "B_uf.evt";
+  TString FIFileNameA01 = Directory + "/" + EventDir + "/nu" + Tag + "A01_cl.evt";
+  TString FIFileNameB01 = Directory + "/" + EventDir + "/nu" + Tag + "B01_cl.evt";
+  TString FIFileNameA02 = Directory + "/" + EventDir + "/nu" + Tag + "A02_cl.evt";
+  TString FIFileNameB02 = Directory + "/" + EventDir + "/nu" + Tag + "B02_cl.evt";
   
   m_Orbits.Clean();
   if (m_Orbits.Read(OrbitsFileName) == false) return false;
@@ -1463,6 +1476,43 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
   cout<<"Done with tentacle"<<endl;
   
   return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NBaseTool::ConvertRawPos(int RawX, int RawY, int DetectorID, double& PosX, double& PosY)
+{ 
+  if (DetectorID == 0) {
+    PosX = +RawY+0.5; 
+    PosY = +RawX+0.5;
+  } else if (DetectorID == 1) {
+    PosX = -RawX-0.5; 
+    PosY = +RawY+0.5;
+  } else if (DetectorID == 2) {
+    PosX = -RawY-0.5;
+    PosY = -RawX-0.5;
+  } else if (DetectorID == 3) {
+    PosX = +RawX+0.5;
+    PosY = -RawY-0.5;
+  }
+  
+  /*
+  if (DetectorID == 0) {
+    PosX = +RawX+0.5; 
+    PosY = +RawY+0.5;
+  } else if (DetectorID == 1) {
+    PosX = +RawY+0.5; 
+    PosY = -RawX-0.5;
+  } else if (DetectorID == 2) {
+    PosX = -RawX-0.5;
+    PosY = -RawY-0.5;
+  } else if (DetectorID == 3) {
+    PosX = -RawY-0.5;
+    PosY = +RawX+0.5;
+  }
+  */
 }
 
 

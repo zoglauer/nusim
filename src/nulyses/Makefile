@@ -28,6 +28,7 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NCheckRates.o \
 	$(LB)/NQuickView.o \
 	$(LB)/NQuickViewFiltered.o \
+	$(LB)/NBackgroundVariations.o \
 	$(LB)/NBackgroundModes.o \
 	$(LB)/NBackgroundMode1.o \
 	$(LB)/NBackgroundMode23.o \
@@ -35,6 +36,8 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NBackgroundMode4DataBase.o \
 	$(LB)/NLineFitter.o \
 	$(LB)/NDetectorHealth.o \
+	$(LB)/NApertureModel.o \
+	$(LB)/NApertureTester.o \
 
 SOBJ = $(LB)/libNulyses.$(DLL)
 
