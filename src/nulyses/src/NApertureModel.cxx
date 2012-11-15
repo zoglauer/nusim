@@ -109,8 +109,8 @@ double NApertureModel::GetApertureShape(int detx, int dety, int Module)
   
   double dx = 0.12096; // mm/(det1 pixel)
   double val = 0;
-  for (unsigned int i= 0; i <= 5; ++i) { 
-    for (unsigned int j = 0; j <= 5; ++j) {
+  for (int i= 0; i <= 5; ++i) { 
+    for (int j = 0; j <= 5; ++j) {
       if (Module == 0) { 
         val += coeff[j][i]*pow(dety*dx+13+xp, i)*pow(detx*dx+13+yp, j);
       } else {
