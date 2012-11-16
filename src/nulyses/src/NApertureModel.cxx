@@ -56,6 +56,15 @@ NApertureModel::~NApertureModel()
 
 bool NApertureModel::Initialize()
 {
+  if (m_SpectrumA0.Load("$(NUSIM)/resource/nulyses/aperbgdA_det0.pha") == false) return false;
+  if (m_SpectrumA1.Load("$(NUSIM)/resource/nulyses/aperbgdA_det1.pha") == false) return false;
+  if (m_SpectrumA2.Load("$(NUSIM)/resource/nulyses/aperbgdA_det2.pha") == false) return false;
+  if (m_SpectrumA3.Load("$(NUSIM)/resource/nulyses/aperbgdA_det3.pha") == false) return false;
+  if (m_SpectrumB0.Load("$(NUSIM)/resource/nulyses/aperbgdB_det0.pha") == false) return false;
+  if (m_SpectrumB1.Load("$(NUSIM)/resource/nulyses/aperbgdB_det1.pha") == false) return false;
+  if (m_SpectrumB2.Load("$(NUSIM)/resource/nulyses/aperbgdB_det2.pha") == false) return false;
+  if (m_SpectrumB3.Load("$(NUSIM)/resource/nulyses/aperbgdB_det3.pha") == false) return false;
+
   return true;
 }
 
@@ -65,7 +74,7 @@ bool NApertureModel::Initialize()
 
 double NApertureModel::GetApertureShape(int detx, int dety, int Module)
 {
-  double p[] = { 1.0, 0., 1.0, 0., 1.28, -1.23, 4.55, 0.70 };
+  double p[] = { 1.0, 1.0, 0.0, 0.0, 1.28, -1.23, 4.55, 0.70 };
   //double p[] = { 1.8247618,1.8456988,6.5860895,6.1775471,-0.094825531,-0.26157041,26.617317,2.3922457 };
 
   // 70x70 mm polynomial fit, z-distance reduced to use optic backside
@@ -114,13 +123,10 @@ double NApertureModel::GetApertureShape(int detx, int dety, int Module)
       if (Module == 0) { 
         val += coeff[j][i]*pow(dety*dx+13+xp, i)*pow(detx*dx+13+yp, j);
       } else {
-        val += coeff[j][i]*pow(detx*dx+13+xp, i)*pow(dety*dx+13+yp, j);
-        //cout<<coeff[j][i]<<":"<<pow(detx*dx+13+xp, i)<<"::"<<pow(dety*dx+13+yp, j)<<endl;
+        val += coeff[j][i]*pow(dety*dx+13+xp, i)*pow(detx*dx+13+yp, j);
       }
     }
   }
-  
-  cout<<"Val: "<<val<<":"<<(val*scl*3.1865e-5 + off)*0.01<<endl;
       
   return (val*scl*3.1865e-5 + off)*0.01; // *dx*dx
 }

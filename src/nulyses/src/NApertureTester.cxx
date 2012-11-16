@@ -110,12 +110,36 @@ bool NApertureTester::Analyze()
   return true;
 }
 
-TH2D* g_Aperture;
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+TH2D* NApertureTester::s_Aperture = 0;
+double NApertureTester::s_Scaler0 = 0;
+double NApertureTester::s_Scaler1 = 0;
+double NApertureTester::s_Scaler2 = 0;
+double NApertureTester::s_Scaler3 = 0;
+
 Double_t ApertureFit(Double_t *x, Double_t *par) 
 {
-  double ApValue = g_Aperture->GetBinContent(g_Aperture->FindBin(x[0]), g_Aperture->FindBin(x[1]));
+  double ApValue = NApertureTester::s_Aperture->GetBinContent(NApertureTester::s_Aperture->FindBin(x[0]), NApertureTester::s_Aperture->FindBin(x[1]));
   if (ApValue == 0) return 0;
-  return par[0] + par[1]*ApValue;
+  
+  double Value = 0;
+  
+  if (x[0] > 185 && x[1] > 185) {
+    Value = par[0] + par[4]*NApertureTester::s_Scaler0*ApValue;
+  } else if (x[0] < 185 && x[1] > 185) {
+    Value = par[1] + par[4]*NApertureTester::s_Scaler1*ApValue;
+  } else if (x[0] < 185 && x[1] < 185) {
+    Value = par[2] + par[4]*NApertureTester::s_Scaler2*ApValue;
+  } else if (x[0] > 185 && x[1] < 185) {
+    Value = par[3] + par[4]*NApertureTester::s_Scaler3*ApValue;
+  }
+  
+  // Value = par[0] + par[4]*ApValue;
+    
+  return Value;
 }   
 
 
@@ -160,9 +184,11 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
   SpectrumOnSourceAll->SetLineColor(kBlue);
 
 
-  double PosMin = 30.5;
-  double PosMax = 340.5;
-  int NPositionBins = (int(PosMax - PosMin) + 1);
+  double PosMin = 35;
+  double PosMax = 335;
+  double ExcludeMin = 175;
+  double ExcludeMax = 195;
+  int NPositionBins = (int(PosMax - PosMin) + 1)/10;
   int NPositionDataBins = (int(PosMax - PosMin) + 1)/10;
 
   TH2D* PositionsBackground = new TH2D(TString("PositionsBackground") + iID, TString("PositionsBackground") + ID, 
@@ -184,14 +210,25 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
   Aperture->SetYTitle("2, 3 <-- Det1 Y [pixel] --> 1, 0");
   Aperture->SetZTitle("cts");
 
+  TH2D* SubtractedBackground = new TH2D(TString("SubtractedBackground") + iID, TString("SubtractedBackground") + ID, 
+                                       NPositionDataBins, PosMin, PosMax, NPositionDataBins, PosMin, PosMax);
+  SubtractedBackground->SetXTitle("1, 2 <-- Det1 X [pixel] --> 3, 0");
+  SubtractedBackground->SetYTitle("2, 3 <-- Det1 Y [pixel] --> 1, 0");
+  SubtractedBackground->SetZTitle("cts");
+
   NApertureModel M;
+  if (M.Initialize() == false) {
+    cout<<"Unable to initialize aperture model"<<endl;
+    return false;
+  }
   for (int bx = 0; bx <= Aperture->GetNbinsX(); ++bx) {
     for (int by = 0; by <= Aperture->GetNbinsX(); ++by) {
-      double PosX = Aperture->GetBinCenter(bx);
-      double PosY = Aperture->GetBinCenter(by);
+      double PosX = Aperture->GetXaxis()->GetBinCenter(bx);
+      double PosY = Aperture->GetYaxis()->GetBinCenter(by);
       double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
       if (Distance > DistanceCutOff) {
-        Aperture->SetBinContent(bx, by, M.GetApertureShape(bx, by, FE.m_Module));
+        if ((PosX > ExcludeMin && PosX < ExcludeMax) || (PosY > ExcludeMin && PosY < ExcludeMax)) continue;
+        Aperture->SetBinContent(bx, by, M.GetApertureShape(PosX, PosY, FE.m_Module));
       }
     }
   }
@@ -264,6 +301,19 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
     }
   }
     
+  double SumBackground = 0;
+  for (int bx = 0; bx <= PositionsBackground->GetNbinsX(); ++bx) {
+    for (int by = 0; by <= PositionsBackground->GetNbinsX(); ++by) {
+      double PosX = PositionsBackground->GetXaxis()->GetBinCenter(bx);
+      double PosY = PositionsBackground->GetYaxis()->GetBinCenter(by);
+      if ((PosX > ExcludeMin && PosX < ExcludeMax) || (PosY > ExcludeMin && PosY < ExcludeMax)) {
+        PositionsBackground->SetBinContent(bx, by, 0);
+      }
+      PositionsBackground->SetBinError(bx, by, sqrt(PositionsBackground->GetBinContent(bx, by)));
+      SumBackground += PositionsBackground->GetBinContent(bx, by);
+    }
+  }
+  cout<<"Sum background: "<<SumBackground<<endl;
 
   
   cout<<"LiveTime on file: "<<FE.m_LiveTime<<endl;
@@ -291,22 +341,67 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
   PositionsBackgroundCanvas->Update();
   if (m_ShowHistograms.Contains("f")) PositionsBackgroundCanvas->SaveAs(PositionsBackground->GetName() + m_FileType);
     
-  g_Aperture = Aperture;
-  
-  TF2* ApFit = new TF2("ApFit", ApertureFit, PosMin, PosMax, PosMin, PosMax , 2);
-  PositionsBackground->Fit(ApFit);
-  PositionsBackground->Draw("colz");
-  ApFit->Draw("cont1 same");
-  
-  cout<<"constant: "<<ApFit->GetParameter(0)<<" - scaler: "<<ApFit->GetParameter(1)<<endl;  
-  //g_Aperture = 0;
-  
-  for (int bx = 0; bx <= BackgroundModel->GetNbinsX(); ++bx) {
-    for (int by = 0; by <= BackgroundModel->GetNbinsX(); ++by) {
-      BackgroundModel->SetBinContent(bx, by, ApFit->GetParameter(0) + ApFit->GetParameter(1)*
-      Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(BackgroundModel->GetBinCenter(bx)), Aperture->GetYaxis()->FindBin(BackgroundModel->GetBinCenter(by))));
+  // Set everything up for fitting
+  s_Aperture = Aperture;
+  if (FE.m_Module == 0) {
+    for (int b = 1; b <= M.m_SpectrumA0.m_Spectrum->GetNbinsX(); ++b) {
+      double Energy = M.m_SpectrumA0.m_Spectrum->GetBinCenter(b);
+      if (Energy >= m_SpectrumMin && Energy <= m_SpectrumMax) {
+        s_Scaler0 += M.m_SpectrumA0.m_Spectrum->GetBinContent(b);
+        s_Scaler1 += M.m_SpectrumA1.m_Spectrum->GetBinContent(b);
+        s_Scaler2 += M.m_SpectrumA2.m_Spectrum->GetBinContent(b);
+        s_Scaler3 += M.m_SpectrumA3.m_Spectrum->GetBinContent(b);
+      }
+    }
+  } else {
+    for (int b = 1; b <= M.m_SpectrumB0.m_Spectrum->GetNbinsX(); ++b) {
+      double Energy = M.m_SpectrumB0.m_Spectrum->GetBinCenter(b);
+      if (Energy >= m_SpectrumMin && Energy <= m_SpectrumMax) {
+        s_Scaler0 += M.m_SpectrumB0.m_Spectrum->GetBinContent(b);
+        s_Scaler1 += M.m_SpectrumB1.m_Spectrum->GetBinContent(b);
+        s_Scaler2 += M.m_SpectrumB2.m_Spectrum->GetBinContent(b);
+        s_Scaler3 += M.m_SpectrumB3.m_Spectrum->GetBinContent(b);
+      }
     }
   }
+  s_Scaler3 /= s_Scaler0;
+  s_Scaler2 /= s_Scaler0;
+  s_Scaler1 /= s_Scaler0;
+  s_Scaler0 /= s_Scaler0;
+  
+  TF2* ApFit = new TF2("ApFit", ApertureFit, PosMin, PosMax, PosMin, PosMax , 5);
+  PositionsBackground->Fit(ApFit, "ILM N");
+  //PositionsBackground->Draw("colz");
+  //ApFit->Draw("cont1 same");
+  
+  cout<<"constant: "<<ApFit->GetParameter(0)<<" - scaler: "<<ApFit->GetParameter(4)<<endl;  
+  //g_Aperture = 0;
+  
+  double SumModel = 0;
+  for (int bx = 0; bx <= BackgroundModel->GetNbinsX(); ++bx) {
+    for (int by = 0; by <= BackgroundModel->GetNbinsX(); ++by) {
+      double PosX = BackgroundModel->GetXaxis()->GetBinCenter(bx);
+      double PosY = BackgroundModel->GetYaxis()->GetBinCenter(by);
+      if ((PosX > ExcludeMin && PosX < ExcludeMax) || (PosY > ExcludeMin && PosY < ExcludeMax)) continue;
+      
+      double Add = 0;
+      if (PosX > 185 && PosY > 185) {
+        Add = ApFit->GetParameter(0) + ApFit->GetParameter(4)*s_Scaler0*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX < 185 && PosY > 185) {
+        Add = ApFit->GetParameter(1) + ApFit->GetParameter(4)*s_Scaler1*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX < 185 && PosY < 185) {
+        Add = ApFit->GetParameter(2) + ApFit->GetParameter(4)*s_Scaler2*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX > 185 && PosY < 185) {
+        Add = ApFit->GetParameter(3) + ApFit->GetParameter(4)*s_Scaler3*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      }
+
+      // = ApFit->GetParameter(0) + ApFit->GetParameter(4)*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      
+      BackgroundModel->SetBinContent(bx, by, Add);
+      SumModel += Add;
+    }
+  }
+  cout<<"Sum model: "<<SumModel<<endl;
     
   TCanvas* BackgroundModelCanvas = new TCanvas(TString("BackgroundModelCanvas") + iID, TString("BackgroundModelCanvas") + ID, 600, 600);
   BackgroundModelCanvas->cd();
@@ -315,6 +410,44 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
   if (m_ShowHistograms.Contains("f")) BackgroundModelCanvas->SaveAs(BackgroundModel->GetName() + m_FileType);
   
   
+  double SumSubtracted = 0;
+  int BinsSubtracted = 0;
+  
+  for (int bx = 0; bx <= SubtractedBackground->GetNbinsX(); ++bx) {
+    for (int by = 0; by <= SubtractedBackground->GetNbinsX(); ++by) {
+      double PosX = SubtractedBackground->GetXaxis()->GetBinCenter(bx);
+      double PosY = SubtractedBackground->GetYaxis()->GetBinCenter(by);
+      if ((PosX > ExcludeMin && PosX < ExcludeMax) || (PosY > ExcludeMin && PosY < ExcludeMax)) continue;
+
+      double ToSubtract = 0;
+      if (PosX > 185 && PosY > 185) {
+        ToSubtract = ApFit->GetParameter(4)*s_Scaler0*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX < 185 && PosY > 185) {
+        ToSubtract = ApFit->GetParameter(4)*s_Scaler1*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX < 185 && PosY < 185) {
+        ToSubtract = ApFit->GetParameter(4)*s_Scaler2*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      } else if (PosX > 185 && PosY < 185) {
+        ToSubtract = ApFit->GetParameter(4)*s_Scaler3*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+      }
+      //ToSubtract = ApFit->GetParameter(4)*Aperture->GetBinContent(Aperture->GetXaxis()->FindBin(PosX), Aperture->GetYaxis()->FindBin(PosY));
+     
+      SubtractedBackground->SetBinContent(bx, by, PositionsBackground->GetBinContent(bx, by) - ToSubtract);
+      if (SubtractedBackground->GetBinContent(bx, by) > 0) {
+        SumSubtracted += SubtractedBackground->GetBinContent(bx, by);
+        BinsSubtracted++;
+      }
+    }
+  }
+  if (BinsSubtracted > 0) {
+    cout<<"Average subtracted content: "<<SumSubtracted/BinsSubtracted<<endl;
+  }
+  
+  TCanvas* SubtractedBackgroundCanvas = new TCanvas(TString("SubtractedBackgroundCanvas") + iID, TString("SubtractedBackgroundCanvas") + ID, 600, 600);
+  SubtractedBackgroundCanvas->cd();
+  SubtractedBackground->Draw("colz");
+  SubtractedBackgroundCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SubtractedBackgroundCanvas->SaveAs(SubtractedBackground->GetName() + m_FileType);
+ 
   return true;
 }
 

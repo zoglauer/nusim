@@ -17,6 +17,7 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TH2.h"
 
 // NuSTAR libs:
 #include "NGlobal.h"
@@ -44,6 +45,12 @@ class NApertureTester : public NBackgroundModes
   /// Analyze what ever needs to be analyzed...
   virtual bool Analyze();
 
+  static TH2D* s_Aperture;
+  static double s_Scaler0;
+  static double s_Scaler1;
+  static double s_Scaler2;
+  static double s_Scaler3;
+  
   // protected methods:
  protected:
   //NApertureTester() {};
@@ -54,6 +61,7 @@ class NApertureTester : public NBackgroundModes
   
   // private methods:
  private:
+
 
 
 

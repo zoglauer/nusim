@@ -25,6 +25,7 @@ using namespace std;
 // NuSTAR libs:
 #include "NGlobal.h"
 #include "MFile.h"
+#include "NPhaFile.h"
 
 // FITS libs:
 #include "fitsio.h"
@@ -44,11 +45,19 @@ public:
   bool Initialize();
 
   double GetApertureShape(int detx, int dety, int Module);
-  
+
+  NPhaFile m_SpectrumA0;
+  NPhaFile m_SpectrumA1;
+  NPhaFile m_SpectrumA2;
+  NPhaFile m_SpectrumA3;
+  NPhaFile m_SpectrumB0;
+  NPhaFile m_SpectrumB1;
+  NPhaFile m_SpectrumB2;
+  NPhaFile m_SpectrumB3;
+
 public:
   
 private:
-  
   
 };
 

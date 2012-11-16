@@ -107,11 +107,12 @@ double OffsetTripplePeakPlaw(double* x, double* par)
 bool NPhaFile::Load(TString FileName) 
 {
   m_FileName = FileName;
+  MFile::ExpandFileName(m_FileName);
   
-  cout<<"Reading PHA from file "<<FileName<<endl;
+  cout<<"Reading PHA from file "<<m_FileName<<endl;
  
-  if (MFile::Exists(FileName) == false) {
-    cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+  if (MFile::Exists(m_FileName) == false) {
+    cout<<"The file \""<<m_FileName<<"\" does not exists!"<<endl;
     return false;
   }
   
@@ -128,9 +129,9 @@ bool NPhaFile::Load(TString FileName)
   
   
   fitsfile* File = 0;
-  if (fits_open_file(&File, FileName, READONLY, &status)) {
+  if (fits_open_file(&File, m_FileName, READONLY, &status)) {
     fits_get_errstatus(status, value);
-    cout<<"Unable to open PHA file \""<<FileName<<"\": "<<status<<":"<<value<<endl;
+    cout<<"Unable to open PHA file \""<<m_FileName<<"\": "<<status<<":"<<value<<endl;
     return false;
   }
   //cout<<"Opened "<<FileName<<endl;
