@@ -57,6 +57,8 @@ NBaseTool::NBaseTool()
   
   m_ShowHistograms = "s";
   m_FileType = ".pdf";
+  
+  m_ApplySAAFilters = true;
 }
 
 
@@ -369,16 +371,18 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
     }
   }
   
-  if (m_MergeFilteredEvents == false) {
-    if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, c_SAACutStrict);
-    if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, c_SAACutStrict);
-  } else {
-    if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA, m_HousekeepingA, m_Orbits, c_SAACutStrict);
-    if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_SAACutStrict);
-  }
+  if (m_ApplySAAFilters == true) {
+    if (m_MergeFilteredEvents == false) {
+      if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, c_SAACutStrict);
+      if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, c_SAACutStrict);
+    } else {
+      if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA, m_HousekeepingA, m_Orbits, c_SAACutStrict);
+      if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_SAACutStrict);
+    }
   
-  if (LookAtModule.Contains("a")) FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits);
-  if (LookAtModule.Contains("b")) FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits);
+    if (LookAtModule.Contains("a")) FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits, true);
+    if (LookAtModule.Contains("b")) FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits, true);
+  }
   
   return true;
 }
@@ -1473,7 +1477,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     RatesCanvas->Update();
   }
   
-  cout<<"Done with tentacle"<<endl;
+  cout<<"Done with tentacle flag identification"<<endl;
   
   return true;
 }

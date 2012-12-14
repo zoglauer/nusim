@@ -114,39 +114,98 @@ bool NApertureTester::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-TH2D* NApertureTester::s_Aperture = 0;
-double NApertureTester::s_Scaler0 = 0;
-double NApertureTester::s_Scaler1 = 0;
-double NApertureTester::s_Scaler2 = 0;
-double NApertureTester::s_Scaler3 = 0;
-
-Double_t ApertureFit(Double_t *x, Double_t *par) 
-{
-  double ApValue = NApertureTester::s_Aperture->GetBinContent(NApertureTester::s_Aperture->FindBin(x[0]), NApertureTester::s_Aperture->FindBin(x[1]));
-  if (ApValue == 0) return 0;
-  
-  double Value = 0;
-  
-  if (x[0] > 185 && x[1] > 185) {
-    Value = par[0] + par[4]*NApertureTester::s_Scaler0*ApValue;
-  } else if (x[0] < 185 && x[1] > 185) {
-    Value = par[1] + par[4]*NApertureTester::s_Scaler1*ApValue;
-  } else if (x[0] < 185 && x[1] < 185) {
-    Value = par[2] + par[4]*NApertureTester::s_Scaler2*ApValue;
-  } else if (x[0] > 185 && x[1] < 185) {
-    Value = par[3] + par[4]*NApertureTester::s_Scaler3*ApValue;
-  }
-  
-  // Value = par[0] + par[4]*ApValue;
-    
-  return Value;
-}   
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
+bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+                           int SourcePosX, int SourcePosY, double DistanceCutOff)
+{
+  cout<<"Testing the aperture flux..."<<endl;
+    
+  SourcePosX = 225;
+  SourcePosY = 242;
+  DistanceCutOff = 0;
+  
+
+  NApertureModel M;
+  if (M.Initialize(FE.m_ID, FE.m_Module) == false) {
+    cout<<"Unable to initialize aperture model"<<endl;
+    return false;
+  }
+
+  // Section B: Fill (and normalize) histograms
+  double LiveTime = 0;
+  
+  // Fill histograms which require filling by event
+  for (unsigned int e = 0; e < FE.m_Time.size(); ++e) {
+
+    if (WithinSpecialGTI(FE.m_Time[e]) == false) continue;
+    if (WithinSpecialBTI(FE.m_Time[e]) == true) continue;
+    if (FE.m_Energy[e] < m_SpectrumMin || FE.m_Energy[e] > m_SpectrumMax) continue;
+
+    
+    int HKIndex = H.FindClosestIndex(FE.m_Time[e]);
+    if (HKIndex == -1) {
+      cout<<"Housekeeping: Index not found..."<<endl;
+      continue;      
+    }
+ 
+    int OrbitsIndex = O.FindClosestIndex(FE.m_Time[e]);
+    if (OrbitsIndex == -1) {
+      cout<<"Orbits: Index not found..."<<endl;
+      continue;      
+    }
+
+    
+    int DetectorID = FE.m_DetectorID[e];
+    int DetX = FE.m_Det1X[e];
+    int DetY = FE.m_Det1Y[e];
+    
+    double PosX = DetX;
+    double PosY = DetY;
+
+    double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
+    
+    if (Distance > DistanceCutOff) {
+      M.Add(FE.m_Det1X[e], FE.m_Det1Y[e], FE.m_Energy[e]);
+    }
+  }
+  
+  double TotalTime = 0;
+  LiveTime = 0;
+  for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+    if (WithinSpecialGTI(H.m_Time[h]) == false) continue;
+    if (WithinSpecialBTI(H.m_Time[h]) == true) continue;
+
+    //if (FE.IsGTI(H.m_Time[h]) == true) {
+    if (FE.IsGTI(H.m_Time[h], true) == true && H.m_SoftSAA[h] == false && H.m_SoftTentacled[h] == false) {
+
+      int OrbitsIndex = O.FindClosestIndex(H.m_Time[h]);
+      if (OrbitsIndex == -1) {
+        cout<<"Orbits: Index not found..."<<endl;
+        continue;      
+      }
+
+      if (O.m_SafelyOnSource[OrbitsIndex] == true) {
+        TotalTime += 1.0;
+        LiveTime += H.m_LiveTime[h];
+      }
+    }
+  }
+  
+  M.Analyze();
+    
+ 
+  return true;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*
 bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
                            int SourcePosX, int SourcePosY, double DistanceCutOff)
 {
@@ -450,7 +509,7 @@ bool NApertureTester::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NE
  
   return true;
 }
-
+*/
 
 // NApertureTester.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

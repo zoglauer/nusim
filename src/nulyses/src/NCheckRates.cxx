@@ -30,6 +30,7 @@ using namespace std;
 // MEGAlib libs:
 
 // NuSTAR libs:
+#include "MFile.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,13 +183,21 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   double MinLatitude = -6.2;
   double MaxLatitude = +6.2;
   
-  TH2D* OrbitNormalizerDetector = new TH2D(TString("OrbitNormalizerDetector") + iID, 
-                                   TString("OrbitNormalizerDetector") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* OrbitNormalizerDetectorSAANoTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAANoTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   TH2D* RatesSAANoTentacleNoByOrbit = new TH2D(TString("RatesSAANoTentacleNoByOrbit") + iID, 
                                                TString("Rates in orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   RatesSAANoTentacleNoByOrbit->SetXTitle("Longitude [deg]");
   RatesSAANoTentacleNoByOrbit->SetYTitle("Latutude [deg]");
   RatesSAANoTentacleNoByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAStrictTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictTentacleNoByOrbit") + iID, 
+                                               TString("Rates in orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictTentacleNoByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAStrictTentacleNoByOrbit->SetZTitle("cts/sec");
   
   
   // Section B: Fill (and normalize) histograms
@@ -255,7 +264,9 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
           }
         }
         RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
-        
+        if (H.m_SoftSAAStrict[HKIndex] == false) {
+          RatesSAAStrictTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+        }
       }
     }
   }
@@ -284,8 +295,11 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
     if (WithinSpecialBTI(H.m_Time[h]) == true) continue;
     if (FE.IsGTI(H.m_Time[h], true) == false) continue;
 
-    OrbitNormalizerDetector->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);
-
+    OrbitNormalizerDetectorSAANoTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);
+    if (H.m_SoftSAAStrict[h] == false) {
+      OrbitNormalizerDetectorSAAStrictTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);
+    }
+        
     if (O.m_SafelyOnSource[OrbitIndex] == true) {
       TotalTime += 1.0;
       LiveTime += H.m_LiveTime[h];
@@ -304,10 +318,10 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   }
     
   double Minimum = numeric_limits<double>::max();
-  for (int lo = 1; lo <= OrbitNormalizerDetector->GetNbinsX(); ++lo) {
-    for (int la = 1; la <= OrbitNormalizerDetector->GetNbinsY(); ++la) {
-      if (OrbitNormalizerDetector->GetBinContent(lo, la) > 0 ) {
-        RatesSAANoTentacleNoByOrbit->SetBinContent(lo, la, RatesSAANoTentacleNoByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetector->GetBinContent(lo, la));
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAANoTentacleNo->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAANoTentacleNo->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAANoTentacleNo->GetBinContent(lo, la) > 0 ) {
+        RatesSAANoTentacleNoByOrbit->SetBinContent(lo, la, RatesSAANoTentacleNoByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAANoTentacleNo->GetBinContent(lo, la));
         if (RatesSAANoTentacleNoByOrbit->GetBinContent(lo, la) < Minimum && 
             RatesSAANoTentacleNoByOrbit->GetBinContent(lo, la) > 0) {
           Minimum = RatesSAANoTentacleNoByOrbit->GetBinContent(lo, la);
@@ -318,6 +332,23 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
     }
   }
   RatesSAANoTentacleNoByOrbit->SetMinimum(Minimum);
+  
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAStrictTentacleNo->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAStrictTentacleNo->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAStrictTentacleNo->GetBinContent(lo, la) > 0 ) {
+        RatesSAAStrictTentacleNoByOrbit->SetBinContent(lo, la, RatesSAAStrictTentacleNoByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAStrictTentacleNo->GetBinContent(lo, la));
+        if (RatesSAAStrictTentacleNoByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAStrictTentacleNoByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAStrictTentacleNoByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAStrictTentacleNoByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAStrictTentacleNoByOrbit->SetMinimum(Minimum);
+  
   cout<<"Min: "<<Minimum<<endl;
      
   if (m_WriteGTI == true) {
@@ -432,9 +463,20 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   RatesSAANoTentacleNoByOrbitCanvas->Update();
   if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoByOrbitCanvas->SaveAs(RatesSAANoTentacleNoByOrbit->GetName() + m_FileType);
   
+  TCanvas* RatesSAAStrictTentacleNoByOrbitCanvas = new TCanvas(TString("RatesSAAStrictTentacleNoByOrbitCanvas") + iID, TString("RatesSAAStrictTentacleNoByOrbitCanvas") + ID, 1200, 400);
+  RatesSAAStrictTentacleNoByOrbitCanvas->cd();
+  RatesSAAStrictTentacleNoByOrbitCanvas->SetLogz();
+  RatesSAAStrictTentacleNoByOrbit->Draw("colz");
+  RatesSAAStrictTentacleNoByOrbitCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleNoByOrbitCanvas->SaveAs(RatesSAAStrictTentacleNoByOrbit->GetName() + m_FileType);
+  
   
   return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTIStop, NHousekeeping& H)
 {
@@ -443,8 +485,11 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
   FileName += H.m_ID;
   FileName += ((H.m_Module == 0) ? "A" : "B");
   FileName += "_user_gti.fits";
-  
-  ifstream src("Template_gti.fits");
+
+  TString Template = "$(NUSIM)/resource/nulyses/Template_gti.fits";
+  MFile::ExpandFileName(Template);
+
+  ifstream src(Template);
   ofstream dst(FileName);
   dst << src.rdbuf();
   src.close();

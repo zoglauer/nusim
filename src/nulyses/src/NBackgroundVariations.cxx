@@ -46,7 +46,9 @@ NBackgroundVariations::NBackgroundVariations()
 {
   // Construct an instance of NBackgroundVariations
   
-  m_ReadUnfiltered = false;
+  m_ApplySAAFilters = false;
+  
+  m_ReadUnfiltered = true;
   m_ReadFiltered02 = false;
 }
 
@@ -85,9 +87,9 @@ bool NBackgroundVariations::ParseCommandLine(int argc, char** argv)
 
 bool NBackgroundVariations::Analyze() 
 {
-  double SpectrumMin = 2.0-0.02;
-  double SpectrumMax = 150.0-0.02;  
-  int SpectrumBins = (int(SpectrumMax-SpectrumMin)/0.04)/16;  
+  double SpectrumMin = 0.0+0.02;
+  double SpectrumMax = 80.0+0.02;  
+  int SpectrumBins = (int(SpectrumMax-SpectrumMin)/0.04)/8;  
   
   m_SpectrumWafer0 = new TH1D(TString("m_SpectrumWafer0"), TString("Spectrum - background wafer 0"), SpectrumBins, SpectrumMin, SpectrumMax);
   m_SpectrumWafer0->SetXTitle("Energy [keV]");
@@ -110,11 +112,27 @@ bool NBackgroundVariations::Analyze()
   m_SpectrumWafer3->SetLineColor(kViolet);
 
   m_LifeTime = 0;
+  m_ActivePixels = 0;
   
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     if (Load(m_Directories[d]) == false) continue;
-    if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA, m_HousekeepingA, m_Orbits, m_Engineering, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
-    if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB, m_HousekeepingB, m_Orbits, m_Engineering, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
+    if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA, m_UnfilteredEventsA, m_HousekeepingA, m_Orbits, m_Engineering, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
+    if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB, m_UnfilteredEventsB, m_HousekeepingB, m_Orbits, m_Engineering, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
+  }
+  
+    
+  TH1D* CombinedSpectrum = new TH1D(TString("CombinedSpectrum"), TString("Spectrum - background"), SpectrumBins, SpectrumMin, SpectrumMax);
+  CombinedSpectrum->SetXTitle("Energy [keV]");
+  CombinedSpectrum->SetYTitle("cts/sec/keV/cm2");
+  CombinedSpectrum->SetLineColor(kBlack);
+
+  for (int b = 1; b <= CombinedSpectrum->GetNbinsX(); ++b) {
+    double Counts = 0.0;
+    Counts += m_SpectrumWafer0->GetBinContent(b);
+    Counts += m_SpectrumWafer1->GetBinContent(b);
+    Counts += m_SpectrumWafer2->GetBinContent(b);
+    Counts += m_SpectrumWafer3->GetBinContent(b);
+    CombinedSpectrum->SetBinContent(b, Counts/m_LifeTime/CombinedSpectrum->GetBinWidth(b)/(0.06048*0.06048*m_ActivePixels));
   }
   
   for (int b = 1; b <= m_SpectrumWafer0->GetNbinsX(); ++b) {
@@ -150,6 +168,12 @@ bool NBackgroundVariations::Analyze()
   m_SpectrumWafer3->Draw("SAME");
   SpectrumWafersCanvas->Update();  
   if (m_ShowHistograms.Contains("f")) SpectrumWafersCanvas->SaveAs(m_SpectrumWafer0->GetName() + m_FileType);
+  
+  TCanvas* CombinedSpectrumsCanvas = new TCanvas();
+  CombinedSpectrumsCanvas->cd();
+  CombinedSpectrum->Draw();
+  CombinedSpectrumsCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) CombinedSpectrumsCanvas->SaveAs(CombinedSpectrum->GetName() + m_FileType);
     
   return true;
 }
@@ -158,14 +182,35 @@ bool NBackgroundVariations::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBackgroundVariations::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+bool NBackgroundVariations::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
                        int SourcePosX, int SourcePosY, double DistanceCutOff)
 {
   cout<<"Quick view of the data..."<<endl;
+    
+  TString iID = "_BackgroundMode1_id"; 
+  iID += F.m_ID;
+  iID += "_m";
+  iID += ((F.m_Module == 0) ? "A" : "B");
+  iID += "_cl";
+  iID += F.m_CleanLevel;
+
+  TString ID = " (id";
+  ID += F.m_ID;
+  ID += "-cl0";
+  ID += F.m_CleanLevel;
+  ID += "-m";
+  ID += ((F.m_Module == 0) ? "A" : "B");
+  ID += ")";
+  
   
   // Section A: Create all histograms:
+  double ActivePixels = 0;
+  int NPositionBins = 64;
+  TH2D* PositionsOnSource = new TH2D(TString("PositionsOnSource") + iID, TString("Counts in used detector regions") + ID, NPositionBins, -32, 32, NPositionBins, -32, 32);
+  PositionsOnSource->SetXTitle("1, 2 <-- Raw X [pixel] --> 3, 0");
+  PositionsOnSource->SetYTitle("2, 3 <-- Raw Y [pixel] --> 1, 0");
+  PositionsOnSource->SetZTitle("cts");
 
-  
   // Section B: Fill (and normalize) histograms
   
   // Fill histograms which require filling by event
@@ -186,7 +231,14 @@ bool NBackgroundVariations::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& 
       cout<<"Orbit: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
-
+    int i = U.FindIndex(F.m_Time[e]);
+    if (i == -1) {
+      cout<<"Unfiltered events: Index not found..."<<endl;
+      continue;
+    }    
+    if (IsGoodEventByExternalDepthFilter(U.m_Status[i]) == false) continue;
+    if (U.m_ShieldVeto[i] == 1) continue;
+    
     
     int DetectorID = F.m_DetectorID[e];
     int RawX = F.m_RawX[e];
@@ -194,19 +246,8 @@ bool NBackgroundVariations::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& 
     
     double PosX = 0;
     double PosY = 0;
-    if (DetectorID == 0) {
-      PosX = +RawX+0.5; 
-      PosY = +RawY+0.5;
-    } else if (DetectorID == 1) {
-      PosX = +RawY+0.5; 
-      PosY = -RawX-0.5;
-    } else if (DetectorID == 2) {
-      PosX = -RawX-0.5;
-      PosY = -RawY-0.5;
-    } else if (DetectorID == 3) {
-      PosX = -RawY-0.5;
-      PosY = +RawX+0.5;
-    }
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+
     double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
     
     if (F.IsGTI(F.m_Time[e], true) == true) {
@@ -221,6 +262,7 @@ bool NBackgroundVariations::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& 
         } else if (DetectorID == 3) {
           m_SpectrumWafer3->Fill(F.m_Energy[e]);
         }
+        PositionsOnSource->Fill(PosX, PosY);
       }
     }
   }
@@ -233,6 +275,16 @@ bool NBackgroundVariations::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& 
     m_LifeTime += H.m_LiveTime[h];
   }
  
+  for (int bx = 0; bx <= PositionsOnSource->GetXaxis()->GetNbins(); ++bx) {
+    for (int by = 0; by <= PositionsOnSource->GetXaxis()->GetNbins(); ++by) {
+      if (PositionsOnSource->GetBinContent(bx, by) > 0) {
+        ActivePixels++;
+      }
+    }
+  }
+  cout<<"ActivePixels: "<<ActivePixels<<endl;
+  
+  if (ActivePixels > m_ActivePixels) m_ActivePixels = ActivePixels;
   
   return true;
 }

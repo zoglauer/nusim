@@ -18,6 +18,7 @@
 
 // ROOT libs:
 #include "TH1.h"
+#include "TH2.h"
 
 // NuSTAR libs:
 #include "NGlobal.h"
@@ -45,8 +46,9 @@ class NLineFitter : public NBaseTool
 
   // protected methods:
  protected:
-  bool Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-            int SourcePosX, int SourcePosY, double DistanceCutOff);
+  bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+            int SourcePosX, int SourcePosY, double DistanceCutOff, TH1D* LifeTime, TH2D* Spectrum,
+            TH1D* GeomagneticCutOff, TH1D* GeomagneticCutOffLifeTime);
   
   // private methods:
  private:

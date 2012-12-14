@@ -53,7 +53,7 @@ NBackgroundModes::NBackgroundModes()
 {
   // Construct an instance of NBackgroundModes
   
-  m_MinFitRange = 82;
+  m_MinFitRange = 95;
   m_MaxFitRange = 120;
 }
 

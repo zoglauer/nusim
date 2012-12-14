@@ -150,6 +150,8 @@ class NBaseTool
   
   TString m_FileType;
   
+  bool m_ApplySAAFilters;
+  
   // private members:
  private:
 

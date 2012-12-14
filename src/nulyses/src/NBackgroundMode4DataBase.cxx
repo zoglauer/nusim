@@ -52,6 +52,7 @@ NBackgroundMode4DataBase::NBackgroundMode4DataBase()
   m_ReadUnfiltered = false;
   m_ReadFiltered02 = false; 
   m_ReadEngineering = false;
+  m_ApplySAAFilters = false;
   
   m_DataBaseName = "WhyDoIHaveNoNameDB";
 }

@@ -197,6 +197,15 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
   RatesByOrbit->SetYTitle("Latutude [deg]");
   RatesByOrbit->SetZTitle("cts/sec");
   
+   
+  TH2D* SpectrumVsDepth = new TH2D(TString("SpectrumVsDepth") + iID, 
+                                   TString("Background spectrum vs. depth") + ID, 
+                                   SpectrumBins, SpectrumMin, SpectrumMax, 100, -60, 10);
+  SpectrumVsDepth->SetXTitle("Energy [keV]");
+  SpectrumVsDepth->SetYTitle("Surr energy [keV]");
+  SpectrumVsDepth->SetLineColor(7);
+  
+  
   
   // Section B: Fill (and normalize) histograms
   double LiveTime = 0;
@@ -220,7 +229,12 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
       cout<<"Orbit: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
-
+    int i = U.FindIndex(F.m_Time[e]);
+    if (i == -1) {
+      cout<<"Unfiltered events: Index not found..."<<endl;
+      continue;
+    }    
+    if (IsGoodEventByExternalDepthFilter(U.m_Status[i]) == false) continue;
     
     int DetectorID = F.m_DetectorID[e];
     int RawX = F.m_RawX[e];
@@ -236,6 +250,7 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
         F.IsGTI(F.m_Time[e], true) == true && 
         F.m_Energy[e] > SpectrumMin && F.m_Energy[e] < SpectrumMax) {
       Spectrum->Fill(F.m_Energy[e]);
+      SpectrumVsDepth->Fill(F.m_Energy[e], F.m_SurrEnergy[e]);
       if (Distance > DistanceCutOff) {
         SpectrumBackground->Fill(F.m_Energy[e]);
         if (DetectorID == 0) {
@@ -394,7 +409,13 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
   SpectrumBackgroundWafer3->Draw();
   SpectrumBackgroundWafer3Canvas->Update();  
   if (m_ShowHistograms.Contains("f")) SpectrumBackgroundWafer3Canvas->SaveAs(SpectrumBackgroundWafer3->GetName() + m_FileType);
-  
+    
+  TCanvas* SpectrumVsDepthCanvas = new TCanvas();
+  SpectrumVsDepthCanvas->cd();
+  SpectrumVsDepth->Draw("colz");
+  SpectrumVsDepthCanvas->Update();  
+  if (m_ShowHistograms.Contains("f")) SpectrumVsDepthCanvas->SaveAs(SpectrumVsDepth->GetName() + m_FileType);
+
   return true;
 }
 

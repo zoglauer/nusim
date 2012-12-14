@@ -48,7 +48,7 @@ class NBackgroundVariations : public NBaseTool
   //NBackgroundVariations() {};
   //NBackgroundVariations(const NBackgroundVariations& NCTHit) {};
 
-  bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+  bool Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             int SourcePosX, int SourcePosY, double DistanceCutOff);
   
   // private methods:
@@ -63,6 +63,7 @@ class NBackgroundVariations : public NBaseTool
   // private members:
  private:
   double m_LifeTime;
+  double m_ActivePixels;
   TH1D* m_SpectrumWafer0;
   TH1D* m_SpectrumWafer1;
   TH1D* m_SpectrumWafer2;
