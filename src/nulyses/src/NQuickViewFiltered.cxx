@@ -234,7 +234,7 @@ bool NQuickViewFiltered::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHouseke
       cout<<"Unfiltered events: Index not found..."<<endl;
       continue;
     }    
-    if (IsGoodEventByExternalDepthFilter(U.m_Status[i]) == false) continue;
+    //if (IsGoodEventByExternalDepthFilter(U.m_Status[i]) == false) continue;
     
     int DetectorID = F.m_DetectorID[e];
     int RawX = F.m_RawX[e];
