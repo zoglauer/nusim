@@ -1,0 +1,6 @@
+# Pt and CZT params for 4 detectors in A and B focal planes
+# Pt_A    CZT_A     Pt_B    CZT_B
+  0.138   0.187     0.144   0.212
+  0.118   0.235     0.107   0.232
+  0.091   0.287     0.133   0.202
+  0.132   0.207     0.107   0.275
