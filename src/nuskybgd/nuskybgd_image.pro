@@ -40,7 +40,6 @@ pro nuskybgd_image,indir,obsid,imname,elow,ehigh,ab,bgddir,paramdir,paramfile,$
                 normap=normap,normfcxb=normfcxb,normneut=normneut,$
                 outim=outim,nobsub=nobsub,clobber=clobber
                 
-; USER SET DIRECTORY OF 'newinstrmap[A/B].fits' FILES
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
 
 dir=indir

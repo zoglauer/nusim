@@ -2,7 +2,6 @@
 
 pro projinitbgds,indir,obsid,header,ab,bgddir,pa=pa,oldpa=oldpa,clobber=clobber
                 
-; USER SET DIRECTORY OF 'newinstrmap[A/B].fits' FILES
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
 
 dir=indir
@@ -71,7 +70,7 @@ refimi0=fltarr(1000,1000)
 refimi1=fltarr(1000,1000)
 refimi2=fltarr(1000,1000)
 refimi3=fltarr(1000,1000)
-fits_read,auxildir+'newinstrmap'+ab+'.fits',instr
+fits_read,dir+'newinstrmap'+ab+'.fits',instr
 intdet=fltarr(4,360,360)
 blah=fltarr(360,360)
 for idet=0,3 do begin

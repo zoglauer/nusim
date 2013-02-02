@@ -1,12 +1,15 @@
 ; NUSKYBGD_INSTRMAP
 ;
 ; Creates an instrument map excluding RAW pixels contained in bad pixel files.
-; The 'files' argument can be ignored if only the CALDB bad pixel list is used.
-; Otherwise, files gives the name (and full path) to additional bad pixel lists --
-; can be a single string or array of strings.
+; The 'files' argument should be ignored; if you notice additional pixels that
+; look dead, the correct action is to add them to a user bad pixel list and
+; rerun the pipeline, in which case this routine will automatically grab the
+; additional bad pixels.  If you're impatient and unwise, files gives the name 
+; (and full path) to additional bad pixel lists -- which can be a single string or 
+; array of strings.  But this is like drinking from the ocean to end your thirst.
 
 
-pro nuskybgd_instrmap,ab,files,clobber=clobber
+pro nuskybgd_instrmap,indir,obsid,ab,bgddir,files,clobber=clobber
 
 if not keyword_set(clobber) then clobber=0
 
@@ -19,6 +22,15 @@ gw=[1.00000,    0.124902,    0.117130,    0.114720,    0.118038,   0.0114296,$
 
 caldb=getenv('CALDB')+'/'
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
+
+dir=indir
+if strmid(dir,strlen(dir)-1) ne '/' then dir=dir+'/'
+cldir=dir+obsid+'/event_cl/'
+
+if size(bgddir,/type) eq 0 then outdir=cldir else begin
+    outdir=cldir+bgddir+'/'
+    if not file_test(outdir,/directory) then spawn,'mkdir '+outdir
+endelse
 
 dirinstrmap=caldb+'data/nustar/fpm/bcf/instrmap/'
 dirpixpos=caldb+'data/nustar/fpm/bcf/pixpos/'
@@ -80,12 +92,17 @@ endif else begin
     fits_read,auxildir+'detnum'+ab+'.fits',detnum,header
 endelse
 
-push,files,dirbadpix+'nu'+ab+'badpix20100101v002.fits'
+push,files,cldir+'nu'+obsid+ab+'_bp.fits'
+;push,files,cldir+'nu'+obsid+ab+'01_cl.evt'
+;push,files,dirbadpix+'nu'+ab+'badpix20100101v002.fits'
 ;file=auxildir+'nu'+ab+'userbadpix20100101v001.fits'
 
 for ifiles=0,n_elements(files)-1 do begin
+; uncomment below if cleaned event file used instead of *_bp.fits file
+;  if ifiles eq n_elements(files)-1 then icl=2 else $
+        icl=0
   for idet=0,3 do begin
-    badpix=mrdfits(files[ifiles],idet+1,hh,/silent)
+    badpix=mrdfits(files[ifiles],idet+1+icl,hh,/silent)
     if n_elements(size(badpix)) eq 4 then begin
         x=badpix.rawx
         y=badpix.rawy
@@ -99,7 +116,7 @@ for ifiles=0,n_elements(files)-1 do begin
   instrmap[ii]+=detnum[ii]
 endfor
 
-fits_write,auxildir+'newinstrmap'+ab+'.fits',instrmap,header
+fits_write,outdir+'newinstrmap'+ab+'.fits',instrmap,header
 
 
 end

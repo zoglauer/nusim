@@ -37,31 +37,10 @@
 
 ;-----------------
 
-; 1) Make instrument map
-;    This grabs the instrument map from the caldb and makes a 'pixel map' that
-;    assigns each RAW pixel to a unique DET1 pixel.  This allows bad pixels to 
-;    be excluded in the same way as is done in the pipeline.  It automatically 
-;    excludes the default bad pixel list in the caldb.  If you did not specify 
-;    a user bad pixel list when you ran nupipeline, the call is simply:
-
-nuskybgd_instrmap,'A'
-nuskybgd_instrmap,'B'
-
-;    If you did specify one:
-;nuskybgd_instrmap,'A','/path/to/nuAuserbadpix20100101v001.fits'
-;nuskybgd_instrmap,'B','/path/to/nuBuserbadpix20100101v001.fits'
-
-;    The output newinstrmap[A/B].fits is put in the auxil directory.  If you use
-;    different bad pixel files for different observations, you'll need to remake
-;    it IF you remake the reference bgd images (e.g., calling projinitbgds with
-;    the clobber keyword set -- this is the only routine that uses the
-;    instrument maps).
-
-;-----------------
-
-; 2) Make reference spectra for the various background components
+; 1) Make reference spectra for the various background components
 ;    Assuming you will run nuskybgd_image, you need to make reference spectra
-;    of the various background components.  Only needs to be run once.
+;    of the various background components.  Only needs to be run once, but
+;    should be rerun (along with everything else) if the nuabs parameters change.
 
 nuskybgd_imrefspec
 
@@ -71,6 +50,26 @@ nuskybgd_imrefspec
 
 dir='50002031_NGC253'
 obsid='50002031004'
+
+;-----------------
+
+; 2) Make instrument map
+;    This grabs the instrument map from the caldb and makes a 'pixel map' that
+;    assigns each RAW pixel to a unique DET1 pixel.  This allows bad pixels to 
+;    be excluded in the same way as is done in the pipeline.  It automatically 
+;    excludes all identified bad pixels -- including any supplied by the
+;    user -- during pipeline processing.  You can exclude additional pixels,
+;    but in practice should not -- instead, rerun the pipeline with the
+;    updated bad pixel list and run this again.
+
+nuskybgd_instrmap,dir,obsid,'A','bgd'
+nuskybgd_instrmap,dir,obsid,'B','bgd'
+
+;    The last input, 'bgd', specifies the directory all the ancilliary 
+;    observation-specific files are placed.  This directory is placed under
+;    the observation's event_cl/ and will need to be fed to later routines
+;    so it puts all the intermediate files in the same place and knows where
+;    to grab them from.
 
 ;-----------------
 
