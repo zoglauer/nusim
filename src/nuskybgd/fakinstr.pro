@@ -16,10 +16,14 @@ if not size(paramfile,/type) then $
       paramfile=cldir+'bgdfitparams'+ab+'.dat'
 if not file_test(paramfile) then stop,'FAKINSTR: Cannot find parameter file.'
 
-readcol,auxildir+'ratios_lineE.dat',eline,width,/silent
-readcol,auxildir+'ratios_lineE.dat',blah,index1,ebreak,index2,$
-      format='(A,F,F,F)',/silent
-readcol,auxildir+'ratios'+ab+'.dat',f0,f1,f2,f3,/silent
+;readcol,auxildir+'ratios_lineE.dat',eline,width,/silent
+;readcol,auxildir+'ratios_lineE.dat',blah,index1,ebreak,index2,$
+;      format='(A,F,F,F)',/silent
+;readcol,auxildir+'ratios'+ab+'.dat',f0,f1,f2,f3,/silent
+readcol,auxildir+'ratios'+ab+'.dat',eline,width,f0,f1,f2,f3,/silent
+readcol,auxildir+'ratios'+ab+'.dat',index1,index2,b0,b1,b2,b3,ebreak,/silent
+eline=eline[0:n_elements(width)-2]
+width=width[0:n_elements(width)-2]
 
 caldb=getenv('CALDB')+'/'
 pt=loadnuabs(0)

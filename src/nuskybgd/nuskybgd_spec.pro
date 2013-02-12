@@ -39,6 +39,7 @@ pro nuskybgd_spec,indir,obsid,srcreg,specdir,bgddir,ab,bgddirref, $
       fakname=fakname,perfect=perfect,srcdir=srcdir,avgfcxb=avgfcxb
 
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
+caldbdir=getenv('CALDB')+'/'
 dir=indir
 if strmid(dir,strlen(dir)-1) ne '/' then dir=dir+'/'
 if ab eq 'A' then iab=0 else if ab eq 'B' then iab=1 else stop,'ab defined wrong'
@@ -92,10 +93,14 @@ dettotfrac=total(detfrac)/total(dettot)
 detwt=detfrac/total(detfrac)
 detfrac=detfrac/dettot
 
-readcol,auxildir+'ratios_lineE.dat',eline,width,/silent
-readcol,auxildir+'ratios_lineE.dat',blah,index1,ebreak,index2,$
-      format='(A,F,F,F)',/silent
-readcol,auxildir+'ratios'+ab+'.dat',f0,f1,f2,f3,/silent
+;readcol,auxildir+'ratios_lineE.dat',eline,width,/silent
+;readcol,auxildir+'ratios_lineE.dat',blah,index1,ebreak,index2,$
+;      format='(A,F,F,F)',/silent
+;readcol,auxildir+'ratios'+ab+'.dat',f0,f1,f2,f3,/silent
+readcol,auxildir+'ratios'+ab+'.dat',eline,width,f0,f1,f2,f3,/silent
+readcol,auxildir+'ratios'+ab+'.dat',index1,index2,b0,b1,b2,b3,ebreak,/silent
+eline=eline[0:n_elements(width)-2]
+width=width[0:n_elements(width)-2]
 
 readcol,paramfile,p,/silent
 apnorm=p[0]*0.002353*apreg/32.
@@ -148,8 +153,9 @@ if keyword_set(avgfcxb) then printf,lun,str(0.002353*(2.45810736/3600.*1000.)^2*
 printf,lun,'1e-4 -1'
 printf,lun,'41.13 -1'
 spawn,'rm -f '+srcdir+'/bgdfcxb'+fakname
-printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' & '+auxildir+'fcxb'+ab+$
-      '.arf & '+ctstat+' &  & '+srcdir+'/bgdfcxb'+fakname+' & '+$
+printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' & '+caldbdir+$
+      'data/nustar/fpm/bcf/arf/nu'+ab+'20100101v004.arf & '+$
+      ctstat+' &  & '+srcdir+'/bgdfcxb'+fakname+' & '+$
       str(livetime*expfactor)
 printf,lun,'data none'
 
