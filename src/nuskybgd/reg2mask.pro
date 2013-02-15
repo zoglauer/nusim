@@ -23,14 +23,15 @@ while ~ eof(lun) do begin
           strcmp(str(line),'physical') then break
 endwhile
 if (not strcmp(str(line),'fk5')) and (not strcmp(str(line),'image')) and $
-          (strcmp(str(line),'physical')) then begin
+          (not strcmp(str(line),'physical')) then begin
     free_lun,lun
     stop,'REG2MASK: Region files must be in FK5, IMAGE, or PHYSICAL units'
 endif
 if line eq 'fk5' then wcs=1 else wcs=0
 while ~ eof(lun) do begin
     readf,lun,line
-    t1=strsplit(line,'(',/extract)
+    t0=strsplit(line,')',/extract)
+    t1=strsplit(t0[0],'(',/extract)
     if strmid(t1[0],0,1) ne '-' then begin
         push,inclexcl,0 
         push,type,t1[0]
@@ -42,7 +43,7 @@ while ~ eof(lun) do begin
     t3=strsplit(t2,',',/extract)
     push,nparams,n_elements(t3)
     for i=0,n_elements(t3)-1 do begin
-        if i eq n_elements(t3)-1 then t3[i]=strmid(t3[i],0,strlen(t3[i])-1)
+;        if i eq n_elements(t3)-1 then t3[i]=strmid(t3[i],0,strlen(t3[i])-1)
         push,params,t3[i]
     endfor
 endwhile
@@ -181,7 +182,7 @@ for ir=0,n_elements(type)-1 do begin
 endfor
 
 ii=where(exclmask gt 0.5)
-inclmask[ii]=0
+if ii[0] ne -1 then inclmask[ii]=0
 
 if keyword_set(outfile) then fits_write,outfile,inclmask,header
 return,inclmask
