@@ -21,6 +21,7 @@
 #include <fstream>
 #include <limits>
 using namespace std;
+#include "fitsio.h"
 
 // ROOT libs:
 #include "TH1.h"
@@ -59,6 +60,7 @@ NBackgroundMode4::NBackgroundMode4()
   m_SpectrumMax = 200;
   m_ReadUnfiltered = false;
   m_ReadFiltered02 = false;
+  m_DumpOneSpectrumPerPixel = false;
 }
 
 
@@ -98,6 +100,9 @@ bool NBackgroundMode4::ParseCommandLine(int argc, char** argv)
       m_DataBaseNameA = argv[++i];
       m_DataBaseNameB = argv[++i];
       cout<<"Accepting name for the data bases: "<<m_DataBaseNameA<<" & "<<m_DataBaseNameB<<endl;
+    } else if (Option == "--dump-one-spectrum-per-pixel") {
+      m_DumpOneSpectrumPerPixel = true;
+      cout<<"Accepting to dump one spectrum per pixel."<<endl;
     }
   }
     
@@ -115,16 +120,42 @@ bool NBackgroundMode4::Analyze()
     
     m_DBA = 0;
     m_DBB = 0;
-    if (LoadDataBase(m_DataBaseNameA, m_DBA) == false) continue;
-    if (LoadDataBase(m_DataBaseNameB, m_DBB) == false) continue;
-    cout<<"DB:"<<long(m_DBA)<<":"<<long(m_DBB)<<endl;
     
     NPhaFile PhaA;
     if (m_LookAtModule.Contains("a")) {
+      if (m_PhaA[d] == "") {
+        cout<<"Need a PHA file name..."<<endl;
+        return false;
+      }
+      if ((m_DBA = LoadDataBase(m_DataBaseNameA)) == false) continue;
+      if (m_DBA == 0) {
+        cout<<"Unable to load data base: "<<m_DataBaseNameA<<endl;
+        return false;
+      }
+      /*
+      double Sum = 0;
+      for (int p = 1; p <= m_DBA->GetNbinsZ(); ++p) {
+        for (int g = 1; g <= m_DBA->GetNbinsX(); ++g) {
+          for (int s = 1; s <= m_DBA->GetNbinsY(); ++s) {
+            Sum += m_DBA->GetBinContent(g, s, p);
+          }
+        }
+      }
+      cout<<"Sum of content: "<<Sum<<endl;
+      */
       if (PhaA.Load(m_PhaA[d]) == false) return false;
     }
     NPhaFile PhaB;
     if (m_LookAtModule.Contains("b")) {
+      if (m_PhaB[d] == "") {
+        cout<<"Need a PHA file name..."<<endl;
+        return false;
+      }
+      if ((m_DBB = LoadDataBase(m_DataBaseNameB)) == false) continue;
+      if (m_DBB == 0) {
+        cout<<"Unable to load data base: "<<m_DataBaseNameA<<endl;
+        return false;
+      }
       if (PhaB.Load(m_PhaB[d]) == false) return false;
     }
  
@@ -133,6 +164,7 @@ bool NBackgroundMode4::Analyze()
     if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, m_Engineering, PhaA, m_DBA, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
     if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, m_Engineering, PhaB, m_DBB, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
   }
+  
   return true;
 }
 
@@ -140,9 +172,9 @@ bool NBackgroundMode4::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBackgroundMode4::LoadDataBase(TString FileName, TH3D* DB)
+TH3D* NBackgroundMode4::LoadDataBase(TString FileName)
 {
-  if (DB != 0) delete DB;
+  TH3D* DB = 0;
   
   TFile* F = new TFile(FileName);
   TIter I(F->GetListOfKeys());
@@ -168,21 +200,14 @@ bool NBackgroundMode4::LoadDataBase(TString FileName, TH3D* DB)
 
   if (DB == 0) {
     cout<<"Background model file not found in file: "<<FileName<<endl;
-    return false;
+    return 0;
   }
   TCanvas* BackgroundModelCanvas = new TCanvas();
   BackgroundModelCanvas->cd();
   DB->Draw();
   BackgroundModelCanvas->Update();
 
-  cout<<"I:"<<long(DB)<<endl;
-  if (m_DBA == 0) {
-    m_DBA = DB;
-  } else {
-    m_DBB = DB;
-  }
-  
-  return true;
+  return DB;
 }
 
   
@@ -340,24 +365,41 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
           PosY = +RawX+0.5;
         }
         
-        double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
-        if (Distance > DistanceCutOff) {
-          NBackgroundPixels++;
-        } else {
-          NSourcePixels++;
-          int Pos =  32*32*DetectorID + 32*RawY + RawX;
+        if (m_DumpOneSpectrumPerPixel == false) {
+          double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
+          if (Distance > DistanceCutOff) {
+            NBackgroundPixels++;
+          } else {
+            NSourcePixels++;
+            int Pos =  32*32*DetectorID + 32*RawY + RawX;
 
+            for (int g = 1; g <= DB->GetNbinsX(); ++g) {
+              for (int s = 1; s <= DB->GetNbinsY(); ++s) {
+                SpectrumScaled->SetBinContent(s, SpectrumScaled->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
+              }
+            }
+          }
+        } else {
+          for (int s = 1; s <= DB->GetNbinsY(); ++s) SpectrumScaled->SetBinContent(s, 0);
+          int Pos =  32*32*DetectorID + 32*RawY + RawX;
           for (int g = 1; g <= DB->GetNbinsX(); ++g) {
             for (int s = 1; s <= DB->GetNbinsY(); ++s) {
+              if (DB->GetBinContent(g, s, Pos) > 0) {
+                cout<<DetectorID<<":"<<RawY<<":"<<RawX<<": s:"<<s<<" g:"<<g<<": Adding: "<<DB->GetBinContent(g, s, Pos)<<":"<<GeomagneticCutOffLifetime->GetBinContent(g)<<endl;
+              }
               SpectrumScaled->SetBinContent(s, SpectrumScaled->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
             }
           }
+          SaveAsFits(SpectrumScaled, ((FE.m_Module == 0) ? 'A' : 'B'), DetectorID, RawX, RawY);
         }
       }
     }
   }
   cout<<"Source pixels: "<<NSourcePixels<<" background pixels: "<<NBackgroundPixels<<endl;
   
+  if (m_DumpOneSpectrumPerPixel == true) {
+    return true;
+  }
     
   TCanvas* SpectrumScaledCanvas = new TCanvas();
   SpectrumScaledCanvas->cd();
@@ -413,6 +455,72 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   PositionsSourceCanvas->Update();
   if (m_ShowHistograms.Contains("f")) PositionsSourceCanvas->SaveAs(PositionsSource->GetName() + m_FileType);
  
+  
+  return true;
+}
+
+  
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NBackgroundMode4::SaveAsFits(TH1D* Spectrum, char Module, int DetectorID, int RawX, int RawY) 
+{
+  // 
+  
+  TString NewFileName = "PixSpec_";
+  NewFileName += Module;
+  NewFileName += "_";
+  NewFileName += DetectorID;
+  NewFileName += "_";
+  NewFileName += RawX;
+  NewFileName += "_";
+  NewFileName += RawY;
+  NewFileName += ".fits";
+  
+  
+  fitsfile* File = 0;
+  int Status = 0;
+  char errorcode[1000];
+ 
+  
+  fits_create_file(&File, NewFileName, &Status);
+  if (Status != 0) {
+    cout<<"Error in creating file: "<<endl;
+    cout<<NewFileName<<endl;
+    fits_get_errstatus(Status, errorcode);
+    cout<<"Error code: "<<errorcode<<endl;
+    return false;
+  }
+
+  //! create binary table extension
+  char ExtensionName[] = "Spectra";
+  long nrow = 4096;
+  int tfield = 2;
+  char* ttype[] = { "CHANNEL", "NORMCOUNTS" };
+  char* tform[] = { "1J", "1E" };
+  char* tunit[] = { "channel", "norm. cts" };
+   
+  fits_create_tbl(File, BINARY_TBL, nrow, tfield, ttype, tform, tunit, ExtensionName, &Status); 
+  if (Status != 0) {
+    cout<<"Error in creating extension: "<<ExtensionName<<endl;
+    cout<<NewFileName<<endl;
+    File = 0;
+    return false;
+  }
+  
+  for (int s = 1; s <= Spectrum->GetNbinsX(); ++s) {
+    double Value = Spectrum->GetBinContent(s);
+    fits_write_col_int(File, 1, s, 1, 1, &s, &Status);
+    fits_write_col_dbl(File, 2, s, 1, 1, &Value, &Status);
+    if (Status != 0) {
+      cerr << "Error: Writing failed" << endl;
+      fits_close_file(File, &Status);
+      File = 0;
+      return false;
+    }
+  }
+   
+  fits_close_file(File, &Status);
   
   return true;
 }

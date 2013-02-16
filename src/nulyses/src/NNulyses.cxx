@@ -112,10 +112,10 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          quicklook: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
   Usage<<"          quicklookfiltered: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
   Usage<<"          checkrates: Check SAA rates"<<endl;
-  Usage<<"          background1: Background rates for mode 1"<<endl;
-  Usage<<"          background23: Background rates for modes 2 & 3"<<endl;
-  Usage<<"          background4: Background rates for mode 4"<<endl;
-  Usage<<"          background4database: Create data base for mode 4"<<endl;
+  Usage<<"          backgroundmode1: Background rates for mode 1"<<endl;
+  Usage<<"          backgroundmode23: Background rates for modes 2 & 3"<<endl;
+  Usage<<"          backgroundmode4: Background rates for mode 4"<<endl;
+  Usage<<"          backgroundmode4database: Create data base for mode 4"<<endl;
   Usage<<"          linefitter: Check SAA rates"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"      -d:  directory containing all files"<<endl;
@@ -126,9 +126,12 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"      -h:  print this help"<<endl;
   Usage<<"    Tool specific options:"<<endl;
   Usage<<"      checkrates:"<<endl;
-  Usage<<"        --write-gti:  dump a fits based gti file"<<endl;
-  Usage<<"      backgroundX:"<<endl; 
+  Usage<<"        --write-gti: Optional - dump a fits based gti file"<<endl;
+  Usage<<"      backgroundmodeX:"<<endl; 
   Usage<<"        -dps: directory containing all files plus exclusion region plus pha file ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [source pha file for A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels] [radius of exclusion region on B] [source pha file for B]"<<endl;
+  Usage<<"      backgroundmode4:"<<endl; 
+  Usage<<"        --names [DB_A.root] [CB_B.root]: Mandatory - Give the names of the two database files"<<endl;
+  Usage<<"        --dump-one-spectrum-per-pixel: Optional - Dumps one spectrum per pixel and detector as fits file"<<endl;
   Usage<<endl;
 
   string Option;

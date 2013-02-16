@@ -117,7 +117,6 @@ bool NBackgroundMode4DataBase::Analyze()
     if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, m_Engineering);
   }
   
-  
   for (int b = 1; b <= m_DBInternalSpectrum->GetNbinsX(); ++b) {
     m_DBInternalSpectrum->SetBinContent(b, m_DBInternalSpectrum->GetBinContent(b)/m_DBInternalSpectrumLifetime);
     for (int g = 1; g <= m_DBInternalGeomagneticCutOffVsSpectrum->GetNbinsY(); ++g) {
@@ -129,8 +128,6 @@ bool NBackgroundMode4DataBase::Analyze()
       }
     }
   }
-  
-
   
   TCanvas* DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas = new TCanvas(TString("DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas"), "DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas");
   DBGeomagneticCutOffVsSpectrumVsPixelIDCanvas->cd();
@@ -258,7 +255,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("cts");
     m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID = 
       new TH3D(TString("DBInternalGeomagneticCutOffVsSpectrumVsPixelID"), 
-               TString("DB 3D (looks always empty...)"), 
+               TString("DB 3D (looks empty, but ROOT has just issues displaying small values in 3D...)"), 
                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                SpectrumBins, SpectrumMin, SpectrumMax,
                64*64, -0.5, 64*64+0.5);

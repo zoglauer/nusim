@@ -52,8 +52,10 @@ class NBackgroundMode4 : public NBackgroundModes
 
   bool Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             NPhaFile& P, TH3D* DB, int SourcePosX, int SourcePosY, double DistanceCutOff);
-  bool LoadDataBase(TString FileName, TH3D* DB);
+  TH3D* LoadDataBase(TString FileName);
   
+  bool SaveAsFits(TH1D* ScaledSpectrum, char Module, int DetectorID, int RawX, int RawY) ;
+
   
   // private methods:
  private:
@@ -71,7 +73,7 @@ class NBackgroundMode4 : public NBackgroundModes
   TH3D* m_DBA;
   TH3D* m_DBB;
 
-  
+  bool m_DumpOneSpectrumPerPixel;
 
 #ifdef ___CINT___
  public:
