@@ -20,6 +20,9 @@
 // Standard libs:
 #include <fstream>
 #include <limits>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
 using namespace std;
 #include "fitsio.h"
 
@@ -384,9 +387,9 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
           int Pos =  32*32*DetectorID + 32*RawY + RawX;
           for (int g = 1; g <= DB->GetNbinsX(); ++g) {
             for (int s = 1; s <= DB->GetNbinsY(); ++s) {
-              if (DB->GetBinContent(g, s, Pos) > 0) {
-                cout<<DetectorID<<":"<<RawY<<":"<<RawX<<": s:"<<s<<" g:"<<g<<": Adding: "<<DB->GetBinContent(g, s, Pos)<<":"<<GeomagneticCutOffLifetime->GetBinContent(g)<<endl;
-              }
+              //if (DB->GetBinContent(g, s, Pos) > 0) {
+                //cout<<DetectorID<<":"<<RawY<<":"<<RawX<<": s:"<<s<<" g:"<<g<<": Adding: "<<DB->GetBinContent(g, s, Pos)<<":"<<GeomagneticCutOffLifetime->GetBinContent(g)<<endl;
+              //}
               SpectrumScaled->SetBinContent(s, SpectrumScaled->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
             }
           }
@@ -466,17 +469,10 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
 bool NBackgroundMode4::SaveAsFits(TH1D* Spectrum, char Module, int DetectorID, int RawX, int RawY) 
 {
   // 
-  
-  TString NewFileName = "PixSpec_";
-  NewFileName += Module;
-  NewFileName += "_";
-  NewFileName += DetectorID;
-  NewFileName += "_";
-  NewFileName += RawX;
-  NewFileName += "_";
-  NewFileName += RawY;
-  NewFileName += ".fits";
-  
+  ostringstream out;
+  out<<"!PixSpec_"<<Module<<"_"<<setfill('0')<<setw(2)<<DetectorID<<"_"<<setw(2)<<RawX<<"_"<<setw(2)<<RawY<<".fits";
+    
+  TString NewFileName(out.str().c_str());
   
   fitsfile* File = 0;
   int Status = 0;
