@@ -194,7 +194,7 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   TH2D* OrbitNormalizerDetectorSAAStrictTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + iID, 
                                    TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   TH2D* RatesSAAStrictTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictTentacleNoByOrbit") + iID, 
-                                               TString("Rates in orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                                               TString("Rates in orbit - SAA: Strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   RatesSAAStrictTentacleNoByOrbit->SetXTitle("Longitude [deg]");
   RatesSAAStrictTentacleNoByOrbit->SetYTitle("Latutude [deg]");
   RatesSAAStrictTentacleNoByOrbit->SetZTitle("cts/sec");
@@ -463,13 +463,14 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   RatesSAANoTentacleNoByOrbitCanvas->Update();
   if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoByOrbitCanvas->SaveAs(RatesSAANoTentacleNoByOrbit->GetName() + m_FileType);
   
+  /*
   TCanvas* RatesSAAStrictTentacleNoByOrbitCanvas = new TCanvas(TString("RatesSAAStrictTentacleNoByOrbitCanvas") + iID, TString("RatesSAAStrictTentacleNoByOrbitCanvas") + ID, 1200, 400);
   RatesSAAStrictTentacleNoByOrbitCanvas->cd();
   RatesSAAStrictTentacleNoByOrbitCanvas->SetLogz();
   RatesSAAStrictTentacleNoByOrbit->Draw("colz");
   RatesSAAStrictTentacleNoByOrbitCanvas->Update();
   if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleNoByOrbitCanvas->SaveAs(RatesSAAStrictTentacleNoByOrbit->GetName() + m_FileType);
-  
+  */
   
   return true;
 }
