@@ -380,8 +380,8 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
       if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_SAACutStrict);
     }
   
-    if (LookAtModule.Contains("a")) FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits, true);
-    if (LookAtModule.Contains("b")) FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits, true);
+    if (LookAtModule.Contains("a")) FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits, false);
+    if (LookAtModule.Contains("b")) FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits, false);
   }
   
   return true;
@@ -569,6 +569,10 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   TString iID = TString("_ID_") + H.m_ID + "_M_" + ((H.m_Module == 0) ? "A" : "B");
   TString ID = TString(" (ID: ") + H.m_ID + ((H.m_Module == 0) ? "A" : "B") + ")";
 
+  
+  // Step 1: Create a safe "strict" cut which eleiminates all regions (close to the SAA) 
+  //         where the the high-shield rate is above its normal (= during this obs.) values 
+  
   TH1D* LifeTimes = new TH1D(TString("LifeTimes") + iID, TString("LifeTimes") + ID, Bins, MinTime, MaxTime);
   TH1D* ShieldRateHigh = new TH1D(TString("SAAShieldRateHigh") + iID, TString("SAAShieldRateHigh") + ID, Bins, MinTime, MaxTime);
   ShieldRateHigh->SetXTitle("Time [sec since 1/1/2010]");
@@ -578,7 +582,8 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   TH1D* ShieldRateHighCut = new TH1D(TString("SAAShieldRateHighCut") + iID, TString("SAAShieldRateHighCut") + ID, Bins, MinTime, MaxTime);
   ShieldRateHighCut->SetLineColor(kRed);
   TH1D* NAcceptedEvents = new TH1D(TString("SAANAcceptedEvents") + iID, TString("SAANAcceptedEvents") + ID, Bins, MinTime, MaxTime);
-  TH1I* OnOff = new TH1I(TString("SAAOnOff") + iID, TString("SAAOnOff") + ID, Bins, MinTime, MaxTime);
+  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("OnOffInternalSAA") + ID, Bins, MinTime, MaxTime);
+  TH1I* OnOffStrictSAA = new TH1I(TString("OnOffStrictSAA") + iID, TString("OnOffStrictSAA") + ID, Bins, MinTime, MaxTime);
   TH1D* NAcceptedEventsShieldHighCut = new TH1D(TString("SAANAcceptedEventsShieldHighCut") + iID, TString("SAANAcceptedEventsShieldHighCut") + ID, Bins, MinTime, MaxTime);
   NAcceptedEventsShieldHighCut->SetLineColor(kRed);
   
@@ -588,16 +593,17 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     if (SAAFlag == 0 && H.m_ShieldRateHigh[i] > 0) { // Some rare events happen even during known SAA passages (super-high energy protons?) - skip those
       ShieldRateHigh->Fill(H.m_Time[i], H.m_ShieldRateHigh[i]);
       ShieldRateHighCut->Fill(H.m_Time[i], H.m_ShieldRateHigh[i]);
-      OnOff->Fill(H.m_Time[i], RejectionOff);
+      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOff);
     } else {
-      OnOff->Fill(H.m_Time[i], RejectionOn);      
+      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
     }
     NAcceptedEvents->Fill(H.m_Time[i], H.m_NAcceptedEvents[i]); 
     NAcceptedEventsShieldHighCut->Fill(H.m_Time[i], H.m_NAcceptedEvents[i]);
     LifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
   }
+  OnOffStrictSAA->Add(OnOffInternalSAA);
   
-  // Step 1: Calculate averages
+  // Step 1.1: Calculate averages
 
   // Half length of the interval over which we average:
   int HalfAverageLength = 60; // good values: 30-60
@@ -628,14 +634,14 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     }
   }
   
-  // Step 2: Decide which regions to skip:
+  // Step 1.2: Decide which regions to skip:
   
   /*
   // Do a simple cut, whenever the rate is above MaxRateCut
   double MaxRateCut = 100.0;
   for (int i = 1; i <= ShieldRateHighAverage->GetNbinsX(); ++i) {
     if (ShieldRateHighAverage->GetBinContent(i) > MaxRateCut || ShieldRateHigh->GetBinContent(i) > MaxRateCut) {
-      OnOff->SetBinContent(i, RejectionOn);
+      OnOffStrictSAA->SetBinContent(i, RejectionOn);
     }
   }
   */
@@ -707,7 +713,7 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     
     
     if (Cut == true) {
-      OnOff->SetBinContent(i, RejectionOn);
+      OnOffStrictSAA->SetBinContent(i, RejectionOn);
       // Update the entering values
       if (ShieldRateHighAverage->GetBinContent(i) > DecisionThresholdLeft*ShieldRateHighAverage->GetBinContent(DecisionPointLeft) &&
           (EnteringValueLeft == 0 || ShieldRateHighAverage->GetBinContent(i) < EnteringValueLeft)) { 
@@ -722,6 +728,8 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
       EnteringValueRight = 0;
     }
   }
+
+  // Step 1.3: Cleanup:
   
 
   // Clean the periods immediately after SAA passages and in SAA passages - since we are still ramping up the voltage and don't get all vetoes
@@ -733,12 +741,12 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     int SAAFlag = O.m_SAAFlag[OIndex];
     if (SAAFlag == 1) {
       InSAAorFreakEvent = true;
-      OnOff->SetBinContent(b, RejectionOn); 
+      OnOffStrictSAA->SetBinContent(b, RejectionOn); 
     } else {
       if (InSAAorFreakEvent == true) {
         // Flag the next "SAARampingTime" seconds as still bad, since the high voltage is ramping up slowly
         for (int bb = b; bb <= ShieldRateHigh->GetNbinsX() && bb-b < SAARampingTime; ++bb) {
-          OnOff->SetBinContent(bb, RejectionOn);
+          OnOffStrictSAA->SetBinContent(bb, RejectionOn);
         }
       }
       InSAAorFreakEvent = false;
@@ -750,11 +758,11 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   // We might replace this one day with a real outer SAA contour...
   double MinLong = 270;
   double MaxLong = 350;
-  for (int i = 1; i <= OnOff->GetNbinsX(); ++i) {
-    int OIndex = O.FindClosestIndex(OnOff->GetBinCenter(i));
-    if (fabs(O.m_Time[OIndex] - OnOff->GetBinCenter(i)) < 1.0) {
+  for (int i = 1; i <= OnOffStrictSAA->GetNbinsX(); ++i) {
+    int OIndex = O.FindClosestIndex(OnOffStrictSAA->GetBinCenter(i));
+    if (fabs(O.m_Time[OIndex] - OnOffStrictSAA->GetBinCenter(i)) < 1.0) {
       if (O.m_Longitude[i] < MinLong || O.m_Longitude[i] > MaxLong) {
-        OnOff->SetBinContent(i, RejectionOff);
+        OnOffStrictSAA->SetBinContent(i, RejectionOff);
       }
     } else {
       cerr<<"Hmmm, no Orbits information found... Ignoring..."<<endl;
@@ -768,11 +776,11 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   
   int OffCount = 0;
   for (int i = 1; i <= ShieldRateHigh->GetNbinsX(); ++i) {
-    if (OnOff->GetBinContent(i) == 1) {
+    if (OnOffStrictSAA->GetBinContent(i) == 1) {
       if (OffCount > 0 && OffCount < CutOffCount) {
         for (int b = i-1; b >= i-OffCount; --b) {
-          if (OnOff->GetBinContent(b) == 0) {
-            OnOff->SetBinContent(b, RejectionOff);
+          if (OnOffStrictSAA->GetBinContent(b) == 0) {
+            OnOffStrictSAA->SetBinContent(b, RejectionOff);
           } else {
             cerr<<"On remove error..."<<endl;
           }
@@ -788,12 +796,12 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   // Remove on periods < X*HalfAverageLength
   int OnCount = 0;
   for (int i = 1; i <= ShieldRateHigh->GetNbinsX(); ++i) {
-    //cout<<i<<": "<<OnCount<<" - "<<OnOff->GetBinContent(i)<<endl;
-    if (OnOff->GetBinContent(i) == 0) {
+    //cout<<i<<": "<<OnCount<<" - "<<OnOffStrictSAA->GetBinContent(i)<<endl;
+    if (OnOffStrictSAA->GetBinContent(i) == 0) {
       if (OnCount > 0 && OnCount < CutOffCount) {
         for (int b = i-1; b >= i-OnCount; --b) {
-          if (OnOff->GetBinContent(b) == 1) {
-            OnOff->SetBinContent(b, RejectionOn);
+          if (OnOffStrictSAA->GetBinContent(b) == 1) {
+            OnOffStrictSAA->SetBinContent(b, RejectionOn);
           } else {
             cerr<<"On remove error..."<<endl;
           }
@@ -805,10 +813,10 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     }
   }
   
-  for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
-    int Index = H.FindClosestIndex(OnOff->GetBinCenter(b));
-    if (OnOff->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
-      if (OnOff->GetBinContent(b) == RejectionOn) {
+  for (int b = 1; b <= OnOffStrictSAA->GetNbinsX(); ++b) {
+    int Index = H.FindClosestIndex(OnOffStrictSAA->GetBinCenter(b));
+    if (OnOffStrictSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
+      if (OnOffStrictSAA->GetBinContent(b) == RejectionOn) {
         if (Mode == c_SAACutStrict) H.m_SoftSAA[Index] = true;
         H.m_SoftSAAStrict[Index] = true;
       } else {
@@ -816,12 +824,18 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
         H.m_SoftSAAStrict[Index] = false;
       }
     } else {
-      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOff->GetBinCenter(b)<<endl; 
+      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffStrictSAA->GetBinCenter(b)<<endl; 
     }
   }
   
+  // END step 1: End of strict cut:
   
-  // Final stage: back track - make sure to only exclude regions where we actually see an increase in the final count rate
+  
+  // Step 2: Do an optimized cut by backtracking until the good, on source count rate goes above a certain level
+  //         backtrack - make sure to only exclude regions where we actually see an increase in the final count rate
+
+  TH1I* OnOffOptimizedSAA = new TH1I(TString("OnOffOptimizedSAA") + iID, TString("OnOffOptimizedSAA") + ID, Bins, MinTime, MaxTime);
+  OnOffOptimizedSAA->Add(OnOffStrictSAA); // We start with strict SAA cuts!
   TH1D* FilteredRate = new TH1D(TString("SAAFilteredRate") + iID, TString("SAAFilteredRate") + ID, Bins, MinTime, MaxTime);
   FilteredRate->SetXTitle("Time [sec since 1/1/2010]");
   FilteredRate->SetYTitle("cts/sec");
@@ -860,7 +874,7 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   }
   
   for (int b = 1; b <= FilteredRateCutOriginal->GetNbinsX(); ++b) {
-    if (OnOff->GetBinContent(b) == RejectionOff) {
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) {
       FilteredRateCutOriginal->SetBinContent(b, 0);
       if (F.IsGTI(FilteredRateCutOriginal->GetBinCenter(b)) == true)  {
         LifeTimestrictCuts += LifeTimes->GetBinContent(b); 
@@ -888,8 +902,9 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
         Average += FilteredRate->GetBinContent(a);
       }
     }
-    Average /= NBins;
+    if (NBins == 0) continue;
 
+    Average /= NBins;
     FilteredRateAverageLarge->SetBinContent(i, Average);
   }
   int FilteredEventsHalfAverageSmall = 40;
@@ -910,8 +925,9 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
         Average += FilteredRate->GetBinContent(a);
       }
     }
+    if (NBins == 0) continue;
+    
     Average /= NBins;
-
     FilteredRateAverageSmall->SetBinContent(i, Average);
   }
 
@@ -921,56 +937,56 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   double FilteredDecisionThresholdRight = 1.25;
   double SingleRateDecisionThreshold = 2.25;
   bool Previous = RejectionOff;
-  for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
+  for (int b = 1; b <= OnOffOptimizedSAA->GetNbinsX(); ++b) {
     // Switch off -> on
-    if (OnOff->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
       Previous = RejectionOn;
       int Min = b-FilteredEventsHalfAverageSmall;
       if (Min < 1) Min = 1;
       int Dist = b-Min;
       while (FilteredRateAverageSmall->GetBinContent(b) < FilteredDecisionThresholdLeft*FilteredRateAverageLarge->GetBinContent(Min) &&
              FilteredRate->GetBinContent(b) < SingleRateDecisionThreshold*FilteredRateAverageLarge->GetBinContent(Min) + 3*sqrt(FilteredRateAverageLarge->GetBinContent(Min)) ) {
-        for (int a = b-Dist; a <= b; ++a) OnOff->SetBinContent(a, RejectionOff);
+        for (int a = b-Dist; a <= b; ++a) OnOffOptimizedSAA->SetBinContent(a, RejectionOff);
         ++b;
-        if (b > OnOff->GetNbinsX()) break;
-        if (OnOff->GetBinContent(b) == RejectionOff) break;
+        if (b > OnOffOptimizedSAA->GetNbinsX()) break;
+        if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) break;
       }
     }
     // Switch on -> off
-    else if (OnOff->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
+    else if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
       Previous = RejectionOff;
     }
   }
   // Track from right to left
   Previous = RejectionOff;
-  for (int b = OnOff->GetNbinsX(); b >= 1; --b) {
+  for (int b = OnOffOptimizedSAA->GetNbinsX(); b >= 1; --b) {
     // Switch off -> on
-    if (OnOff->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
-      //cout<<"Found new rejection on at t="<<setprecision(10)<<OnOff->GetBinCenter(b)<<endl;
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
+      //cout<<"Found new rejection on at t="<<setprecision(10)<<OnOffOptimizedSAA->GetBinCenter(b)<<endl;
       Previous = RejectionOn;
       int Max = b+FilteredEventsHalfAverageSmall;
-      if (Max > OnOff->GetNbinsX()) Max = OnOff->GetNbinsX();
+      if (Max > OnOffOptimizedSAA->GetNbinsX()) Max = OnOffOptimizedSAA->GetNbinsX();
       int Dist = Max-b;
       while (FilteredRateAverageSmall->GetBinContent(b) < FilteredDecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(Max) &&
              FilteredRate->GetBinContent(b) < SingleRateDecisionThreshold*FilteredRateAverageLarge->GetBinContent(Max) + 3*sqrt(FilteredRateAverageLarge->GetBinContent(Max)) ) {
-       //cout<<"At t="<<setprecision(10)<<OnOff->GetBinCenter(b)<<" value: "<<FilteredRateAverageSmall->GetBinContent(b)<<"  threshold: "<<FilteredDecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(Max)<<endl;
-        for (int a = b; a <= b+Dist; ++a) OnOff->SetBinContent(a, RejectionOff);
+       //cout<<"At t="<<setprecision(10)<<OnOffOptimizedSAA->GetBinCenter(b)<<" value: "<<FilteredRateAverageSmall->GetBinContent(b)<<"  threshold: "<<FilteredDecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(Max)<<endl;
+        for (int a = b; a <= b+Dist; ++a) OnOffOptimizedSAA->SetBinContent(a, RejectionOff);
         --b;
         if (b < 1) break;
-        if (OnOff->GetBinContent(b) == RejectionOff) break;
+        if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) break;
       }
     }
     // Switch on -> off
-    else if (OnOff->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
+    else if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
       Previous = RejectionOff;
     }
   }
 
   
   for (int b = 1; b <= NAcceptedEventsShieldHighCut->GetNbinsX(); ++b) {
-    if (OnOff->GetBinContent(b) == RejectionOn) NAcceptedEventsShieldHighCut->SetBinContent(b, 0);
-    if (OnOff->GetBinContent(b) == RejectionOff) ShieldRateHighCut->SetBinContent(b, 0);
-    if (OnOff->GetBinContent(b) == RejectionOff) {
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn) NAcceptedEventsShieldHighCut->SetBinContent(b, 0);
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) ShieldRateHighCut->SetBinContent(b, 0);
+    if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) {
       CleanRate->SetBinContent(b, FilteredRate->GetBinContent(b));
       FilteredRateCut->SetBinContent(b, 0);
       if (F.IsGTI(FilteredRateCutOriginal->GetBinCenter(b)) == true) {
@@ -1011,10 +1027,10 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     CleanRateCanvas->Update();
   }
   
-  for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
-    int Index = H.FindClosestIndex(OnOff->GetBinCenter(b));
-    if (OnOff->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
-      if (OnOff->GetBinContent(b) == RejectionOn) {
+  for (int b = 1; b <= OnOffOptimizedSAA->GetNbinsX(); ++b) {
+    int Index = H.FindClosestIndex(OnOffOptimizedSAA->GetBinCenter(b));
+    if (OnOffOptimizedSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
+      if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn) {
         if (Mode == c_SAACutOptimized) H.m_SoftSAA[Index] = true;
         H.m_SoftSAAOptimized[Index] = true;
       } else {
@@ -1022,14 +1038,125 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
         H.m_SoftSAAOptimized[Index] = false;
       }
     } else {
-      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOff->GetBinCenter(b)<<endl; 
+      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffOptimizedSAA->GetBinCenter(b)<<endl; 
     }
   }
   
-  cout<<"Live times: "<<endl;
-  cout<<"No cut: "<<LiveTimeNoCuts<<endl;
-  cout<<"Strict cut: "<<LifeTimestrictCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LifeTimestrictCuts)/LiveTimeNoCuts<<"%)"<<endl;
-  cout<<"Optimized cut: "<<LiveTimeOptimizedCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LiveTimeOptimizedCuts)/LiveTimeNoCuts<<"%)"<<endl;
+  
+ 
+  // Step 3: Do an optimized cut by backtracking until the life time falls below a certain level
+  
+  TH1I* OnOffOptimizedByLifeTimeSAA = new TH1I(TString("OnOffOptimizedByLifeTimeSAA") + iID, TString("OnOffOptimizedByLifeTimeSAA") + ID, Bins, MinTime, MaxTime);
+  OnOffOptimizedByLifeTimeSAA->Add(OnOffStrictSAA); // We start with strict SAA cuts!
+  TH1D* AveragedLifeTime = new TH1D(TString("AveragedLifeTime") + iID, TString("AveragedLifeTime") + ID, Bins, MinTime, MaxTime);
+  AveragedLifeTime->SetXTitle("Time [sec since 1/1/2010]");
+  AveragedLifeTime->SetYTitle("cts/sec");
+
+  
+  // Step 3.1: Create local and global average life times
+  
+  int GlobalAverageBins = 0;
+  double GlobalAverage = 0.0;
+  int AveragedLifeTimeRange = 10;
+  for (int i = 1; i <= LifeTimes->GetNbinsX(); ++i) {
+    if (LifeTimes->GetBinContent(i) > 0) {
+      GlobalAverage += LifeTimes->GetBinContent(i);
+      GlobalAverageBins++;
+    }
+    
+    Average = 0;
+    NBins = 0;
+    
+    // Determine the interval over which we average dynamically to take care of the edges
+    int Min = i-AveragedLifeTimeRange;
+    if (Min < 1) Min = 1;
+    int Max = i+AveragedLifeTimeRange;
+    if (Max > LifeTimes->GetNbinsX()) Max = LifeTimes->GetNbinsX();
+    
+    for (int a = Min; a <= Max; ++a) {
+      // We need to jump over bins where we don't have HK data
+      if (LifeTimes->GetBinContent(a) > 0) { 
+        ++NBins;
+        Average += LifeTimes->GetBinContent(a);
+      }
+    }
+    if (NBins == 0) continue;
+    
+    Average /= NBins;
+    AveragedLifeTime->SetBinContent(i, Average);
+  }
+  if (GlobalAverageBins > 0) {
+    GlobalAverage /= GlobalAverageBins;
+  } else {
+    cout<<"Error: There are no bins with content in the life time array..."<<endl;
+    return false;
+  }
+  
+  
+  // Step 3.2: Shrink the rejection range by only rejecting areas where the lifetime is below a certain threshold
+  
+  // Track from the left and right and the right to left
+  double LifeTimeThreshold = 0.75*GlobalAverage;
+  
+  // Track left to right:
+  Previous = RejectionOff;
+  for (int b = 1; b <= OnOffOptimizedByLifeTimeSAA->GetNbinsX(); ++b) {
+    // Switch off -> on
+    if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
+      Previous = RejectionOn;
+      while (AveragedLifeTime->GetBinContent(b) >= LifeTimeThreshold) {
+        OnOffOptimizedByLifeTimeSAA->SetBinContent(b, RejectionOff);
+        ++b;
+        if (b > OnOffOptimizedByLifeTimeSAA->GetNbinsX()) break;
+        if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff) break;
+      }
+    }
+    // Switch on -> off
+    else if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
+      Previous = RejectionOff;
+    }
+  }
+  // Track from right to left:
+  Previous = RejectionOff;
+  for (int b = OnOffOptimizedByLifeTimeSAA->GetNbinsX(); b >= 1; --b) {
+    // Switch off -> on
+    if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
+      Previous = RejectionOn;
+      while (AveragedLifeTime->GetBinContent(b) >= LifeTimeThreshold) {
+        OnOffOptimizedByLifeTimeSAA->SetBinContent(b, RejectionOff);
+        --b;
+        if (b < 1) break;
+        if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) break;
+      }
+    }
+    // Switch on -> off
+    else if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
+      Previous = RejectionOff;
+    }
+  }
+
+  // Step 3.3: Store it
+  for (int b = 1; b <= OnOffOptimizedByLifeTimeSAA->GetNbinsX(); ++b) {
+    int Index = H.FindClosestIndex(OnOffOptimizedByLifeTimeSAA->GetBinCenter(b));
+    if (OnOffOptimizedByLifeTimeSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
+      if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn) {
+        if (Mode == c_SAACutOptimizedByLifeTime) H.m_SoftSAA[Index] = true;
+        H.m_SoftSAAOptimizedByLifeTime[Index] = true;
+      } else {
+        if (Mode == c_SAACutOptimizedByLifeTime) H.m_SoftSAA[Index] = false;
+        H.m_SoftSAAOptimizedByLifeTime[Index] = false;
+      }
+    } else {
+      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffOptimizedByLifeTimeSAA->GetBinCenter(b)<<endl; 
+    }
+  }
+
+  
+  
+  //cout<<"Live times: "<<endl;
+  //cout<<"No cut: "<<LiveTimeNoCuts<<endl;
+  //cout<<"Strict cut: "<<LifeTimestrictCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LifeTimestrictCuts)/LiveTimeNoCuts<<"%)"<<endl;
+  //cout<<"Optimized cut: "<<LiveTimeOptimizedCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LiveTimeOptimizedCuts)/LiveTimeNoCuts<<"%)"<<endl;
   
   
   return true;
@@ -1449,8 +1576,8 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
         LiveTimeNoCuts += HK.m_LiveTime[h];          
       }
     }
-    cout<<"Live time before cuts: "<<LiveTimeNoCuts<<endl;
-    cout<<"Live time after cuts:  "<<LiveTimeWithCuts<<" ("<<100.0*(LiveTimeNoCuts-LiveTimeWithCuts)/LiveTimeNoCuts<<"%)"<<endl;
+    //cout<<"Live time before cuts: "<<LiveTimeNoCuts<<endl;
+    //cout<<"Live time after cuts:  "<<LiveTimeWithCuts<<" ("<<100.0*(LiveTimeNoCuts-LiveTimeWithCuts)/LiveTimeNoCuts<<"%)"<<endl;
  
   
   if (Show == true) {

@@ -20,6 +20,9 @@
 // Standard libs:
 #include <fstream>
 #include <limits>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 using namespace std;
 
 // ROOT libs:
@@ -48,6 +51,8 @@ NCheckRates::NCheckRates()
   // Construct an instance of NCheckRates
   
   m_WriteGTI = false;
+  m_ReadUnfiltered = false;
+  m_ReadFiltered02 = false;
 }
 
 
@@ -91,8 +96,8 @@ bool NCheckRates::Analyze()
 {
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     if (Load(m_Directories[d]) == false) continue;
-    if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA, m_UnfilteredEventsA, m_HousekeepingA, m_Orbits, m_Engineering, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
-    if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB, m_UnfilteredEventsB, m_HousekeepingB, m_Orbits, m_Engineering, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
+    if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, m_Engineering, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
+    if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, m_Engineering, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
   }
   return true;
 }
@@ -101,7 +106,7 @@ bool NCheckRates::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
                        int SourcePosX, int SourcePosY, double DistanceCutOff)
 {
   cout<<"Checking rates..."<<endl;
@@ -112,18 +117,16 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   double SpectrumMax = 120;  
     
   TString iID = "_CheckRates_id"; 
-  iID += FE.m_ID;
+  iID += F.m_ID;
   iID += "_m";
-  iID += ((FE.m_Module == 0) ? "A" : "B");
+  iID += ((F.m_Module == 0) ? "A" : "B");
   iID += "_cl";
-  iID += FE.m_CleanLevel;
+  iID += F.m_CleanLevel;
 
-  TString ID = "  (ID: ";
-  ID += FE.m_ID;
-  ID += ", C: L0";
-  ID += FE.m_CleanLevel;
+  TString ID = " \n (ID: ";
+  ID += F.m_ID;
   ID += ", Mod: ";
-  ID += ((FE.m_Module == 0) ? "A" : "B");
+  ID += ((F.m_Module == 0) ? "A" : "B");
   ID += ")";
       
   
@@ -135,13 +138,25 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
 
   
   
-  int RatesBins = (H.GetMaxTime() - H.GetMinTime()+1)/120;
+  int RatesBins = (H.GetMaxTime() - H.GetMinTime()+1)/60;
   double MinTime = H.GetMinTime()-0.5;
   double MaxTime = H.GetMaxTime()+0.5;
 
   TH1D* Rates = new TH1D(TString("Rates") + iID, TString("Rates all") + ID, RatesBins, MinTime, MaxTime);
   Rates->SetXTitle("Time [s]");
   Rates->SetYTitle("cts/sec");
+
+  TH1D* ShieldRatesHigh = new TH1D(TString("ShieldRatesHigh") + iID, TString("ShieldRatesHigh") + ID, RatesBins, MinTime, MaxTime);
+  ShieldRatesHigh->SetXTitle("Time [s]");
+  ShieldRatesHigh->SetYTitle("cts/sec");
+
+  TH1D* ShieldRatesLow = new TH1D(TString("ShieldRatesLow") + iID, TString("ShieldRatesLow") + ID, RatesBins, MinTime, MaxTime);
+  ShieldRatesLow->SetXTitle("Time [s]");
+  ShieldRatesLow->SetYTitle("cts/sec");
+
+  TH1D* ShieldRatesEntries = new TH1D(TString("ShieldRatesEntries") + iID, TString("ShieldRatesEntries") + ID, RatesBins, MinTime, MaxTime);
+  ShieldRatesEntries->SetXTitle("Time [s]");
+  ShieldRatesEntries->SetYTitle("cts");
 
   TH1D* SAARegion = new TH1D(TString("SAARegion") + iID, TString("SAARegion") + ID, RatesBins, MinTime, MaxTime);
   SAARegion->SetXTitle("Time [s]");
@@ -153,29 +168,79 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   LifeTimes->SetXTitle("Time [s]");
   LifeTimes->SetYTitle("cts/sec");
 
-  TH1D* RatesSAANoTentacleNo = new TH1D(TString("RatesSAANoTentacleNo") + iID, TString("Rates - SAA:No, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
+  
+  
+  TH1D* RatesSAANoTentacleNo = new TH1D(TString("RatesSAANoTentacleNo") + iID, TString("Rates - SAA: No, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAANoTentacleNo->SetXTitle("Time [s]");
   RatesSAANoTentacleNo->SetYTitle("cts/sec");
-
+  
+  TH1D* LifeTimesSAANoTentacleNo = new TH1D(TString("LifeTimesSAANoTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAANoTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAANoTentacleNo->SetYTitle("cts/sec");
+  
+  
   TH1D* RatesSAAStrictTentacleNo = new TH1D(TString("RatesSAAStrictTentacleNo") + iID, TString("Rates - SAA: Strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAStrictTentacleNo->SetXTitle("Time [s]");
   RatesSAAStrictTentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictTentacleNo = new TH1D(TString("LifeTimesSAAStrictTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAStrictTentacleNo->SetYTitle("cts/sec");
 
+  
   TH1D* RatesSAAOptimizedTentacleNo = new TH1D(TString("RatesSAAOptimizedTentacleNo") + iID, TString("Rates - SAA: Optimized, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAOptimizedTentacleNo->SetXTitle("Time [s]");
   RatesSAAOptimizedTentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedTentacleNo = new TH1D(TString("LifeTimesSAAOptimizedTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedTentacleNo->SetYTitle("cts/sec");
 
+  
+  TH1D* RatesSAAOptimizedByLifeTimeTentacleNo = new TH1D(TString("RatesSAAOptimizedByLifeTimeTentacleNo") + iID, TString("Rates - SAA: Optimized (by life time), Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedByLifeTimeTentacleNo->SetXTitle("Time [s]");
+  RatesSAAOptimizedByLifeTimeTentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedByLifeTimeTentacleNo = new TH1D(TString("LifeTimesSAAOptimizedByLifeTimeTentacleNo") + iID, TString("LifeTimesSAAOptimizedByLifeTimeTentacleNo") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedByLifeTimeTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedByLifeTimeTentacleNo->SetYTitle("cts/sec");
+
+  
+  
   TH1D* RatesSAANoTentacleYes = new TH1D(TString("RatesSAANoTentacleYes") + iID, TString("Rates - SAA: No, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
   RatesSAANoTentacleYes->SetXTitle("Time [s]");
   RatesSAANoTentacleYes->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAANoTentacleYes = new TH1D(TString("LifeTimesSAANoTentacleYes") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAANoTentacleYes->SetXTitle("Time [s]");
+  LifeTimesSAANoTentacleYes->SetYTitle("cts/sec");
 
+  
   TH1D* RatesSAAStrictTentacleYes = new TH1D(TString("RatesSAAStrictTentacleYes") + iID, TString("Rates - SAA: Strict, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAStrictTentacleYes->SetXTitle("Time [s]");
   RatesSAAStrictTentacleYes->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictTentacleYes = new TH1D(TString("LifeTimesSAAStrictTentacleYes") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictTentacleYes->SetXTitle("Time [s]");
+  LifeTimesSAAStrictTentacleYes->SetYTitle("cts/sec");
 
+  
   TH1D* RatesSAAOptimizedTentacleYes = new TH1D(TString("RatesSAAOptimizedTentacleYes") + iID, TString("Rates - SAA: Optimized, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAOptimizedTentacleYes->SetXTitle("Time [s]");
   RatesSAAOptimizedTentacleYes->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedTentacleYes = new TH1D(TString("LifeTimesSAAOptimizedTentacleYes") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedTentacleYes->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedTentacleYes->SetYTitle("cts/sec");
+
+  
+  TH1D* RatesSAAOptimizedByLifeTimeTentacleYes = new TH1D(TString("RatesSAAOptimizedByLifeTimeTentacleYes") + iID, TString("Rates - SAA: Optimized (by life time), Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedByLifeTimeTentacleYes->SetXTitle("Time [s]");
+  RatesSAAOptimizedByLifeTimeTentacleYes->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedByLifeTimeTentacleYes = new TH1D(TString("LifeTimesSAAOptimizedByLifeTimeTentacleYes") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedByLifeTimeTentacleYes->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedByLifeTimeTentacleYes->SetYTitle("cts/sec");
   
   
   int LongitudeBins = 180;
@@ -186,50 +251,95 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   TH2D* OrbitNormalizerDetectorSAANoTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleNo") + iID, 
                                    TString("OrbitNormalizerDetectorSAANoTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   TH2D* RatesSAANoTentacleNoByOrbit = new TH2D(TString("RatesSAANoTentacleNoByOrbit") + iID, 
-                                               TString("Rates in orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                                               TString("Rates by orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   RatesSAANoTentacleNoByOrbit->SetXTitle("Longitude [deg]");
   RatesSAANoTentacleNoByOrbit->SetYTitle("Latutude [deg]");
   RatesSAANoTentacleNoByOrbit->SetZTitle("cts/sec");
   
+  TH2D* OrbitNormalizerDetectorSAAOptimizedTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedTentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedTentacleNoByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAOptimizedTentacleNoByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedByLifeTimeTentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedByLifeTimeTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: OptimizedByLifeTime, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetZTitle("cts/sec");
+  
   TH2D* OrbitNormalizerDetectorSAAStrictTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + iID, 
                                    TString("OrbitNormalizerDetectorSAAStrictTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   TH2D* RatesSAAStrictTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictTentacleNoByOrbit") + iID, 
-                                               TString("Rates in orbit - SAA: Strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                                               TString("Rates by orbit - SAA: Strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   RatesSAAStrictTentacleNoByOrbit->SetXTitle("Longitude [deg]");
   RatesSAAStrictTentacleNoByOrbit->SetYTitle("Latutude [deg]");
   RatesSAAStrictTentacleNoByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAANoTentacleYes = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleYes") + iID, 
+                                   TString("OrbitNormalizerDetectorSAANoTentacleYes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAANoTentacleYesByOrbit = new TH2D(TString("RatesSAANoTentacleYesByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: No, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAANoTentacleYesByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAANoTentacleYesByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAANoTentacleYesByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAOptimizedTentacleYes = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedTentacleYes") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedTentacleYes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedTentacleYesByOrbit = new TH2D(TString("RatesSAAOptimizedTentacleYesByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedTentacleYesByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedTentacleYesByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAOptimizedTentacleYesByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedByLifeTimeTentacleYesByOrbit = new TH2D(TString("RatesSAAOptimizedByLifeTimeTentacleYesByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: OptimizedByLifeTime, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetZTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAStrictTentacleYes = new TH2D(TString("OrbitNormalizerDetectorSAAStrictTentacleYes") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictTentacleYes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictTentacleYesByOrbit = new TH2D(TString("RatesSAAStrictTentacleYesByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Strict, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictTentacleYesByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictTentacleYesByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAStrictTentacleYesByOrbit->SetZTitle("cts/sec");
   
   
   // Section B: Fill (and normalize) histograms
   double LiveTime = 0;
   
   // Fill histograms which require filling by event
-  for (unsigned int e = 0; e < U.m_Time.size(); ++e) {
+  for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
 
-    if (WithinSpecialGTI(U.m_Time[e]) == false) continue;
-    if (WithinSpecialBTI(U.m_Time[e]) == true) continue;
-    if (U.m_Energy[e] < SpectrumMin || U.m_Energy[e] > SpectrumMax) continue;
+    if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
+    if (WithinSpecialBTI(F.m_Time[e]) == true) continue;
+    if (F.m_Energy[e] < SpectrumMin || F.m_Energy[e] > SpectrumMax) continue;
 
     
-    int HKIndex = H.FindClosestIndex(U.m_Time[e]);
+    int HKIndex = H.FindClosestIndex(F.m_Time[e]);
     if (HKIndex == -1) {
-      cout<<"Housekeeping: Index not found for time "<<U.m_Time[e]<<"..."<<endl;
+      cout<<"Housekeeping: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
-    
-    if (IsGoodEventByExternalDetectorEffectsFilter(U.m_Energy[e], U.m_Grade[e], U.m_ShieldVeto[e], U.m_Status[e]) == false) continue;
-    if (IsGoodEventByExternalDepthFilter(U.m_Status[e]) == false) continue;
- 
-    int OrbitIndex = O.FindClosestIndex(U.m_Time[e]);
+     
+    int OrbitIndex = O.FindClosestIndex(F.m_Time[e]);
     if (OrbitIndex == -1) {
-      cout<<"Orbit: Index not found for time "<<U.m_Time[e]<<"..."<<endl;
+      cout<<"Orbit: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
 
     
-    int DetectorID = U.m_DetectorID[e];
-    int RawX = U.m_RawX[e];
-    int RawY = U.m_RawY[e];
+    int DetectorID = F.m_DetectorID[e];
+    int RawX = F.m_RawX[e];
+    int RawY = F.m_RawY[e];
     
     double PosX = 0;
     double PosY = 0;
@@ -237,35 +347,45 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
 
     double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
     
-    if (O.m_SafelyOnSource[OrbitIndex] == true && 
-        FE.IsGTI(U.m_Time[e], true) == true && 
-        U.m_Energy[e] > SpectrumMin && U.m_Energy[e] < SpectrumMax) {
+    if (F.IsGTI(F.m_Time[e], true) == true && 
+        F.m_Energy[e] > SpectrumMin && F.m_Energy[e] < SpectrumMax) {
       if (Distance > DistanceCutOff) {
         if (RawX >= 0 && RawX <= 31 && RawY >= 0 && RawY <= 31) {
           PositionsOnSource->Fill(PosX, PosY);
           
-          RatesSAANoTentacleNo->Fill(U.m_Time[e]);
+          RatesSAANoTentacleNo->Fill(F.m_Time[e]);
+          RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           if (H.m_SoftTentacled[HKIndex] == false) {
-            RatesSAANoTentacleYes->Fill(U.m_Time[e]);
+            RatesSAANoTentacleYes->Fill(F.m_Time[e]);
+            RatesSAANoTentacleYesByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           }
           
           if (H.m_SoftSAAStrict[HKIndex] == false) {
-            RatesSAAStrictTentacleNo->Fill(U.m_Time[e]);
+            RatesSAAStrictTentacleNo->Fill(F.m_Time[e]);
+            RatesSAAStrictTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           }
           if (H.m_SoftSAAStrict[HKIndex] == false && H.m_SoftTentacled[HKIndex] == false) {
-            RatesSAAStrictTentacleYes->Fill(U.m_Time[e]);
+            RatesSAAStrictTentacleYes->Fill(F.m_Time[e]);
+            RatesSAAStrictTentacleYesByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           }
 
           if (H.m_SoftSAAOptimized[HKIndex] == false) {
-            RatesSAAOptimizedTentacleNo->Fill(U.m_Time[e]);
+            RatesSAAOptimizedTentacleNo->Fill(F.m_Time[e]);
+            RatesSAAOptimizedTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           }
           if (H.m_SoftSAAOptimized[HKIndex] == false && H.m_SoftTentacled[HKIndex] == false) {
-            RatesSAAOptimizedTentacleYes->Fill(U.m_Time[e]);
+            RatesSAAOptimizedTentacleYes->Fill(F.m_Time[e]);
+            RatesSAAOptimizedTentacleYesByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
           }
-        }
-        RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
-        if (H.m_SoftSAAStrict[HKIndex] == false) {
-          RatesSAAStrictTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+
+          if (H.m_SoftSAAOptimizedByLifeTime[HKIndex] == false) {
+            RatesSAAOptimizedByLifeTimeTentacleNo->Fill(F.m_Time[e]);
+            RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+          }
+          if (H.m_SoftSAAOptimizedByLifeTime[HKIndex] == false && H.m_SoftTentacled[HKIndex] == false) {
+            RatesSAAOptimizedByLifeTimeTentacleYes->Fill(F.m_Time[e]);
+            RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+          }
         }
       }
     }
@@ -293,12 +413,47 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
 
     if (WithinSpecialGTI(H.m_Time[h]) == false) continue;
     if (WithinSpecialBTI(H.m_Time[h]) == true) continue;
-    if (FE.IsGTI(H.m_Time[h], true) == false) continue;
+    if (F.IsGTI(H.m_Time[h], true) == false) continue;
 
+    ShieldRatesHigh->Fill(H.m_Time[h], H.m_ShieldRateHigh[h]);  
+    ShieldRatesLow->Fill(H.m_Time[h], H.m_ShieldRateLow[h]);  
+    ShieldRatesEntries->Fill(H.m_Time[h], 1);  
+ 
     OrbitNormalizerDetectorSAANoTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);
-    if (H.m_SoftSAAStrict[h] == false) {
-      OrbitNormalizerDetectorSAAStrictTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);
+    LifeTimesSAANoTentacleNo->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    if (H.m_SoftTentacled[h] == false) {
+      OrbitNormalizerDetectorSAANoTentacleYes->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAANoTentacleYes->Fill(H.m_Time[h], H.m_LiveTime[h]);
     }
+          
+    if (H.m_SoftSAAStrict[h] == false) {
+      OrbitNormalizerDetectorSAAStrictTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAStrictTentacleNo->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+    if (H.m_SoftSAAStrict[h] == false && H.m_SoftTentacled[h] == false) {
+      OrbitNormalizerDetectorSAAStrictTentacleYes->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAStrictTentacleYes->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+
+    if (H.m_SoftSAAOptimized[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAOptimizedTentacleNo->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+    if (H.m_SoftSAAOptimized[h] == false && H.m_SoftTentacled[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedTentacleYes->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAOptimizedTentacleYes->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+
+    if (H.m_SoftSAAOptimizedByLifeTime[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAOptimizedByLifeTimeTentacleNo->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+    if (H.m_SoftSAAOptimizedByLifeTime[h] == false && H.m_SoftTentacled[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_LiveTime[h]);    
+      LifeTimesSAAOptimizedByLifeTimeTentacleYes->Fill(H.m_Time[h], H.m_LiveTime[h]);
+    }
+   
+    
         
     if (O.m_SafelyOnSource[OrbitIndex] == true) {
       TotalTime += 1.0;
@@ -317,6 +472,9 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
     }
   }
     
+    
+    
+  // Normalize & set the minimum not to zero, but to the smallest no-zero entry for nicer plots:  
   double Minimum = numeric_limits<double>::max();
   for (int lo = 1; lo <= OrbitNormalizerDetectorSAANoTentacleNo->GetNbinsX(); ++lo) {
     for (int la = 1; la <= OrbitNormalizerDetectorSAANoTentacleNo->GetNbinsY(); ++la) {
@@ -332,6 +490,38 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
     }
   }
   RatesSAANoTentacleNoByOrbit->SetMinimum(Minimum);
+    
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAOptimizedTentacleNo->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAOptimizedTentacleNo->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAOptimizedTentacleNo->GetBinContent(lo, la) > 0 ) {
+        RatesSAAOptimizedTentacleNoByOrbit->SetBinContent(lo, la, RatesSAAOptimizedTentacleNoByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAOptimizedTentacleNo->GetBinContent(lo, la));
+        if (RatesSAAOptimizedTentacleNoByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAOptimizedTentacleNoByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAOptimizedTentacleNoByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAOptimizedTentacleNoByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAOptimizedTentacleNoByOrbit->SetMinimum(Minimum);
+    
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo->GetBinContent(lo, la) > 0 ) {
+        RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetBinContent(lo, la, RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleNo->GetBinContent(lo, la));
+        if (RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAOptimizedByLifeTimeTentacleNoByOrbit->SetMinimum(Minimum);
   
   Minimum = numeric_limits<double>::max();
   for (int lo = 1; lo <= OrbitNormalizerDetectorSAAStrictTentacleNo->GetNbinsX(); ++lo) {
@@ -349,7 +539,71 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   }
   RatesSAAStrictTentacleNoByOrbit->SetMinimum(Minimum);
   
-  cout<<"Min: "<<Minimum<<endl;
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAANoTentacleYes->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAANoTentacleYes->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAANoTentacleYes->GetBinContent(lo, la) > 0 ) {
+        RatesSAANoTentacleYesByOrbit->SetBinContent(lo, la, RatesSAANoTentacleYesByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAANoTentacleYes->GetBinContent(lo, la));
+        if (RatesSAANoTentacleYesByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAANoTentacleYesByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAANoTentacleYesByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAANoTentacleYesByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAANoTentacleYesByOrbit->SetMinimum(Minimum);
+    
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAOptimizedTentacleYes->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAOptimizedTentacleYes->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAOptimizedTentacleYes->GetBinContent(lo, la) > 0 ) {
+        RatesSAAOptimizedTentacleYesByOrbit->SetBinContent(lo, la, RatesSAAOptimizedTentacleYesByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAOptimizedTentacleYes->GetBinContent(lo, la));
+        if (RatesSAAOptimizedTentacleYesByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAOptimizedTentacleYesByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAOptimizedTentacleYesByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAOptimizedTentacleYesByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAOptimizedTentacleYesByOrbit->SetMinimum(Minimum);
+    
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes->GetBinContent(lo, la) > 0 ) {
+        RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetBinContent(lo, la, RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAOptimizedByLifeTimeTentacleYes->GetBinContent(lo, la));
+        if (RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAOptimizedByLifeTimeTentacleYesByOrbit->SetMinimum(Minimum);
+  
+  Minimum = numeric_limits<double>::max();
+  for (int lo = 1; lo <= OrbitNormalizerDetectorSAAStrictTentacleYes->GetNbinsX(); ++lo) {
+    for (int la = 1; la <= OrbitNormalizerDetectorSAAStrictTentacleYes->GetNbinsY(); ++la) {
+      if (OrbitNormalizerDetectorSAAStrictTentacleYes->GetBinContent(lo, la) > 0 ) {
+        RatesSAAStrictTentacleYesByOrbit->SetBinContent(lo, la, RatesSAAStrictTentacleYesByOrbit->GetBinContent(lo, la)/OrbitNormalizerDetectorSAAStrictTentacleYes->GetBinContent(lo, la));
+        if (RatesSAAStrictTentacleYesByOrbit->GetBinContent(lo, la) < Minimum && 
+            RatesSAAStrictTentacleYesByOrbit->GetBinContent(lo, la) > 0) {
+          Minimum = RatesSAAStrictTentacleYesByOrbit->GetBinContent(lo, la);
+        }
+      } else {
+        RatesSAAStrictTentacleYesByOrbit->SetBinContent(lo, la, 0);
+      }
+    }
+  }
+  RatesSAAStrictTentacleYesByOrbit->SetMinimum(Minimum);
+  
+
      
   if (m_WriteGTI == true) {
     CreateGTIFile(GTIStart, GTIStop, H);
@@ -357,8 +611,8 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
   
   /*
   TString GTIFileName = "GTI_"; 
-  GTIFileName += U.m_ID;
-  GTIFileName += ((U.m_Module == 0) ? "A" : "B");
+  GTIFileName += F.m_ID;
+  GTIFileName += ((F.m_Module == 0) ? "A" : "B");
   GTIFileName += ".txt";
 
   ofstream gti;
@@ -372,110 +626,188 @@ bool NCheckRates::Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping&
  
   // (2) Normalize
   double Max = 0;
+  double CutOffLifeTimeFraction = 0.25; // In some bins we will only be partially on - skip those where we are below CutOffLifeTimeFraction on
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAANoTentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAANoTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAANoTentacleNo->SetBinContent(b, 0); 
+    } else {
+      RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)/LifeTimesSAANoTentacleNo->GetBinContent(b));
+    }
     if (Max < RatesSAANoTentacleNo->GetBinContent(b)) {
       Max = RatesSAANoTentacleNo->GetBinContent(b);
     }
   }
   SAARegion->Scale(Max);
+  
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAAOptimizedTentacleNo->SetBinContent(b, RatesSAAOptimizedTentacleNo->GetBinContent(b)/RatesSAAOptimizedTentacleNo->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAAOptimizedTentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedTentacleNo->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedTentacleNo->SetBinContent(b, RatesSAAOptimizedTentacleNo->GetBinContent(b)/RatesSAAOptimizedTentacleNo->GetBinWidth(b)/LifeTimesSAAOptimizedTentacleNo->GetBinContent(b));
+    }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAAStrictTentacleNo->SetBinContent(b, RatesSAAStrictTentacleNo->GetBinContent(b)/RatesSAAStrictTentacleNo->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAAOptimizedByLifeTimeTentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedByLifeTimeTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedByLifeTimeTentacleNo->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedByLifeTimeTentacleNo->SetBinContent(b, RatesSAAOptimizedByLifeTimeTentacleNo->GetBinContent(b)/RatesSAAOptimizedByLifeTimeTentacleNo->GetBinWidth(b)/LifeTimesSAAOptimizedByLifeTimeTentacleNo->GetBinContent(b));
+    }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAANoTentacleYes->SetBinContent(b, RatesSAANoTentacleYes->GetBinContent(b)/RatesSAANoTentacleYes->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAAStrictTentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAStrictTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictTentacleNo->SetBinContent(b, 0);
+    } else {
+      RatesSAAStrictTentacleNo->SetBinContent(b, RatesSAAStrictTentacleNo->GetBinContent(b)/RatesSAAStrictTentacleNo->GetBinWidth(b)/LifeTimesSAAStrictTentacleNo->GetBinContent(b));
+    }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAAOptimizedTentacleYes->SetBinContent(b, RatesSAAOptimizedTentacleYes->GetBinContent(b)/RatesSAAOptimizedTentacleYes->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAANoTentacleYes->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAANoTentacleYes->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAANoTentacleYes->SetBinContent(b, 0);
+    } else {
+      RatesSAANoTentacleYes->SetBinContent(b, RatesSAANoTentacleYes->GetBinContent(b)/RatesSAANoTentacleYes->GetBinWidth(b)/LifeTimesSAANoTentacleYes->GetBinContent(b));
+    }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimes->GetBinContent(b) == 0) continue;
-    RatesSAAStrictTentacleYes->SetBinContent(b, RatesSAAStrictTentacleYes->GetBinContent(b)/RatesSAAStrictTentacleYes->GetBinWidth(b)/LifeTimes->GetBinContent(b));
+    if (LifeTimesSAAOptimizedTentacleYes->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedTentacleYes->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedTentacleYes->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedTentacleYes->SetBinContent(b, RatesSAAOptimizedTentacleYes->GetBinContent(b)/RatesSAAOptimizedTentacleYes->GetBinWidth(b)/LifeTimesSAAOptimizedTentacleYes->GetBinContent(b));
+    }
+  }
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAOptimizedByLifeTimeTentacleYes->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedByLifeTimeTentacleYes->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedByLifeTimeTentacleYes->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedByLifeTimeTentacleYes->SetBinContent(b, RatesSAAOptimizedByLifeTimeTentacleYes->GetBinContent(b)/RatesSAAOptimizedByLifeTimeTentacleYes->GetBinWidth(b)/LifeTimesSAAOptimizedByLifeTimeTentacleYes->GetBinContent(b));
+    }
+  }
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAStrictTentacleYes->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAStrictTentacleYes->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictTentacleYes->SetBinContent(b, 0);
+    } else {
+      RatesSAAStrictTentacleYes->SetBinContent(b, RatesSAAStrictTentacleYes->GetBinContent(b)/RatesSAAStrictTentacleYes->GetBinWidth(b)/LifeTimesSAAStrictTentacleYes->GetBinContent(b));
+    }
+  }
+  
+  for (int b = 1; b <= ShieldRatesEntries->GetNbinsX(); ++b) {
+    if (ShieldRatesEntries->GetBinContent(b) == 0) continue;
+    ShieldRatesHigh->SetBinContent(b, ShieldRatesHigh->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b));
+    ShieldRatesLow->SetBinContent(b, ShieldRatesLow->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b));
   }
   
   
+  // Show histograms:
+    
+  TCanvas* ShieldRatesHighCanvas = new TCanvas();
+  ShieldRatesHighCanvas->cd();
+  ShieldRatesHigh->Draw();
+  ShieldRatesHighCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) ShieldRatesHighCanvas->SaveAs(ShieldRatesHigh->GetName() + m_FileType);
+    
+  TCanvas* ShieldRatesLowCanvas = new TCanvas();
+  ShieldRatesLowCanvas->cd();
+  ShieldRatesLow->Draw();
+  ShieldRatesLowCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) ShieldRatesLowCanvas->SaveAs(ShieldRatesLow->GetName() + m_FileType);
+
   TCanvas* PositionsOnSourceCanvas = new TCanvas(TString("PositionsOnSourceCanvas") + iID, TString("PositionsOnSourceCanvas") + ID, 600, 600);
   PositionsOnSourceCanvas->cd();
   PositionsOnSource->Draw("colz");
   PositionsOnSourceCanvas->Update();
   if (m_ShowHistograms.Contains("f")) PositionsOnSourceCanvas->SaveAs(PositionsOnSource->GetName() + m_FileType);
+
+  TCanvas* LifeTimeCanvas = new TCanvas(TString("LifeTimeCanvas") + iID, TString("LifeTimeCanvas") + ID, 600, 600);
+  LifeTimeCanvas->cd();
+  LifeTimesSAANoTentacleNo->Draw();
+  LifeTimeCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) LifeTimeCanvas->SaveAs(LifeTimesSAANoTentacleNo->GetName() + m_FileType);
   
-  TCanvas* RatesSAANoTentacleNoCanvas = new TCanvas();
-  RatesSAANoTentacleNoCanvas->cd();
-  RatesSAANoTentacleNo->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAANoTentacleNo->Draw("SAME");
-  RatesSAANoTentacleNoCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoCanvas->SaveAs(RatesSAANoTentacleNo->GetName() + m_FileType);
+  TString Title;
+  double BaseLifeTime = LifeTimesSAANoTentacleNo->Integral();
   
-  TCanvas* RatesSAAOptimizedTentacleNoCanvas = new TCanvas();
-  RatesSAAOptimizedTentacleNoCanvas->cd();
-  RatesSAAOptimizedTentacleNo->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAAOptimizedTentacleNo->Draw("SAME");
-  RatesSAAOptimizedTentacleNoCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAAOptimizedTentacleNoCanvas->SaveAs(RatesSAAOptimizedTentacleNo->GetName() + m_FileType);
+  ShowRates(RatesSAANoTentacleNo, SAARegion, LifeTimesSAANoTentacleNo->Integral()/BaseLifeTime);
+  ShowRates(RatesSAANoTentacleNoByOrbit, LifeTimesSAANoTentacleNo->Integral()/BaseLifeTime);
   
-  TCanvas* RatesSAAStrictTentacleNoCanvas = new TCanvas();
-  RatesSAAStrictTentacleNoCanvas->cd();
-  RatesSAAStrictTentacleNo->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAAStrictTentacleNo->Draw("SAME");
-  RatesSAAStrictTentacleNoCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleNoCanvas->SaveAs(RatesSAAStrictTentacleNo->GetName() + m_FileType);
+  ShowRates(RatesSAAOptimizedTentacleNo, SAARegion, LifeTimesSAAOptimizedTentacleNo->Integral()/BaseLifeTime);
+  ShowRates(RatesSAAOptimizedTentacleNoByOrbit, LifeTimesSAAOptimizedTentacleNo->Integral()/BaseLifeTime);
   
-  TCanvas* RatesSAANoTentacleYesCanvas = new TCanvas();
-  RatesSAANoTentacleYesCanvas->cd();
-  RatesSAANoTentacleYes->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAANoTentacleYes->Draw("SAME");
-  RatesSAANoTentacleYesCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleYesCanvas->SaveAs(RatesSAANoTentacleYes->GetName() + m_FileType);
+  //ShowRates(RatesSAAOptimizedByLifeTimeTentacleNo, SAARegion, LifeTimesSAAOptimizedByLifeTimeTentacleNo->Integral()/BaseLifeTime);
+  //ShowRates(RatesSAAOptimizedByLifeTimeTentacleNoByOrbit, LifeTimesSAAOptimizedByLifeTimeTentacleNo->Integral()/BaseLifeTime);
   
-  TCanvas* RatesSAAOptimizedTentacleYesCanvas = new TCanvas();
-  RatesSAAOptimizedTentacleYesCanvas->cd();
-  RatesSAAOptimizedTentacleYes->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAAOptimizedTentacleYes->Draw("SAME");
-  RatesSAAOptimizedTentacleYesCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAAOptimizedTentacleYesCanvas->SaveAs(RatesSAAOptimizedTentacleYes->GetName() + m_FileType);
+  ShowRates(RatesSAAStrictTentacleNo, SAARegion, LifeTimesSAAStrictTentacleNo->Integral()/BaseLifeTime);
+  ShowRates(RatesSAAStrictTentacleNoByOrbit, LifeTimesSAAStrictTentacleNo->Integral()/BaseLifeTime);
   
-  TCanvas* RatesSAAStrictTentacleYesCanvas = new TCanvas();
-  RatesSAAStrictTentacleYesCanvas->cd();
-  RatesSAAStrictTentacleYes->Draw();
-  SAARegion->Draw("SAME");
-  RatesSAAStrictTentacleYes->Draw("SAME");
-  RatesSAAStrictTentacleYesCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleYesCanvas->SaveAs(RatesSAAStrictTentacleYes->GetName() + m_FileType);
   
-  TCanvas* RatesSAANoTentacleNoByOrbitCanvas = new TCanvas(TString("RatesSAANoTentacleNoByOrbitCanvas") + iID, TString("RatesSAANoTentacleNoByOrbitCanvas") + ID, 1200, 400);
-  RatesSAANoTentacleNoByOrbitCanvas->cd();
-  RatesSAANoTentacleNoByOrbitCanvas->SetLogz();
-  RatesSAANoTentacleNoByOrbit->Draw("colz");
-  RatesSAANoTentacleNoByOrbitCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAANoTentacleNoByOrbitCanvas->SaveAs(RatesSAANoTentacleNoByOrbit->GetName() + m_FileType);
+  ShowRates(RatesSAANoTentacleYes, SAARegion, LifeTimesSAANoTentacleYes->Integral()/BaseLifeTime);
+  ShowRates(RatesSAANoTentacleYesByOrbit, LifeTimesSAANoTentacleYes->Integral()/BaseLifeTime);
   
-  /*
-  TCanvas* RatesSAAStrictTentacleNoByOrbitCanvas = new TCanvas(TString("RatesSAAStrictTentacleNoByOrbitCanvas") + iID, TString("RatesSAAStrictTentacleNoByOrbitCanvas") + ID, 1200, 400);
-  RatesSAAStrictTentacleNoByOrbitCanvas->cd();
-  RatesSAAStrictTentacleNoByOrbitCanvas->SetLogz();
-  RatesSAAStrictTentacleNoByOrbit->Draw("colz");
-  RatesSAAStrictTentacleNoByOrbitCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) RatesSAAStrictTentacleNoByOrbitCanvas->SaveAs(RatesSAAStrictTentacleNoByOrbit->GetName() + m_FileType);
-  */
+  ShowRates(RatesSAAOptimizedTentacleYes, SAARegion, LifeTimesSAAOptimizedTentacleYes->Integral()/BaseLifeTime);
+  ShowRates(RatesSAAOptimizedTentacleYesByOrbit, LifeTimesSAAOptimizedTentacleYes->Integral()/BaseLifeTime);
+  
+  //ShowRates(RatesSAAOptimizedByLifeTimeTentacleYes, SAARegion, LifeTimesSAAOptimizedByLifeTimeTentacleYes->Integral()/BaseLifeTime);
+  //ShowRates(RatesSAAOptimizedByLifeTimeTentacleYesByOrbit, LifeTimesSAAOptimizedByLifeTimeTentacleYes->Integral()/BaseLifeTime);
+  
+  ShowRates(RatesSAAStrictTentacleYes, SAARegion, LifeTimesSAAStrictTentacleYes->Integral()/BaseLifeTime);
+  ShowRates(RatesSAAStrictTentacleYesByOrbit, LifeTimesSAAStrictTentacleYes->Integral()/BaseLifeTime);
+  
   
   return true;
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NCheckRates::ShowRates(TH1D* Rates, TH1D* SAARegion, double LifeTime)
+{
+  ostringstream out;
+  out<<"#splitline{"<<Rates->GetTitle()<<"}{with life time relative to no cuts: "<<setprecision(4)<<LifeTime*100<<"%}";
+  Rates->SetTitle(out.str().c_str());
+  
+  TCanvas* Canvas = new TCanvas();
+  Canvas->cd();
+  Rates->Draw();
+  SAARegion->Draw("SAME");
+  Rates->Draw("SAME");
+  Canvas->Update();
+  if (m_ShowHistograms.Contains("f")) Canvas->SaveAs(Rates->GetName() + m_FileType);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NCheckRates::ShowRates(TH2D* Orbit, double LifeTime)
+{
+  ostringstream out;
+  out<<"#splitline{"<<Orbit->GetTitle()<<"}{with life time relative to no cuts: "<<setprecision(4)<<LifeTime*100<<"%}";
+  Orbit->SetTitle(out.str().c_str());
+  
+  TCanvas* Canvas = new TCanvas(TString(Orbit->GetName()) + "Canvas", TString(Orbit->GetName()) + "Canvas", 1200, 400);
+  Canvas->cd();
+  Canvas->SetLogz();
+  Orbit->Draw("colz");
+  Canvas->Update();
+  if (m_ShowHistograms.Contains("f")) Canvas->SaveAs(Orbit->GetName() + m_FileType);
+}
+
+  
 ////////////////////////////////////////////////////////////////////////////////
 
 

@@ -78,9 +78,10 @@ class NBaseTool
   //! Find the SAA passage
   bool FindSAATentacle(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, bool Show = false);
   
-  static const int c_SAACutNone      = 0;
-  static const int c_SAACutStrict    = 1;
-  static const int c_SAACutOptimized = 2;
+  static const int c_SAACutNone                  = 0;
+  static const int c_SAACutStrict                = 1;
+  static const int c_SAACutOptimized             = 2;
+  static const int c_SAACutOptimizedByLifeTime   = 3;
   
   bool IsGoodEventByInternalDetectorEffectsFilter(int ModuleID, double Energy, int Grade, int Veto, 
                                                   double Baseline, double Reset, double Prior);

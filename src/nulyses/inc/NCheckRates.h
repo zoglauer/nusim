@@ -23,7 +23,8 @@
 #include "NBaseTool.h"
 
 // Forward declarations:
-
+class TH1D;
+class TH2D;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +50,11 @@ class NCheckRates : public NBaseTool
 
   bool CreateGTIFile(vector<double>& GTIStart, vector<double>& GTIStop, NHousekeeping& H);
 
-  bool Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
+  bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             int SourcePosX, int SourcePosY, double DistanceCutOff);
+  
+  void ShowRates(TH1D* Rates, TH1D* SAA, double LifeTime);
+  void ShowRates(TH2D* Rates, double LifeTime);
   
   // private methods:
  private:

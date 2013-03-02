@@ -65,6 +65,7 @@ void NHousekeeping::Clean()
   m_SoftSAA.clear();
   m_SoftSAAStrict.clear();
   m_SoftSAAOptimized.clear();
+  m_SoftSAAOptimizedByLifeTime.clear();
   m_SoftTentacled.clear();
   m_LiveTime.clear();
   m_NAcceptedEvents.clear();

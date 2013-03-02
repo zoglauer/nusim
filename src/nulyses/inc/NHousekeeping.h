@@ -53,6 +53,7 @@ public:
     m_SoftSAA.push_back(false);
     m_SoftSAAStrict.push_back(false);
     m_SoftSAAOptimized.push_back(false);
+    m_SoftSAAOptimizedByLifeTime.push_back(false);
     m_SoftTentacled.push_back(false);
   }
   
@@ -66,6 +67,7 @@ public:
   vector<bool> m_SoftSAA;
   vector<bool> m_SoftSAAStrict;
   vector<bool> m_SoftSAAOptimized;
+  vector<bool> m_SoftSAAOptimizedByLifeTime;
   vector<bool> m_SoftTentacled;
   vector<double> m_LiveTime;
   vector<int> m_NAcceptedEvents;
