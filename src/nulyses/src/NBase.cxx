@@ -141,9 +141,13 @@ int NBase::FindClosestIndex(double Time) {
     cout<<"Find closest: The size of this data set is zero!"<<endl;
     return -1;
   }
-  if (Time < m_Time[0]) return 0;
-  if (Time > m_Time.back()) return Size - 1; 
-  
+  if (Time <= m_Time[0]) {
+    return 0;
+  }
+  if (Time >= m_Time.back()) {
+    return Size - 1; 
+  }
+    
   if (m_LastClostestIndex > 0 && Time > m_Time[m_LastClostestIndex-1] && Time - m_Time[m_LastClostestIndex-1] < 20) {
     int ClosestSlow = -1;
     for (unsigned int i = m_LastClostestIndex-1; i < Size; ++i) {
@@ -206,7 +210,7 @@ int NBase::FindClosestIndex(double Time) {
     m_LastClostestIndex = ClosestFast;
     return ClosestFast; 
   } else {
-    m_LastClostestIndex = ClosestFast - 1;      
+    m_LastClostestIndex = ClosestFast - 1;
     return ClosestFast - 1; 
   }
 }  
