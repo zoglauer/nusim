@@ -66,15 +66,15 @@ class NBackgroundMode4DataBase : public NBaseTool
   TString m_DataBaseName;
    
   bool m_DBInitialized;
-  TH1D* m_DBInternalSpectrum;
+  TH1F* m_DBInternalSpectrum;
   double m_DBInternalSpectrumLifetime;
   
-  TH1D* m_DBInternalRates;
-  TH1D* m_DBInternalRatesLifetime;
+  TH1F* m_DBInternalRates;
+  TH1F* m_DBInternalRatesLifetime;
    
-  TH3D* m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID;
-  TH2D* m_DBInternalGeomagneticCutOffVsSpectrum;
-  TH1D* m_DBInternalGeomagneticCutOffLifetime;
+  TH3F* m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID;
+  TH2F* m_DBInternalGeomagneticCutOffVsSpectrum;
+  TH1F* m_DBInternalGeomagneticCutOffLifetime;
 
 
 #ifdef ___CINT___

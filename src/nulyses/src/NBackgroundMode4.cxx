@@ -118,6 +118,7 @@ bool NBackgroundMode4::ParseCommandLine(int argc, char** argv)
 
 bool NBackgroundMode4::Analyze() 
 {
+  cout<<"Starting to generate background in mode 4"<<endl;
 
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     
@@ -175,9 +176,9 @@ bool NBackgroundMode4::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-TH3D* NBackgroundMode4::LoadDataBase(TString FileName)
+TH3F* NBackgroundMode4::LoadDataBase(TString FileName)
 {
-  TH3D* DB = 0;
+  TH3F* DB = 0;
   
   TFile* F = new TFile(FileName);
   TIter I(F->GetListOfKeys());
@@ -186,7 +187,7 @@ TH3D* NBackgroundMode4::LoadDataBase(TString FileName)
   while ((Key = (TKey*) I()) != 0) {
     TClass *Class = gROOT->GetClass(Key->GetClassName());
     if (Class->InheritsFrom("TH1")) {
-      DB = (TH3D*) Key->ReadObj();
+      DB = (TH3F*) Key->ReadObj();
       break;
     } else if (Class->InheritsFrom("TCanvas")) {
       TCanvas* C = (TCanvas*) Key->ReadObj();
@@ -194,7 +195,7 @@ TH3D* NBackgroundMode4::LoadDataBase(TString FileName)
       TObject* Object;
       while ((Object = CanvasContent()) != 0) {
         if (Object->InheritsFrom("TH1")) {
-          DB = (TH3D*) Object;
+          DB = (TH3F*) Object;
           break;
         }
       }
@@ -218,7 +219,7 @@ TH3D* NBackgroundMode4::LoadDataBase(TString FileName)
 
 
 bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-                       NPhaFile& P, TH3D* DB, int SourcePosX, int SourcePosY, double DistanceCutOff)
+                       NPhaFile& P, TH3F* DB, int SourcePosX, int SourcePosY, double DistanceCutOff)
 {
   cout<<"Creating a background using mode 4..."<<long(DB)<<endl;
     
@@ -242,26 +243,26 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   double SpectrumMax = DB->GetYaxis()->GetXmax();  
   int SpectrumBins = DB->GetNbinsY();  
 
-  TH1D* SpectrumOnSourceAll = new TH1D(TString("SpectrumOnSourceAll") + iID, 
+  TH1D* SpectrumFromWholeDetector = new TH1D(TString("SpectrumFromWholeDetector") + iID, 
                                        TString("Spectrum all") + ID, 
                                        SpectrumBins, SpectrumMin, SpectrumMax);
-  SpectrumOnSourceAll->SetXTitle("Energy [keV]");
-  SpectrumOnSourceAll->SetYTitle("cts");
-  SpectrumOnSourceAll->SetLineColor(kBlue);
+  SpectrumFromWholeDetector->SetXTitle("Energy [keV]");
+  SpectrumFromWholeDetector->SetYTitle("cts");
+  SpectrumFromWholeDetector->SetLineColor(kBlue);
 
-  TH1D* SpectrumSource = new TH1D(TString("SpectrumSource") + iID, 
-                                       TString("Spectrum source") + ID, 
+  TH1D* SpectrumFromSourceRegion = new TH1D(TString("SpectrumFromSourceRegion") + iID, 
+                                       TString("Spectrum from source region") + ID, 
                                        SpectrumBins, SpectrumMin, SpectrumMax);
-  SpectrumSource->SetXTitle("Energy [keV]");
-  SpectrumSource->SetYTitle("cts");
-  SpectrumSource->SetLineColor(kBlue);
+  SpectrumFromSourceRegion->SetXTitle("Energy [keV]");
+  SpectrumFromSourceRegion->SetYTitle("cts");
+  SpectrumFromSourceRegion->SetLineColor(kBlue);
 
-  TH1D* SpectrumScaled = new TH1D(TString("SpectrumScaled") + iID, 
-                                       TString("Spectrum source") + ID, 
+  TH1D* ScaledSpectrumFromDB = new TH1D(TString("ScaledSpectrumFromDB") + iID, 
+                                       TString("Scaled spectrum from DB") + ID, 
                                        SpectrumBins, SpectrumMin, SpectrumMax);
-  SpectrumScaled->SetXTitle("Energy [keV]");
-  SpectrumScaled->SetYTitle("cts");
-  SpectrumScaled->SetLineColor(kBlue);
+  ScaledSpectrumFromDB->SetXTitle("Energy [keV]");
+  ScaledSpectrumFromDB->SetYTitle("cts");
+  ScaledSpectrumFromDB->SetLineColor(kGreen);
   
   // Spectra:
 
@@ -319,9 +320,9 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
     
     if (FE.IsGTI(FE.m_Time[e], true) == true && 
         FE.m_Energy[e] > SpectrumMin && FE.m_Energy[e] < SpectrumMax) {
-      SpectrumOnSourceAll->Fill(FE.m_Energy[e]);
+      SpectrumFromWholeDetector->Fill(FE.m_Energy[e]);
       if (Distance < DistanceCutOff) {
-        SpectrumSource->Fill(FE.m_Energy[e]);
+        SpectrumFromSourceRegion->Fill(FE.m_Energy[e]);
         PositionsSource->Fill(PosX, PosY);
       }
     }
@@ -378,22 +379,25 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
 
             for (int g = 1; g <= DB->GetNbinsX(); ++g) {
               for (int s = 1; s <= DB->GetNbinsY(); ++s) {
-                SpectrumScaled->SetBinContent(s, SpectrumScaled->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
+                //if (DB->GetBinContent(g, s, Pos) > 0) {
+                //  cout<<"Adding: "<<DB->GetBinContent(g, s, Pos)<<endl;
+                //}
+                ScaledSpectrumFromDB->SetBinContent(s, ScaledSpectrumFromDB->GetBinContent(s) + 1000*DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
               }
             }
           }
         } else {
-          for (int s = 1; s <= DB->GetNbinsY(); ++s) SpectrumScaled->SetBinContent(s, 0);
+          for (int s = 1; s <= DB->GetNbinsY(); ++s) ScaledSpectrumFromDB->SetBinContent(s, 0);
           int Pos =  32*32*DetectorID + 32*RawY + RawX;
           for (int g = 1; g <= DB->GetNbinsX(); ++g) {
             for (int s = 1; s <= DB->GetNbinsY(); ++s) {
               //if (DB->GetBinContent(g, s, Pos) > 0) {
                 //cout<<DetectorID<<":"<<RawY<<":"<<RawX<<": s:"<<s<<" g:"<<g<<": Adding: "<<DB->GetBinContent(g, s, Pos)<<":"<<GeomagneticCutOffLifetime->GetBinContent(g)<<endl;
               //}
-              SpectrumScaled->SetBinContent(s, SpectrumScaled->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
+              ScaledSpectrumFromDB->SetBinContent(s, ScaledSpectrumFromDB->GetBinContent(s) + DB->GetBinContent(g, s, Pos)*GeomagneticCutOffLifetime->GetBinContent(g));
             }
           }
-          SaveAsFits(SpectrumScaled, ((FE.m_Module == 0) ? 'A' : 'B'), DetectorID, RawX, RawY);
+          SaveAsFits(ScaledSpectrumFromDB, ((FE.m_Module == 0) ? 'A' : 'B'), DetectorID, RawX, RawY);
         }
       }
     }
@@ -404,33 +408,33 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
     return true;
   }
     
-  TCanvas* SpectrumScaledCanvas = new TCanvas();
-  SpectrumScaledCanvas->cd();
-  SpectrumScaledCanvas->SetGridx();
-  SpectrumScaledCanvas->SetGridy();
-  SpectrumScaledCanvas->SetLogy();
-  SpectrumScaled->Draw();
-  SpectrumScaledCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) SpectrumScaledCanvas->SaveAs(SpectrumScaled->GetName() + m_FileType);
+  TCanvas* ScaledSpectrumFromDBCanvas = new TCanvas();
+  ScaledSpectrumFromDBCanvas->cd();
+  ScaledSpectrumFromDBCanvas->SetGridx();
+  ScaledSpectrumFromDBCanvas->SetGridy();
+  ScaledSpectrumFromDBCanvas->SetLogy();
+  ScaledSpectrumFromDB->Draw();
+  ScaledSpectrumFromDBCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) ScaledSpectrumFromDBCanvas->SaveAs(ScaledSpectrumFromDB->GetName() + m_FileType);
 
   double ScalingMin = m_MinFitRange;
   double ScalingMax = m_MaxFitRange;
   cout<<"Using fit range: "<<m_MinFitRange<<" "<<m_MaxFitRange<<endl;
-  cout<<"Spectrum on source flux above before lifetime [cts/sec/cm2]: "<<SpectrumOnSourceAll->Integral(SpectrumOnSourceAll->FindBin(ScalingMin), SpectrumOnSourceAll->FindBin(ScalingMax))/FE.m_DetectorArea<<endl;
+  cout<<"Spectrum on source flux above before lifetime [cts/sec/cm2]: "<<SpectrumFromWholeDetector->Integral(SpectrumFromWholeDetector->FindBin(ScalingMin), SpectrumFromWholeDetector->FindBin(ScalingMax))/FE.m_DetectorArea<<endl;
   
   // (2) Normalize
   TH1D* SrcPha = P.m_Spectrum;
   
   double PhaSourceHighEnergyIntensity = SrcPha->Integral(SrcPha->FindBin(ScalingMin), SrcPha->FindBin(ScalingMax));
-  double PhaBackgroundHighEnergyIntensity = SpectrumScaled->Integral(SpectrumScaled->FindBin(ScalingMin), SpectrumScaled->FindBin(ScalingMax));
+  double PhaBackgroundHighEnergyIntensity = ScaledSpectrumFromDB->Integral(ScaledSpectrumFromDB->FindBin(ScalingMin), ScaledSpectrumFromDB->FindBin(ScalingMax));
   double PhaScalerHighEnergy = PhaSourceHighEnergyIntensity/PhaBackgroundHighEnergyIntensity;
   cout<<"Pha scaler (high-energy): "<<PhaScalerHighEnergy<<":"<<PhaSourceHighEnergyIntensity<<":"<<PhaBackgroundHighEnergyIntensity<<endl;
-  P.SaveBackground(SpectrumScaled, PhaScalerHighEnergy, "mode4");
+  P.SaveBackground(ScaledSpectrumFromDB, PhaScalerHighEnergy, "mode4");
 
      
   SrcPha->Rebin(4);
-  SpectrumScaled->Scale(PhaScalerHighEnergy);
-  SpectrumScaled->Rebin(4);
+  ScaledSpectrumFromDB->Scale(PhaScalerHighEnergy);
+  ScaledSpectrumFromDB->Rebin(4);
     
   TCanvas* PhaSpectrum = new TCanvas();
   PhaSpectrum->cd();
@@ -438,20 +442,30 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   PhaSpectrum->SetGridy();
   PhaSpectrum->SetLogy();
   SrcPha->Draw();
-  SpectrumScaled->Draw("SAME");
+  ScaledSpectrumFromDB->Draw("SAME");
   PhaSpectrum->Update();
   if (m_ShowHistograms.Contains("f")) PhaSpectrum->SaveAs(TString("Pha") + iID + m_FileType);
     
   
-  TCanvas* SpectrumOnSourceAllCanvas = new TCanvas();
-  SpectrumOnSourceAllCanvas->cd();
-  SpectrumOnSourceAllCanvas->SetGridx();
-  SpectrumOnSourceAllCanvas->SetGridy();
-  SpectrumOnSourceAllCanvas->SetLogy();
-  SpectrumOnSourceAll->Draw();
-  SpectrumOnSourceAllCanvas->Update();
-  if (m_ShowHistograms.Contains("f")) SpectrumOnSourceAllCanvas->SaveAs(SpectrumOnSourceAll->GetName() + m_FileType);
-     
+  TCanvas* SpectrumFromWholeDetectorCanvas = new TCanvas();
+  SpectrumFromWholeDetectorCanvas->cd();
+  SpectrumFromWholeDetectorCanvas->SetGridx();
+  SpectrumFromWholeDetectorCanvas->SetGridy();
+  SpectrumFromWholeDetectorCanvas->SetLogy();
+  SpectrumFromWholeDetector->Draw();
+  SpectrumFromWholeDetectorCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumFromWholeDetectorCanvas->SaveAs(SpectrumFromWholeDetector->GetName() + m_FileType);
+  
+  TCanvas* SpectrumFromSourceRegionCanvas = new TCanvas();
+  SpectrumFromSourceRegionCanvas->cd();
+  SpectrumFromSourceRegionCanvas->SetGridx();
+  SpectrumFromSourceRegionCanvas->SetGridy();
+  SpectrumFromSourceRegionCanvas->SetLogy();
+  SpectrumFromSourceRegion->Draw();
+  SpectrumFromSourceRegionCanvas->Update();
+  if (m_ShowHistograms.Contains("f")) SpectrumFromSourceRegionCanvas->SaveAs(SpectrumFromSourceRegion->GetName() + m_FileType);
+  
+    
   TCanvas* PositionsSourceCanvas = new TCanvas(TString("PositionsSourceCanvas") + iID, TString("PositionsBackgroundCanvas") + ID, 600, 600);
   PositionsSourceCanvas->cd();
   PositionsSource->Draw("colz");

@@ -42,7 +42,7 @@ ClassImp(NBackgroundMode4DataBase)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-NBackgroundMode4DataBase::NBackgroundMode4DataBase()
+NBackgroundMode4DataBase::NBackgroundMode4DataBase() : NBaseTool()
 {
   // Construct an instance of NBackgroundMode4DataBase
   
@@ -104,12 +104,23 @@ bool NBackgroundMode4DataBase::ParseCommandLine(int argc, char** argv)
 
 bool NBackgroundMode4DataBase::Analyze() 
 {
-  m_DBInitialized = false;
+  cout<<"Starting to generate data bases for mode 4"<<endl;
   
   if (m_LookAtModule.Contains("a") && m_LookAtModule.Contains("b")) {
     cout<<"Error: For the time being please run it once for a and once for b (Option: -m a or -m b)"<<endl;
     return false;
   }
+  
+  // Clear eveything:
+  m_DBInitialized = false;
+  m_DBInternalSpectrum = 0;
+  m_DBInternalSpectrumLifetime = 0;
+  m_DBInternalRates = 0;
+  m_DBInternalRatesLifetime = 0; 
+  m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID = 0;
+  m_DBInternalGeomagneticCutOffVsSpectrum = 0;
+  m_DBInternalGeomagneticCutOffLifetime = 0;
+
   
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     if (Load(m_Directories[d]) == false) continue;
@@ -181,7 +192,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
 
   // Spectra:    
   double SpectrumMin = 1.6-0.02;
-  double SpectrumMax = 121-0.02;  
+  double SpectrumMax = 161-0.02;  
   int SpectrumBins = int((SpectrumMax-SpectrumMin)/0.04);  
 
   // Rates:  
@@ -190,37 +201,37 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
   double MaxTime = H.GetMaxTime()+0.5;
 
   // Geo-cutoff:
-  int BinsGeoCutOff = 8;
+  int BinsGeoCutOff = 12;
   double MinGeoCutOff = O.GetMinGeomagneticCutOff();
   double MaxGeoCutOff = O.GetMaxGeomagneticCutOff();
   
-  TH1D* Spectrum = new TH1D(TString("Spectrum") + iID, TString("Spectrum") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
+  TH1F* Spectrum = new TH1F(TString("Spectrum") + iID, TString("Spectrum") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
   Spectrum->SetXTitle("Energy [keV]");
   Spectrum->SetYTitle("cts");
   Spectrum->SetLineColor(kBlue);
   
-  TH1D* Rates = new TH1D(TString("Rates") + iID, TString("Rates") + ID, RatesBins, MinTime, MaxTime);
+  TH1F* Rates = new TH1F(TString("Rates") + iID, TString("Rates") + ID, RatesBins, MinTime, MaxTime);
   Rates->SetXTitle("Time [s]");
   Rates->SetYTitle("cts");
   Rates->SetLineColor(kBlue);
     
-  TH1D* RatesLifetime = new TH1D(TString("RatesLifetime") + iID, TString("RatesLifetime") + ID, RatesBins, MinTime, MaxTime);
+  TH1F* RatesLifetime = new TH1F(TString("RatesLifetime") + iID, TString("RatesLifetime") + ID, RatesBins, MinTime, MaxTime);
   RatesLifetime->SetXTitle("Time [s]");
   RatesLifetime->SetYTitle("cts");
   RatesLifetime->SetLineColor(kBlue);
     
-  TH2D* GeomagneticCutOffVsSpectrum = new TH2D(TString("GeomagneticCutOffVsSpectrum") + iID, 
+  TH2F* GeomagneticCutOffVsSpectrum = new TH2F(TString("GeomagneticCutOffVsSpectrum") + iID, 
                                          TString("Filtered event rate by geomagnetic cut off") + ID, 
                                          BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                                          SpectrumBins, SpectrumMin, SpectrumMax);
   GeomagneticCutOffVsSpectrum->SetXTitle("Geomagnetic cutoff [GV]");
   GeomagneticCutOffVsSpectrum->SetXTitle("Energy [keV]");
   GeomagneticCutOffVsSpectrum->SetXTitle("cts");
-  TH1D* GeomagneticCutOffLifetime = new TH1D(TString("GeomagneticCutOffVsSpectrumLifetime") + iID, 
+  TH1F* GeomagneticCutOffLifetime = new TH1F(TString("GeomagneticCutOffVsSpectrumLifetime") + iID, 
                                                  TString("Filtered event rate by geomagnetic cut off") + ID, 
                                                  BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff);
-  TH3D* GeomagneticCutOffVsSpectrumVsPixelID = 
-      new TH3D(TString("RatesByGeomagneticCutOffAndPixelID"), 
+  TH3F* GeomagneticCutOffVsSpectrumVsPixelID = 
+      new TH3F(TString("RatesByGeomagneticCutOffAndPixelID"), 
                TString("DB 3D"), 
                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                SpectrumBins, SpectrumMin, SpectrumMax,
@@ -230,23 +241,23 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
   GeomagneticCutOffVsSpectrumVsPixelID->SetXTitle("Pixel ID (long-format)");
   
   if (m_DBInitialized == false) {
-    m_DBInternalSpectrum = new TH1D(TString("SpectrumOnSource"), TString("Background spectrum all") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
+    m_DBInternalSpectrum = new TH1F(TString("SpectrumOnSource"), TString("Background spectrum all") + ID, SpectrumBins, SpectrumMin, SpectrumMax);
     m_DBInternalSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalSpectrum->SetYTitle("cts");
     //m_DBInternalSpectrum->SetLineColor(kBlue);
     m_DBInternalSpectrumLifetime = 0;
     
-    m_DBInternalRates = new TH1D(TString("DBInternalRates"), TString("m_DBInternalRates") + ID, RatesBins, MinTime, MaxTime);
+    m_DBInternalRates = new TH1F(TString("DBInternalRates"), TString("m_DBInternalRates") + ID, RatesBins, MinTime, MaxTime);
     m_DBInternalRates->SetXTitle("Time [s]");
     m_DBInternalRates->SetYTitle("cts");
     //m_DBInternalRates->SetLineColor(kBlue);
     
-    m_DBInternalRatesLifetime = new TH1D(TString("DBInternalRatesLifetime"), TString("m_DBInternalRatesLifetime") + ID, RatesBins, MinTime, MaxTime);
+    m_DBInternalRatesLifetime = new TH1F(TString("DBInternalRatesLifetime"), TString("m_DBInternalRatesLifetime") + ID, RatesBins, MinTime, MaxTime);
     m_DBInternalRatesLifetime->SetXTitle("Time [s]");
     m_DBInternalRatesLifetime->SetYTitle("cts");
     //m_DBInternalRatesLifetime->SetLineColor(kBlue);
     
-    m_DBInternalGeomagneticCutOffVsSpectrum = new TH2D(TString("DBInternalRatesByGeomagneticCutOff"), 
+    m_DBInternalGeomagneticCutOffVsSpectrum = new TH2F(TString("DBInternalRatesByGeomagneticCutOff"), 
                                                        TString("DB 2D"), 
                                                        BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                                                        SpectrumBins, SpectrumMin, SpectrumMax);
@@ -254,7 +265,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("cts");
     m_DBInternalGeomagneticCutOffVsSpectrumVsPixelID = 
-      new TH3D(TString("DBInternalGeomagneticCutOffVsSpectrumVsPixelID"), 
+      new TH3F(TString("DBInternalGeomagneticCutOffVsSpectrumVsPixelID"), 
                TString("DB 3D (looks empty, but ROOT has just issues displaying small values in 3D...)"), 
                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff,
                SpectrumBins, SpectrumMin, SpectrumMax,
@@ -263,7 +274,7 @@ bool NBackgroundMode4DataBase::Show(NFilteredEvents& F, NHousekeeping& H, NOrbit
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Energy [keV]");
     m_DBInternalGeomagneticCutOffVsSpectrum->SetXTitle("Pixel ID (long-format)");
 
-    m_DBInternalGeomagneticCutOffLifetime = new TH1D(TString("DBInternalGeomagneticCutOffLifetime") + iID, 
+    m_DBInternalGeomagneticCutOffLifetime = new TH1F(TString("DBInternalGeomagneticCutOffLifetime") + iID, 
                                                                TString("Filtered event rate by geomagnetic cut off") + ID, 
                                                                BinsGeoCutOff, MinGeoCutOff, MaxGeoCutOff);
     m_DBInitialized = true;

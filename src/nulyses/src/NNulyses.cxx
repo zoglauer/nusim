@@ -129,6 +129,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"        --write-gti: Optional - dump a fits based gti file"<<endl;
   Usage<<"      backgroundmodeX:"<<endl; 
   Usage<<"        -dps: directory containing all files plus exclusion region plus pha file ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [source pha file for A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels] [radius of exclusion region on B] [source pha file for B]"<<endl;
+  Usage<<"        --fit-range [min] [max]: The minimum and maximum energy used for the fit"<<endl;
   Usage<<"      backgroundmode4:"<<endl; 
   Usage<<"        --names [DB_A.root] [CB_B.root]: Mandatory - Give the names of the two database files"<<endl;
   Usage<<"        --dump-one-spectrum-per-pixel: Optional - Dumps one spectrum per pixel and detector as fits file"<<endl;
@@ -146,6 +147,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   }
   
   // Check for a tool
+  bool FoundTool = false;
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
 
@@ -163,6 +165,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
     // Then fulfill the options:
     if (Option == "--tool") {
       string Tool = argv[++i];
+      FoundTool = true;
       if (Tool == "checkrates") {
         cout<<"Found tool: "<<Tool<<endl;
         NCheckRates R;
@@ -235,6 +238,12 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
         return false;
       }
     }
+  }
+  
+  if (FoundTool == false) {
+    cout<<"Error: No tool found!"<<endl;
+    cout<<Usage.str()<<endl;
+    return false;
   }
     
   
