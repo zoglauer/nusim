@@ -52,7 +52,7 @@ class NBackgroundMode4 : public NBackgroundModes
 
   bool Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             NPhaFile& P, TH3F* DB, int SourcePosX, int SourcePosY, double DistanceCutOff);
-  TH3D* LoadDataBase(TString FileName);
+  TH3F* LoadDataBase(TString FileName);
   
   bool SaveAsFits(TH1D* ScaledSpectrum, char Module, int DetectorID, int RawX, int RawY) ;
 
