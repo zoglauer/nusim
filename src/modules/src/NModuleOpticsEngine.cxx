@@ -388,7 +388,15 @@ int NModuleOpticsEngine::RayTrace(float e_photon_lo,
   // Use 0.0 if you don't want scattering
   // OLD 6.e-5 for 42ish hpd
   // 7.5e-5 for 51ish hpd
-  if (m_UseScattering) scatter = 7.5e-5;
+  if (m_UseScattering){
+    //scatter = 7.5e-5;
+    if (gRandom->Rndm() > 0.50) {
+      scatter=7.0e-5;  //Her X1 scatter
+    }
+    else {
+      scatter=15.5e-5; //Her X1 scatter
+    }
+  }
   else scatter = 0.0;
   
   //Rmin = m_Rm1[0];
