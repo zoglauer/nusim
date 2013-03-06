@@ -23,6 +23,7 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NFilteredEvents.o \
 	$(LB)/NHousekeeping.o \
 	$(LB)/NUnfilteredEvents.o \
+	$(LB)/NBadPixel.o \
 	$(LB)/NPhaFile.o \
 	$(LB)/NBaseTool.o \
 	$(LB)/NCheckRates.o \
@@ -34,6 +35,7 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NBackgroundMode23.o \
 	$(LB)/NBackgroundMode4.o \
 	$(LB)/NBackgroundMode4DataBase.o \
+	$(LB)/NBackgroundTester.o \
 	$(LB)/NLineFitter.o \
 	$(LB)/NDetectorHealth.o \
 	$(LB)/NApertureModel.o \

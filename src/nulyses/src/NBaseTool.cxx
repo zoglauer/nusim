@@ -270,6 +270,8 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   TString EngineeringFileName = Directory + "/hk/nu" + Tag + "_eng.hk";
   TString HKFileNameA = Directory + "/hk/nu" + Tag + "A_fpm.hk";
   TString HKFileNameB = Directory + "/hk/nu" + Tag + "B_fpm.hk";
+  TString BPFileNameA = Directory + "/" + EventDir + "/nu" + Tag + "A_bp.fits";
+  TString BPFileNameB = Directory + "/" + EventDir + "/nu" + Tag + "B_bp.fits";
   TString UFFileNameA = Directory + "/" + EventDir + "/nu" + Tag + "A_uf.evt";
   TString UFFileNameB = Directory + "/" + EventDir + "/nu" + Tag + "B_uf.evt";
   TString FIFileNameA01 = Directory + "/" + EventDir + "/nu" + Tag + "A01_cl.evt";
@@ -320,6 +322,11 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   m_HousekeepingA.m_Module = 0;
   m_HousekeepingA.m_ID = Tag;
   
+  m_BadPixelA.Clean();
+  if (LookAtModule.Contains("a")) if (m_BadPixelA.Read(BPFileNameA) == false) return false;
+  m_BadPixelA.m_Module = 0;
+  m_BadPixelA.m_ID = Tag;
+  
   m_UnfilteredEventsA.Clean();
   if (m_ReadUnfiltered == true && LookAtModule.Contains("a")) if (m_UnfilteredEventsA.Read(UFFileNameA) == false) return false;
   m_UnfilteredEventsA.m_Module = 0;
@@ -339,6 +346,11 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   if (LookAtModule.Contains("b")) if (m_HousekeepingB.Read(HKFileNameB) == false) return false;
   m_HousekeepingB.m_Module = 1;
   m_HousekeepingB.m_ID = Tag;
+  
+  m_BadPixelB.Clean();
+  if (LookAtModule.Contains("b")) if (m_BadPixelB.Read(BPFileNameB) == false) return false;
+  m_BadPixelB.m_Module = 1;
+  m_BadPixelB.m_ID = Tag;
   
   m_UnfilteredEventsB.Clean();
   if (m_ReadUnfiltered == true && LookAtModule.Contains("b")) if (m_UnfilteredEventsB.Read(UFFileNameB) == false) return false;

@@ -26,6 +26,7 @@
 #include "NFilteredEvents.h"
 #include "NUnfilteredEvents.h"
 #include "NHousekeeping.h"
+#include "NBadPixel.h"
 
 // Forward declarations:
 
@@ -120,12 +121,14 @@ class NBaseTool
   NFilteredEvents m_FilteredEventsA01;
   NFilteredEvents m_FilteredEventsA02;
   NFilteredEvents m_FilteredEventsA;
+  NBadPixel m_BadPixelA;
   
   NHousekeeping m_HousekeepingB;
   NUnfilteredEvents m_UnfilteredEventsB;
   NFilteredEvents m_FilteredEventsB01;
   NFilteredEvents m_FilteredEventsB02;
   NFilteredEvents m_FilteredEventsB;
+  NBadPixel m_BadPixelB;
   
   bool m_MergeFilteredEvents;
   

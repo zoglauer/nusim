@@ -68,6 +68,7 @@ using namespace std;
 #include "NBackgroundMode23.h"
 #include "NBackgroundMode4.h"
 #include "NBackgroundMode4DataBase.h"
+#include "NBackgroundTester.h"
 #include "NLineFitter.h"
 #include "NDetectorHealth.h"
 #include "NApertureTester.h"
@@ -116,6 +117,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          backgroundmode23: Background rates for modes 2 & 3"<<endl;
   Usage<<"          backgroundmode4: Background rates for mode 4"<<endl;
   Usage<<"          backgroundmode4database: Create data base for mode 4"<<endl;
+  Usage<<"          backgroundtester: Tests the uncertainties of different background approaches"<<endl;
   Usage<<"          linefitter: Check SAA rates"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"      -d:  directory containing all files"<<endl;
@@ -217,6 +219,12 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
       } else if (Tool == "backgroundvariations") {
         cout<<"Found tool: "<<Tool<<endl;
         NBackgroundVariations B;
+        if (B.ParseCommandLine(argc, argv) == false) return false;
+        if (B.Analyze() == false) return false; 
+        return true;
+      } else if (Tool == "backgroundtester") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NBackgroundTester B;
         if (B.ParseCommandLine(argc, argv) == false) return false;
         if (B.Analyze() == false) return false; 
         return true;
