@@ -244,7 +244,7 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   int SpectrumBins = DB->GetNbinsY();  
 
   TH1D* SpectrumFromWholeDetector = new TH1D(TString("SpectrumFromWholeDetector") + iID, 
-                                       TString("Spectrum all") + ID, 
+                                       TString("Spectrum from whole detector") + ID, 
                                        SpectrumBins, SpectrumMin, SpectrumMax);
   SpectrumFromWholeDetector->SetXTitle("Energy [keV]");
   SpectrumFromWholeDetector->SetYTitle("cts");
@@ -351,8 +351,8 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   int NBackgroundPixels = 0;
   
   for (unsigned int DetectorID = 0; DetectorID < 4; ++DetectorID) {
-    for (unsigned int RawX = 0; RawX < 32; ++RawX) {
-      for (unsigned int RawY = 0; RawY < 32; ++RawY) {
+    for (int RawX = 0; RawX < 32; ++RawX) {
+      for (int RawY = 0; RawY < 32; ++RawY) {
         double PosX = 0;
         double PosY = 0;
         if (DetectorID == 0) {
@@ -370,6 +370,7 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
         }
         
         if (m_DumpOneSpectrumPerPixel == false) {
+          //cout<<"Source pos: "<<SourcePosX<<", "<<SourcePosY<<" - "<<PosX<<", "<<PosY<<endl;
           double Distance = sqrt((SourcePosX - PosX)*(SourcePosX - PosX) + (SourcePosY - PosY)*(SourcePosY - PosY));
           if (Distance > DistanceCutOff) {
             NBackgroundPixels++;
@@ -426,9 +427,26 @@ bool NBackgroundMode4::Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, N
   TH1D* SrcPha = P.m_Spectrum;
   
   double PhaSourceHighEnergyIntensity = SrcPha->Integral(SrcPha->FindBin(ScalingMin), SrcPha->FindBin(ScalingMax));
+  if (PhaSourceHighEnergyIntensity < 1000) {
+    cout<<endl<<"!!! WARNING !!!"<<endl;
+    cout<<"You have a very low amount of source counts in your chosen energy range ("" - "" keV): "<<PhaSourceHighEnergyIntensity<<endl;
+    cout<<"This background scaling method won't work very well if we don't have enough counts!"<<endl<<endl;
+  }
+  
   double PhaBackgroundHighEnergyIntensity = ScaledSpectrumFromDB->Integral(ScaledSpectrumFromDB->FindBin(ScalingMin), ScaledSpectrumFromDB->FindBin(ScalingMax));
+  if (PhaBackgroundHighEnergyIntensity < 10000) {
+    cout<<endl<<"!!! WARNING !!!"<<endl;
+    cout<<"You have a very low amount of background counts in your chosen energy range ("" - "" keV): "<<PhaBackgroundHighEnergyIntensity<<endl;
+    cout<<"This background scaling method won't work very well if we don't have enough counts!"<<endl<<endl;
+  }
+  if (PhaBackgroundHighEnergyIntensity == 0) {
+    cout<<endl<<"!!! ERROR !!!"<<endl;
+    cout<<"Something failed, we don't have any background counts in your chosen energy range ("" - "" keV): "<<PhaBackgroundHighEnergyIntensity<<endl;
+    return false;
+  }
+  
   double PhaScalerHighEnergy = PhaSourceHighEnergyIntensity/PhaBackgroundHighEnergyIntensity;
-  cout<<"Pha scaler (high-energy): "<<PhaScalerHighEnergy<<":"<<PhaSourceHighEnergyIntensity<<":"<<PhaBackgroundHighEnergyIntensity<<endl;
+  cout<<"Pha scaler (high-energy): "<<PhaScalerHighEnergy<<" with source counts: "<<PhaSourceHighEnergyIntensity<<" and background counts: "<<PhaBackgroundHighEnergyIntensity<<endl;
   P.SaveBackground(ScaledSpectrumFromDB, PhaScalerHighEnergy, "mode4");
 
      
