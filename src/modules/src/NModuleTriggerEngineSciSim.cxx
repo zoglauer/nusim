@@ -113,6 +113,7 @@ NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : 
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsVetoDeadTimeEngineDummy();
 
+  m_PixelTrigger = 3;
   m_LowTrigger = 75;
   m_HighTrigger = 5000;
 }
@@ -134,7 +135,6 @@ bool NModuleTriggerEngineSciSim::Initialize()
 {
   // Initialize the module 
 
-  m_TriggerThreshold = 3;
 
   NModuleInterfaceDeadTime::Initialize();
 
@@ -162,7 +162,7 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
       HighestEnergy = SampleSumDiff;
       HighestID = p;
     }
-    if (SampleSumDiff > m_TriggerThreshold) {
+    if (SampleSumDiff > m_PixelTrigger) {
       ++NTriggers;
     }
   }
@@ -203,8 +203,8 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
               P.GetXPixel() == xp && P.GetYPixel() == yp) {
             Niner.SetPreTriggerSampleSum(ID, P.GetPreTriggerSampleSum()); 
             Niner.SetPostTriggerSampleSum(ID, P.GetPostTriggerSampleSum());
-
-            if (P.GetPostTriggerSampleSum() - P.GetPreTriggerSampleSum() > m_TriggerThreshold) {
+            
+            if (P.GetPostTriggerSampleSum() - P.GetPreTriggerSampleSum() > m_PixelTrigger) {
               Niner.SetTrigger(ID, true);
               NTriggersInNiner++;
               TriggerPattern += (0x01 << (ID-1));
@@ -238,7 +238,7 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     Niner.SetTriggerGrade(TriggerGrade);
 
     Event.AddNinePixelHit(Niner);
-  }
+}
 
   // Step (2): Check if a shield veto was raised
   for (unsigned int i = 0; i < Event.GetNShieldHits(); ++i) {
@@ -280,7 +280,6 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     } else if (Event.GetTelescope() == 2) {
       m_NEventsNotLostInDeadTime2++;      
     }
-
   }
   
   return true;
@@ -361,6 +360,11 @@ bool NModuleTriggerEngineSciSim::ReadXmlConfiguration(MXmlNode* Node)
     m_HighTrigger = HighTriggerNode->GetValueAsDouble();
   }
 
+  MXmlNode* PixelTriggerNode = Node->GetNode("PixelTrigger");
+  if (PixelTriggerNode != 0) {
+    m_PixelTrigger = PixelTriggerNode->GetValueAsDouble();
+  }
+
   return true;
 }
 
@@ -377,6 +381,7 @@ MXmlNode* NModuleTriggerEngineSciSim::CreateXmlConfiguration()
   new MXmlNode(Node, "ApplyDeadTime", m_ApplyDeadTime);
   new MXmlNode(Node, "LowTrigger",    m_LowTrigger);
   new MXmlNode(Node, "HighTrigger",   m_HighTrigger);
+  new MXmlNode(Node, "PixelTrigger",   m_PixelTrigger);
 
   return Node;
 }

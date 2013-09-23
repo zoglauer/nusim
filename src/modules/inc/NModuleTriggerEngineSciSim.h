@@ -56,10 +56,14 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   //! Create an XML node tree from the configuration
   virtual MXmlNode* CreateXmlConfiguration();
 
+  //! Set the event trigger
+  void   SetPixelTrigger(double PixelTrigger) { m_PixelTrigger = PixelTrigger; }
   //! Set the low trigger
   void   SetLowTrigger(double LowTrigger) { m_LowTrigger = LowTrigger; }
   //! Set the high trigger
   void   SetHighTrigger(double HighTrigger) { m_HighTrigger = HighTrigger; }
+  //! Get the event trigger
+  double GetPixelTrigger() const { return m_PixelTrigger; }
   //! Get the low trigger
   double GetLowTrigger() const { return m_LowTrigger; }
   //! Get the high trigger
@@ -86,7 +90,7 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   double m_HighTrigger;
 
   //! The pixel trigger threshold
-  double m_TriggerThreshold;
+  double m_PixelTrigger;
 
   //! The pixel trigger pattern
   static const int m_TriggerPattern[33];

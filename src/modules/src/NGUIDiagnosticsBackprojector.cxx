@@ -70,11 +70,11 @@ NGUIDiagnosticsBackprojector::NGUIDiagnosticsBackprojector(double PixelSize) : N
   m_Backprojection->SetYTitle("DEC [deg]");
   m_Backprojection->SetZTitle("counts");
 
-  m_Energy = new TH1D("Spectrum", "Spectrum", 196, 2, 100);
+  m_Energy = new TH1D("Spectrum", "Spectrum", 200, 0, 100);
   m_Energy->SetXTitle("keV");
   m_Energy->SetYTitle("counts");
 
-  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 196, 2, 100);
+  m_NormalizedEnergy = new TH1D("Spectrum", "Spectrum", 200, 0, 100);
   m_NormalizedEnergy->SetXTitle("keV");
   m_NormalizedEnergy->SetYTitle("counts/keV/s/cm^{2}");
   m_NormalizedEnergy->SetMinimum(0);

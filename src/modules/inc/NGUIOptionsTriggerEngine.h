@@ -68,6 +68,8 @@ class NGUIOptionsTriggerEngine : public NGUIOptions
   MGUIEEntry* m_LowTrigger;
   //! High veto trigger energy threshold
   MGUIEEntry* m_HighTrigger;
+  //! Pixel trigger energy threshold
+  MGUIEEntry* m_PixelTrigger;
 
 
   // private members:
