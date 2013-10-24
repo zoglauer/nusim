@@ -144,7 +144,7 @@ NEvent NModuleInterfacePileUp::CreateDelayedPileUpEvent(NEvent& Event)
       // Add fully
       Add(New, *I, 1.0); 
       //cout<<New.GetTelescope()<<" - Adding "<<(*I).GetTime()<<endl;
-    } else if ((*I).GetTime() < List.front().GetTime() + m_FalsePileUpTimeScale) {
+    } else if ((*I).GetTime() < List.front().GetTime() + m_TruePileUpTimeScale + m_FalsePileUpTimeScale) {
       // Add partially
       double Partial = ((*I).GetTime() - m_TruePileUpTimeScale - List.front().GetTime()) / m_FalsePileUpTimeScale;
       //cout<<New.GetTelescope()<<" - Adding partial "<<(*I).GetTime()<<" "<<Partial<<endl;
