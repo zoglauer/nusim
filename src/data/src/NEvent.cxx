@@ -70,6 +70,8 @@ const NEvent& NEvent::operator=(const NEvent& Event)
   m_Ra = Event.m_Ra;
   m_Dec = Event.m_Dec;
   
+  m_IsMeasured = Event.m_IsMeasured;
+  
   m_Orientations = Event.m_Orientations;
   
   m_ID = Event.m_ID;
@@ -83,6 +85,7 @@ const NEvent& NEvent::operator=(const NEvent& Event)
   m_VetoLow = Event.m_VetoLow;
   m_VetoHigh = Event.m_VetoHigh;
   m_Trigger = Event.m_Trigger;
+  m_PileUp = Event.m_PileUp;
   m_NPixelTriggers = Event.m_NPixelTriggers;
   m_EventCut = Event.m_EventCut;
 
@@ -116,12 +119,14 @@ void NEvent::Clear()
   m_Telescope = g_IntNotDefined;
   m_Time.Clear();
   m_DetectorLifeTime.Clear();
+  m_IsMeasured = false;
 
   m_Blocked = false;
   m_LostInDeadTime = false;
   m_VetoLow = false;
   m_VetoHigh = false;
   m_Trigger = true;
+  m_PileUp = false;
   m_NPixelTriggers = 0;
   m_EventCut = false;
 
@@ -158,11 +163,13 @@ bool NEvent::Stream(ofstream& S, int Version, int WhatToStream)
   S<<"TE "<<m_Telescope<<endl;
   S<<"OG "<<m_Origin<<endl;
   if (WhatToStream < 2) {
+    S<<"MS "<<((m_IsMeasured) ? 1 : 0)<<endl; 
     S<<"RD "<<m_Ra<<" "<<m_Dec<<endl;
     if (m_Orientations.IsEmpty() == false) m_Orientations.Stream(S, Version);
     if (m_OriginalPhoton.IsEmpty() == false) m_OriginalPhoton.Stream(S, Version, "OP");
     if (m_InitialPhotonRelOM.IsEmpty() == false) m_InitialPhotonRelOM.Stream(S, Version, "IP");
     if (m_CurrentPhoton.IsEmpty() == false) m_CurrentPhoton.Stream(S, Version, "CP");
+    S<<"PU "<<((m_PileUp) ? 1 : 0)<<endl; 
     for (unsigned int i = 0; i < m_Interactions.size(); ++i) {
       m_Interactions[i].Stream(S, Version);
     }
@@ -211,6 +218,18 @@ bool NEvent::Parse(TString& Line, int Version)
     if (sscanf(Data, "OG %d", &m_Origin) != 1) {
       Error = true;
     } 
+  } else if (Data[0] == 'M' && Data[1] == 'S') {
+    int i;
+    if (sscanf(Data, "MS %d", &i) != 1) {
+      Error = true;
+    }
+    m_IsMeasured = ((i == 1) ? true : false); 
+  } else if (Data[0] == 'P' && Data[1] == 'U') {
+    int i;
+    if (sscanf(Data, "PU %d", &i) != 1) {
+      Error = true;
+    }
+    m_PileUp = ((i == 1) ? true : false); 
   } else if (Data[0] == 'R' && Data[1] == 'D') {
     if (sscanf(Data, "RD %lf %lf", &m_Ra, &m_Dec) != 2) {
       Error = true;
@@ -377,7 +396,7 @@ NPixelHit NEvent::GetPixelHit(unsigned int i)
     return m_PixelHits[i]; 
   }
 
-  merr<<"PixelHit index out of bounds (max: "<<m_PixelHits.size()-1<<"): "<<i<<show;
+  merr<<"PixelHit index out of bounds ([0.."<<m_PixelHits.size()<<"[): "<<i<<fatal;
 
   return NPixelHit();
 }
@@ -394,7 +413,7 @@ NPixelHit& NEvent::GetPixelHitRef(unsigned int i)
     return m_PixelHits[i]; 
   }
 
-  merr<<"PixelHit index out of bounds (max: "<<m_PixelHits.size()-1<<"): "<<i<<fatal;
+  merr<<"PixelHit index out of bounds ([0.."<<m_PixelHits.size()<<"[): "<<i<<fatal;
 
   return m_PixelHits[0];
 }
@@ -424,7 +443,7 @@ NShieldHit NEvent::GetShieldHit(unsigned int i)
     return m_ShieldHits[i]; 
   }
 
-  merr<<"ShieldHit index out of bounds (max: "<<m_ShieldHits.size()-1<<"): "<<i<<show;
+  merr<<"ShieldHit index out of bounds ([0.."<<m_ShieldHits.size()<<"[): "<<i<<show;
 
   return NShieldHit();
 }
@@ -441,7 +460,7 @@ NShieldHit& NEvent::GetShieldHitRef(unsigned int i)
     return m_ShieldHits[i]; 
   }
 
-  merr<<"ShieldHit index out of bounds (max: "<<m_ShieldHits.size()-1<<"): "<<i<<fatal;
+  merr<<"ShieldHit index out of bounds ([0.."<<m_ShieldHits.size()<<"[): "<<i<<fatal;
 
   return m_ShieldHits[0];
 }
@@ -471,7 +490,7 @@ NNinePixelHit NEvent::GetNinePixelHit(unsigned int i)
     return m_NinePixelHits[i]; 
   }
 
-  merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<show;
+  merr<<"NinePixelHit index out of bounds ([0.."<<m_NinePixelHits.size()<<"[): "<<i<<show;
   abort();
 
   return NNinePixelHit();
@@ -489,7 +508,7 @@ NNinePixelHit& NEvent::GetNinePixelHitRef(unsigned int i)
     return m_NinePixelHits[i]; 
   }
 
-  merr<<"NinePixelHit index out of bounds (max: "<<m_NinePixelHits.size()-1<<"): "<<i<<fatal;
+  merr<<"NinePixelHit index out of bounds ([0.."<<m_NinePixelHits.size()<<"[): "<<i<<fatal;
   abort();
 
   return m_NinePixelHits[0];
@@ -520,7 +539,7 @@ NHit NEvent::GetHit(unsigned int i)
     return m_Hits[i]; 
   }
 
-  merr<<"Hit index out of bounds (max: "<<m_Hits.size()-1<<"): "<<i<<show;
+  merr<<"Hit index out of bounds ([0.."<<m_Hits.size()<<"[): "<<i<<show;
 
   return NHit();
 }
@@ -537,7 +556,7 @@ NHit& NEvent::GetHitRef(unsigned int i)
     return m_Hits[i]; 
   }
 
-  merr<<"Hit index out of bounds (max: "<<m_Hits.size()-1<<"): "<<i<<fatal;
+  merr<<"Hit index out of bounds ([0.."<<m_Hits.size()<<"[): "<<i<<fatal;
 
   return m_Hits[0];
 }

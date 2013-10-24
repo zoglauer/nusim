@@ -61,7 +61,8 @@ void NGUIOptionsTriggerEngine::Create()
   PreCreate();
 
   // Modify here
-  TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 40, 20, 10, 10);
+  TGLayoutHints* LabelLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 40, 20, 15, 0);
+  TGLayoutHints* PileUpLayout = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 60, 20, 0, 10);
 
 
   m_EnableDeadTime = new TGCheckButton(this, "Enable dead time");
@@ -72,6 +73,15 @@ void NGUIOptionsTriggerEngine::Create()
     m_EnableDeadTime->SetState(kButtonUp);    
   }
   AddFrame(m_EnableDeadTime, LabelLayout);
+
+  m_EnablePileUp = new TGCheckButton(this, "Enable pile up (requires dead time activated)\nWARNING: Do NOT turn this on by default!\nIt will only work with event rates >> 1000 cts/sec/mod!");
+  m_EnablePileUp->Associate(this);
+  if (dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetApplyPileUp() == true) {
+    m_EnablePileUp->SetState(kButtonDown);
+  } else {
+    m_EnablePileUp->SetState(kButtonUp);    
+  }
+  AddFrame(m_EnablePileUp, PileUpLayout);
 
   m_PixelTrigger = new MGUIEEntry(this, "Pixel trigger (standard: 3 keV) [keV]:", false, dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetPixelTrigger());
   AddFrame(m_PixelTrigger, LabelLayout);
@@ -124,10 +134,21 @@ bool NGUIOptionsTriggerEngine::OnApply()
 {
 	// Modify this to store the data in the module!
 
+	if (m_EnablePileUp->GetState() == kButtonDown && m_EnableDeadTime->GetState() == kButtonUp) {
+    mgui<<"The pile up engine requires the dead time engine to be activated"<<error;
+    return false;
+  }
+	
   if (m_EnableDeadTime->GetState() == kButtonDown) {
     dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyDeadTime(true);
+    if (m_EnablePileUp->GetState() == kButtonDown) {
+      dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyPileUp(true);
+    } else {
+      dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyPileUp(false);    
+    }
   } else {
     dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyDeadTime(false);    
+    dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetApplyPileUp(false);    
   }
 
   dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->SetPixelTrigger(m_PixelTrigger->GetAsDouble());

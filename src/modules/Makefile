@@ -35,6 +35,7 @@ LOBJS = $(LB)/NModule.o \
 	$(LB)/NModuleInterfaceMetrologySaverLevel1Fits.o \
 	$(LB)/NModuleInterfaceStarTrackerSaverLevel1Fits.o \
 	$(LB)/NModuleInterfaceDeadTime.o \
+	$(LB)/NModuleInterfacePileUp.o \
 	$(LB)/NModuleInterfaceGeometryAndDetectorProperties.o \
 	$(LB)/NModuleInterfaceObservation.o \
 	$(LB)/NModuleTemplate.o \

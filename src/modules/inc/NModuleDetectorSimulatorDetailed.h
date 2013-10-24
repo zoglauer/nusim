@@ -91,7 +91,9 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
   vector<MFunction> m_Multiplicities;
   vector<MFunction> m_RayleighAngles;
 
-
+  //! The nuabs transmission probabilities
+  MFunction m_NuAbs;
+  
   // private members:
  private:
    
@@ -113,6 +115,8 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
   
   //! Event has been blocked in beryllium
   unsigned int m_NBlockedBeryllium ;
+  //! Event has been blocked at the detector surface
+  unsigned int m_NBlockedDetectorSurface;
   //! Event has been blocked at the detector plane, i.e., it hit passive material
   unsigned int m_NBlockedInDetectorPlane;
   //! Event passed through the detector without an interaction

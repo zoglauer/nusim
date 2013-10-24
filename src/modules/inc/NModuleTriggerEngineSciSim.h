@@ -23,6 +23,7 @@
 #include "NModule.h"
 #include "NModuleInterfaceEvent.h"
 #include "NModuleInterfaceDeadTime.h"
+#include "NModuleInterfacePileUp.h"
 
 // Forward declarations:
 
@@ -30,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceDeadTime
+class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent, public NModuleInterfaceDeadTime, public NModuleInterfacePileUp
 {
   // public interface:
  public:
@@ -83,7 +84,6 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
 
   // private members:
  private:
-
   //! Low veto trigger energy threshold
   double m_LowTrigger;
   //! High veto trigger energy threshold
@@ -101,6 +101,8 @@ class NModuleTriggerEngineSciSim : public NModule, public NModuleInterfaceEvent,
   NTime m_LifeTime2;
   
 
+  
+  
 #ifdef ___CINT___
  public:
   ClassDef(NModuleTriggerEngineSciSim, 0) // no description

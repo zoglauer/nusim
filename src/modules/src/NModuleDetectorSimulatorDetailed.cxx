@@ -132,6 +132,13 @@ bool NModuleDetectorSimulatorDetailed::Initialize()
     }
     m_RayleighAngles.push_back(E);
   }
+  
+  // NuAbs transmission probabilities
+  if (m_NuAbs.Set("$(NUSIM)/resource/data/detectorsim/NuAbsAvgTransProb.csv", "DP", MFunction::c_InterpolationLinLin) == false) {
+    cout<<"NuAbs transmission probabilities"<<endl;
+    return false;
+  }
+  
 
   m_NPhoto = 0;
   m_NCompton = 0;
@@ -152,6 +159,7 @@ bool NModuleDetectorSimulatorDetailed::Initialize()
   }
   
   m_NBlockedBeryllium = 0;
+  m_NBlockedDetectorSurface = 0;
   m_NBlockedInDetectorPlane = 0;
   m_NBlockedPassedWithoutInteractionThroughDetector = 0;
   m_NPhotonsEnteringDetector = 0;
@@ -245,7 +253,16 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
     return true;
   }
   
-  // (h) Simulate an infinite plane of CZT in the detector module coordinate system
+  
+  // (h) Simulate the absorption in the passive top layers of the detector --- "nuabs"
+  if (gRandom->Rndm() > m_NuAbs.Eval(Photon.GetEnergy())) {
+    Event.SetBlocked(true);
+    ++m_NBlockedDetectorSurface;
+    return true;
+  }
+  
+  
+  // (i) Simulate an infinite plane of CZT in the detector module coordinate system
   ++m_NPhotonsEnteringDetector;
   
   // Really simulate
@@ -260,13 +277,13 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
     return true;
   }
   
-  // (i) Transform the photon back -- just for book keeping
+  // (j) Transform the photon back -- just for book keeping
   DetectorOrientation.TransformOut(Photon);
   Orientation.TransformOut(Photon);
   //cout<<"Pos in FP: "<<Photon.GetPosition()<<":"<<Photon.GetDirection()<<endl;
   Event.SetCurrentPhoton(Photon);
 
-  // (j) Complete the IA
+  // (k) Complete the IA
   for (unsigned int i = 0; i < Event.GetNInteractions(); ++i) {
     Event.GetInteractionRef(i).SetTelescope(Event.GetTelescope());
     Event.GetInteractionRef(i).SetDetector(Detector);
@@ -537,6 +554,7 @@ bool NModuleDetectorSimulatorDetailed::Finalize()
   cout<<"    Fluorescence: "<<m_NFluorescence<<endl;
   cout<<"  Blocked events:"<<endl;
   cout<<"    In Beryllium:            "<<m_NBlockedBeryllium<<endl;
+  cout<<"    In detector surface:     "<<m_NBlockedDetectorSurface<<endl;
   cout<<"    In detector plane:       "<<m_NBlockedInDetectorPlane<<endl;
   cout<<"    No detector interaction: "<<m_NBlockedPassedWithoutInteractionThroughDetector<<" (Pass throughs and Rayleigh back scatters)"<<endl;
   return true;

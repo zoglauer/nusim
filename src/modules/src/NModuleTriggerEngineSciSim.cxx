@@ -137,6 +137,7 @@ bool NModuleTriggerEngineSciSim::Initialize()
 
 
   NModuleInterfaceDeadTime::Initialize();
+  NModuleInterfacePileUp::Initialize();
 
   m_LifeTime1.Set(0.0);
   m_LifeTime2.Set(0.0);
@@ -151,8 +152,25 @@ bool NModuleTriggerEngineSciSim::Initialize()
 bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event) 
 {
   // Main data analysis routine, which updates the event to a new level 
-
-  // Step (1): Check if we have a pixel trigger and then create 9-pixel-hits
+  
+  //cout<<Event.GetTelescope()<<" - ******* Event time: "<<Event.GetTime()<<endl;
+  
+  // Step (1): Check for a shield veto:
+  for (unsigned int i = 0; i < Event.GetNShieldHits(); ++i) {
+    // Raise veto
+    if (Event.GetShieldHit(i).GetIdealEnergy() > m_HighTrigger) {
+      Event.SetVetoHigh();
+    } else if (Event.GetShieldHit(i).GetIdealEnergy() > m_LowTrigger) {
+      Event.SetVetoLow();        
+    }
+  }
+  
+  if (Event.GetVeto() == true) {
+   // No detector read-out triggered -- no detector dead time 
+    return true;
+  }
+    
+  // Step (2): Check if we have a pixel trigger and then create 9-pixel-hits
   int NTriggers = 0;
   int HighestID = 0;
   double HighestEnergy = 0.0;
@@ -167,8 +185,45 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     }
   }
   Event.SetNPixelTriggers(NTriggers);
+  //cout<<"Triggers (1): "<<NTriggers<<" E_max="<<HighestEnergy<<endl;
 
   
+  // Take care of events lost in dead time
+  if (m_ApplyDeadTime == true /* && NTriggers > 0 */) { 
+    if (IsLostInDeadTime(Event) == true) {
+      //cout<<Event.GetTelescope()<<" - Lost in dead time!"<<endl;
+      return true;
+    }
+  }
+    
+  //cout<<Event.GetTelescope()<<" - Not in dead time!"<<m_DeadTimeEndTelescope1<<":"<<m_DeadTimeEndTelescope2<<endl;    
+  
+
+  // Step (3): Create a delayed piled up event
+  if (m_ApplyDeadTime == true && m_ApplyPileUp == true) {
+    Event = CreateDelayedPileUpEvent(Event);
+    if (Event.GetBlocked() == true) return true;
+
+    // Redetermine the triggers
+    NTriggers = 0;
+    HighestID = 0;
+    HighestEnergy = 0.0;
+    for (unsigned int p = 0; p < Event.GetNPixelHits(); ++p) {
+      double SampleSumDiff = Event.GetPixelHit(p).GetPostTriggerSampleSum() - Event.GetPixelHit(p).GetPreTriggerSampleSum();
+      if (SampleSumDiff > HighestEnergy) {
+        HighestEnergy = SampleSumDiff;
+        HighestID = p;
+      }
+      if (SampleSumDiff > m_PixelTrigger) {
+        ++NTriggers;
+      }
+    }
+    Event.SetNPixelTriggers(NTriggers);
+  }
+  //cout<<"Triggers (2): "<<NTriggers<<endl;
+
+  
+  // Step (4): Create the nine pixel hit
   if (NTriggers > 0) {
     // For the time being create one 9-Pixel-hit with the center being the pixel with the highest ID
     NNinePixelHit Niner;
@@ -238,42 +293,36 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
     Niner.SetTriggerGrade(TriggerGrade);
 
     Event.AddNinePixelHit(Niner);
-}
-
-  // Step (2): Check if a shield veto was raised
-  for (unsigned int i = 0; i < Event.GetNShieldHits(); ++i) {
-    // Raise veto
-    if (Event.GetShieldHit(i).GetIdealEnergy() > m_HighTrigger) {
-      Event.SetVetoHigh();
-    } else if (Event.GetShieldHit(i).GetIdealEnergy() > m_LowTrigger) {
-      Event.SetVetoLow();        
-    }
   }
 
-  if (Event.GetVeto() == false && Event.GetNNinePixelHits() == 0) {
+  
+  if (Event.GetVeto() == false && Event.GetNNinePixelHits() == 0 && Event.IsMeasured() == false) {
+    //cout<<Event.GetTelescope()<<" - Blocked!"<<endl;    
     Event.SetBlocked(true);
-    return true;
-  }
-  
-  if (Event.GetVeto() == true) {
-   // No detector read-out triggered -- no detector dead time 
-    return true;
-  }
-  
-  if (m_ApplyDeadTime == true) {
-    // First check is we are in dead time
-    if (IsLostInDeadTime(Event) == true) {
-      return true;
+    if (m_ApplyDeadTime == true && m_ApplyPileUp == true) {
+      CleanUpOne(Event);
     }
-
+    return true;
+  }
+  
+  // Take care of dead time...
+  if (m_ApplyDeadTime == true) {
     // Raise the dead time
+    if (Event.GetTime() < GetDeadTimeEndTelescope(Event.GetTelescope())) {
+      //cout<<"ERROR: The event time ("<<Event.GetTime()<<") is smaller than the end of the dead time ("<<GetDeadTimeEndTelescope(Event.GetTelescope())<<") !!"<<endl;
+    }
     Event.SetDetectorLifeTime(Event.GetTime() - GetDeadTimeEndTelescope(Event.GetTelescope()));
     if (Event.GetTelescope() == 1) {
       m_LifeTime1 += Event.GetTime() - GetDeadTimeEndTelescope(Event.GetTelescope());
     } else {
       m_LifeTime2 += Event.GetTime() - GetDeadTimeEndTelescope(Event.GetTelescope());      
     }
-    SetDeadTimeDetectorHit(Event.GetTime(), Event.GetTelescope());    
+    SetDeadTimeDetectorHit(Event.GetTime(), Event.GetTelescope());
+
+    if (m_ApplyDeadTime == true && m_ApplyPileUp == true) {
+      CleanUpAll(Event);
+    }
+    
   } else {
     if (Event.GetTelescope() == 1) {
       m_NEventsNotLostInDeadTime1++;
@@ -281,6 +330,8 @@ bool NModuleTriggerEngineSciSim::AnalyzeEvent(NEvent& Event)
       m_NEventsNotLostInDeadTime2++;      
     }
   }
+  
+  //cout<<"Good event!"<<endl;
   
   return true;
 }
@@ -298,22 +349,28 @@ bool NModuleTriggerEngineSciSim::Finalize()
   cout<<"  Triggers - telesope 1:"<<endl;
   cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime1<<endl;
   if (m_ApplyDeadTime == true) {
-    cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime1<<endl;
-    cout<<"     Life time:                  "<<(m_Satellite.GetEffectiveObservationTime() - m_DeadTimeCouter1*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
-    cout<<"     Life time sanity check:     "<<m_LifeTime1.GetAsSeconds()<<" seconds"<<endl;
-    double Input = m_NEventsNotLostInDeadTime1/(1 - m_NEventsNotLostInDeadTime1*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
-    cout<<"     Input hits as sanity check: "<<Input
-      <<" vs. "<<m_NEventsLostInDeadTime1+m_NEventsNotLostInDeadTime1<<endl;
+    cout<<"     Events lost in dead time:         "<<m_NEventsLostInDeadTime1<<endl;
+    // "-1" beacuse we want to ignore the one we are currently in
+    cout<<"     Life time (error: 1 dead time):   "<<(m_Satellite.GetEffectiveObservationTime() - (m_DeadTimeCouter1-1)*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
+    cout<<"     Life time sanity check:           "<<m_LifeTime1.GetAsSeconds()<<" seconds"<<endl;
+    //double Input = m_NEventsNotLostInDeadTime1/(1 - m_NEventsNotLostInDeadTime1*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
+    //cout<<"     Input hits as sanity check:       "<<Input
+    //  <<" vs. "<<m_NEventsLostInDeadTime1+m_NEventsNotLostInDeadTime1<<endl;
   }
   cout<<"  Triggers - telesope 2:"<<endl;
   cout<<"     Events passed:              "<<m_NEventsNotLostInDeadTime2<<endl;
   if (m_ApplyDeadTime == true) {
-    cout<<"     Events lost in dead time:   "<<m_NEventsLostInDeadTime2<<endl;
-    cout<<"     Life time:                  "<<(m_Satellite.GetEffectiveObservationTime() - m_DeadTimeCouter2*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
-    cout<<"     Life time sanity check:     "<<m_LifeTime2.GetAsSeconds()<<" second"<<endl;
-    double Input = m_NEventsNotLostInDeadTime2/(1 - m_NEventsNotLostInDeadTime2*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
-    cout<<"     Input hits as sanity check: "<<Input
-      <<" vs. "<<m_NEventsLostInDeadTime2+m_NEventsNotLostInDeadTime2<<endl;
+    cout<<"     Events lost in dead time:         "<<m_NEventsLostInDeadTime2<<endl;
+    // "-1" beacuse we want to ignore the one we are currently in
+    cout<<"     Life time (error: 1 dead time):    "<<(m_Satellite.GetEffectiveObservationTime() - (m_DeadTimeCouter2-1)*m_DetectorDeadTime.GetAsSeconds())/m_Satellite.GetEffectiveObservationTime().GetAsSeconds()<<" per second"<<endl;
+    cout<<"     Life time sanity check:           "<<m_LifeTime2.GetAsSeconds()<<" second"<<endl;
+    //double Input = m_NEventsNotLostInDeadTime2/(1 - m_NEventsNotLostInDeadTime2*m_DetectorDeadTime.GetAsSeconds()/m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
+    //cout<<"     Input hits as sanity check:       "<<Input
+    //  <<" vs. "<<m_NEventsLostInDeadTime2+m_NEventsNotLostInDeadTime2<<endl;
+  }
+  
+  if (m_ApplyPileUp == true) {
+    NModuleInterfacePileUp::Finalize();
   }
   
   return true;
@@ -350,6 +407,11 @@ bool NModuleTriggerEngineSciSim::ReadXmlConfiguration(MXmlNode* Node)
     m_ApplyDeadTime = ApplyDeadTimeNode->GetValueAsBoolean();
   }
 
+  MXmlNode* ApplyPileUpNode = Node->GetNode("ApplyPileUp");
+  if (ApplyPileUpNode != 0) {
+    m_ApplyPileUp = ApplyPileUpNode->GetValueAsBoolean();
+  }
+
   MXmlNode* LowTriggerNode = Node->GetNode("LowTrigger");
   if (LowTriggerNode != 0) {
     m_LowTrigger = LowTriggerNode->GetValueAsDouble();
@@ -379,6 +441,7 @@ MXmlNode* NModuleTriggerEngineSciSim::CreateXmlConfiguration()
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   
   new MXmlNode(Node, "ApplyDeadTime", m_ApplyDeadTime);
+  new MXmlNode(Node, "ApplyPileUp", m_ApplyPileUp);
   new MXmlNode(Node, "LowTrigger",    m_LowTrigger);
   new MXmlNode(Node, "HighTrigger",   m_HighTrigger);
   new MXmlNode(Node, "PixelTrigger",   m_PixelTrigger);

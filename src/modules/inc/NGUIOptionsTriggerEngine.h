@@ -62,8 +62,11 @@ class NGUIOptionsTriggerEngine : public NGUIOptions
 
   // protected members:
  protected:
+  //! The dead time button
   TGCheckButton* m_EnableDeadTime;
-
+  //! The pile-up button
+  TGCheckButton* m_EnablePileUp;
+  
   //! Low veto trigger energy threshold
   MGUIEEntry* m_LowTrigger;
   //! High veto trigger energy threshold

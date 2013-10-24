@@ -92,6 +92,11 @@ class NEvent
   //! Return the Time of this event
   NTime GetTime() const { return m_Time; }
 
+  //! Set the time of this event
+  void IsMeasured(bool IsMeasured) { m_Empty = false; m_IsMeasured = IsMeasured; }
+  //! Return the Time of this event
+  bool IsMeasured() const { return m_IsMeasured; }
+
   //! Set the detector life time for this event
   void SetDetectorLifeTime(NTime DetectorLifeTime) { m_Empty = false; m_DetectorLifeTime = DetectorLifeTime; }
   //! Return the detector life time for this event
@@ -125,8 +130,13 @@ class NEvent
   //! Return the trigger flag
   bool GetTrigger() const { return m_Trigger; }
 
+  //! Set the pile-up flag
+  void SetPileUp(bool PileUp = true) { m_Empty = false; m_PileUp = PileUp; }
+  //! Return the pile-up flag
+  bool GetPileUp() const { return m_PileUp; }
+
   //! Set the number of pixel triggers
-  void SetNPixelTriggers(int NPixelTriggers) { m_Empty = false; m_NPixelTriggers = NPixelTriggers; if (m_NPixelTriggers > 0) m_Trigger = true; else m_Trigger = false; }
+  void SetNPixelTriggers(int NPixelTriggers) { m_Empty = false; m_NPixelTriggers = NPixelTriggers; if (m_IsMeasured == false) { if (m_NPixelTriggers > 0) m_Trigger = true; else m_Trigger = false; } }
   int GetNPixelTriggers() const { return m_NPixelTriggers; }
 
   //! Set the event cut flag
@@ -286,6 +296,9 @@ class NEvent
   //! Telescope of this event
   unsigned int m_Telescope;
 
+  //! True is this is a measured event
+  bool m_IsMeasured;
+  
   //! The right ascension
   double m_Ra;
   //! The declination
@@ -341,6 +354,9 @@ class NEvent
 
   //! Trigger flag of this event
   bool m_Trigger;
+
+  //! Pile-up flag of this event
+  bool m_PileUp;
 
   //! The number of pixeds which have triggers
   int m_NPixelTriggers;
