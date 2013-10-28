@@ -19,7 +19,7 @@ only a version one, e.g. libcfitsio\_3.24.so. Since NuSIM should be able to run 
 ln -s libcfitsio\_3.24.[so/dylib] libcfitsio.[so/dylib]
 in the heasoft/$<$system version$>$/lib directory.
 In the case you have many different versions of HEASOFT installed on your system, you might want to keep the version number of cfitsio in the Makefile:
-After configuring NuSIM you can exchange in the file config/Makefile.config -cfitsio with -cfitsio_3.24.
+After configuring NuSIM you can exchange in the file config/Makefile.config -cfitsio with -cfitsio\_3.24.
 You have to remember to update this each time you run configure or you update HEAsoft!
 \end{itemize}
 

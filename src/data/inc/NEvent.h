@@ -358,7 +358,7 @@ class NEvent
   //! Pile-up flag of this event
   bool m_PileUp;
 
-  //! The number of pixeds which have triggers
+  //! The number of pixels which have triggers
   int m_NPixelTriggers;
 
   //! Event cut flag of this event

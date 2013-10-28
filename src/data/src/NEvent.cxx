@@ -177,6 +177,7 @@ bool NEvent::Stream(ofstream& S, int Version, int WhatToStream)
     for (unsigned int i = 0; i < m_PixelHits.size(); ++i) {
       m_PixelHits[i].Stream(S, Version);
     }
+    S<<"PT "<<m_NPixelTriggers<<endl;
     for (unsigned int i = 0; i < m_ShieldHits.size(); ++i) {
       m_ShieldHits[i].Stream(S, Version);
     }
@@ -212,6 +213,10 @@ bool NEvent::Parse(TString& Line, int Version)
     } 
   } else if (Data[0] == 'T' && Data[1] == 'E') {
     if (sscanf(Data, "TE %d", &m_Telescope) != 1) {
+      Error = true;
+    } 
+  } else if (Data[0] == 'P' && Data[1] == 'T') {
+    if (sscanf(Data, "PT %d", &m_NPixelTriggers) != 1) {
       Error = true;
     } 
   } else if (Data[0] == 'O' && Data[1] == 'G') {

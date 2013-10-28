@@ -179,15 +179,29 @@ Description:&	A pixel hit, i.e. the detector effects engine applied to the ideal
 \begin{center}
 \begin{tabular}{|p{2cm}|p{12cm}|}
 \hline
-Key:&	SH ("shield hit")\\
+Key:& SH ("shield hit")\\
 \hline
-Parameters:&	1: Telescope ID\\
+Parameters:&  1: Telescope ID\\
 &2: Detector ID\\
 &3: ideal energy deposit (keV)\\
 &4: noised energy deposit (keV)\\
 \hline
-Description:&	A shield hit, i.e. the detector effects engine applied \\
+Description:& A shield hit, i.e. the detector effects engine applied \\
 & to the ideal interactions in the shield\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[htdp]
+\begin{center}
+\begin{tabular}{|p{2cm}|p{12cm}|}
+\hline
+Key:& PT ("pixel triggers")\\
+\hline
+Parameters:&  1: Number of triggered pixels\\
+\hline
+Description:& The number of pixels that have a hardware triggered\\
 \hline
 \end{tabular}
 \end{center}
