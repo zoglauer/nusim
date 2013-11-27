@@ -113,7 +113,8 @@ NModuleTriggerEngineSciSim::NModuleTriggerEngineSciSim(NSatellite& Satellite) : 
   // and implement all your GUI options
   //m_Diagnostics = new MGUIDiognosticsVetoDeadTimeEngineDummy();
 
-  m_PixelTrigger = 3;
+  // m_PixelTrigger = 3;
+  m_PixelTrigger = 2;
   m_LowTrigger = 75;
   m_HighTrigger = 5000;
 }

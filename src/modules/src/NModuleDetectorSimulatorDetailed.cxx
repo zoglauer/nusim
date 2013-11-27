@@ -69,6 +69,7 @@ NModuleDetectorSimulatorDetailed::NModuleDetectorSimulatorDetailed(NSatellite& S
   //m_Diagnostics = new MGUIDiognosticsDetectorSimulator();
   
   m_UseBerylliumWindow = true;
+  m_UseCZTDeadLayer = true;
 }
 
 
@@ -156,6 +157,10 @@ bool NModuleDetectorSimulatorDetailed::Initialize()
 
   if (m_UseBerylliumWindow == false) {
     mout<<"Attention: Beryllium window is deactivated in detailed detector simulator"<<endl;
+  }
+  
+  if (m_UseCZTDeadLayer == false) {
+    mout<<"Attention: CZT dead layer is deactivated in detailed detector simulator"<<endl;
   }
   
   m_NBlockedBeryllium = 0;
@@ -255,12 +260,13 @@ bool NModuleDetectorSimulatorDetailed::AnalyzeEvent(NEvent& Event)
   
   
   // (h) Simulate the absorption in the passive top layers of the detector --- "nuabs"
-  if (gRandom->Rndm() > m_NuAbs.Eval(Photon.GetEnergy())) {
-    Event.SetBlocked(true);
-    ++m_NBlockedDetectorSurface;
-    return true;
+  if (m_UseCZTDeadLayer == true) {
+    if (gRandom->Rndm() > m_NuAbs.Eval(Photon.GetEnergy())) {
+      Event.SetBlocked(true);
+      ++m_NBlockedDetectorSurface;
+      return true;
+    }
   }
-  
   
   // (i) Simulate an infinite plane of CZT in the detector module coordinate system
   ++m_NPhotonsEnteringDetector;
@@ -593,6 +599,11 @@ bool NModuleDetectorSimulatorDetailed::ReadXmlConfiguration(MXmlNode* Node)
     m_UseBerylliumWindow = UseBerylliumWindowNode->GetValueAsBoolean();
   }
 
+  MXmlNode* UseCZTDeadLayerNode = Node->GetNode("UseCZTDeadLayer");
+  if (UseCZTDeadLayerNode != 0) {
+    m_UseCZTDeadLayer = UseCZTDeadLayerNode->GetValueAsBoolean();
+  }
+
   return true;
 }
 
@@ -606,6 +617,7 @@ MXmlNode* NModuleDetectorSimulatorDetailed::CreateXmlConfiguration()
 
   MXmlNode* Node = new MXmlNode(0, m_XmlTag);
   new MXmlNode(Node, "UseBerylliumWindow", m_UseBerylliumWindow);
+  new MXmlNode(Node, "UseCZTDeadLayer",    m_UseCZTDeadLayer);
 
   return Node;
 }

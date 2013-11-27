@@ -85,8 +85,10 @@ bool NModuleInterfaceEventSaverROOTEnergyResponse::OpenEnergyResponseROOTFile(TS
   m_Response = new TH2D("Response",
 			Form("Detector Response Produced by NuSim ver. %s (SVN rev. %d)",
 			     g_Version.Data(), g_SVNRevision),
-			820, 2.95, 84.95,  // ARF
-			820, 2.95, 84.95); // RMF Ebounds
+			4096, 1.6, 165.44,  // ARF
+			4096, 1.6, 165.44); // RMF Ebounds
+			// 820, 2.95, 84.95,  // ARF
+			// 820, 2.95, 84.95); // RMF Ebounds
 
   m_Response->SetXTitle("Primary Energy (keV)");
   m_Response->SetYTitle("Observed Energy (keV)");
@@ -130,10 +132,14 @@ bool NModuleInterfaceEventSaverROOTEnergyResponse::CloseEnergyResponseROOTFile()
   //! Close the file
   // cout<<"CloseROOT"<<endl;
 
+  
   TDirectory* OrgDirectory = gDirectory;
 
   m_File->cd();
-  if (m_Response->GetEntries() > 0) m_Response->Write();
+  if (m_Response->GetEntries() > 0) {
+    m_Response->SetEntries(m_Satellite.GetEffectiveObservationTime().GetAsSeconds());
+    m_Response->Write();
+  }
   m_File->Close();
 
   m_File = 0;

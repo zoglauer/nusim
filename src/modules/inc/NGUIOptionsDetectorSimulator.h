@@ -63,6 +63,7 @@ class NGUIOptionsDetectorSimulator : public NGUIOptions
   // protected members:
  protected:
   TGCheckButton* m_EnableBerylliumWindow;
+  TGCheckButton* m_EnableCZTDeadLayer;
 
   // private members:
  private:

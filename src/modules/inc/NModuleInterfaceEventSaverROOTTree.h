@@ -95,6 +95,7 @@ class NModuleInterfaceEventSaverROOTTree
   //! Event list in ROOT TTree class
   TTree* m_EventTree;
 
+  int      m_EventID;
   double   m_Time;
   int      m_Origin;
   double   m_PrimaryEnergy;

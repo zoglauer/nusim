@@ -83,7 +83,8 @@ void NGUIOptionsTriggerEngine::Create()
   }
   AddFrame(m_EnablePileUp, PileUpLayout);
 
-  m_PixelTrigger = new MGUIEEntry(this, "Pixel trigger (standard: 3 keV) [keV]:", false, dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetPixelTrigger());
+  // m_PixelTrigger = new MGUIEEntry(this, "Pixel trigger (standard: 3 keV) [keV]:", false, dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetPixelTrigger());
+  m_PixelTrigger = new MGUIEEntry(this, "Pixel trigger (standard: 2 keV) [keV]:", false, dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetPixelTrigger());
   AddFrame(m_PixelTrigger, LabelLayout);
 
   m_LowTrigger = new MGUIEEntry(this, "Shield lower trigger [keV]:", false, dynamic_cast<NModuleTriggerEngineSciSim*>(m_Module)->GetLowTrigger());

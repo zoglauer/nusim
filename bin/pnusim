@@ -147,7 +147,8 @@ while true; do
 
   found=0
   for C in `seq 0 $(( ${THREADS} - 1))`; do
-    search=$(ps --pid ${NUSIMPID[${C}]} -o comm=)
+    # search=$(ps --pid ${NUSIMPID[${C}]} -o comm=)
+    search=$(ps -p ${NUSIMPID[${C}]} -o comm=)
     if [ "${search}" == "nusim" ]; then
       found=$((${found} + 1))
     fi
@@ -194,6 +195,12 @@ if (`test -f ${BASEFILENAME}.0.events.dat`); then
   done
   rm -f ${BASEFILENAME}.events.dat
   ConcatDat ${List} -o ${BASEFILENAME}.events.dat
+fi
+if (`test -f ${BASEFILENAME}.0.events.root`); then
+  hadd -f ${BASEFILENAME}.events.root ${BASEFILENAME}.*.events.root
+fi
+if (`test -f ${BASEFILENAME}.0.energyresponse.root`); then
+  hadd -f ${BASEFILENAME}.energyresponse.root ${BASEFILENAME}.*.energyresponse.root
 fi
   
   

@@ -92,11 +92,12 @@ bool NModuleInterfaceEventSaverROOTTree::OpenROOTFile(TString FileName)
 			       g_Version.Data(), g_SVNRevision));
 
   //! Create one branched with event information
+  m_EventTree->Branch("EventID",              &m_EventID,             "EventID/I");
   m_EventTree->Branch("Time",                 &m_Time,                "Time/D");
   m_EventTree->Branch("Origin",               &m_Origin,              "Origin/I");
   m_EventTree->Branch("PrimaryEnergy",        &m_PrimaryEnergy,       "PrimaryEnergy/D");
-  m_EventTree->Branch("PrimaryPosition",      &m_PrimaryPosition);
-  m_EventTree->Branch("PrimaryDirection",     &m_PrimaryDirection);
+  m_EventTree->Branch("PrimaryPosition.",  "TVector3", &m_PrimaryPosition);
+  m_EventTree->Branch("PrimaryDirection.", "TVector3", &m_PrimaryDirection);
   m_EventTree->Branch("RA",                   &m_RA,                  "RA/D");
   m_EventTree->Branch("Dec",                  &m_Dec,                 "Dec/D");
   m_EventTree->Branch("XPix",                 &m_XPix,                "XPix/D");
@@ -140,12 +141,13 @@ bool NModuleInterfaceEventSaverROOTTree::SaveEventTree(NEvent& Event)
   m_BadDepthCal         = Hit.GetBadDepthCalibration();
   m_DepthCut            = Hit.GetDepthCut();
 
-  m_Time   = m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds();
-  m_Origin = Event.GetOrigin();
-  m_Dec    = Hit.GetObservatoryData().GetDec();
-  m_RA     = Hit.GetObservatoryData().GetRaScaled();
-  m_XPix   = (m_RA - Reference_Ra *60.)*60./Pixsize;
-  m_YPix   = (m_Dec- Reference_Dec*60.)*60./Pixsize;
+  m_EventID = Event.GetID();
+  m_Time    = m_Satellite.ConvertToTimeSinceEpoch(Event.GetTime()).GetAsSeconds();
+  m_Origin  = Event.GetOrigin();
+  m_Dec     = Hit.GetObservatoryData().GetDec();
+  m_RA      = Hit.GetObservatoryData().GetRaScaled();
+  m_XPix    = (m_RA - Reference_Ra *60.)*60./Pixsize;
+  m_YPix    = (m_Dec- Reference_Dec*60.)*60./Pixsize;
 
   // from NPhoton
   m_PrimaryEnergy    = Event.GetOriginalPhoton().GetEnergy();

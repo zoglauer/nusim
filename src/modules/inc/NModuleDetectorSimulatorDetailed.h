@@ -48,6 +48,11 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
   void SetUseBerylliumWindow(bool UseBerylliumWindow) { m_UseBerylliumWindow = UseBerylliumWindow; }
   //! Return true if the Beryllium window is enabled
   bool GetUseBerylliumWindow() const { return m_UseBerylliumWindow; }
+
+  //! Enable or disable the CZT dead layer
+  void SetUseCZTDeadLayer(bool UseCZTDeadLayer) { m_UseCZTDeadLayer = UseCZTDeadLayer; }
+  //! Return true if the CZT dead layer is enabled
+  bool GetUseCZTDeadLayer() const { return m_UseCZTDeadLayer; }
   
   //! Initialize the module
   virtual bool Initialize();
@@ -99,6 +104,9 @@ class NModuleDetectorSimulatorDetailed : public NModule, public NModuleInterface
    
   //! Use the Beryllium window
   bool m_UseBerylliumWindow;
+
+  //! Use the CZT dead layer
+  bool m_UseCZTDeadLayer;
 
   
   //! Number of photo effects

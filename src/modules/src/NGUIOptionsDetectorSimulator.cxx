@@ -73,6 +73,15 @@ void NGUIOptionsDetectorSimulator::Create()
   }
   AddFrame(m_EnableBerylliumWindow, LabelLayout);
   
+  m_EnableCZTDeadLayer = new TGCheckButton(this, "Enable CZT dead layer (should always be on)");
+  m_EnableCZTDeadLayer->Associate(this);
+  if (dynamic_cast<NModuleDetectorSimulatorDetailed*>(m_Module)->GetUseCZTDeadLayer() == true) {
+    m_EnableCZTDeadLayer->SetState(kButtonDown);
+  } else {
+    m_EnableCZTDeadLayer->SetState(kButtonUp);    
+  }
+  AddFrame(m_EnableCZTDeadLayer, LabelLayout);
+  
 
   PostCreate();
 }
@@ -120,6 +129,12 @@ bool NGUIOptionsDetectorSimulator::OnApply()
     dynamic_cast<NModuleDetectorSimulatorDetailed*>(m_Module)->SetUseBerylliumWindow(true);
   } else {
     dynamic_cast<NModuleDetectorSimulatorDetailed*>(m_Module)->SetUseBerylliumWindow(false);    
+  }
+
+  if (m_EnableCZTDeadLayer->GetState() == kButtonDown) {
+    dynamic_cast<NModuleDetectorSimulatorDetailed*>(m_Module)->SetUseCZTDeadLayer(true);
+  } else {
+    dynamic_cast<NModuleDetectorSimulatorDetailed*>(m_Module)->SetUseCZTDeadLayer(false);    
   }
 
   
