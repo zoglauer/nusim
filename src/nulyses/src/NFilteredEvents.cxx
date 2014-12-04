@@ -63,6 +63,7 @@ void NFilteredEvents::Clean()
   m_LiveTime = 0;
   m_DetectorArea = 0;
 
+  m_PI.clear();
   m_Energy.clear();
   m_SurrEnergy.clear();
   m_Grade.clear();
@@ -150,7 +151,7 @@ bool NFilteredEvents::Read(const TString& FileName)
       cout<<"Column read (PI) failed!"<<endl;
       break;
     }
-    //int PI = valint;
+    int PI = valint;
     double Energy = 0.04*double(valint)+1.6; //valdbl/10.0 + 3.0;
     
 
@@ -197,7 +198,7 @@ bool NFilteredEvents::Read(const TString& FileName)
     }
     int Det1Y = valint;
     
-    Add(Time, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY, Det1X, Det1Y);
+    Add(Time, PI, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY, Det1X, Det1Y);
   } 
 
   // Move to the thris hdu - GTI

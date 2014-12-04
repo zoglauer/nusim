@@ -145,6 +145,10 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
       m_SpecialGTIStart.push_back(atof(argv[++i]));
       m_SpecialGTIStop.push_back(atof(argv[++i]));
       cout<<"Accepting special good time interval: "<<m_SpecialGTIStart.back()<<" to "<<m_SpecialGTIStop.back()<<endl;
+    } else if (Option == "-e") {
+      m_SpectrumMin = atof(argv[++i]);
+      m_SpectrumMax = atof(argv[++i]);
+      cout<<"Accepting spectral range: "<<m_SpectrumMin<<" to "<<m_SpectrumMax<<endl;
     } else if (Option == "-b") {
       m_SpecialBTIStart.push_back(atof(argv[++i]));
       m_SpecialBTIStop.push_back(atof(argv[++i]));

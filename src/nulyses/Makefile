@@ -40,6 +40,7 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NDetectorHealth.o \
 	$(LB)/NApertureModel.o \
 	$(LB)/NApertureTester.o \
+	$(LB)/NMEGAlibExtract.o \
 
 SOBJ = $(LB)/libNulyses.$(DLL)
 

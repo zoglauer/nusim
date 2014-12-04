@@ -72,6 +72,7 @@ using namespace std;
 #include "NLineFitter.h"
 #include "NDetectorHealth.h"
 #include "NApertureTester.h"
+#include "NMEGAlibExtract.h"
 
 // Special
 #include "fitsio.h"
@@ -119,6 +120,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          backgroundmode4database: Create data base for mode 4"<<endl;
   Usage<<"          backgroundtester: Tests the uncertainties of different background approaches"<<endl;
   Usage<<"          linefitter: Check SAA rates"<<endl;
+  Usage<<"          megalibextract: Convert to MEGAlib data format"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"      -d:  directory containing all files"<<endl;
   Usage<<"      -dp: directory containing all files plus exclusion region ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels]  [radius of exclusion region on B]"<<endl;
@@ -231,6 +233,12 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
       } else if (Tool == "linefitter") {
         cout<<"Found tool: "<<Tool<<endl;
         NLineFitter F;
+        if (F.ParseCommandLine(argc, argv) == false) return false;
+        if (F.Analyze() == false) return false; 
+        return true;
+      } else if (Tool == "megalibextract") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NMEGAlibExtract F;
         if (F.ParseCommandLine(argc, argv) == false) return false;
         if (F.Analyze() == false) return false; 
         return true;

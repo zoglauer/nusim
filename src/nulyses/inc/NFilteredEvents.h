@@ -41,8 +41,9 @@ public:
   bool Read(const TString& FileName);
 
   
-  void Add(double Time, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY, int Det1X, int Det1Y) {
+  void Add(double Time, int PI, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY, int Det1X, int Det1Y) {
     m_Time.push_back(Time);
+    m_PI.push_back(PI);
     m_Energy.push_back(Energy);
     m_SurrEnergy.push_back(SurrEnergy);
     m_Grade.push_back(Grade);
@@ -78,6 +79,7 @@ public:
       m_Module = M.m_Module;
       m_LiveTime = M.m_LiveTime;
       m_DetectorArea = M.m_DetectorArea;
+      m_PI = M.m_PI;
       m_Energy = M.m_Energy;
       m_SurrEnergy = M.m_SurrEnergy;
       m_Grade = M.m_Grade;
@@ -102,6 +104,7 @@ public:
         --m_max;
         if (Index == -1) {
           m_Time.insert(m_Time.end(), M.m_Time.begin()+m, M.m_Time.begin()+m_max);
+          m_PI.insert(m_PI.end(), M.m_PI.begin()+m, M.m_PI.begin()+m_max);
           m_Energy.insert(m_Energy.end(), M.m_Energy.begin()+m, M.m_Energy.begin()+m_max);
           m_SurrEnergy.insert(m_SurrEnergy.end(), M.m_SurrEnergy.begin()+m, M.m_SurrEnergy.begin()+m_max);
           m_Grade.insert(m_Grade.end(), M.m_Grade.begin()+m, M.m_Grade.begin()+m_max);
@@ -112,6 +115,7 @@ public:
           m_Det1Y.insert(m_Det1Y.end(), M.m_Det1Y.begin()+m, M.m_Det1Y.begin()+m_max);
         } else {
           m_Time.insert(m_Time.begin()+Index, M.m_Time.begin()+m, M.m_Time.begin()+m_max);
+          m_PI.insert(m_PI.begin()+Index, M.m_PI.begin()+m, M.m_PI.begin()+m_max);
           m_Energy.insert(m_Energy.begin()+Index, M.m_Energy.begin()+m, M.m_Energy.begin()+m_max);
           m_SurrEnergy.insert(m_SurrEnergy.begin()+Index, M.m_SurrEnergy.begin()+m, M.m_SurrEnergy.begin()+m_max);
           m_Grade.insert(m_Grade.begin()+Index, M.m_Grade.begin()+m, M.m_Grade.begin()+m_max);
@@ -138,6 +142,7 @@ public:
   double m_LiveTime;
   double m_DetectorArea;
 
+  vector<int> m_PI;
   vector<double> m_Energy;
   vector<double> m_SurrEnergy;
   vector<int> m_Grade;
