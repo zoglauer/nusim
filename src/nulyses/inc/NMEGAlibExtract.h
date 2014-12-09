@@ -47,8 +47,7 @@ class NMEGAlibExtract : public NBaseTool
   //NMEGAlibExtract() {};
   //NMEGAlibExtract(const NMEGAlibExtract& NCTHit) {};
 
-  bool Show(NFilteredEvents& FE, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-            int SourcePosX, int SourcePosY, double DistanceCutOff);
+  bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O);
   
   // private methods:
  private:
@@ -61,7 +60,10 @@ class NMEGAlibExtract : public NBaseTool
 
   // private members:
  private:
-
+  //! Use this directory
+  TString m_OutputDirectory;
+  //! Use occulted data?
+  bool m_Occulted;
 
 #ifdef ___CINT___
  public:

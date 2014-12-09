@@ -369,7 +369,7 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   m_FilteredEventsB01.m_ID = Tag;
   
   m_FilteredEventsB02.Clean();
-  if (m_ReadFiltered02 == true && LookAtModule.Contains("b")) if (m_FilteredEventsB01.Read(FIFileNameB01) == false) return false;
+  if (m_ReadFiltered02 == true && LookAtModule.Contains("b")) if (m_FilteredEventsB02.Read(FIFileNameB01) == false) return false;
   m_FilteredEventsB02.m_Module = 1;
   m_FilteredEventsB02.m_ID = Tag;
   

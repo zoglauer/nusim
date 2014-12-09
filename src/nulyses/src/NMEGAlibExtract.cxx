@@ -49,12 +49,14 @@ NMEGAlibExtract::NMEGAlibExtract()
 {
   // Construct an instance of NMEGAlibExtract
   
+  m_ReadFiltered01 = true;
   m_ReadFiltered02 = false;
   
   m_SpectrumMin = 2.0;
   m_SpectrumMax = 150.0;
-  
+ 
   m_BatchMode = true;
+  m_Occulted = false;
 }
 
 
@@ -79,6 +81,18 @@ bool NMEGAlibExtract::ParseCommandLine(int argc, char** argv)
   // Now parse the command line options:
   for (int i = 1; i < argc; i++) {
     Option = argv[i];
+    
+    // Then fulfill the options:
+    if (Option == "--occulted") {
+      m_Occulted = true;
+      m_ReadFiltered02 = true;
+      m_ReadFiltered01 = false;
+      cout<<"Looking at occulted data instead of science data"<<endl;
+    } else if (Option == "--outputdir") {
+      m_OutputDirectory = argv[++i];
+      m_OutputDirectory += "/";
+      cout<<"Using output directory "<<m_OutputDirectory<<endl;
+    }
   }
   
   return true;
@@ -92,8 +106,20 @@ bool NMEGAlibExtract::Analyze()
 {
   for (unsigned int d = 0; d < m_Directories.size(); ++d) {
     if (Load(m_Directories[d]) == false) continue;
-    if (m_LookAtModule.Contains("a")) Show(m_FilteredEventsA, m_UnfilteredEventsA, m_HousekeepingA, m_Orbits, m_Engineering, m_DetPosXA[d], m_DetPosYA[d], m_DetSizeA[d]);
-    if (m_LookAtModule.Contains("b")) Show(m_FilteredEventsB, m_UnfilteredEventsB, m_HousekeepingB, m_Orbits, m_Engineering, m_DetPosXB[d], m_DetPosYB[d], m_DetSizeB[d]);
+    if (m_LookAtModule.Contains("a")) {
+      if (m_Occulted == false) {
+        Show(m_FilteredEventsA01, m_HousekeepingA, m_Orbits);
+      } else {
+        Show(m_FilteredEventsA02, m_HousekeepingA, m_Orbits);        
+      }
+    }
+    if (m_LookAtModule.Contains("b")) {
+      if (m_Occulted == false) {
+        Show(m_FilteredEventsB01, m_HousekeepingB, m_Orbits);
+      } else {
+        Show(m_FilteredEventsB02, m_HousekeepingB, m_Orbits);       
+      }
+    }
   }
   return true;
 }
@@ -102,10 +128,9 @@ bool NMEGAlibExtract::Analyze()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeeping& H, NOrbits& O, NEngineering& E, 
-                       int SourcePosX, int SourcePosY, double DistanceCutOff)
+bool NMEGAlibExtract::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O)
 {
-  cout<<"Quick view of the data..."<<endl;
+  cout<<"Extract MEGAlib calibration data..."<<endl;
   
   // Section A: Create all histograms:
 
@@ -121,7 +146,8 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
 
   ofstream Outs;
   ostringstream Name;
-  Name<<F.m_ID<<"_"<<F.m_Module<<"_"<<int(Time.GetAsSeconds())<<".roa";
+  Name<<m_OutputDirectory<<F.m_ID<<"_"<<(m_Occulted ? "02" : "01")<<"_"<<((F.m_Module) == 0 ? "A" : "B")<<"_"<<int(Time.GetAsSeconds())<<".roa";
+  //Name<<m_OutputDirectory<<F.m_ID<<"_"<<(m_Occulted ? "02" : "01")<<"_"<<F.m_Module<<"_"<<int(Time.GetAsSeconds())<<".roa";
   Outs.open(Name.str().c_str());
   
   Outs<<"TY roa"<<endl;
@@ -150,13 +176,7 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
       cout<<"Orbit: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
-    int i = U.FindIndex(F.m_Time[e]);
-    if (i == -1) {
-      cout<<"Unfiltered events: Index not found..."<<endl;
-      continue;
-    }    
-    //if (IsGoodEventByExternalDepthFilter(U.m_Status[i]) == false) continue;
-    
+   
     int DetectorID = F.m_DetectorID[e];
 
     Time.Set(F.m_Time[e]);
@@ -168,6 +188,7 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
     Outs<<"TI "<<TimeString<<endl;
     Outs<<"UH "<<DetectorID<<" "<<F.m_PI[e]<<endl; //0.04*double(valint)+1.6
   }
+  Outs<<"EN"<<endl;
   
   Outs.close();
   
