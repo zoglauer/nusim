@@ -240,7 +240,8 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
         cout<<"Found tool: "<<Tool<<endl;
         NMEGAlibExtract F;
         if (F.ParseCommandLine(argc, argv) == false) return false;
-        if (F.Analyze() == false) return false; 
+        if (F.IsBatchMode() == true) gROOT->SetBatch(true);
+        if (F.Analyze() == false) return false;
         return true;
       } else if (Tool == "aperturetester") {
         cout<<"Found tool: "<<Tool<<endl;

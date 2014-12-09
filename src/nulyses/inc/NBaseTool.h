@@ -48,7 +48,8 @@ class NBaseTool
   /// Analyze what ever needs to be analyzed...
   virtual bool Analyze() { return false; }
 
-
+  virtual bool IsBatchMode() { return m_BatchMode; }
+  
   // protected methods:
  protected:
   //NBaseTool() {};
@@ -155,6 +156,8 @@ class NBaseTool
   TString m_FileType;
   
   bool m_ApplySAAFilters;
+  
+  bool m_BatchMode;
   
   // private members:
  private:

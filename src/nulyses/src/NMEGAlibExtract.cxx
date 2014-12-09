@@ -32,6 +32,7 @@ using namespace std;
 // MEGAlib libs:
 
 // NuSTAR libs:
+#include "NTime.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +53,8 @@ NMEGAlibExtract::NMEGAlibExtract()
   
   m_SpectrumMin = 2.0;
   m_SpectrumMax = 150.0;
+  
+  m_BatchMode = true;
 }
 
 
@@ -106,10 +109,19 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
   
   // Section A: Create all histograms:
 
+  if (F.m_Time.size() == 0) return false;
+
+  NTime NUSTAREpoch;
+  NUSTAREpoch.Set(2010, 1, 1, 0, 0, 0);
+
+  NTime Time(F.m_Time[0]);
+  Time += NUSTAREpoch;
+  TString TimeString = Time.ToString();
+  TimeString = TimeString.ReplaceAll("sec", "");
 
   ofstream Outs;
   ostringstream Name;
-  Name<<F.m_ID<<"_"<<F.m_Module<<".roa";
+  Name<<F.m_ID<<"_"<<F.m_Module<<"_"<<int(Time.GetAsSeconds())<<".roa";
   Outs.open(Name.str().c_str());
   
   Outs<<"TY roa"<<endl;
@@ -118,6 +130,7 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
   
   // Section B: Fill (and normalize) histograms
   double LiveTime = 0;
+  
   
   // Fill histograms which require filling by event
   for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
@@ -146,8 +159,13 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NUnfilteredEvents& U, NHousekeepi
     
     int DetectorID = F.m_DetectorID[e];
 
+    Time.Set(F.m_Time[e]);
+    Time += NUSTAREpoch;
+    TimeString = Time.ToString();
+    TimeString = TimeString.ReplaceAll("sec", "");
+
     Outs<<"SE"<<endl;
-    Outs<<"TI "<<setprecision(9)<<F.m_Time[e]<<endl;
+    Outs<<"TI "<<TimeString<<endl;
     Outs<<"UH "<<DetectorID<<" "<<F.m_PI[e]<<endl; //0.04*double(valint)+1.6
   }
   

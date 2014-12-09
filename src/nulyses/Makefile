@@ -91,7 +91,7 @@ $(LOBJS): $(LB)/%.o: src/%.cxx inc/%.h
 
 $(PRG): $(SOBJ) $(MOBJS)
 	@echo "Linking $(subst $(BN)/,,$@) ..."
-	@$(LD) $(LDFLAGS) $(MOBJS) -lNulyses -lMegalib -lGlobal $(GLIBS) $(LIBS) -o $(PRG)
+	@$(LD) $(LDFLAGS) $(MOBJS) -lNulyses -lMegalib -lGlobal -lData $(GLIBS) $(LIBS) -o $(PRG)
 
 
 #

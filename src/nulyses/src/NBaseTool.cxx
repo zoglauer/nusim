@@ -59,6 +59,8 @@ NBaseTool::NBaseTool()
   m_FileType = ".pdf";
   
   m_ApplySAAFilters = true;
+  
+  m_BatchMode = false;
 }
 
 
