@@ -167,7 +167,6 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O)
   for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
 
     if (F.m_Grade[e] > m_MaxGrade) continue;
-    cout<<"Accepted Grade: "<<F.m_Grade[e]<<endl;
     
     if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
     if (WithinSpecialBTI(F.m_Time[e]) == true) continue;
