@@ -64,6 +64,8 @@ class NMEGAlibExtract : public NBaseTool
   TString m_OutputDirectory;
   //! Use occulted data?
   bool m_Occulted;
+  //! The maximum grade
+  int m_MaxGrade;
 
 #ifdef ___CINT___
  public:

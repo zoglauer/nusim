@@ -57,6 +57,8 @@ NMEGAlibExtract::NMEGAlibExtract()
  
   m_BatchMode = true;
   m_Occulted = false;
+  
+  m_MaxGrade = 32;
 }
 
 
@@ -88,6 +90,9 @@ bool NMEGAlibExtract::ParseCommandLine(int argc, char** argv)
       m_ReadFiltered02 = true;
       m_ReadFiltered01 = false;
       cout<<"Looking at occulted data instead of science data"<<endl;
+    } else if (Option == "--maxgrade") {
+      m_MaxGrade = atoi(argv[++i]);
+      cout<<"Using this maximum grade: "<<m_MaxGrade<<endl;
     } else if (Option == "--outputdir") {
       m_OutputDirectory = argv[++i];
       m_OutputDirectory += "/";
@@ -161,6 +166,9 @@ bool NMEGAlibExtract::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O)
   // Fill histograms which require filling by event
   for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
 
+    if (F.m_Grade[e] > m_MaxGrade) continue;
+    cout<<"Accepted Grade: "<<F.m_Grade[e]<<endl;
+    
     if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
     if (WithinSpecialBTI(F.m_Time[e]) == true) continue;
 
