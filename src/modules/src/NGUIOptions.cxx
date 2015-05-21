@@ -141,6 +141,7 @@ void NGUIOptions::CloseWindow()
 {
   // When the x is pressed, this function is called.
 
+  UnmapWindow();
   DeleteWindow();
 }
 
