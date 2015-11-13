@@ -794,11 +794,21 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
   vector<double> GTIStart_SAANoTentacleNo;
   vector<double> GTIStop_SAANoTentacleNo;
   
+  bool GTIOff_SAANoTentacleRMS = false;
+  vector<double> GTIStart_SAANoTentacleRMS;
+  vector<double> GTIStop_SAANoTentacleRMS;
+  
   bool GTIOff_SAAOptimizedLSRRMSTentacleNo = false;
   vector<double> GTIStart_SAAOptimizedLSRRMSTentacleNo;
   vector<double> GTIStop_SAAOptimizedLSRRMSTentacleNo;
+  
+  bool GTIOff_SAAOptimizedLSRRMSTentacleRMS = false;
+  vector<double> GTIStart_SAAOptimizedLSRRMSTentacleRMS;
+  vector<double> GTIStop_SAAOptimizedLSRRMSTentacleRMS;
 
   for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+    
+    // Case SAANoTentacleNo
     if (h == 0 && H.m_HardSAA[h] == true) {
       GTIStart_SAANoTentacleNo.push_back(H.m_Time[h]);
     }
@@ -817,6 +827,26 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
       GTIStop_SAANoTentacleNo.push_back(H.m_Time[h]);
     }
       
+    // Case SAANoTentacleRMS
+    if (h == 0 && H.m_SoftTentacledRMS[h] == true) {
+      GTIStart_SAANoTentacleRMS.push_back(H.m_Time[h]);
+    }
+    if (GTIOff_SAANoTentacleRMS != H.m_SoftTentacledRMS[h]) {
+      if (GTIOff_SAANoTentacleRMS == true) {
+        GTIStart_SAANoTentacleRMS.push_back(H.m_Time[h]);
+      } else {
+        if (GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
+          GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]);
+        }
+      }
+      GTIOff_SAANoTentacleRMS = !GTIOff_SAANoTentacleRMS;
+    }
+    if (h == H.m_Time.size()-1 && GTIOff_SAANoTentacleRMS == false && 
+        GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
+      GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]);
+    }
+    
+    // Case SAAOptimizedLSRRMSTentacleNo
     if (h == 0 && H.m_SoftSAAOptimizedLSRRMS[h] == true) {
       GTIStart_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
     }
@@ -834,12 +864,38 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
         GTIStop_SAAOptimizedLSRRMSTentacleNo.size() < GTIStart_SAAOptimizedLSRRMSTentacleNo.size()) {
       GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
     }
+      
+    // Case SAAOptimizedLSRRMSTentacleRMS
+    if (h == 0 && (H.m_SoftSAAOptimizedLSRRMS[h] == true || H.m_SoftTentacledRMS[h] == true)) {
+      GTIStart_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+    }
+    if (GTIOff_SAAOptimizedLSRRMSTentacleRMS != (H.m_SoftSAAOptimizedLSRRMS[h] == true || H.m_SoftTentacledRMS[h] == true)) {
+      if (GTIOff_SAAOptimizedLSRRMSTentacleRMS == true) {
+        GTIStart_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+      } else {
+        if (GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
+          GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+        }
+      }
+      GTIOff_SAAOptimizedLSRRMSTentacleRMS = !GTIOff_SAAOptimizedLSRRMSTentacleRMS;
+    }
+    if (h == H.m_Time.size()-1 && GTIOff_SAAOptimizedLSRRMSTentacleRMS == false && 
+        GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
+      GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+    }
   }
 
-  cout<<"Size start nono: "<<GTIStart_SAANoTentacleNo.size()<<endl;
+  /*
+  cout<<"Sizes: "<<GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()<<" vs. "<<GTIStop_SAAOptimizedLSRRMSTentacleRMS.size()<<endl;
+  for (unsigned int i = 0; i < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size(); ++i) {
+    cout<<GTIStart_SAAOptimizedLSRRMSTentacleRMS[i]<<":"<<GTIStop_SAAOptimizedLSRRMSTentacleRMS[i]<<endl; 
+  }
+  */
   
   CreateGTIFile(GTIStart_SAANoTentacleNo, GTIStop_SAANoTentacleNo, H, "SAANoTentacleNo");
+  CreateGTIFile(GTIStart_SAANoTentacleRMS, GTIStop_SAANoTentacleRMS, H, "SAANoTentacleRMS");
   CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleNo, GTIStop_SAAOptimizedLSRRMSTentacleNo, H, "SAAOptimizedLSRRMSTentacleNo");
+  CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleRMS, GTIStop_SAAOptimizedLSRRMSTentacleRMS, H, "SAAOptimizedLSRRMSTentacleRMS");
 }
 
 
@@ -848,6 +904,11 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
 
 void NCheckRates::NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedian) 
 {
+  if (ShiftedMedian == 0) {
+     cout<<"NCheckRates::NormalizeOrbit: ShiftedMedian cannot be zero"<<endl;
+    return;   
+  }
+  
   vector<double> RatesVector;
   
   for (int lo = 1; lo <= Normalizer->GetNbinsX(); ++lo) {
@@ -864,6 +925,11 @@ void NCheckRates::NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedia
     }
   }
   sort(RatesVector.begin(), RatesVector.end());
+  
+  if (RatesVector.size() == 0) {
+    cout<<"NCheckRates::NormalizeOrbit: No usable data"<<endl;
+    return;
+  }
   
   double Minimum = RatesVector[RatesVector.size()/ShiftedMedian];
   Rates->SetMinimum(Minimum);
@@ -1246,7 +1312,7 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
   }
 
   for (unsigned int s = 1; s <= GTIStart.size(); ++s) {
-    fits_write_col_dbl(File, Columns["START"], s, 1, 1, &GTIStart[s], &status);
+    fits_write_col_dbl(File, Columns["START"], s, 1, 1, &GTIStart[s-1], &status);
     if (status != 0) {
       fits_get_errstatus(status, value);
       cerr << "Error: Writing GTI failed (" << value << ")" << endl;
@@ -1257,7 +1323,7 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
   }
 
   for (unsigned int s = 1; s <= GTIStop.size(); ++s) {
-    fits_write_col_dbl(File, Columns["STOP"], s, 1, 1, &GTIStop[s], &status);
+    fits_write_col_dbl(File, Columns["STOP"], s, 1, 1, &GTIStop[s-1], &status);
     if (status != 0) {
       fits_get_errstatus(status, value);
       cerr << "Error: Writing GTI failed (" << value << ")" << endl;

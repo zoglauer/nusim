@@ -1436,7 +1436,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   
   // (H) Show the result if desired
   if (Show == true) {
-    TH1D* Rate = new TH1D(TString("Rate") + iID, TString("SAA/RMS: Rate") + ID, OneSecBins/60, MinTime, MaxTime);
+    TH1D* Rate = new TH1D(TString("Rate") + iID, TString("SAA/RMS - LSR only part: Rate") + ID, OneSecBins/60, MinTime, MaxTime);
     Rate->SetXTitle("Time [sec since 1/1/2010]");
     Rate->SetYTitle("cts/sec");
     
@@ -1467,7 +1467,10 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     ShieldRateLowBB->Draw();
     TH1I* OnOffStrictLSRAsDrawn = new TH1I(*OnOffStrictLSR);
     OnOffStrictLSRAsDrawn->Scale(ShieldRateLowBB->GetMaximum());
+    OnOffStrictLSRAsDrawn->SetLineColor(kYellow);
+    OnOffStrictLSRAsDrawn->SetFillColor(kYellow);
     OnOffStrictLSRAsDrawn->Draw("SAME");
+    ShieldRateLowBB->Draw();
     ShieldRateLowBBCanvas->Update();
     
     
@@ -1479,6 +1482,12 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     TCanvas* RateCanvas = new TCanvas();
     RateCanvas->cd();
     Rate->Draw();
+    TH1I* OnOffStrictLSRAsDrawn2 = new TH1I(*OnOffStrictLSR);
+    OnOffStrictLSRAsDrawn2->Scale(Rate->GetMaximum());
+    OnOffStrictLSRAsDrawn2->SetLineColor(kYellow);
+    OnOffStrictLSRAsDrawn2->SetFillColor(kYellow);
+    OnOffStrictLSRAsDrawn2->Draw("SAME");
+    Rate->Draw("SAME");
     RateCanvas->Update();  
   }
   
@@ -1579,6 +1588,13 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     Threshold = NonSAARateMax + MaxAllowedRMS*NonSAARateRMS;
     cout<<"--> Bursts detected! Threshold is max + "<<MaxAllowedRMS<<"*rms"<<endl;
   }
+  
+  // When we have no data in the NonSAA region our threshold will be zero,
+  // Set it ti the maximum
+  if (Threshold == 0) {
+    cout<<"Threshold would be zero since we have no data, setting it to max"<<endl;
+    Threshold = numeric_limits<double>::max() / 100;
+  }
 
   cout<<"Threshold calculation diagnostics based on non-SAA regions: "<<endl;
   cout<<"Average rate in a "<<SuperStrictOffTimeInterval<<"-sec interval: "<<NonSAARateMean<<endl;
@@ -1603,7 +1619,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   
   
   // The maximum amount of adjacent bins we serach for a significant rate increase
-  int MaxSearchDistance = 2;   // in caldb
+  int MaxSearchDistance = 3;   // in caldb
   
   // (a) left to right
   TH1I* OnOffOptimizedRMSLeftToRight = new TH1I(TString("OnOffOptimizedRMSLeftToRight") + iID, TString("OnOffOptimizedRMSLeftToRight") + ID, SuperStrictBins, MinTime, MaxTime);
@@ -1622,7 +1638,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
           break; 
         }
       }
-      if (ContentBins > 0) {
+      if (ContentBins > 0 && NonSAARateMean > 0) { // NonSAARateMean > 0 means we do have threshold values, i.e. data i the non-SAA region
         if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
           // We are above our threshold -> reject
           for (int bb = b; bb < b+ContentBins; ++bb) {
@@ -1650,7 +1666,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
           break; 
         }
       }
-      if (ContentBins > 0) {
+      if (ContentBins > 0 && NonSAARateMean > 0) { // NonSAARateMean > 0 means we do have threshold values, i.e. data i the non-SAA region
         if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
           for (int bb = b; bb > b-ContentBins; --bb) {
             OnOffOptimizedRMSRightToLeft->SetBinContent(bb, RejectionOn); 
@@ -1811,9 +1827,11 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     TCanvas* EvaluationRateCanvas = new TCanvas();
     EvaluationRateCanvas->cd();
     EvaluationRate->Draw();
-    OnOffOptimizedRMS->Scale(0.05*EvaluationRate->GetMaximum());
-    for (int b = 1; b <= EvaluationRate->GetNbinsX(); ++b) OnOffOptimizedRMS->AddBinContent(b, 0.95*EvaluationRate->GetMaximum());
+    OnOffOptimizedRMS->Scale(EvaluationRate->GetMaximum());
+    OnOffOptimizedRMS->SetLineColor(kYellow);
+    OnOffOptimizedRMS->SetFillColor(kYellow);
     OnOffOptimizedRMS->Draw("SAME");
+    EvaluationRate->Draw("SAME");
     EvaluationRateCanvas->Update();
 
     TCanvas* FinalOptimizedRateCanvas = new TCanvas();
@@ -2330,17 +2348,17 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   
   // (B) Create and fill the histograms
   
-  TH1D* EvaluationRate = new TH1D(TString("EvaluationRate") + iID, TString("EvaluationRate") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1D* EvaluationRate = new TH1D(TString("EvaluationRate") + iID, TString("Tentacle - EvaluationRate") + ID, EvaluationBins, MinTime, MaxTime);
   EvaluationRate->SetXTitle("Time [sec since 1/1/2010]");
   EvaluationRate->SetYTitle("cts/sec");
   
-  TH1D* EvaluationRateLifeTimes = new TH1D(TString("EvaluationRateLifeTimes") + iID, TString("EvaluationRateLifeTimes") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1D* EvaluationRateLifeTimes = new TH1D(TString("EvaluationRateLifeTimes") + iID, TString("Tentacle - EvaluationRateLifeTimes") + ID, EvaluationBins, MinTime, MaxTime);
   
-  TH1D* NonSAAComparisonRate = new TH1D(TString("NonSAAComparisonRate") + iID, TString("NonSAAComparisonRate") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1D* NonSAAComparisonRate = new TH1D(TString("NonSAAComparisonRate") + iID, TString("Tentacle - NonSAAComparisonRate") + ID, EvaluationBins, MinTime, MaxTime);
   NonSAAComparisonRate->SetXTitle("Time [sec since 1/1/2010]");
   NonSAAComparisonRate->SetYTitle("cts/sec");
   
-  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("OnOffInternalSAA") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("Tentacle - OnOffInternalSAA") + ID, EvaluationBins, MinTime, MaxTime);
   for (int b = 1; b <= EvaluationBins; ++b) OnOffInternalSAA->SetBinContent(b, RejectionOff);
   
   for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
@@ -2427,6 +2445,13 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     cout<<"--> Bursts detected! Threshold is max + "<<MaxAllowedRMS<<"*rms"<<endl;
   }
   
+  // When we have no data in the NonSAA region our threshold will be zero,
+  // Set it ti the maximum
+  if (Threshold == 0) {
+    cout<<"Threshold would be zero since we have no data, setting it to max"<<endl;
+    Threshold = numeric_limits<double>::max() / 100;
+  }
+  
   cout<<"Threshold calculation diagnostics based on non-SAA regions: "<<endl;
   cout<<"Average rate in a "<<TimeInterval<<"-sec interval: "<<NonSAARateMean<<endl;
   cout<<"Maximum rate: "<<NonSAARateMax<<endl;
@@ -2466,7 +2491,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
           break; 
         }
       }
-      if (ContentBins > 0) {
+      if (ContentBins > 0 && NonSAARateMean > 0) { // NonSAARateMean > 0 means we do have threshold values, i.e. data i the non-SAA region
         if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
           // We are above our threshold -> reject
           for (int bb = b; bb < b+ContentBins; ++bb) {
@@ -2479,7 +2504,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
 
  
   // (b) Search right to left
-  TH1I* OnOffRightToLeft = new TH1I(TString("OnOffRightToLeft") + iID, TString("OnOffRightToLeft") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1I* OnOffRightToLeft = new TH1I(TString("OnOffRightToLeft") + iID, TString("Tentacle - OnOffRightToLeft") + ID, EvaluationBins, MinTime, MaxTime);
   for (int b = 1; b <= EvaluationBins; ++b) OnOffRightToLeft->SetBinContent(b, RejectionOff);
   
   for (int s = 1; s <= MaxSearchDistance; ++s) {
@@ -2494,7 +2519,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
           break; 
         }
       }
-      if (ContentBins > 0) {
+      if (ContentBins > 0 && NonSAARateMean > 0) { // NonSAARateMean > 0 means we do have threshold values, i.e. data i the non-SAA region
         if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
           for (int bb = b; bb > b-ContentBins; --bb) {
             OnOffRightToLeft->SetBinContent(bb, RejectionOn); 
@@ -2505,7 +2530,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   }
   
   // (c) "AND" them together: Only when both are ON set the combined to ON
-  TH1I* OnOff = new TH1I(TString("OnOff") + iID, TString("OnOff") + ID, EvaluationBins, MinTime, MaxTime);
+  TH1I* OnOff = new TH1I(TString("OnOff") + iID, TString("Tentacle - OnOff") + ID, EvaluationBins, MinTime, MaxTime);
   
   for (int b = 1; b <= EvaluationBins; ++b) {
     if (OnOffRightToLeft->GetBinContent(b) == RejectionOn && 
@@ -2725,7 +2750,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     double LatMax = -100;
     
     TH2D* OrbitsNormalizer = new TH2D(TString("TentaclesOrbitsNormalizer") + iID, 
-                                      TString("TentaclesOrbitsNormalizer") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                                      TString("Tentacle - TentaclesOrbitsNormalizer") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
     
     TH2D* Orbits = new TH2D(TString("TentaclesOrbits") + iID, 
                             TString("TentaclesOrbits") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
@@ -2734,7 +2759,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     Orbits->SetZTitle("Events [cts/sec]");
     
     
-    TH1D* RateNormalizer = new TH1D(TString("RatesTentacleNormalizer") + iID, TString("RatesTentacleNormalizer") + ID, OneSecondBins, MinTime, MaxTime);
+    TH1D* RateNormalizer = new TH1D(TString("RatesTentacleNormalizer") + iID, TString("Tentacle - RatesTentacleNormalizer") + ID, OneSecondBins, MinTime, MaxTime);
     TH1D* Rates = new TH1D(TString("RatesTentacle") + iID, TString("RatesTentacle") + ID, OneSecondBins, MinTime, MaxTime);
     Rates->SetXTitle("Time [s]");
     Rates->SetYTitle("cts/sec");
