@@ -77,13 +77,32 @@ class NBaseTool
 
   //! Find the SAA cut
   bool FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
-  //! Find the SAA passage
-  bool FindSAATentacle(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, bool Show = false);
   
-  static const int c_SAACutNone                  = 0;
-  static const int c_SAACutStrict                = 1;
-  static const int c_SAACutOptimized             = 2;
-  static const int c_SAACutOptimizedByLifeTime   = 3;
+  //! Find the SAA - modes based on the high shield rate
+  bool FindSAAsHighThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  //! Find the SAA - modes based on the low shield rate
+  bool FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  
+  //! Find the SAA passage
+  bool FindSAATentacle(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  //! Find the SAA passage - old figure-of-merit approach 
+  bool FindSAATentacleFoM(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  //! Find the SAA passage - new rms-based approach
+  bool FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  
+  //! Return the pixels where the source is most likely on
+  vector<int> MostlyEliminateSource(NFilteredEvents& F, bool Show = false);
+  
+  
+  static const int c_SAACutNone              = 0;
+  static const int c_SAACutStrictHSR         = 1;
+  static const int c_SAACutOptimizedHSRFoM   = 2;
+  static const int c_SAACutStrictLSR         = 3;
+  static const int c_SAACutOptimizedLSRRMS   = 4;
+  
+  static const int c_TentacleCutNone       = 0;
+  static const int c_TentacleCutFoM        = 1;
+  static const int c_TentacleCutRMS        = 2;
   
   bool IsGoodEventByInternalDetectorEffectsFilter(int ModuleID, double Energy, int Grade, int Veto, 
                                                   double Baseline, double Reset, double Prior);
@@ -94,6 +113,7 @@ class NBaseTool
   bool IsGoodEventByExternalDepthFilter(int Status);
 
   void ConvertRawPos(int RawX, int RawY, int Detector, double& PosX, double& PosY);
+  void ConvertPosRaw(double PosX, double PosY, int& DetectorID, int& RawX, int& RawY);
   
   // private methods:
  private:
@@ -159,6 +179,15 @@ class NBaseTool
   
   bool m_BatchMode;
   
+  double m_SAACutRMSThreshold;
+  bool m_SAACutRMSSourceElimination;
+  bool m_SAACutRMSSanityChecks;
+  
+  double m_TentacleCutRMSThreshold;
+  bool m_TentacleCutRMSSourceElimination;
+  bool m_TentacleCutRMSRegionRestriction;
+  bool m_TentacleCutRMSSanityChecks;
+
   // private members:
  private:
 

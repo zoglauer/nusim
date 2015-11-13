@@ -71,6 +71,7 @@ public:
     }
     return false;
   }
+  
   void Merge(NFilteredEvents M) {
     if (m_Time.size() == 0) {
       cout<<"Copying filtered events..."<<endl;

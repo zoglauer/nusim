@@ -47,6 +47,8 @@ LOBJS = $(LB)/MAssert.o \
 	$(LB)/MXmlNode.o \
 	$(LB)/MXmlData.o \
 	$(LB)/MXmlAttribute.o \
+	$(LB)/MBinner.o \
+	$(LB)/MBinnerBayesianBlocks.o \
 
 
 SOBJ = $(LB)/libMegalib.$(DLL)

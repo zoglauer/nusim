@@ -74,7 +74,7 @@ void NBadPixel::Clean()
 
 bool NBadPixel::Read(const TString& BadPixelFileName)
 {
-  cout<<"Reading bad pixels from file "<<BadPixelFileName<<endl;
+  //cout<<"Reading bad pixels from file "<<BadPixelFileName<<endl;
  
   if (MFile::Exists(BadPixelFileName) == false) {
     cout<<"The file \""<<BadPixelFileName<<"\" does not exists!"<<endl;
@@ -101,11 +101,11 @@ bool NBadPixel::Read(const TString& BadPixelFileName)
     cout<<"Unable to open BadPixel file \""<<BadPixelFileName<<"\": "<<status<<":"<<value<<endl;
     return false;
   }
-  cout<<"Opened "<<BadPixelFileName<<endl;
+  //cout<<"Opened "<<BadPixelFileName<<endl;
 
   // Move to the second hdu
   for (int h = 2; h <= 5; ++h) {
-    cout<<"HUD: "<<h<<endl;
+    //cout<<"HUD: "<<h<<endl;
     fits_movabs_hdu(EventFile, h, NULL, &status);
 
     // Get the number of columns
@@ -118,12 +118,12 @@ bool NBadPixel::Read(const TString& BadPixelFileName)
       fits_get_colname(EventFile, CASEINSEN, templt, value, &col, &status);
       Columns[value] = c;
     }
-    cout<<"Columns: "<<NColumns<<endl;
+    //cout<<"Columns: "<<NColumns<<endl;
 
     // Get the number of rows:
     long NRows = 0;
     fits_get_num_rows(EventFile, &NRows, &status);
-    cout<<"Rows: "<<NRows<<endl;
+    //cout<<"Rows: "<<NRows<<endl;
 
     // Loop over the events and all columns and generate MComptonEvent's
     for (long r = 1; r <= NRows; ++r) {
@@ -156,9 +156,9 @@ bool NBadPixel::Read(const TString& BadPixelFileName)
     }
   }
   
-  cout<<"Bad pixels:"<<endl;
+  //cout<<"Bad pixels:"<<endl;
   for (unsigned int  b = 0; b < m_DetectorID.size(); ++b) {
-    cout<<"D:"<<m_DetectorID[b]<<" x="<<m_RawX[b]<<" y="<<m_RawY[b]<<" Start="<<m_Start[b]<<" Stop="<<m_Stop[b]<<endl;
+    //cout<<"D:"<<m_DetectorID[b]<<" x="<<m_RawX[b]<<" y="<<m_RawY[b]<<" Start="<<m_Start[b]<<" Stop="<<m_Stop[b]<<endl;
   }
   
   return true;

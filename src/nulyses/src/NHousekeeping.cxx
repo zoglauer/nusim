@@ -63,10 +63,13 @@ void NHousekeeping::Clean()
   m_SWSAA.clear();
   m_SWTentacled.clear();
   m_SoftSAA.clear();
-  m_SoftSAAStrict.clear();
-  m_SoftSAAOptimized.clear();
-  m_SoftSAAOptimizedByLifeTime.clear();
+  m_SoftSAAStrictHSR.clear();
+  m_SoftSAAOptimizedHSRFoM.clear();
+  m_SoftSAAStrictLSR.clear();
+  m_SoftSAAOptimizedLSRRMS.clear();
   m_SoftTentacled.clear();
+  m_SoftTentacledFoM.clear();
+  m_SoftTentacledRMS.clear();
   m_LiveTime.clear();
   m_NAcceptedEvents.clear();
   m_NRejectedEvents.clear();  

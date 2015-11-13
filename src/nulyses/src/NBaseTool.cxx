@@ -18,6 +18,10 @@
 #include "NBaseTool.h"
 
 // Standard libs:
+#include <iomanip>
+#include <limits>
+#include <algorithm>
+using namespace std;
 
 // ROOT libs:
 #include "TH1.h"
@@ -26,6 +30,7 @@
 #include "TSystem.h"
 
 // MEGAlib libs:
+#include "MBinnerBayesianBlocks.h"
 
 // NuSTAR libs:
 
@@ -61,6 +66,15 @@ NBaseTool::NBaseTool()
   m_ApplySAAFilters = true;
   
   m_BatchMode = false;
+  
+  m_SAACutRMSThreshold = 5.0;
+  m_SAACutRMSSourceElimination = true;
+  m_SAACutRMSSanityChecks = true;
+  
+  m_TentacleCutRMSThreshold = 5.0;;
+  m_TentacleCutRMSSourceElimination = true;
+  m_TentacleCutRMSRegionRestriction = true;
+  m_TentacleCutRMSSanityChecks = true;
 }
 
 
@@ -146,6 +160,10 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     } else if (Option == "-g") {
       m_SpecialGTIStart.push_back(atof(argv[++i]));
       m_SpecialGTIStop.push_back(atof(argv[++i]));
+      if (m_SpecialGTIStart.back() >= m_SpecialGTIStop.back()) {
+        cout<<"Bad GTI: Start time is larger than stop time!"<<endl;
+        return false;
+      }
       cout<<"Accepting special good time interval: "<<m_SpecialGTIStart.back()<<" to "<<m_SpecialGTIStop.back()<<endl;
     } else if (Option == "-e") {
       m_SpectrumMin = atof(argv[++i]);
@@ -154,10 +172,35 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     } else if (Option == "-b") {
       m_SpecialBTIStart.push_back(atof(argv[++i]));
       m_SpecialBTIStop.push_back(atof(argv[++i]));
+      if (m_SpecialBTIStart.back() >= m_SpecialBTIStop.back()) {
+        cout<<"Bad BTI: Start time is larger than stop time!"<<endl;
+        return false;
+      }
       cout<<"Accepting special bad time window: "<<m_SpecialBTIStart.back()<<" to "<<m_SpecialBTIStop.back()<<endl;
     } else if (Option == "--gti") {
       if (ReadGTI(argv[++i]) == false) return false;
       cout<<"Accepting GTI!"<<endl;
+    } else if (Option == "--saa-rms-threshold") {
+      m_SAACutRMSThreshold = atof(argv[++i]);
+      cout<<"Accepting RMS threshold for the SAA cut \"Optimized by RMS\": "<<m_SAACutRMSThreshold<<endl;
+    } else if (Option == "--saa-rms-source-elimination") {
+      m_SAACutRMSSourceElimination = bool(atoi(argv[++i]));
+      cout<<"Accepting source elimination for the SAA cut \"Optimized by RMS\": "<<(m_SAACutRMSSourceElimination == true ? "on" : "off")<<endl;
+    } else if (Option == "--saa-rms-sanity-checks") {
+      m_SAACutRMSSanityChecks = bool(atoi(argv[++i]));
+      cout<<"Accepting sanity checks for the SAA cut \"Optimized by RMS\": "<<(m_SAACutRMSSanityChecks == true ? "on" : "off")<<endl;
+    } else if (Option == "--tentacle-rms-threshold") {
+      m_TentacleCutRMSThreshold = atof(argv[++i]);
+      cout<<"Accepting RMS threshold for the Tentacle cut \"by RMS\": "<<m_TentacleCutRMSThreshold<<endl;
+    } else if (Option == "--tentacle-rms-source-elimination") {
+      m_TentacleCutRMSSourceElimination = bool(atoi(argv[++i]));
+      cout<<"Accepting source elimination for the Tentacle cut \"by RMS\": "<<(m_TentacleCutRMSSourceElimination == true ? "on" : "off")<<endl;
+    } else if (Option == "--tentacle-rms-sanity-checks") {
+      m_TentacleCutRMSSanityChecks = bool(atoi(argv[++i]));
+      cout<<"Accepting sanity checks for the Tentacle cut \"by RMS\": "<<(m_TentacleCutRMSSanityChecks == true ? "on" : "off")<<endl;
+    } else if (Option == "--tentacle-rms-region-restriction") {
+      m_TentacleCutRMSRegionRestriction = bool(atoi(argv[++i]));
+      cout<<"Accepting region restriction for the Tentacle cut \"by RMS\": "<<(m_TentacleCutRMSRegionRestriction == true ? "on" : "off")<<endl;
     }
   }
   
@@ -214,12 +257,12 @@ bool NBaseTool::ReadGTI(const TString& GTIFileName)
     Columns[value] = c;
     //cout<<value<<endl;
   }
-  cout<<"N columns: "<<NColumns<<endl;
+  //cout<<"N columns: "<<NColumns<<endl;
 
   // Get the number of rows:
   long NRows = 0;
   fits_get_num_rows(EventFile, &NRows, &status);
-  cout<<"Rows: "<<NRows<<endl;
+  //cout<<"Rows: "<<NRows<<endl;
 
   // Loop over the events and all columns and generate MComptonEvent's
   for (long r = 1; r <= NRows; ++r) {
@@ -238,7 +281,7 @@ bool NBaseTool::ReadGTI(const TString& GTIFileName)
     
     m_SpecialGTIStart.push_back(Start);
     m_SpecialGTIStop.push_back(Stop);
-    cout<<"Added GTI: "<<Start<<":"<<Stop<<endl;
+    //cout<<"Added GTI: "<<Start<<":"<<Stop<<endl;
   }
   
   
@@ -324,7 +367,18 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   }
   
   m_HousekeepingA.Clean();
-  if (LookAtModule.Contains("a")) if (m_HousekeepingA.Read(HKFileNameA) == false) return false;
+  if (LookAtModule.Contains("a")) {
+    if (m_HousekeepingA.Read(HKFileNameA) == false) return false;
+    // Add hard SAA
+    for (unsigned int h = 0; h < m_HousekeepingA.m_Time.size(); ++h) {
+      int OrbitIndex = m_Orbits.FindClosestIndex(m_HousekeepingA.m_Time[h]);
+      if (OrbitIndex == -1) {
+        cout<<"Orbit: Index not found for time "<<m_HousekeepingA.m_Time[h]<<"..."<<endl;
+        continue;      
+      }
+      m_HousekeepingA.m_HardSAA[h] = m_Orbits.m_SAAFlag[OrbitIndex] == 1 ? true : false;
+    }
+  }
   m_HousekeepingA.m_Module = 0;
   m_HousekeepingA.m_ID = Tag;
   
@@ -349,7 +403,18 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   m_FilteredEventsA02.m_ID = Tag;
   
   m_HousekeepingB.Clean();
-  if (LookAtModule.Contains("b")) if (m_HousekeepingB.Read(HKFileNameB) == false) return false;
+  if (LookAtModule.Contains("b")) {
+    if (m_HousekeepingB.Read(HKFileNameB) == false) return false;
+    // Add hard SAA
+    for (unsigned int h = 0; h < m_HousekeepingB.m_Time.size(); ++h) {
+      int OrbitIndex = m_Orbits.FindClosestIndex(m_HousekeepingB.m_Time[h]);
+      if (OrbitIndex == -1) {
+        cout<<"Orbit: Index not found for time "<<m_HousekeepingB.m_Time[h]<<"..."<<endl;
+        continue;      
+      }
+      m_HousekeepingB.m_HardSAA[h] = m_Orbits.m_SAAFlag[OrbitIndex] == 1 ? true : false;
+    }    
+  }
   m_HousekeepingB.m_Module = 1;
   m_HousekeepingB.m_ID = Tag;
   
@@ -390,16 +455,31 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   }
   
   if (m_ApplySAAFilters == true) {
+    bool Show = false;
+    if (m_ShowHistograms.Contains("s")) Show = true;
+    
     if (m_MergeFilteredEvents == false) {
-      if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, c_SAACutStrict);
-      if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, c_SAACutStrict);
+      if (LookAtModule.Contains("a")) {
+        if (FindSAAs(m_FilteredEventsA01, m_HousekeepingA, m_Orbits, c_SAACutNone, Show) == false) return false;
+      }
+      if (LookAtModule.Contains("b")) {
+        if (FindSAAs(m_FilteredEventsB01, m_HousekeepingB, m_Orbits, c_SAACutNone, Show) == false) return false;
+      }
     } else {
-      if (LookAtModule.Contains("a")) FindSAAs(m_FilteredEventsA, m_HousekeepingA, m_Orbits, c_SAACutStrict);
-      if (LookAtModule.Contains("b")) FindSAAs(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_SAACutStrict);
+      if (LookAtModule.Contains("a")) {
+        if (FindSAAs(m_FilteredEventsA, m_HousekeepingA, m_Orbits, c_SAACutNone, Show) == false) return false;
+      }
+      if (LookAtModule.Contains("b")) {
+        if (FindSAAs(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_SAACutNone, Show) == false) return false;
+      }
     }
   
-    if (LookAtModule.Contains("a")) FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits, false);
-    if (LookAtModule.Contains("b")) FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits, false);
+    if (LookAtModule.Contains("a")) {
+      if (FindSAATentacle(m_FilteredEventsA, m_HousekeepingA, m_Orbits, c_TentacleCutNone, Show) == false) return false;
+    }
+    if (LookAtModule.Contains("b")) {
+      if (FindSAATentacle(m_FilteredEventsB, m_HousekeepingB, m_Orbits, c_TentacleCutNone, Show) == false) return false;
+    }
   }
   
   return true;
@@ -560,13 +640,42 @@ bool NBaseTool::IsGoodEventByExternalDepthFilter(int Status)
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
 bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show)
 {
-  cout<<"Finding SAA ..."<<endl;
-  
+  FindSAAsHighThresholdShieldRateBased(F, H, O, Mode, Show);
+  FindSAAsLowThresholdShieldRateBased(F, H, O, Mode, Show);
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NBaseTool::FindSAATentacle(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show)
+{
+  FindSAATentacleFoM(F, H, O, Show);
+  FindSAATentacleRMS(F, H, O, Show);
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NBaseTool::FindSAAsHighThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show)
+{
+  cout<<endl;
+  cout<<"Finding SAA - high shield threshold based approaches..."<<endl; 
+
+  double SAARegionMin = 270;
+  double SAARegionMax = 360;
+
   if (F.m_Time.size() == 0) {
     cout<<"No filtered events = no SAA cut"<<endl;  
     return true;
@@ -577,41 +686,51 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     H.m_SoftSAA[i] = false;
   }
   
+  // The rejection flags
   int RejectionOn  = 0;
   int RejectionOff = 1;
   
-  int Bins = H.GetMaxTime() - H.GetMinTime() + 1;
+  // Default one second binning
+  int OneSecBins = H.GetMaxTime() - H.GetMinTime() + 1;
   double MinTime = H.GetMinTime()-0.5;
   double MaxTime = H.GetMaxTime()+0.5;
+  
+  double LowShieldRateBinning = 60; // sec
   
   TString iID = TString("_ID_") + H.m_ID + "_M_" + ((H.m_Module == 0) ? "A" : "B");
   TString ID = TString(" (ID: ") + H.m_ID + ((H.m_Module == 0) ? "A" : "B") + ")";
 
   
-  // Step 1: Create a safe "strict" cut which eleiminates all regions (close to the SAA) 
+  // Step 1: Create a safe "strict" cut which eliminates all regions (close to the SAA) 
   //         where the the high-shield rate is above its normal (= during this obs.) values 
   
-  TH1D* LifeTimes = new TH1D(TString("LifeTimes") + iID, TString("LifeTimes") + ID, Bins, MinTime, MaxTime);
-  TH1D* ShieldRateHigh = new TH1D(TString("SAAShieldRateHigh") + iID, TString("SAAShieldRateHigh") + ID, Bins, MinTime, MaxTime);
+  TH1D* LifeTimes = new TH1D(TString("LifeTimes") + iID, TString("LifeTimes") + ID, OneSecBins, MinTime, MaxTime);
+  TH1D* ShieldRateLow = new TH1D(TString("SAAShieldRateLow") + iID, TString("SAAShieldRateLow") + ID, OneSecBins/LowShieldRateBinning, MinTime, MaxTime);
+  ShieldRateLow->SetXTitle("Time [sec since 1/1/2010]");
+  ShieldRateLow->SetYTitle("cts/sec");
+  TH1D* ShieldRateHigh = new TH1D(TString("SAAShieldRateHigh") + iID, TString("SAAShieldRateHigh") + ID, OneSecBins, MinTime, MaxTime);
   ShieldRateHigh->SetXTitle("Time [sec since 1/1/2010]");
   ShieldRateHigh->SetYTitle("cts/sec");
-  TH1D* ShieldRateHighAverage = new TH1D(TString("SAAShieldRateHighAverage") + iID, TString("SAAShieldRateHighAverage") + ID, Bins, MinTime, MaxTime);
+  TH1D* ShieldRateHighAverage = new TH1D(TString("SAAShieldRateHighAverage") + iID, TString("SAAShieldRateHighAverage") + ID, OneSecBins, MinTime, MaxTime);
   ShieldRateHighAverage->SetLineColor(kGreen);
-  TH1D* ShieldRateHighCut = new TH1D(TString("SAAShieldRateHighCut") + iID, TString("SAAShieldRateHighCut") + ID, Bins, MinTime, MaxTime);
+  TH1D* ShieldRateHighCut = new TH1D(TString("SAAShieldRateHighCut") + iID, TString("SAAShieldRateHighCut") + ID, OneSecBins, MinTime, MaxTime);
   ShieldRateHighCut->SetLineColor(kRed);
-  TH1D* NAcceptedEvents = new TH1D(TString("SAANAcceptedEvents") + iID, TString("SAANAcceptedEvents") + ID, Bins, MinTime, MaxTime);
-  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("OnOffInternalSAA") + ID, Bins, MinTime, MaxTime);
-  TH1I* OnOffStrictSAA = new TH1I(TString("OnOffStrictSAA") + iID, TString("OnOffStrictSAA") + ID, Bins, MinTime, MaxTime);
-  TH1D* NAcceptedEventsShieldHighCut = new TH1D(TString("SAANAcceptedEventsShieldHighCut") + iID, TString("SAANAcceptedEventsShieldHighCut") + ID, Bins, MinTime, MaxTime);
+  TH1D* NAcceptedEvents = new TH1D(TString("SAANAcceptedEvents") + iID, TString("SAANAcceptedEvents") + ID, OneSecBins, MinTime, MaxTime);
+  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("OnOffInternalSAA") + ID, OneSecBins, MinTime, MaxTime);
+  TH1I* OnOffStrictSAA = new TH1I(TString("OnOffStrictSAA") + iID, TString("OnOffStrictSAA") + ID, OneSecBins, MinTime, MaxTime);
+  TH1D* NAcceptedEventsShieldHighCut = new TH1D(TString("SAANAcceptedEventsShieldHighCut") + iID, TString("SAANAcceptedEventsShieldHighCut") + ID, OneSecBins, MinTime, MaxTime);
   NAcceptedEventsShieldHighCut->SetLineColor(kRed);
   
+  int ExposureTimeInternalSAA = 0;
   for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
     int OIndex = O.FindClosestIndex(ShieldRateHigh->GetBinCenter(i));
     int SAAFlag = O.m_SAAFlag[OIndex];
     if (SAAFlag == 0 && H.m_ShieldRateHigh[i] > 0) { // Some rare events happen even during known SAA passages (super-high energy protons?) - skip those
+      ShieldRateLow->Fill(H.m_Time[i], H.m_ShieldRateLow[i]);
       ShieldRateHigh->Fill(H.m_Time[i], H.m_ShieldRateHigh[i]);
       ShieldRateHighCut->Fill(H.m_Time[i], H.m_ShieldRateHigh[i]);
       OnOffInternalSAA->Fill(H.m_Time[i], RejectionOff);
+      ++ExposureTimeInternalSAA;
     } else {
       OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
     }
@@ -619,6 +738,12 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     NAcceptedEventsShieldHighCut->Fill(H.m_Time[i], H.m_NAcceptedEvents[i]);
     LifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
   }
+  
+  
+  
+  ////////////////////////
+  // Strict  
+  
   OnOffStrictSAA->Add(OnOffInternalSAA);
   
   // Step 1.1: Calculate averages
@@ -774,8 +899,8 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   
   // Clean up - all SAA passages are confinend between MinLong and MaxLong
   // We might replace this one day with a real outer SAA contour...
-  double MinLong = 270;
-  double MaxLong = 350;
+  double MinLong = SAARegionMin;
+  double MaxLong = SAARegionMax;
   for (int i = 1; i <= OnOffStrictSAA->GetNbinsX(); ++i) {
     int OIndex = O.FindClosestIndex(OnOffStrictSAA->GetBinCenter(i));
     if (fabs(O.m_Time[OIndex] - OnOffStrictSAA->GetBinCenter(i)) < 1.0) {
@@ -811,7 +936,7 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
   }
 
   
-  // Remove on periods < X*HalfAverageLength
+  // Remove periods < X*HalfAverageLength
   int OnCount = 0;
   for (int i = 1; i <= ShieldRateHigh->GetNbinsX(); ++i) {
     //cout<<i<<": "<<OnCount<<" - "<<OnOffStrictSAA->GetBinContent(i)<<endl;
@@ -831,42 +956,50 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     }
   }
   
+  int LTStrictSAA = 0;
   for (int b = 1; b <= OnOffStrictSAA->GetNbinsX(); ++b) {
     int Index = H.FindClosestIndex(OnOffStrictSAA->GetBinCenter(b));
     if (OnOffStrictSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
-      if (OnOffStrictSAA->GetBinContent(b) == RejectionOn) {
-        if (Mode == c_SAACutStrict) H.m_SoftSAA[Index] = true;
-        H.m_SoftSAAStrict[Index] = true;
+      if (OnOffStrictSAA->GetBinContent(b) == RejectionOn || OnOffInternalSAA->GetBinContent(b) == RejectionOn) {
+        if (Mode == c_SAACutStrictHSR) H.m_SoftSAA[Index] = true;
+        H.m_SoftSAAStrictHSR[Index] = true;
       } else {
-        if (Mode == c_SAACutStrict) H.m_SoftSAA[Index] = false;
-        H.m_SoftSAAStrict[Index] = false;
+        if (Mode == c_SAACutStrictHSR) H.m_SoftSAA[Index] = false;
+        H.m_SoftSAAStrictHSR[Index] = false;
+        ++LTStrictSAA;
       }
     } else {
       //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffStrictSAA->GetBinCenter(b)<<endl; 
     }
   }
+  cout<<"Strict: "<<100 * double(LTStrictSAA)/ExposureTimeInternalSAA<<"%"<<endl;
   
   // END step 1: End of strict cut:
+
   
+  
+  
+  ////////////////////////
+  // Optimized  
   
   // Step 2: Do an optimized cut by backtracking until the good, on source count rate goes above a certain level
   //         backtrack - make sure to only exclude regions where we actually see an increase in the final count rate
 
-  TH1I* OnOffOptimizedSAA = new TH1I(TString("OnOffOptimizedSAA") + iID, TString("OnOffOptimizedSAA") + ID, Bins, MinTime, MaxTime);
+  TH1I* OnOffOptimizedSAA = new TH1I(TString("OnOffOptimizedSAA") + iID, TString("OnOffOptimizedSAA") + ID, OneSecBins, MinTime, MaxTime);
   OnOffOptimizedSAA->Add(OnOffStrictSAA); // We start with strict SAA cuts!
-  TH1D* FilteredRate = new TH1D(TString("SAAFilteredRate") + iID, TString("SAAFilteredRate") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRate = new TH1D(TString("SAAFilteredRate") + iID, TString("SAAFilteredRate") + ID, OneSecBins, MinTime, MaxTime);
   FilteredRate->SetXTitle("Time [sec since 1/1/2010]");
   FilteredRate->SetYTitle("cts/sec");
-  TH1D* CleanRate = new TH1D(TString("SAACleanRate") + iID, TString("SAACleanRate") + ID, Bins, MinTime, MaxTime);
+  TH1D* CleanRate = new TH1D(TString("SAACleanRate") + iID, TString("SAACleanRate") + ID, OneSecBins, MinTime, MaxTime);
   CleanRate->SetXTitle("Time [sec since 1/1/2010]");
   CleanRate->SetYTitle("cts/sec");
-  TH1D* FilteredRateCutOriginal = new TH1D(TString("SAAFilteredRateCut") + iID, TString("SAAFilteredRateCut") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateCutOriginal = new TH1D(TString("SAAFilteredRateCut") + iID, TString("SAAFilteredRateCut") + ID, OneSecBins, MinTime, MaxTime);
   FilteredRateCutOriginal->SetLineColor(kMagenta);
-  TH1D* FilteredRateCut = new TH1D(TString("SAAFilteredRateCut") + iID, TString("SAAFilteredRateCut") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateCut = new TH1D(TString("SAAFilteredRateCut") + iID, TString("SAAFilteredRateCut") + ID, OneSecBins, MinTime, MaxTime);
   FilteredRateCut->SetLineColor(kRed);
-  TH1D* FilteredRateAverageLarge = new TH1D(TString("SAAFilteredRateAverageLarge") + iID, TString("SAAFilteredRateHighLarge") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateAverageLarge = new TH1D(TString("SAAFilteredRateAverageLarge") + iID, TString("SAAFilteredRateHighLarge") + ID, OneSecBins, MinTime, MaxTime);
   FilteredRateAverageLarge->SetLineColor(kGreen);
-  TH1D* FilteredRateAverageSmall = new TH1D(TString("SAAFilteredRateAverageSmall") + iID, TString("SAAFilteredRateHighSmall") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateAverageSmall = new TH1D(TString("SAAFilteredRateAverageSmall") + iID, TString("SAAFilteredRateHighSmall") + ID, OneSecBins, MinTime, MaxTime);
   FilteredRateAverageSmall->SetLineColor(kYellow);
 
   double LiveTimeNoCuts = 0;
@@ -1045,137 +1178,642 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
     CleanRateCanvas->Update();
   }
   
+  int LTOptimizedSAA = 0;
   for (int b = 1; b <= OnOffOptimizedSAA->GetNbinsX(); ++b) {
     int Index = H.FindClosestIndex(OnOffOptimizedSAA->GetBinCenter(b));
     if (OnOffOptimizedSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
-      if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn) {
-        if (Mode == c_SAACutOptimized) H.m_SoftSAA[Index] = true;
-        H.m_SoftSAAOptimized[Index] = true;
+      if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOn || OnOffInternalSAA->GetBinContent(b) == RejectionOn) {
+        if (Mode == c_SAACutOptimizedHSRFoM) H.m_SoftSAA[Index] = true;
+        H.m_SoftSAAOptimizedHSRFoM[Index] = true;
       } else {
-        if (Mode == c_SAACutOptimized) H.m_SoftSAA[Index] = false;
-        H.m_SoftSAAOptimized[Index] = false;
+        if (Mode == c_SAACutOptimizedHSRFoM) H.m_SoftSAA[Index] = false;
+        H.m_SoftSAAOptimizedHSRFoM[Index] = false;
+        ++LTOptimizedSAA;
       }
     } else {
       //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffOptimizedSAA->GetBinCenter(b)<<endl; 
     }
   }
+  cout<<"Optimized: "<<100 * double(LTOptimizedSAA)/ExposureTimeInternalSAA<<"%"<<endl;
+
+  return true;
+}  
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show)
+{
+  // Basic strategy
+  // (1) Create a mask of all regions where the low shield rate peaks
+  //     This is done by using a Bayesian block peak identification approach
+  //     (The same one used for peak identification in the line calibrator of MEGAlib)
+  // (2) In this region filter out everything where the detector rate is above a certain RMS 
+  //     threshold
+  
+  double MaxAllowedRMS = m_SAACutRMSThreshold;          // --> user adjustable
+  bool ElimiateSource = m_SAACutRMSSourceElimination;   // --> user adjustable
+  bool PerformSanityChecks = m_SAACutRMSSanityChecks;   // --> user adjustable
   
   
- 
-  // Step 3: Do an optimized cut by backtracking until the life time falls below a certain level
+  cout<<endl;
+  cout<<"Finding SAA - low threshold shield rate mode..."<<endl;
+
+  if (F.m_Time.size() == 0) {
+    cout<<"No filtered events = no SAA cut"<<endl;  
+    return true;
+  }
   
-  TH1I* OnOffOptimizedByLifeTimeSAA = new TH1I(TString("OnOffOptimizedByLifeTimeSAA") + iID, TString("OnOffOptimizedByLifeTimeSAA") + ID, Bins, MinTime, MaxTime);
-  OnOffOptimizedByLifeTimeSAA->Add(OnOffStrictSAA); // We start with strict SAA cuts!
-  TH1D* AveragedLifeTime = new TH1D(TString("AveragedLifeTime") + iID, TString("AveragedLifeTime") + ID, Bins, MinTime, MaxTime);
-  AveragedLifeTime->SetXTitle("Time [sec since 1/1/2010]");
-  AveragedLifeTime->SetYTitle("cts/sec");
+  // Start with no cuts (clean in case we run it):
+  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    H.m_SoftSAA[i] = false;
+    H.m_SoftSAAStrictLSR[i] = false;
+    H.m_SoftSAAOptimizedLSRRMS[i] = false;
+  }
+  
+  // Define rejection flags
+  int RejectionOn  = 0;
+  int RejectionOff = 1;
+  
+  // One second binning
+  int OneSecBins = H.GetMaxTime() - H.GetMinTime() + 1;
+  double MinTime = H.GetMinTime()-0.5;
+  double MaxTime = H.GetMaxTime()+0.5;
+  
+  // 60-second binning -- good compromise for having enough statistics per bin, and small enough bins for not cutting out too much 
+  unsigned int SuperStrictOffTimeInterval = 60;    // into caldb 
+  int SuperStrictBins = OneSecBins/SuperStrictOffTimeInterval;
+
+  TString iID = TString("_ID_") + H.m_ID + "_M_" + ((H.m_Module == 0) ? "A" : "B");
+  TString ID = TString(" (ID: ") + H.m_ID + ((H.m_Module == 0) ? "A" : "B") + ")";
 
   
-  // Step 3.1: Create local and global average life times
+  // Create a list of pixels with high source count for elimination
+  vector<int> ExcludedDetRawXY;
+  if (ElimiateSource == true) ExcludedDetRawXY = MostlyEliminateSource(F, Show);  
   
-  int GlobalAverageBins = 0;
-  double GlobalAverage = 0.0;
-  int AveragedLifeTimeRange = 10;
-  for (int i = 1; i <= LifeTimes->GetNbinsX(); ++i) {
-    if (LifeTimes->GetBinContent(i) > 0) {
-      GlobalAverage += LifeTimes->GetBinContent(i);
-      GlobalAverageBins++;
+  
+  // Step One: Create a mask of the regions where the low-threshold shield rate is high, utilizing a Bayesian Block peak finder  
+  
+  // (A) Define histograms
+  TH1D* ShieldRateLow = new TH1D(TString("ShieldRateLow") + iID, TString("SAA/RMS: ShieldRateLow") + ID, SuperStrictBins, MinTime, MaxTime);
+  ShieldRateLow->SetXTitle("Time [sec since 1/1/2010]");
+  ShieldRateLow->SetYTitle("cts/sec");
+  
+  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("SAA/RMS: OnOffInternalSAA") + ID, OneSecBins, MinTime, MaxTime);
+
+  TH1D* RawRate = new TH1D(TString("RawRate") + iID, TString("RawRate") + ID, OneSecBins, MinTime, MaxTime);
+  RawRate->SetXTitle("Time [sec since 1/1/2010]");
+  RawRate->SetYTitle("cts/sec");
+     
+  // (B) Fill the histograms
+  int ExposureTimeInternalSAA = 0;
+  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
+    if (H.m_HardSAA[i] == false) {
+      ShieldRateLow->Fill(H.m_Time[i], H.m_ShieldRateLow[i]);
+      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOff);
+      ++ExposureTimeInternalSAA;
+    } else {
+      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
     }
-    
-    Average = 0;
-    NBins = 0;
-    
-    // Determine the interval over which we average dynamically to take care of the edges
-    int Min = i-AveragedLifeTimeRange;
-    if (Min < 1) Min = 1;
-    int Max = i+AveragedLifeTimeRange;
-    if (Max > LifeTimes->GetNbinsX()) Max = LifeTimes->GetNbinsX();
-    
-    for (int a = Min; a <= Max; ++a) {
-      // We need to jump over bins where we don't have HK data
-      if (LifeTimes->GetBinContent(a) > 0) { 
-        ++NBins;
-        Average += LifeTimes->GetBinContent(a);
-      }
-    }
-    if (NBins == 0) continue;
-    
-    Average /= NBins;
-    AveragedLifeTime->SetBinContent(i, Average);
   }
-  if (GlobalAverageBins > 0) {
-    GlobalAverage /= GlobalAverageBins;
-  } else {
-    cout<<"Error: There are no bins with content in the life time array..."<<endl;
+ 
+  for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
+    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;    
+    if (F.IsGTI(F.m_Time[i]) == false) continue;
+
+    int DetectorID = F.m_DetectorID[i];
+    int RawX = F.m_RawX[i];
+    int RawY = F.m_RawY[i];
+    int ID = 10000*DetectorID + 100*RawX + RawY;
+    vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+
+    RawRate->Fill(F.m_Time[i]);
+  }
+
+  if (RawRate->Integral() == 0) {
+    cout<<"Something went wrong! No data!"<<endl;
     return false;
   }
   
+  // (C) Create a Bayesian Block binned histogram of the shield data
   
-  // Step 3.2: Shrink the rejection range by only rejecting areas where the lifetime is below a certain threshold
+  const int Prior = 200;      // into caldb 
   
-  // Track from the left and right and the right to left
-  double LifeTimeThreshold = 0.75*GlobalAverage;
-  
-  // Track left to right:
-  Previous = RejectionOff;
-  for (int b = 1; b <= OnOffOptimizedByLifeTimeSAA->GetNbinsX(); ++b) {
-    // Switch off -> on
-    if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
-      Previous = RejectionOn;
-      while (AveragedLifeTime->GetBinContent(b) >= LifeTimeThreshold) {
-        OnOffOptimizedByLifeTimeSAA->SetBinContent(b, RejectionOff);
-        ++b;
-        if (b > OnOffOptimizedByLifeTimeSAA->GetNbinsX()) break;
-        if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff) break;
-      }
-    }
-    // Switch on -> off
-    else if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
-      Previous = RejectionOff;
-    }
+  // Step 1: Create a histogram with Bayesian block binning
+  MBinnerBayesianBlocks Binner;
+  Binner.SetMinMax(ShieldRateLow->GetBinCenter(1), ShieldRateLow->GetBinCenter(ShieldRateLow->GetNbinsX()));
+  Binner.SetMinimumBinWidth(SuperStrictOffTimeInterval);
+  Binner.SetPrior(Prior); 
+  ShieldRateLow->Smooth(1);     // into caldb 
+  for (int b = 1; b <= ShieldRateLow->GetNbinsX(); ++b) {
+    Binner.Add(ShieldRateLow->GetBinCenter(b), ShieldRateLow->GetBinContent(b));
   }
-  // Track from right to left:
-  Previous = RejectionOff;
-  for (int b = OnOffOptimizedByLifeTimeSAA->GetNbinsX(); b >= 1; --b) {
-    // Switch off -> on
-    if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn && Previous == RejectionOff) {
-      Previous = RejectionOn;
-      while (AveragedLifeTime->GetBinContent(b) >= LifeTimeThreshold) {
-        OnOffOptimizedByLifeTimeSAA->SetBinContent(b, RejectionOff);
-        --b;
-        if (b < 1) break;
-        if (OnOffOptimizedSAA->GetBinContent(b) == RejectionOff) break;
-      }
-    }
-    // Switch on -> off
-    else if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOff && Previous == RejectionOn) {
-      Previous = RejectionOff;
-    }
+  TH1D* ShieldRateLowBB = Binner.GetNormalizedHistogram("BB-binned low count rate", "Time since epoch", "cts/sec");
+  
+  
+  // (D) Calculate a simple (slightly) shifted, *normalized* gradient histogram
+  TH1D* GradientHistogram = new TH1D(*ShieldRateLowBB);
+  GradientHistogram->SetTitle(TString("Gradient histogram"));
+  GradientHistogram->Reset();
+  for (int b = 2; b <= GradientHistogram->GetNbinsX(); ++b) {
+    double Average = 0.5*(ShieldRateLowBB->GetBinContent(b)+ShieldRateLowBB->GetBinContent(b-1));
+    GradientHistogram->SetBinContent(b, (ShieldRateLowBB->GetBinContent(b)-ShieldRateLowBB->GetBinContent(b-1))/
+                                        (ShieldRateLowBB->GetBinCenter(b)-ShieldRateLowBB->GetBinCenter(b-1))/Average);
   }
 
-  // Step 3.3: Store it
-  for (int b = 1; b <= OnOffOptimizedByLifeTimeSAA->GetNbinsX(); ++b) {
-    int Index = H.FindClosestIndex(OnOffOptimizedByLifeTimeSAA->GetBinCenter(b));
-    if (OnOffOptimizedByLifeTimeSAA->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
-      if (OnOffOptimizedByLifeTimeSAA->GetBinContent(b) == RejectionOn) {
-        if (Mode == c_SAACutOptimizedByLifeTime) H.m_SoftSAA[Index] = true;
-        H.m_SoftSAAOptimizedByLifeTime[Index] = true;
+  
+  // (E) Find zero passages + --> - and regions around zero passages for SAA exclusion
+  //     i.e. find the peaks
+  
+  //double PeakBin;
+  double PeakLowEdge;
+  double PeakHighEdge;
+  
+  TH1I* OnOffStrictLSR = new TH1I(TString("OnOffStrictLSR") + iID, TString("OnOffStrictLSR") + ID, OneSecBins, MinTime, MaxTime);
+  OnOffStrictLSR->Add(OnOffInternalSAA);
+  
+  for (int b = 2; b <= GradientHistogram->GetNbinsX(); ++b) {
+    if (GradientHistogram->GetBinContent(b) > 0 && GradientHistogram->GetBinContent(b+1) < 0) {
+      //PeakBin = GradientHistogram->GetBinLowEdge(b+1);
+      //cout<<PeakBin<<" - investigating..."<<endl;
+      
+      // Find edges:
+      int MaximumBin = b;
+      for (int bb = MaximumBin-1; bb > 2; --bb) {
+        if (GradientHistogram->GetBinContent(bb) > GradientHistogram->GetBinContent(MaximumBin)) {
+          MaximumBin = bb;
+        } else {
+          break;
+        }
+      }
+        
+      int MinimumBin = b+1;
+      for (int bb = MinimumBin+1; bb <= GradientHistogram->GetNbinsX(); ++bb) {
+        if (GradientHistogram->GetBinContent(bb) < GradientHistogram->GetBinContent(MinimumBin)) {
+          MinimumBin = bb;
+        } else {
+          break;
+        }
+      }
+      
+      double Minimum = GradientHistogram->GetBinContent(MinimumBin);
+      double Maximum = GradientHistogram->GetBinContent(MaximumBin);
+      double Volatility = Maximum - Minimum;
+      
+      double MinAllowedVolatility = 0.002;    // in caldb
+      double MinMaximum = +0.00075;           // in caldb
+      double MaxMinimum = +0.00025;           // in caldb
+      
+      if (!(Volatility > MinAllowedVolatility && 
+          ((Maximum > +MinMaximum && Minimum < -MaxMinimum) ||
+           (Minimum < -MinMaximum && Maximum > +MaxMinimum)))) {
+        //cout<<PeakBin<<" - Rejected: Derivative peak not strong enough: max:"<<GradientHistogram->GetBinContent(MaximumBin)<<" min: "<<GradientHistogram->GetBinContent(MinimumBin)<<"  vol:"<<Volatility<<endl;
+        continue;
+      }
+     
+      
+      // Go further, until the variation from zero is below XYZ (rights lower for activation):
+      double MinVariationLeft = 0.0005;           // in caldb
+      double MinVariationRight = 0.00035;          // in caldb
+      while (fabs(GradientHistogram->GetBinContent(MaximumBin-1)) > MinVariationLeft) {
+        --MaximumBin;
+      }
+      while (fabs(GradientHistogram->GetBinContent(MinimumBin+1)) > MinVariationRight) { // Relaxed for delayed decay
+        ++MinimumBin; 
+      }
+      // Go one further in the minimum direction to
+      
+      PeakLowEdge = GradientHistogram->GetBinLowEdge(MaximumBin);
+      PeakHighEdge = GradientHistogram->GetBinLowEdge(MinimumBin)+GradientHistogram->GetBinWidth(MinimumBin);
+      
+      //cout<<PeakBin<<" - Region: "<<setprecision(10)<<PeakLowEdge<<" - "<<setprecision(10)<<PeakHighEdge<<endl;
+      
+      // Add to the on-off-histo:
+      for (int bx = OnOffStrictLSR->FindBin(PeakLowEdge); bx <= OnOffStrictLSR->FindBin(PeakHighEdge); ++bx) {
+        //cout<<"Rejection at "<<OnOffStrictLSR->GetBinCenter(bx)<<endl;
+        OnOffStrictLSR->SetBinContent(bx, RejectionOn);
+      }
+      
+    }
+  }
+  
+  // (F) Add the internal/hardware SAA rejection regions
+  for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
+    if (OnOffInternalSAA->GetBinContent(b) == RejectionOn) {
+      OnOffStrictLSR->SetBinContent(b, RejectionOn);
+    }
+  }
+    
+  // (G) Store the preliminary cut
+  int ExposureTimeStrictLSR = 0;
+  for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
+    int Index = H.FindClosestIndex(OnOffStrictLSR->GetBinCenter(b));
+    if (OnOffStrictLSR->GetBinCenter(b) - H.m_Time[Index] < 1.0) {
+      if (OnOffStrictLSR->GetBinContent(b) == RejectionOn) { 
+        if (Mode == c_SAACutStrictLSR) H.m_SoftSAA[Index] = true;
+        H.m_SoftSAAStrictLSR[Index] = true;
       } else {
-        if (Mode == c_SAACutOptimizedByLifeTime) H.m_SoftSAA[Index] = false;
-        H.m_SoftSAAOptimizedByLifeTime[Index] = false;
+        if (Mode == c_SAACutStrictLSR) H.m_SoftSAA[Index] = false;
+        H.m_SoftSAAStrictLSR[Index] = false;
+        ++ExposureTimeStrictLSR;
       }
     } else {
-      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffOptimizedByLifeTimeSAA->GetBinCenter(b)<<endl; 
+      //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOffStrictLSR->GetBinCenter(b)<<endl; 
+    }
+  }
+  cout<<"Exposure time strict: "<<100 * double(ExposureTimeStrictLSR)/ExposureTimeInternalSAA<<"%"<<endl;
+  
+  
+  // (H) Show the result if desired
+  if (Show == true) {
+    TH1D* Rate = new TH1D(TString("Rate") + iID, TString("SAA/RMS: Rate") + ID, OneSecBins/60, MinTime, MaxTime);
+    Rate->SetXTitle("Time [sec since 1/1/2010]");
+    Rate->SetYTitle("cts/sec");
+    
+    for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
+      if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
+      if (F.IsGTI(F.m_Time[i]) == false) continue;
+      if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
+      
+      int HKIndex = H.FindClosestIndex(F.m_Time[i]);
+      if (HKIndex == -1) {
+        cout<<"Housekeeping: Index not found for time "<<F.m_Time[i]<<"..."<<endl;
+        continue;      
+      }
+      if (H.m_SoftSAAStrictLSR[HKIndex] == true) continue;
+
+      int DetectorID = F.m_DetectorID[i];
+      int RawX = F.m_RawX[i];
+      int RawY = F.m_RawY[i];
+      int ID = 10000*DetectorID + 100*RawX + RawY;
+      vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+      if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+      
+      Rate->Fill(F.m_Time[i]);
+    }
+    
+    TCanvas* ShieldRateLowBBCanvas = new TCanvas();
+    ShieldRateLowBBCanvas->cd();
+    ShieldRateLowBB->Draw();
+    TH1I* OnOffStrictLSRAsDrawn = new TH1I(*OnOffStrictLSR);
+    OnOffStrictLSRAsDrawn->Scale(ShieldRateLowBB->GetMaximum());
+    OnOffStrictLSRAsDrawn->Draw("SAME");
+    ShieldRateLowBBCanvas->Update();
+    
+    
+    TCanvas* GradientHistogramCanvas = new TCanvas();
+    GradientHistogramCanvas->cd();
+    GradientHistogram->Draw();
+    GradientHistogramCanvas->Update();
+    
+    TCanvas* RateCanvas = new TCanvas();
+    RateCanvas->cd();
+    Rate->Draw();
+    RateCanvas->Update();  
+  }
+  
+  
+  
+  // Step 2: Check for rate increases and only cut those regions
+  
+  // (A) Create and fill all required histograms
+  
+  // We have to choose a region close to the SAA to have a similar average count rate
+  // i.e. everything between 0-180 is too low
+  double NonSAAMinLong = 180;           // in caldb
+  double NonSAAMaxLong = 250;           // in caldb
+  
+  // This histogram shows the rate in the GTIs in the SAA free region  
+  TH1D* NonSAARate = new TH1D(TString("NonSAARate") + iID, TString("SAA/RMS: NonSAARate") + ID, SuperStrictBins, MinTime, MaxTime);
+  NonSAARate->SetXTitle("Time [sec since 1/1/2010]");
+  NonSAARate->SetYTitle("cts/sec");
+
+  TH1D* EvaluationRate = new TH1D(TString("EvaluationRate") + iID, TString("SAA/RMS: EvaluationRate") + ID, SuperStrictBins, MinTime, MaxTime);
+  EvaluationRate->SetXTitle("Time [sec since 1/1/2010]");
+  EvaluationRate->SetYTitle("cts/sec");
+
+  TH1D* EvaluationRateLifeTimes = new TH1D(TString("EvaluationRateLifeTimes") + iID, TString("SAA/RMS: EvaluationRateLifeTimes") + ID, SuperStrictBins, MinTime, MaxTime);
+  EvaluationRateLifeTimes->SetXTitle("Time [sec since 1/1/2010]");
+  EvaluationRateLifeTimes->SetYTitle("cts/sec");
+
+  for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
+    if (F.IsGTI(F.m_Time[i]) == false) continue;
+    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
+    
+    int DetectorID = F.m_DetectorID[i];
+    int RawX = F.m_RawX[i];
+    int RawY = F.m_RawY[i];
+    int ID = 10000*DetectorID + 100*RawX + RawY;
+    vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+      
+    EvaluationRate->Fill(F.m_Time[i]);
+    int Index = O.FindClosestIndex(F.m_Time[i]);
+    if (O.m_Longitude[Index] >= NonSAAMinLong && O.m_Longitude[Index] <= NonSAAMaxLong) {
+      NonSAARate->Fill(F.m_Time[i]);
+    }
+  }
+  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
+    if (F.IsGTI(F.m_Time[i]) == false) continue;
+
+    EvaluationRateLifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
+  }
+
+  // Do lifetime correction -- NO!
+  for (int b = 1; b <= NonSAARate->GetNbinsX(); ++b) {
+    if (EvaluationRateLifeTimes->GetBinContent(b) > 0) {
+      // NO LIFETIME correction!
+      //NonSAARate->SetBinContent(b, NonSAARate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
+      //EvaluationRate->SetBinContent(b, EvaluationRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
+    } else {
+      NonSAARate->SetBinContent(b , 0);
+      EvaluationRate->SetBinContent(b , 0);
+    }
+  }
+  
+  
+  // (B) Determine the mean and rms detector count rate in the regions away from the SAA as well as the threshold
+   
+  // (a) Create a rate histogram
+  int NonSAARateHistogramNumberOfEntries = 0;
+  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAARate->GetMaximum());
+  for (int b = 2; b < NonSAARate->GetNbinsX(); ++b) {
+    if (NonSAARate->GetBinContent(b) > 0 &&
+        NonSAARate->GetBinContent(b-1) > 0 && NonSAARate->GetBinContent(b+1) > 0) { // Ignore half filled edge pixels
+      NonSAARateHistogram->Fill(NonSAARate->GetBinContent(b));
+      ++NonSAARateHistogramNumberOfEntries;
     }
   }
 
+  // (b) Calculate Average and RMS
+  double NonSAARateMax = NonSAARate->GetMaximum();
+  double NonSAARateMean = NonSAARateHistogram->GetMean();
+  double NonSAARateRMS = NonSAARateHistogram->GetRMS();
+  double NonSAARateSigma = sqrt(NonSAARateMean);
+  
+  double Threshold = MaxAllowedRMS*NonSAARateRMS + NonSAARateMean;
+  
+  // Take care of the rare case when we have observations with strong outbursts
+  // Normal outburst should increase the RMS thus we are automatically in a higher threshold regime
+  // Then we set the threshold to the maximum + 1 rms
+  // There is only one case where this ever happened "RapidBurster"
+  
+  // If the rms is more than 3 times the expected 1-sigma value, then we have a burster 
+  // Thus set the threshold to maximum + MaxAllowedRMS * rms
+  double TimeOneSigma = 3.0;
+  if (NonSAARateRMS > TimeOneSigma * NonSAARateSigma) {
+    Threshold = NonSAARateMax + MaxAllowedRMS*NonSAARateRMS;
+    cout<<"--> Bursts detected! Threshold is max + "<<MaxAllowedRMS<<"*rms"<<endl;
+  }
+
+  cout<<"Threshold calculation diagnostics based on non-SAA regions: "<<endl;
+  cout<<"Average rate in a "<<SuperStrictOffTimeInterval<<"-sec interval: "<<NonSAARateMean<<endl;
+  cout<<"Maximum rate: "<<NonSAARateMax<<endl;
+  cout<<"RMS: "<<NonSAARateRMS<<" (vs. 1-sigma: "<<sqrt(NonSAARateMean)<<")"<<endl;
+  cout<<"--> Threshold rate: "<<Threshold<<endl;
+
   
   
-  //cout<<"Live times: "<<endl;
-  //cout<<"No cut: "<<LiveTimeNoCuts<<endl;
-  //cout<<"Strict cut: "<<LifeTimestrictCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LifeTimestrictCuts)/LiveTimeNoCuts<<"%)"<<endl;
-  //cout<<"Optimized cut: "<<LiveTimeOptimizedCuts<<"(Loss: "<<100.0*(LiveTimeNoCuts-LiveTimeOptimizedCuts)/LiveTimeNoCuts<<"%)"<<endl;
   
+  
+  // (C) Determine the regions to reject
+  
+  // Approach:
+  // Assuming we have a threshold of 5 RMS
+  // Then we look for single bins with an increase of 5 RMS, two-bins with an increase of 5/sqrt(2), 
+  // three bins with an increase of 5/sqrt(3), etc. until we reach our max search distance MaxSearchDistance
+  // Since this approach has a tail (e.g. we have one gigantic increase and the two following bins normal, 
+  // then a search distance of 3 would catch all three although we do not have an increase in the latter 2),
+  // We do it once from the left and once from the right and then "AND" those two together --> no more tails
+  // Finally "AND" / mask it with the previously dtermined regions of low-shield rate increases
+  
+  
+  // The maximum amount of adjacent bins we serach for a significant rate increase
+  int MaxSearchDistance = 2;   // in caldb
+  
+  // (a) left to right
+  TH1I* OnOffOptimizedRMSLeftToRight = new TH1I(TString("OnOffOptimizedRMSLeftToRight") + iID, TString("OnOffOptimizedRMSLeftToRight") + ID, SuperStrictBins, MinTime, MaxTime);
+  for (int b = 1; b <= SuperStrictBins; ++b) OnOffOptimizedRMSLeftToRight->SetBinContent(b, RejectionOff);
+
+  // First seach for one-bin X-rms increases, then two-bin X/sqrt(2) increases, etc.
+  for (int s = 1; s <= MaxSearchDistance; ++s) {
+    for (int b = 1; b <= OnOffOptimizedRMSLeftToRight->GetNbinsX(); ++b) {
+      int ContentBins = 0;
+      double Content = 0.0;
+      for (int bb = b; bb < b+s && b <= OnOffOptimizedRMSLeftToRight->GetNbinsX(); ++bb) {
+        if (EvaluationRate->GetBinContent(bb) > NonSAARateMean) { // stop immediately if we are below mean
+          Content += EvaluationRate->GetBinContent(bb);
+          ContentBins++;
+        } else {
+          break; 
+        }
+      }
+      if (ContentBins > 0) {
+        if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
+          // We are above our threshold -> reject
+          for (int bb = b; bb < b+ContentBins; ++bb) {
+            OnOffOptimizedRMSLeftToRight->SetBinContent(bb, RejectionOn); 
+          }
+        }
+      }
+    }   
+  }
+
+ 
+  // (b) Search right to left
+  TH1I* OnOffOptimizedRMSRightToLeft = new TH1I(TString("OnOffOptimizedRMSRightToLeft") + iID, TString("OnOffOptimizedRMSRightToLeft") + ID, SuperStrictBins, MinTime, MaxTime);
+  for (int b = 1; b <= SuperStrictBins; ++b) OnOffOptimizedRMSRightToLeft->SetBinContent(b, RejectionOff);
+  
+  for (int s = 1; s <= MaxSearchDistance; ++s) {
+    for (int b = OnOffOptimizedRMSRightToLeft->GetNbinsX(); b >= 1; --b) {
+      int ContentBins = 0;
+      double Content = 0.0;
+      for (int bb = b; bb > b-s && b >= 1; --bb) {
+        if (EvaluationRate->GetBinContent(bb) > NonSAARateMean) {
+          Content += EvaluationRate->GetBinContent(bb);
+          ContentBins++;
+        } else {
+          break; 
+        }
+      }
+      if (ContentBins > 0) {
+        if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
+          for (int bb = b; bb > b-ContentBins; --bb) {
+            OnOffOptimizedRMSRightToLeft->SetBinContent(bb, RejectionOn); 
+          }
+        }
+      }
+    }   
+  }
+  
+  // (c) "AND" them together: Only when both are ON set the combined to ON
+  TH1I* OnOffOptimizedRMS = new TH1I(TString("OnOffOptimizedRMS") + iID, TString("OnOffOptimizedRMS") + ID, SuperStrictBins, MinTime, MaxTime);
+  
+  for (int b = 1; b <= SuperStrictBins; ++b) {
+    if (OnOffOptimizedRMSRightToLeft->GetBinContent(b) == RejectionOn && 
+        OnOffOptimizedRMSLeftToRight->GetBinContent(b) == RejectionOn) {
+      OnOffOptimizedRMS->SetBinContent(b, RejectionOn);
+    } else {
+      OnOffOptimizedRMS->SetBinContent(b, RejectionOff);
+    }
+  }
+
+ 
+  // (d) Make sure we include edge bins in the rejection:
+  for (int b = 3; b < OnOffOptimizedRMS->GetNbinsX()-1; ++b) {
+    if (OnOffOptimizedRMS->GetBinContent(b) == RejectionOn) {
+      if (EvaluationRate->GetBinContent(b-2) == 0) OnOffOptimizedRMS->SetBinContent(b-1, RejectionOn);
+      if (EvaluationRate->GetBinContent(b+2) == 0) OnOffOptimizedRMS->SetBinContent(b+1, RejectionOn);
+    }
+  }
+  
+  
+  // (e) Mask it with the low-shield rate cut
+  for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
+    if (OnOffStrictLSR->GetBinContent(b) == RejectionOff) {
+      OnOffOptimizedRMS->SetBinContent(OnOffOptimizedRMS->FindBin(OnOffStrictLSR->GetBinCenter(b)), RejectionOff);
+    }
+  }
+  
+  
+  // (D) Sanity checks:
+  
+  // A normal SAA passage should give us regions which are way above the threshold.
+  // Thus if the average rate in our region is overall below the threshold, 
+  // and we either never exceed the threshold or we have a slightly variable source
+  // then we reject the SAA detection
+  
+  if (PerformSanityChecks == true) {
+    double MaxFlux = 0;
+    double AverageFlux = 0;
+    int NAverageFluxes = 0;
+    
+    bool Started = false;
+    for (int i = 1; i <= OnOffOptimizedRMS->GetNbinsX(); ++i) {
+      if (OnOffOptimizedRMS->GetBinContent(i) == RejectionOn) {
+        Started = true;
+        if (EvaluationRate->GetBinContent(i) > 0) {
+          AverageFlux += EvaluationRate->GetBinContent(i);
+          NAverageFluxes++;
+          if (EvaluationRate->GetBinContent(i) > MaxFlux) {
+            MaxFlux = EvaluationRate->GetBinContent(i);
+          }
+        }
+      } else {
+        if (Started == true) {
+          Started = false;
+        }
+      }
+    }
+    if (NAverageFluxes > 0) {
+      AverageFlux /= NAverageFluxes;
+      
+      int Suspiciousness = 0;
+      
+      // Usually the average flux is way high 
+      double HintOfVariabilityCutOff = 1.4;                        // <-- into caldb 
+      if (AverageFlux < Threshold) {
+        cout<<"Suspicious: The average flux value ("<<AverageFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
+        Suspiciousness++;
+        if (MaxFlux < Threshold) {
+          cout<<"            and the maximum flux value ("<<AverageFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
+          Suspiciousness++;
+        }
+        if (NonSAARateRMS > HintOfVariabilityCutOff*NonSAARateSigma) {
+          cout<<"            and we have a hint of a variable source"<<endl;
+          ++Suspiciousness;
+        }
+      }
+      
+      // More than 2 suspicousness points? No SAA!
+      if (Suspiciousness >= 2) {
+        cout<<"Attention: The characteristics of the given SAA region is not in agreement with a typical one."<<endl;
+        cout<<"           I ignore them all!"<<endl;
+        for (int b = 1; b <= SuperStrictBins; ++b) OnOffOptimizedRMS->SetBinContent(b, RejectionOff);
+      }
+    }
+  }
+  
+  
+  // (E) Now set it (slow...):
+  for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+    int Bin = OnOffOptimizedRMS->FindBin(H.m_Time[h]);
+    if (Bin == 0 || Bin > OnOffOptimizedRMS->GetNbinsX()) {
+      cerr<<"Something is wrong with the times as I cannot find a rejection value for time "<<H.m_Time[h]<<endl; 
+      if (Mode == c_SAACutOptimizedLSRRMS) H.m_SoftSAA[h] = true;
+      H.m_SoftSAAOptimizedLSRRMS[h] = false;        
+    } else {
+      if (OnOffOptimizedRMS->GetBinContent(Bin) == RejectionOn) {
+        if (Mode == c_SAACutOptimizedLSRRMS) H.m_SoftSAA[h] = true;
+        H.m_SoftSAAOptimizedLSRRMS[h] = true;
+      } else {
+        if (Mode == c_SAACutOptimizedLSRRMS) H.m_SoftSAA[h] = true;
+        H.m_SoftSAAOptimizedLSRRMS[h] = false;        
+      }    
+    }
+  }
+    
+  
+
+  // (F) Show the result if desired
+  if (Show == true) {
+    TH1D* FinalOptimizedRate = new TH1D(TString("FinalOptimizedRate") + iID, TString("SAA/RMS: FinalOptimizedRate") + ID, SuperStrictBins, MinTime, MaxTime);
+    FinalOptimizedRate->SetXTitle("Time [sec since 1/1/2010]");
+    FinalOptimizedRate->SetYTitle("cts/sec");
+    
+    for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
+      if (F.IsGTI(F.m_Time[i]) == false) continue;
+      if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
+      
+      int HKIndex = H.FindClosestIndex(F.m_Time[i]);
+      if (HKIndex == -1) {
+        cout<<"Housekeeping: Index not found for time "<<F.m_Time[i]<<"..."<<endl;
+        continue;      
+      }
+      if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == true) continue;
+      
+      int DetectorID = F.m_DetectorID[i];
+      int RawX = F.m_RawX[i];
+      int RawY = F.m_RawY[i];
+      int ID = 10000*DetectorID + 100*RawX + RawY;
+      vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+      if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+      
+      FinalOptimizedRate->Fill(F.m_Time[i]);
+    }
+    
+ 
+    TCanvas* NonSAARateCanvas = new TCanvas();
+    NonSAARateCanvas->cd();
+    NonSAARate->Draw();
+    NonSAARateCanvas->Update();
+
+    TCanvas* NonSAARateHistogramCanvas = new TCanvas();
+    NonSAARateHistogramCanvas->cd();
+    NonSAARateHistogram->Draw();
+    NonSAARateHistogramCanvas->Update();   
+    
+ 
+    TCanvas* EvaluationRateCanvas = new TCanvas();
+    EvaluationRateCanvas->cd();
+    EvaluationRate->Draw();
+    OnOffOptimizedRMS->Scale(0.05*EvaluationRate->GetMaximum());
+    for (int b = 1; b <= EvaluationRate->GetNbinsX(); ++b) OnOffOptimizedRMS->AddBinContent(b, 0.95*EvaluationRate->GetMaximum());
+    OnOffOptimizedRMS->Draw("SAME");
+    EvaluationRateCanvas->Update();
+
+    TCanvas* FinalOptimizedRateCanvas = new TCanvas();
+    FinalOptimizedRateCanvas->cd();
+    FinalOptimizedRate->Draw();
+    FinalOptimizedRateCanvas->Update();
+  }
   
   return true;
 }
@@ -1184,14 +1822,17 @@ bool NBaseTool::FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int M
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits& O, bool Show) 
+bool NBaseTool::FindSAATentacleFoM(NFilteredEvents& FE, NHousekeeping& HK, NOrbits& O, int Mode, bool Show) 
 {
   // For each Orbits check for each module the count rate in the tentacle region - 
   // if there is an increase flag the region
-
-  cout<<"Finding Tentacle ..."<<endl;
   
-  if (HK.m_Time.size() == 0) return true;
+  cout<<endl<<"Finding Tentacle --- figure-of-merit based approach..."<<endl;
+  
+  if (HK.m_Time.size() == 0) {
+    cout<<"Something went wrong! No data!"<<endl;
+    return true;
+  }
   
   int RejectionOn  = 0;
   int RejectionOff = 1;
@@ -1203,27 +1844,27 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
   
   TString iID = TString("_ID_") + HK.m_ID + "_M_" + ((HK.m_Module == 0) ? "A" : "B");
   TString ID = TString(" (ID: ") + HK.m_ID + ((HK.m_Module == 0) ? "A" : "B") + ")";
-    
-  TH1D* LifeTimes = new TH1D(TString("TentaclesLifeTimes") + iID, TString("TentaclesLifeTimes") + ID, Bins, MinTime, MaxTime);
-
-  TH1D* FilteredRate = new TH1D(TString("TentaclesFilteredRate") + iID, TString("TentaclesFilteredRate") + ID, Bins, MinTime, MaxTime);
+  
+  TH1D* LifeTimes = new TH1D(TString("TentaclesFoMLifeTimes") + iID, TString("TentaclesFoMLifeTimes") + ID, Bins, MinTime, MaxTime);
+  
+  TH1D* FilteredRate = new TH1D(TString("TentaclesFoMFilteredRate") + iID, TString("TentaclesFoMFilteredRate") + ID, Bins, MinTime, MaxTime);
   FilteredRate->SetXTitle("Time [sec since 1/1/2010]");
   FilteredRate->SetYTitle("cts/sec");
   
-  TH1D* CleanRate = new TH1D(TString("TentaclesCleanRate") + iID, TString("TentaclesCleanRate") + ID, Bins, MinTime, MaxTime);
+  TH1D* CleanRate = new TH1D(TString("TentaclesFoMCleanRate") + iID, TString("TentaclesFoMCleanRate") + ID, Bins, MinTime, MaxTime);
   CleanRate->SetXTitle("Time [sec since 1/1/2010]");
   CleanRate->SetYTitle("cts/sec");
-
-  TH1D* FilteredRateCut = new TH1D(TString("TentaclesFilteredRateCut") + iID, TString("TentaclesFilteredRateCut") + ID, Bins, MinTime, MaxTime);
+  
+  TH1D* FilteredRateCut = new TH1D(TString("TentaclesFoMFilteredRateCut") + iID, TString("TentaclesFoMFilteredRateCut") + ID, Bins, MinTime, MaxTime);
   FilteredRateCut->SetLineColor(kRed);
   
-  TH1D* FilteredRateAverageLarge = new TH1D(TString("TentaclesFilteredRateAverageLarge") + iID, TString("TentaclesFilteredRateHighLarge") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateAverageLarge = new TH1D(TString("TentaclesFoMFilteredRateAverageLarge") + iID, TString("TentaclesFoMFilteredRateAverageLarge") + ID, Bins, MinTime, MaxTime);
   FilteredRateAverageLarge->SetLineColor(kGreen);
-  TH1D* FilteredRateAverageSmall = new TH1D(TString("TentaclesFilteredRateAverageSmall") + iID, TString("TentaclesFilteredRateHighSmall") + ID, Bins, MinTime, MaxTime);
+  TH1D* FilteredRateAverageSmall = new TH1D(TString("TentaclesFoMFilteredRateAverageSmall") + iID, TString("TentaclesFoMFilteredRateAverageSmall") + ID, Bins, MinTime, MaxTime);
   FilteredRateAverageSmall->SetLineColor(kYellow);
-
-  TH1I* OnOff = new TH1I(TString("TentaclesOnOff") + iID, TString("TentaclesOnOff") + ID, Bins, MinTime, MaxTime);
-
+  
+  TH1I* OnOff = new TH1I(TString("TentaclesFoMOnOff") + iID, TString("TentaclesFoMOnOff") + ID, Bins, MinTime, MaxTime);
+  
   
   double LiveTimeNoCuts = 0;
   double LiveTimeWithCuts = 0;
@@ -1233,10 +1874,16 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
   for (unsigned int i = 0; i < FE.m_Time.size(); ++i) {
     FilteredRate->Fill(FE.m_Time[i]);
   }
+  if (FilteredRate->Integral() == 0) {
+    cout<<"Something went wrong! No data!"<<endl;
+    return true;
+  }
+    
+  
   for (unsigned int i = 0; i < HK.m_Time.size(); ++i) {
     LifeTimes->Fill(HK.m_Time[i], HK.m_LiveTime[i]);
   }
- 
+  
   for (int b = 1; b <= FilteredRate->GetNbinsX(); ++b) {
     OnOff->SetBinContent(b, RejectionOff);
     // Find the housekeeping position
@@ -1250,8 +1897,8 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       cerr<<"Housekeeping is "<<fabs(HK.m_Time[HKIndex] - Time)<<" seconds from data"<<endl;
       continue;
     }
-
-    if (LifeTimes->GetBinContent(b) > 0 && HK.m_SoftSAA[HKIndex] == false) {
+    
+    if (LifeTimes->GetBinContent(b) > 0 /* && HK.m_SoftSAA[HKIndex] == false */) {
       // No live time correction! FilteredRate->SetBinContent(b, FilteredRate->GetBinContent(b)/LifeTimes->GetBinContent(b)); 
       FilteredRateCut->SetBinContent(b, FilteredRate->GetBinContent(b)); 
     } else {
@@ -1260,21 +1907,21 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     }
     if (FE.IsGTI(FilteredRate->GetBinCenter(b)) == true) LiveTimeNoCuts += LifeTimes->GetBinContent(b);
   } 
- 
+  
   int NBins = 0;
   double GlobalAverage = 0.0;
   for (int b = 1; b <= FilteredRate->GetNbinsX(); ++b) {
-     if (FilteredRate->GetBinContent(b) > 0) {
+    if (FilteredRate->GetBinContent(b) > 0) {
       ++NBins;
       GlobalAverage += FilteredRate->GetBinContent(b);
-     }
+    }
   }
   if (NBins > 0) GlobalAverage /= NBins;
   
   
   // Create average again:
   int FilteredEventsHalfAverageLarge = 60;
-
+  
   double Average;
   for (int i = 1; i <= FilteredRate->GetNbinsX(); ++i) {
     Average = 0;
@@ -1294,7 +1941,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       }
     }
     Average /= NBins;
-
+    
     FilteredRateAverageLarge->SetBinContent(i, Average);
   }
   int FilteredEventsHalfAverageSmall = 40;
@@ -1316,10 +1963,10 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       }
     }
     Average /= NBins;
-
+    
     FilteredRateAverageSmall->SetBinContent(i, Average);
   }
-    
+  
   
   // This is the distance between two data points on which we determine that we have a significant increase 
   int DecisionDistance = 2*FilteredEventsHalfAverageLarge; // 2 for 30 and 60
@@ -1346,25 +1993,22 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     bool Cut = false;
     // ... we have an increase above our decision threshold from left to right
     if (FilteredRateAverageLarge->GetBinContent(DecisionPointLeft) > 1 && 
-        FilteredRateAverageLarge->GetBinContent(i) > DecisionThresholdLeft*FilteredRateAverageLarge->GetBinContent(DecisionPointLeft)) {
+      FilteredRateAverageLarge->GetBinContent(i) > DecisionThresholdLeft*FilteredRateAverageLarge->GetBinContent(DecisionPointLeft)) {
       Cut = true;
-      //cout<<"Case A"<<":"<<FilteredRateAverageLarge->GetBinContent(i)<<":"<<DecisionThresholdLeft*FilteredRateAverageLarge->GetBinContent(DecisionPointLeft)<<endl;
     }
     // ... we have an increase above our decision threshold from right to left
     if (FilteredRateAverageLarge->GetBinContent(DecisionPointRight) > 1 &&
-        FilteredRateAverageLarge->GetBinContent(i) > DecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(DecisionPointRight)) {
+      FilteredRateAverageLarge->GetBinContent(i) > DecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(DecisionPointRight)) {
       Cut = true;
-      //cout<<"Case B"<<endl;
     }
-    
+        
     // Next we take care of the case if the increase is no longer above the decision threshold,
     // but we are still above the initial increase value:
-    
+        
     // If we have both a left and a right value we cut if we are still above the average values
     if (EnteringValueLeft > 0 && EnteringValueRight  > 0) {
       if (FilteredRateAverageLarge->GetBinContent(i) > 0.5*(EnteringValueLeft+EnteringValueRight)) {
         Cut = true;
-        //cout<<"Case C"<<endl;
       }
     } 
     // If we have just one value, we only cut on it
@@ -1372,11 +2016,10 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       if ((FilteredRateAverageLarge->GetBinContent(i) > EnteringValueLeft && EnteringValueLeft > 0) ||
           (FilteredRateAverageLarge->GetBinContent(i) > EnteringValueRight && EnteringValueRight  > 0)) {
         Cut = true;
-        //cout<<"Case E"<<endl;
       }
     }
-    
-    
+        
+        
     if (Cut == true) {
       OnOff->SetBinContent(i, RejectionOn);
       // Update the entering values
@@ -1385,7 +2028,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
         EnteringValueLeft = FilteredRateAverageLarge->GetBinContent(i);
       }
       if (FilteredRateAverageLarge->GetBinContent(i) > DecisionThresholdRight*FilteredRateAverageLarge->GetBinContent(DecisionPointRight) &&
-         (EnteringValueRight == 0 || FilteredRateAverageLarge->GetBinContent(i) < EnteringValueRight)) {
+          (EnteringValueRight == 0 || FilteredRateAverageLarge->GetBinContent(i) < EnteringValueRight)) {
         EnteringValueRight = FilteredRateAverageLarge->GetBinContent(i);
       }
     } else {
@@ -1393,13 +2036,13 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       EnteringValueRight = 0;
     }
   }
-  
 
+  
   // Filters:
   bool Previous = RejectionOff;  
   
-  // (A) If it start or ends outside the tantacle region filter out:
-  double LongitudeMin = 250;
+  // (A) If it starts or ends outside the tentacle region filter out:
+  double LongitudeMin = 230;
   double LongitudeMax = 320;
   Previous = RejectionOff;
   for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
@@ -1419,7 +2062,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       }
     }
   }
-
+  
   // (B) The average off must be at least X percent above average value: 
   double AboveGlobalAverageThreshold = 1.25;
   Previous = RejectionOff;
@@ -1442,7 +2085,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       if (LocalAverage < AboveGlobalAverageThreshold*GlobalAverage) {
         do {
           OnOff->SetBinContent(b, RejectionOff);
-        ++b;
+          ++b;
         } while (b < OnOff->GetNbinsX() && OnOff->GetBinContent(b) == RejectionOn);
       }
     }
@@ -1453,7 +2096,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
   }
   
   // (C) Cutoffs require a certain length to be reasonable 
-  int CutOffCount = 3*FilteredEventsHalfAverageLarge; // good: 2x
+  int CutOffCount = 3*FilteredEventsHalfAverageLarge; // good: 2x, 3x
   
   int OffCount = 0;
   for (int i = 1; i <= FilteredRate->GetNbinsX(); ++i) {
@@ -1472,7 +2115,6 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       OffCount++;
     }
   }
-
   
   
   for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
@@ -1490,7 +2132,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     FilteredRateAverageLarge->Draw("SAME");
     FilteredRateAverageSmall->Draw("SAME");
     FilteredRateCanvas->Update();
-
+    
     TCanvas* CleanRateCanvas = new TCanvas();
     CleanRateCanvas->cd();
     CleanRate->Draw();
@@ -1502,9 +2144,11 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     if (Index == -1) continue; 
     if (OnOff->GetBinCenter(b) - HK.m_Time[Index] < 1.0) {
       if (OnOff->GetBinContent(b) == RejectionOn) {
-        HK.m_SoftTentacled[Index] = true;
+        if (Mode == c_TentacleCutFoM) HK.m_SoftTentacled[Index] = true;
+        HK.m_SoftTentacledFoM[Index] = true;
       } else {
-        HK.m_SoftTentacled[Index] = false;        
+        if (Mode == c_TentacleCutFoM) HK.m_SoftTentacled[Index] = false;        
+        HK.m_SoftTentacledFoM[Index] = false;        
       }
     } else {
       //cerr<<"Something is wrong with the times as I cannot find housekeeping data... "<<OnOff->GetBinCenter(b)<<endl; 
@@ -1520,27 +2164,28 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
   
   double LatMin = 100;
   double LatMax = -100;
-    
+  
   TH2D* OrbitsNormalizer = new TH2D(TString("TentaclesOrbitsNormalizer") + iID, 
-                         TString("TentaclesOrbitsNormalizer") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                                    TString("TentaclesOrbitsNormalizer") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   
   TH2D* Orbits = new TH2D(TString("TentaclesOrbits") + iID, 
-                         TString("TentaclesOrbits") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+                          TString("TentaclesOrbits") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   Orbits->SetXTitle("Longitude [deg]");
   Orbits->SetYTitle("Latitude [deg]");
   Orbits->SetZTitle("Events [cts/sec]");
-
-    
+  
+  
   TH1D* RateNormalizer = new TH1D(TString("RatesTentacleNormalizer") + iID, TString("RatesTentacleNormalizer") + ID, Bins, MinTime, MaxTime);
   TH1D* Rates = new TH1D(TString("RatesTentacle") + iID, TString("RatesTentacle") + ID, Bins, MinTime, MaxTime);
   Rates->SetXTitle("Time [s]");
   Rates->SetYTitle("cts/sec");
   
   
+  if (Show == true) {
     for (unsigned int u = 0; u < FE.m_Time.size(); ++u) {
       double Time = FE.m_Time[u];
       if (WithinSpecialGTI(Time) == false) continue;
-
+      
       // Find the Orbits position
       int OrbitsIndex = O.FindClosestIndex(Time);
       if (OrbitsIndex == -1) {
@@ -1563,19 +2208,19 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
       }
       if (HK.m_SoftSAA[HKIndex] == true) continue;
       //if (HK.m_SoftTentacled[HKIndex] == true) continue;
-
+      
       Orbits->Fill(O.m_Longitude[OrbitsIndex], O.m_Latitude[OrbitsIndex]);
       Rates->Fill(FE.m_Time[u]);
-        
+      
       if (O.m_Latitude[OrbitsIndex] > LatMax) LatMax = O.m_Latitude[OrbitsIndex];
       if (O.m_Latitude[OrbitsIndex] < LatMin) LatMin = O.m_Latitude[OrbitsIndex];
     }
- 
+    
     LiveTimeWithCuts = 0;
     LiveTimeNoCuts = 0;
     for (unsigned int h = 0; h < HK.m_Time.size(); ++h) {
       if (WithinSpecialGTI(HK.m_Time[h]) == false) continue;
-
+      
       if (FE.IsGTI(HK.m_Time[h]) == true && HK.m_SoftSAA[h] == false) {
         int OrbitsIndex = O.FindClosestIndex(HK.m_Time[h]);
         if (OrbitsIndex == -1) {
@@ -1587,18 +2232,17 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
           continue;
         }
         //if (HK.m_SoftTentacled[h] == false) {
-          LiveTimeWithCuts += HK.m_LiveTime[h];
-          OrbitsNormalizer->Fill(O.m_Longitude[OrbitsIndex], O.m_Latitude[OrbitsIndex], HK.m_LiveTime[h]);
-          RateNormalizer->Fill(HK.m_Time[h], HK.m_LiveTime[h]);
+        LiveTimeWithCuts += HK.m_LiveTime[h];
+        OrbitsNormalizer->Fill(O.m_Longitude[OrbitsIndex], O.m_Latitude[OrbitsIndex], HK.m_LiveTime[h]);
+        RateNormalizer->Fill(HK.m_Time[h], HK.m_LiveTime[h]);
         //}
         LiveTimeNoCuts += HK.m_LiveTime[h];          
       }
     }
     //cout<<"Live time before cuts: "<<LiveTimeNoCuts<<endl;
     //cout<<"Live time after cuts:  "<<LiveTimeWithCuts<<" ("<<100.0*(LiveTimeNoCuts-LiveTimeWithCuts)/LiveTimeNoCuts<<"%)"<<endl;
- 
-  
-  if (Show == true) {
+    
+    
     TCanvas* OrbitsCanvas = new TCanvas();
     OrbitsCanvas->cd();
     for (int bx = 1; bx <= Orbits->GetNbinsX(); ++bx) {
@@ -1610,7 +2254,7 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     }
     Orbits->Draw("colz");
     OrbitsCanvas->Update();
-  
+    
     TCanvas* RatesCanvas = new TCanvas();
     RatesCanvas->cd();
     for (int bx = 1; bx <= Rates->GetNbinsX(); ++bx) {
@@ -1622,12 +2266,712 @@ bool NBaseTool::FindSAATentacle(NFilteredEvents& FE, NHousekeeping& HK, NOrbits&
     RatesCanvas->Update();
   }
   
-  cout<<"Done with tentacle flag identification"<<endl;
+  cout<<"Done with tentacle flag identification - figure-of-merit-based approach"<<endl;
   
   return true;
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+
+bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show) 
+{
+  // For each Orbits check for each module the count rate in the tentacle region - 
+  // if there is an increase flag the region
+  
+  cout<<endl;
+  cout<<"Finding Tentacle via RMS ..."<<endl;
+  
+  if (H.m_Time.size() == 0) {
+    cout<<"Something went wrong! No data!"<<endl;
+    return true;
+  }
+  
+  // (A) Initializations...
+ 
+  double MaxAllowedRMS = m_TentacleCutRMSThreshold;               // --> user adjustable
+  bool DoSourceElimination = m_TentacleCutRMSSourceElimination;   // --> user adjustable
+  bool DoRegionRestriction = m_TentacleCutRMSRegionRestriction;   // --> user adjustable
+  bool DoSanityChecks = m_TentacleCutRMSSanityChecks;             // --> user adjustable
+
+  // The rejection flags
+  int RejectionOn  = 0;
+  int RejectionOff = 1;
+  
+  // The region where we determine the base count rate (mean & rms)
+  double NonSAAMinLong = 180;               // <-- into caldb 
+  double NonSAAMaxLong = 250;               // <-- into caldb 
+  
+  // First define the time intervals in the tentacle region:
+  int OneSecondBins = H.GetMaxTime() - H.GetMinTime() + 1;
+  double MinTime = H.GetMinTime()-0.5;
+  double MaxTime = H.GetMaxTime()+0.5;
+  
+  // 60-second binning -- good compromise for having enough statistics per bin, and small enough bins for not cutting out too much 
+  int TimeInterval = 60;                 // <-- into caldb (everything was optimized towards 60 seconds, thus better not change it tto much) 
+  int EvaluationBins = OneSecondBins/TimeInterval;  // Almost 60 second bins (but not perfectly)
+  
+  // Create a list of pixels with high source count for elimination
+  vector<int> ExcludedDetRawXY;
+  if (DoSourceElimination == true) ExcludedDetRawXY = MostlyEliminateSource(F, Show);  
+
+  TString iID = TString("_ID_") + H.m_ID + "_M_" + ((H.m_Module == 0) ? "A" : "B");
+  TString ID = TString(" (ID: ") + H.m_ID + ((H.m_Module == 0) ? "A" : "B") + ")";
+
+
+  
+  // (B) Create and fill the histograms
+  
+  TH1D* EvaluationRate = new TH1D(TString("EvaluationRate") + iID, TString("EvaluationRate") + ID, EvaluationBins, MinTime, MaxTime);
+  EvaluationRate->SetXTitle("Time [sec since 1/1/2010]");
+  EvaluationRate->SetYTitle("cts/sec");
+  
+  TH1D* NonSAAComparisonRate = new TH1D(TString("NonSAAComparisonRate") + iID, TString("NonSAAComparisonRate") + ID, EvaluationBins, MinTime, MaxTime);
+  NonSAAComparisonRate->SetXTitle("Time [sec since 1/1/2010]");
+  NonSAAComparisonRate->SetYTitle("cts/sec");
+  
+  TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("OnOffInternalSAA") + ID, EvaluationBins, MinTime, MaxTime);
+  for (int b = 1; b <= EvaluationBins; ++b) OnOffInternalSAA->SetBinContent(b, RejectionOff);
+  
+  for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
+    if (F.IsGTI(F.m_Time[i]) == false) continue;
+    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
+   
+    int DetectorID = F.m_DetectorID[i];
+    int RawX = F.m_RawX[i];
+    int RawY = F.m_RawY[i];
+    int ID = 10000*DetectorID + 100*RawX + RawY;
+    vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+
+    EvaluationRate->Fill(F.m_Time[i]);
+    
+    int Index = O.FindClosestIndex(F.m_Time[i]);
+    if (O.m_Longitude[Index] >= NonSAAMinLong && O.m_Longitude[Index] <= NonSAAMaxLong) {
+      NonSAAComparisonRate->Fill(F.m_Time[i]);
+    }    
+  }
+  
+  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    if (H.m_HardSAA[i] == true) {
+      OnOffInternalSAA->SetBinContent(OnOffInternalSAA->FindBin(H.m_Time[i]), RejectionOn);
+    }
+  }
+  
+  
+  // (C) Create a rate histogram in order to be able to calculate mean and the rms of the rate
+  
+  // (a) Create a rate histogram
+  int NonSAARateHistogramNumberOfEntries = 0;
+  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAAComparisonRate->GetMaximum());
+  for (int b = 2; b < NonSAAComparisonRate->GetNbinsX(); ++b) {
+    // Avoid partially filled edges:
+    if (NonSAAComparisonRate->GetBinContent(b-1) > 0 &&
+        NonSAAComparisonRate->GetBinContent(b) > 0 &&
+        NonSAAComparisonRate->GetBinContent(b+1) > 0) {
+      NonSAARateHistogram->Fill(NonSAAComparisonRate->GetBinContent(b));
+      ++NonSAARateHistogramNumberOfEntries;
+    }
+  }
+  
+  // (b) Calculate Average and RMS
+  double NonSAARateMax = NonSAAComparisonRate->GetMaximum();
+  double NonSAARateMean = NonSAARateHistogram->GetMean();
+  double NonSAARateRMS = NonSAARateHistogram->GetRMS();
+  double NonSAARateSigma = sqrt(NonSAARateMean);
+  
+  double Threshold = MaxAllowedRMS*NonSAARateRMS + NonSAARateMean;
+
+  
+  // Take care of the rare case when we have observations with strong outbursts
+  // Normal outburst should increase the RMS thus we are automatically in a higher threshold regime
+  // Then we set the threshold to the maximum + 1 rms
+  // There is only one case where this ever happened "RapidBurster"
+  
+  // If the rms is more than 3 times the expected 1-sigma value, then we have a burster 
+  // Thus set the threshold to maximum + MaxAllowedRMS * rms
+  double TimeOneSigma = 3.0;
+  if (NonSAARateRMS > TimeOneSigma * NonSAARateSigma) {
+    Threshold = NonSAARateMax + MaxAllowedRMS*NonSAARateRMS;
+    cout<<"--> Bursts detected! Threshold is max + "<<MaxAllowedRMS<<"*rms"<<endl;
+  }
+  
+  cout<<"Threshold calculation diagnostics based on non-SAA regions: "<<endl;
+  cout<<"Average rate in a "<<TimeInterval<<"-sec interval: "<<NonSAARateMean<<endl;
+  cout<<"Maximum rate: "<<NonSAARateMax<<endl;
+  cout<<"RMS: "<<NonSAARateRMS<<" (vs. 1-sigma: "<<sqrt(NonSAARateMean)<<")"<<endl;
+  cout<<"--> Threshold rate: "<<Threshold<<endl;
+  
+  
+  // (D) Determine the regions to reject
+  
+  // Approach:
+  // Assuming we have a threshold of 5 RMS
+  // Then we look for single bins with an increase of 5 RMS, two-bins with an increase of 5/sqrt(2), 
+  // three bins with an increase of 5/sqrt(3), etc. until we reach our max search distance MaxSearchDistance
+  // Since this approach has a tail (e.g. we have one gigantic increase and the two following bins normal, 
+  // then a search distance of 3 would catch all three although we do not have an increase in the latter 2),
+  // We do it once from the left and once from the right and then "AND" those two together --> no more tails
+  // Finally "AND" / mask it with the previously dtermined regions of low-shield rate increases
+  
+  
+  // The maximum amount of adjacent bins we serach for a significant rate increase
+  int MaxSearchDistance = 3;   // in caldb
+  
+  // (a) left to right
+  TH1I* OnOffLeftToRight = new TH1I(TString("OnOffLeftToRight") + iID, TString("OnOffLeftToRight") + ID, EvaluationBins, MinTime, MaxTime);
+  for (int b = 1; b <= EvaluationBins; ++b) OnOffLeftToRight->SetBinContent(b, RejectionOff);
+
+  // First seach for one-bin X-rms increases, then two-bin X/sqrt(2) increases, etc.
+  for (int s = 1; s <= MaxSearchDistance; ++s) {
+    for (int b = 1; b <= OnOffLeftToRight->GetNbinsX(); ++b) {
+      int ContentBins = 0;
+      double Content = 0.0;
+      for (int bb = b; bb < b+s && b <= OnOffLeftToRight->GetNbinsX(); ++bb) {
+        if (EvaluationRate->GetBinContent(bb) > NonSAARateMean) { // stop immediately if we are below mean
+          Content += EvaluationRate->GetBinContent(bb);
+          ContentBins++;
+        } else {
+          break; 
+        }
+      }
+      if (ContentBins > 0) {
+        if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
+          // We are above our threshold -> reject
+          for (int bb = b; bb < b+ContentBins; ++bb) {
+            OnOffLeftToRight->SetBinContent(bb, RejectionOn); 
+          }
+        }
+      }
+    }   
+  }
+
+ 
+  // (b) Search right to left
+  TH1I* OnOffRightToLeft = new TH1I(TString("OnOffRightToLeft") + iID, TString("OnOffRightToLeft") + ID, EvaluationBins, MinTime, MaxTime);
+  for (int b = 1; b <= EvaluationBins; ++b) OnOffRightToLeft->SetBinContent(b, RejectionOff);
+  
+  for (int s = 1; s <= MaxSearchDistance; ++s) {
+    for (int b = OnOffRightToLeft->GetNbinsX(); b >= 1; --b) {
+      int ContentBins = 0;
+      double Content = 0.0;
+      for (int bb = b; bb > b-s && b >= 1; --bb) {
+        if (EvaluationRate->GetBinContent(bb) > NonSAARateMean) {
+          Content += EvaluationRate->GetBinContent(bb);
+          ContentBins++;
+        } else {
+          break; 
+        }
+      }
+      if (ContentBins > 0) {
+        if ( Content/ContentBins > NonSAARateRMS * MaxAllowedRMS/sqrt(ContentBins) + NonSAARateMean) {
+          for (int bb = b; bb > b-ContentBins; --bb) {
+            OnOffRightToLeft->SetBinContent(bb, RejectionOn); 
+          }
+        }
+      }
+    }   
+  }
+  
+  // (c) "AND" them together: Only when both are ON set the combined to ON
+  TH1I* OnOff = new TH1I(TString("OnOff") + iID, TString("OnOff") + ID, EvaluationBins, MinTime, MaxTime);
+  
+  for (int b = 1; b <= EvaluationBins; ++b) {
+    if (OnOffRightToLeft->GetBinContent(b) == RejectionOn && 
+        OnOffLeftToRight->GetBinContent(b) == RejectionOn) {
+      OnOff->SetBinContent(b, RejectionOn);
+    } else {
+      OnOff->SetBinContent(b, RejectionOff);
+    }
+  }
+
+ 
+  // (d) Make sure we include edge bins in the rejection:
+  for (int b = 3; b < OnOff->GetNbinsX()-1; ++b) {
+    if (OnOff->GetBinContent(b) == RejectionOn) {
+      if (EvaluationRate->GetBinContent(b-2) == 0) OnOff->SetBinContent(b-1, RejectionOn);
+      if (EvaluationRate->GetBinContent(b+2) == 0) OnOff->SetBinContent(b+1, RejectionOn);
+    }
+  }
+  
+  
+  
+  
+  // (E) Restriction to tentacle region
+  
+  if (DoRegionRestriction == true) {
+    double LongitudeMin = 240;               // <-- into caldb 
+    double LongitudeMax = 320;               // <-- into caldb 
+    for (int b = 1; b <= OnOff->GetNbinsX(); ++b) {
+      if (OnOff->GetBinContent(b) == RejectionOn) {
+        // Find the Orbits position
+        int OrbitsIndex = O.FindClosestIndex(OnOff->GetBinCenter(b));
+        if (OrbitsIndex == -1) {
+          cerr<<"No suiting orbit data found!"<<endl;  
+          continue;
+        }
+        if (fabs(O.m_Time[OrbitsIndex] - OnOff->GetBinCenter(b)) > 60) {
+          cerr<<"Orbits is "<<fabs(O.m_Time[OrbitsIndex] - OnOff->GetBinCenter(b))<<" seconds from data"<<endl;
+          continue;
+        }
+        if (O.m_Longitude[OrbitsIndex] < LongitudeMin || O.m_Longitude[OrbitsIndex] > LongitudeMax) {
+          OnOff->SetBinContent(b, RejectionOff);
+        }
+      }
+    }
+  }
+  
+  
+  // (F) Sanity checks
+  
+  if (DoRegionRestriction == true && DoSanityChecks == true) {
+    
+    // A tentacle has some 
+    
+    double OrbitDuration = 6240; //sec  --- no need at all to be perfect here
+    
+    double NTentacles = 0;
+    bool LastAdjacentCounted = false;
+    int LastAdjacentBin = 0; 
+    double NAdjacentTentacles = 0;
+    double LastDuration = 0;
+    double DurationOfTentacles = 0;
+    double AverageFlux = 0;
+    int NAverageFluxes = 0;
+    
+    bool Started = false;
+    for (int i = 1; i <= OnOff->GetNbinsX(); ++i) {
+      if (OnOff->GetBinContent(i) == RejectionOn) {
+        Started = true;
+        LastDuration++;
+        if (EvaluationRate->GetBinContent(i) > 0) {
+          AverageFlux += EvaluationRate->GetBinContent(i);
+          NAverageFluxes++;
+        }
+        if (OnOffInternalSAA->GetBinContent(i) == RejectionOn) { // Skip those here since we have an SAA and not a tentacle
+          while (OnOff->GetBinContent(i) == RejectionOn) ++i;
+          Started = false;
+          LastDuration = 0;
+        }
+      } else {
+        if (Started == true) {
+          cout<<"Tentacle "<<i-LastDuration<<": Duration: "<<LastDuration<<endl;
+          DurationOfTentacles += LastDuration;
+          NTentacles++;
+          Started = false;
+          LastDuration = 0;
+          if (LastAdjacentBin != 0) {
+            double TimeGap = OnOff->GetBinCenter(i) - OnOff->GetBinCenter(LastAdjacentBin);
+            if (int((TimeGap + OrbitDuration/2)/OrbitDuration) == 1) {
+              ++NAdjacentTentacles;
+              if (LastAdjacentCounted == false) {
+                ++NAdjacentTentacles;
+                LastAdjacentCounted = true; 
+              }
+            } else {
+              LastAdjacentCounted = false; 
+            }
+          } 
+          LastAdjacentBin = i;
+        }
+      }
+    }
+    if (NTentacles > 0) {
+      DurationOfTentacles /= NTentacles;
+      AverageFlux /= NAverageFluxes;
+      
+      // Determine the number of orbits crossing the tentacle region while observing:
+      // The line we are looking at is lat > -2 & long = 275
+      
+      double TentacleMinLatitude = -6;                // <-- into caldb 
+      double TentacleAvgLongitude = 280;              // <-- into caldb 
+      
+      int NCrossings = 0;
+      for (int b = 1; b < EvaluationRate->GetNbinsX(); ++b) {
+        if (EvaluationRate->GetBinContent(b) > 0 && EvaluationRate->GetBinContent(b+1) > 0) {
+          int Index1 = O.FindClosestIndex(EvaluationRate->GetBinCenter(b));
+          int Index2 = O.FindClosestIndex(EvaluationRate->GetBinCenter(b+1));
+          if (O.m_Latitude[Index1] >= TentacleMinLatitude && O.m_Latitude[Index2] >= TentacleMinLatitude &&
+            O.m_Longitude[Index1] <= TentacleAvgLongitude && O.m_Longitude[Index2] > TentacleAvgLongitude) {
+            NCrossings++;
+          }
+        }
+      }
+      
+      cout<<"Number of tentacles: "<<NTentacles<<" (vs. "<<NCrossings<<" orbits) with average duration: "<<DurationOfTentacles<<endl;
+      cout<<"Number of adjacent tentacles: "<<NAdjacentTentacles<<endl;
+      cout<<"Average flux: "<<AverageFlux<<" vs. "<<NonSAARateMean<<endl;
+      
+      int Suspiciousness = 0;
+      
+      
+      // Sanity check 1:
+      // If we really have a tentacle most of the tentacle region crossings should produce a signal 
+      double TentacleVsRegionCrossingsBadCutoff = 0.5;             // <-- into caldb 
+      double TentacleVsRegionCrossingsReallyBadCutoff = 0.15;      // <-- into caldb 
+      if (NTentacles < TentacleVsRegionCrossingsBadCutoff * NCrossings) {
+        cout<<"Suspicious: Only "<<NTentacles<<" tentacles in "<<NCrossings<<" crossings of the tentacle zone"<<endl;
+        ++Suspiciousness;
+        if (NTentacles < TentacleVsRegionCrossingsReallyBadCutoff * NCrossings) {
+          ++Suspiciousness;
+        }
+      }
+      
+      // Sanity check 2:
+      // The average tentacle cut duration is 4-5, i.e. 240-300 seconds
+      double TentacleDurationCutOff = 2.5*60;                    // = 150 sec<-- into caldb (60 is from default Timeintervall)
+      if (DurationOfTentacles*TimeInterval <= TentacleDurationCutOff) {
+        cout<<"Suspicious: The average duration of a tentacle passing is only "<<DurationOfTentacles<<" instead of ~5"<<endl;
+        ++Suspiciousness;
+      }
+      
+      // Sanity check 3:
+      // Tentacle follows after tentacle follows after tentacle follows...
+      double AdjacentOrNotCutOff = 0.5;                            // <-- into caldb  
+      if (NTentacles > 2 && NAdjacentTentacles < AdjacentOrNotCutOff * NTentacles) {
+        cout<<"Suspicious: Only "<<NAdjacentTentacles<<" out of "<<NTentacles<<" are in sequential (or same) orbit"<<endl;
+        ++Suspiciousness;
+      }
+      
+      // Sanity check 4:
+      // If the average flux in the tentacles is below the threshold then we have mostly likely just random flux increases
+      // It is even worse, if there is some slight source variability
+      double HintOfVariabilityCutOff = 1.4;                        // <-- into caldb 
+      if (AverageFlux < Threshold) {
+        cout<<"Suspicious: The average OVERALL tentacle flux is below the threshold: "<<AverageFlux<<" vs. "<<Threshold<<endl;
+        ++Suspiciousness;
+        if (NonSAARateRMS > HintOfVariabilityCutOff * NonSAARateSigma) {
+          cout<<"            and we have a hint of a variable source"<<endl;
+          ++Suspiciousness;
+        }
+      }
+      
+      // More than 2 suspicousness points? No Tentacle!
+      int SuspiciousnessThreshold = 2;                              // <-- into caldb 
+      if (Suspiciousness >= SuspiciousnessThreshold) {
+        cout<<"Attention: The characteristics of the given tentacle regions is not in agreement with a typical tentacle."<<endl;
+        cout<<"           I ignore them all!"<<endl;
+        for (int b = 1; b <= EvaluationBins; ++b) OnOff->SetBinContent(b, RejectionOff);
+      }
+    //} else {
+    //  // If all tentacles end up in the internal SAA cut, then we do not have any...
+    //  for (int b = 1; b <= EvaluationBins; ++b) OnOff->SetBinContent(b, RejectionOff);
+    }
+  }
+ 
+  
+  // (G) Now set it:
+  for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+    int Bin = OnOff->FindBin(H.m_Time[h]);
+    if (Bin == 0 || Bin > OnOff->GetNbinsX()) {
+      cerr<<"Something is wrong with the times as I cannot find a rejection value for time "<<H.m_Time[h]<<endl; 
+      if (Mode == c_TentacleCutRMS) H.m_SoftTentacled[h] = true;
+      H.m_SoftTentacledRMS[h] = false;        
+    } else {
+      if (OnOff->GetBinContent(Bin) == RejectionOn) {
+        if (Mode == c_TentacleCutRMS) H.m_SoftTentacled[h] = true;
+        H.m_SoftTentacledRMS[h] = true;
+      } else {
+        if (Mode == c_TentacleCutRMS) H.m_SoftTentacled[h] = true;
+        H.m_SoftTentacledRMS[h] = false;        
+      }    
+    }
+  }
+  
+  
+  // (H) Show everything
+  
+  if (Show == true) {  
+    // Just as sanity check make an Orbits plot of the rates
+    int LongitudeBins = 48;
+    int LatitudeBins = 12;
+    double MinLatitude = -6.06;
+    double MaxLatitude = +6.06;
+    
+    double LatMin = 100;
+    double LatMax = -100;
+    
+    TH2D* OrbitsNormalizer = new TH2D(TString("TentaclesOrbitsNormalizer") + iID, 
+                                      TString("TentaclesOrbitsNormalizer") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+    
+    TH2D* Orbits = new TH2D(TString("TentaclesOrbits") + iID, 
+                            TString("TentaclesOrbits") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+    Orbits->SetXTitle("Longitude [deg]");
+    Orbits->SetYTitle("Latitude [deg]");
+    Orbits->SetZTitle("Events [cts/sec]");
+    
+    
+    TH1D* RateNormalizer = new TH1D(TString("RatesTentacleNormalizer") + iID, TString("RatesTentacleNormalizer") + ID, OneSecondBins, MinTime, MaxTime);
+    TH1D* Rates = new TH1D(TString("RatesTentacle") + iID, TString("RatesTentacle") + ID, OneSecondBins, MinTime, MaxTime);
+    Rates->SetXTitle("Time [s]");
+    Rates->SetYTitle("cts/sec");
+    
+    
+    for (unsigned int u = 0; u < F.m_Time.size(); ++u) {
+      double Time = F.m_Time[u];
+      if (WithinSpecialGTI(Time) == false) continue;
+      
+      // Find the Orbits position
+      int OrbitsIndex = O.FindClosestIndex(Time);
+      if (OrbitsIndex == -1) {
+        cerr<<"No suiting Orbits found!"<<endl;  
+        continue;
+      }
+      if (fabs(O.m_Time[OrbitsIndex] - Time) > 1) {
+        cerr<<"Orbits is "<<fabs(O.m_Time[OrbitsIndex] - Time)<<" seconds from data"<<endl;
+        continue;
+      }
+      // Find the housekeeping position
+      int HKIndex = H.FindClosestIndex(Time);
+      if (HKIndex == -1) {
+        cerr<<"No suiting housekeeping found!"<<endl;  
+        continue;
+      }
+      if (fabs(H.m_Time[HKIndex] - Time) > 1) {
+        cerr<<"Housekeeping is "<<fabs(H.m_Time[HKIndex] - Time)<<" seconds from data"<<endl;
+        continue;
+      }
+      if (H.m_SoftSAA[HKIndex] == true) continue;
+      //if (H.m_SoftTentacled[HKIndex] == true) continue;
+      
+      int DetectorID = F.m_DetectorID[u];
+      int RawX = F.m_RawX[u];
+      int RawY = F.m_RawY[u];
+      int ID = 10000*DetectorID + 100*RawX + RawY;
+      vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+      if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+      
+      Orbits->Fill(O.m_Longitude[OrbitsIndex], O.m_Latitude[OrbitsIndex]);
+      Rates->Fill(F.m_Time[u]);
+      
+      if (O.m_Latitude[OrbitsIndex] > LatMax) LatMax = O.m_Latitude[OrbitsIndex];
+      if (O.m_Latitude[OrbitsIndex] < LatMin) LatMin = O.m_Latitude[OrbitsIndex];
+    }
+    
+    double LiveTimeWithCuts = 0;
+    double LiveTimeNoCuts = 0;
+    for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+      if (WithinSpecialGTI(H.m_Time[h]) == false) continue;
+      
+      if (F.IsGTI(H.m_Time[h]) == true && H.m_SoftSAA[h] == false) {
+        int OrbitsIndex = O.FindClosestIndex(H.m_Time[h]);
+        if (OrbitsIndex == -1) {
+          cerr<<"No suiting Orbits found!"<<endl;  
+          continue;
+        }
+        if (fabs(O.m_Time[OrbitsIndex] - H.m_Time[h]) > 1) {
+          cerr<<"Orbits is "<<fabs(O.m_Time[OrbitsIndex] - H.m_Time[h])<<" seconds from data"<<endl;
+          continue;
+        }
+        if (H.m_SoftTentacled[h] == false) {
+          LiveTimeWithCuts += H.m_LiveTime[h];
+          OrbitsNormalizer->Fill(O.m_Longitude[OrbitsIndex], O.m_Latitude[OrbitsIndex], H.m_LiveTime[h]);
+          RateNormalizer->Fill(H.m_Time[h], H.m_LiveTime[h]);
+        }
+        LiveTimeNoCuts += H.m_LiveTime[h];          
+      }
+    }
+    cout<<"Live time before cuts: "<<LiveTimeNoCuts<<endl;
+    cout<<"Live time after cuts:  "<<LiveTimeWithCuts<<" ("<<100.0*(LiveTimeNoCuts-LiveTimeWithCuts)/LiveTimeNoCuts<<"%)"<<endl;
+    
+    
+    TCanvas* EvaluationRateCanvas = new TCanvas();
+    EvaluationRateCanvas->cd();
+    EvaluationRate->Draw();
+    OnOff->Scale(EvaluationRate->GetMaximum());
+    OnOff->Draw("SAME");
+    EvaluationRateCanvas->Update();
+    
+    TCanvas* NonSAARateHistogramCanvas = new TCanvas();
+    NonSAARateHistogramCanvas->cd();
+    NonSAARateHistogram->Draw();
+    NonSAARateHistogramCanvas->Update();
+    
+    TCanvas* OrbitsCanvas = new TCanvas();
+    OrbitsCanvas->cd();
+    for (int bx = 1; bx <= Orbits->GetNbinsX(); ++bx) {
+      for (int by = 1; by <= Orbits->GetNbinsY(); ++by) {
+        if (OrbitsNormalizer->GetBinContent(bx, by) > 0) {
+          Orbits->SetBinContent(bx, by, Orbits->GetBinContent(bx, by)/OrbitsNormalizer->GetBinContent(bx, by));
+        }
+      }
+    }
+    Orbits->Draw("colz");
+    OrbitsCanvas->Update();
+    
+    TCanvas* RatesCanvas = new TCanvas();
+    RatesCanvas->cd();
+    for (int bx = 1; bx <= Rates->GetNbinsX(); ++bx) {
+      if (RateNormalizer->GetBinContent(bx) > 0) {
+        Rates->SetBinContent(bx, Rates->GetBinContent(bx)/RateNormalizer->GetBinContent(bx));
+      }
+    }
+    Rates->Draw();
+    RatesCanvas->Update();
+  }
+  
+  cout<<"Done with tentacle flag identification - RMS mode"<<endl;
+  
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
+{
+  //! Return the pixels where the source is most likely on
+
+  int NPositionBins = 64;
+  TH2D* PositionsOnSource = new TH2D("PositionsOnSource", "PositionsOnSource", NPositionBins, -32, 32, NPositionBins, -32, 32);
+  PositionsOnSource->SetXTitle("1, 2 <-- Raw X [pixel] --> 3, 0");
+  PositionsOnSource->SetYTitle("2, 3 <-- Raw Y [pixel] --> 1, 0");
+  PositionsOnSource->SetZTitle("cts");  
+  
+  
+  // Fill histograms which require filling by event
+  for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
+    
+    //if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
+    if (F.m_Energy[e] < m_SpectrumMin || F.m_Energy[e] > m_SpectrumMax) continue;
+    if (F.IsGTI(F.m_Time[e]) == false) continue;
+  
+    int DetectorID = F.m_DetectorID[e];
+    int RawX = F.m_RawX[e];
+    int RawY = F.m_RawY[e];
+    
+    double PosX = 0;
+    double PosY = 0;
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);
+    
+    if (RawX >= 0 && RawX <= 31 && RawY >= 0 && RawY <= 31) {
+      PositionsOnSource->Fill(PosX, PosY);
+    }
+  }
+  
+  int LogBinningBins = 100;
+  double LogBinningMin = numeric_limits<double>::max();
+  double LogBinningMax = 0;
+  
+  for (int bx = 1; bx <= NPositionBins; ++bx) {
+    for (int by = 1; by <= NPositionBins; ++by) {
+      if (PositionsOnSource->GetBinContent(bx, by) > 1) {
+        if (PositionsOnSource->GetBinContent(bx, by) > LogBinningMax) LogBinningMax = PositionsOnSource->GetBinContent(bx, by);
+        if (PositionsOnSource->GetBinContent(bx, by) < LogBinningMin) LogBinningMin = PositionsOnSource->GetBinContent(bx, by);
+      }
+    }
+  }
+  vector<double> LogBinning(LogBinningBins + 1);
+  LogBinningMin = log(LogBinningMin);
+  LogBinningMax = log(LogBinningMax);
+  double Dist = (LogBinningMax-LogBinningMin)/(LogBinningBins);
+  
+  double RealLogBinningBins = 0;
+  LogBinning[0] = int(exp(LogBinningMin)) - 0.5; // Always >= 0.5
+  for (int i = 1; i < LogBinningBins+1; ++i) {
+    double Candidate = int(exp(LogBinningMin+i*Dist)) - 0.5;
+    if (Candidate == LogBinning[RealLogBinningBins]) continue;
+    LogBinning[++RealLogBinningBins] = Candidate;
+  }   
+  
+  TH1D* PositionRates = new TH1D("PositionRates", "PositionRates", RealLogBinningBins, &LogBinning[0]);
+  
+  double GoodPixels = 0;
+  for (int bx = 1; bx <= NPositionBins; ++bx) {
+    for (int by = 1; by <= NPositionBins; ++by) {
+      if (PositionsOnSource->GetBinContent(bx, by) > 0) {
+        PositionRates->Fill(PositionsOnSource->GetBinContent(bx, by));
+        GoodPixels++;
+      }
+    }
+  }
+  for (int b = 1; b <= RealLogBinningBins; ++b) {
+    PositionRates->SetBinContent(b, PositionRates->GetBinContent(b)/PositionRates->GetBinWidth(b));
+  }
+  
+  // Smooth the hell out of it:
+  PositionRates->Smooth(100);
+  
+  // Find the maximum
+  double PositionRatesMaximum = PositionRates->GetBinCenter(PositionRates->GetMaximumBin());
+  
+  // It is definitely non-Gaussian, but let's just use the 5-sigma upper limit as our cut-off Count
+  double PositionRatesCutoff = PositionRatesMaximum + 5*sqrt(PositionRatesMaximum);
+  
+  // This task should just eliminate the worst offenders, we do not want to cut more than ~25% of the data
+  double NotEliminatedPixels = 0;
+  for (int b = 1; b <= RealLogBinningBins; ++b) {
+    if (PositionRates->GetBinCenter(b) < PositionRatesCutoff) {
+      NotEliminatedPixels += PositionRates->GetBinContent(b) * PositionRates->GetBinWidth(b);
+    } else {
+      if (NotEliminatedPixels < 0.75 * GoodPixels) {
+        PositionRatesCutoff = PositionRates->GetBinCenter(b);
+        NotEliminatedPixels += PositionRates->GetBinContent(b) * PositionRates->GetBinWidth(b);
+      }
+    }
+  }
+  cout<<"CutOff: "<<PositionRatesCutoff<<" with "<<NotEliminatedPixels<<" of "<<GoodPixels<<" used pixels"<<endl;
+  
+  
+  // Create a map of excluded bins: Notation 1000*Det + 100*RawX + RawY (for faster lookup later)
+  vector<int> ExcludedDetRawXY;
+  for (int bx = 1; bx <= NPositionBins; ++bx) {
+    for (int by = 1; by <= NPositionBins; ++by) {
+      if (PositionsOnSource->GetBinContent(bx, by) > PositionRatesCutoff) {
+        int Det = 0;
+        int RawX = 0;
+        int RawY = 0;
+        ConvertPosRaw(PositionsOnSource->GetXaxis()->GetBinCenter(bx), PositionsOnSource->GetXaxis()->GetBinCenter(by), Det, RawX, RawY);
+        
+        int DXY = 10000*Det + 100*RawX + RawY;
+        ExcludedDetRawXY.push_back(DXY);
+      }
+    }
+  }
+  sort(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end());
+  
+  cout<<"Eliminated pixels: "<<100.0 * ExcludedDetRawXY.size() / (64*64)<<" %"<<endl;
+  
+  // Redo to check it has worked!
+  PositionsOnSource->Reset();
+  for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
+    
+    //if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
+    if (F.m_Energy[e] < m_SpectrumMin || F.m_Energy[e] > m_SpectrumMax) continue;
+    if (F.IsGTI(F.m_Time[e]) == false) continue;
+  
+    int DetectorID = F.m_DetectorID[e];
+    int RawX = F.m_RawX[e];
+    int RawY = F.m_RawY[e];
+    int ID = 10000*DetectorID + 100*RawX + RawY;
+    vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+
+    double PosX = 0;
+    double PosY = 0;
+    ConvertRawPos(RawX, RawY, DetectorID, PosX, PosY);    
+    PositionsOnSource->Fill(PosX, PosY);
+  }
+  
+  if (Show == true) {
+    TCanvas* PositionsOnSourceCanvas = new TCanvas();
+    PositionsOnSourceCanvas->cd();
+    PositionsOnSource->Draw("colz");
+    PositionsOnSourceCanvas->Update();  
+ 
+    TCanvas* PositionRatesCanvas = new TCanvas();
+    PositionRatesCanvas->cd();
+    PositionRates->Draw("colz");
+    PositionRatesCanvas->Update();
+  }
+  
+  return ExcludedDetRawXY; 
+}
+  
+  
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1646,22 +2990,31 @@ void NBaseTool::ConvertRawPos(int RawX, int RawY, int DetectorID, double& PosX, 
     PosX = +RawX+0.5;
     PosY = -RawY-0.5;
   }
-  
-  /*
-  if (DetectorID == 0) {
-    PosX = +RawX+0.5; 
-    PosY = +RawY+0.5;
-  } else if (DetectorID == 1) {
-    PosX = +RawY+0.5; 
-    PosY = -RawX-0.5;
-  } else if (DetectorID == 2) {
-    PosX = -RawX-0.5;
-    PosY = -RawY-0.5;
-  } else if (DetectorID == 3) {
-    PosX = -RawY-0.5;
-    PosY = +RawX+0.5;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NBaseTool::ConvertPosRaw(double PosX, double PosY, int& DetectorID, int& RawX, int& RawY)
+{ 
+  if (PosX > 0 && PosY > 0) {
+    DetectorID = 0;
+    RawX = int(PosY);
+    RawY = int(PosX);
+  } else if (PosX < 0 && PosY > 0) {
+    DetectorID = 1;
+    RawX = int(-PosX);
+    RawY = int(PosY);
+  } else if (PosX < 0 && PosY < 0) {
+    DetectorID = 2;
+    RawX = int(-PosY);
+    RawY = int(-PosX);
+  } else if (PosX > 0 && PosY < 0) {
+    DetectorID = 3;
+    RawX = int(PosX);
+    RawY = int(-PosY);
   }
-  */
 }
 
 

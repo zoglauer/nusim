@@ -48,13 +48,22 @@ class NCheckRates : public NBaseTool
   //NCheckRates() {};
   //NCheckRates(const NCheckRates& NCTHit) {};
 
-  bool CreateGTIFile(vector<double>& GTIStart, vector<double>& GTIStop, NHousekeeping& H);
+  bool CreateGTIFile(vector<double>& GTIStart, vector<double>& GTIStop, NHousekeeping& H, TString Name);
 
   bool Show(NFilteredEvents& FE, NHousekeeping& H, NOrbits& O, NEngineering& E, 
             int SourcePosX, int SourcePosY, double DistanceCutOff);
   
   void ShowRates(TH1D* Rates, TH1D* SAA, double LifeTime);
   void ShowRates(TH2D* Rates, double LifeTime);
+  
+  void CreateReport(TString Observation, TString Mode, TString Module,
+                    TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
+                    TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
+                    TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes);
+  
+  void NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedian);
+
+  void CreateGTIs(NHousekeeping& H);
   
   // private methods:
  private:
