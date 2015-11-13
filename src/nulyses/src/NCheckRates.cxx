@@ -407,7 +407,10 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   double TimeSAAOptimizedLSRRMSTentacleRMS = 0.0; 
   
   // Create a list of pixels with high source count for elimination
-  vector<int> ExcludedDetRawXY = MostlyEliminateSource(F, false);
+  vector<int> ExcludedDetRawXY;
+  if (m_TentacleCutRMSSourceElimination == true || m_SAACutRMSSourceElimination == true) { 
+    ExcludedDetRawXY = MostlyEliminateSource(F, false);
+  }
   
   
   // Section B: Fill (and normalize) histograms
@@ -482,7 +485,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       RatesSAAStrictLSRTentacleNo->Fill(F.m_Time[e]);
       RatesSAAStrictLSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
     }
-    if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacled[HKIndex] == false) {
+    if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
       RatesSAAStrictLSRTentacleRMS->Fill(F.m_Time[e]);
       RatesSAAStrictLSRTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
     }

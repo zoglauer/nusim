@@ -209,6 +209,11 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     m_LookAtModule = "ab";
   }
   
+  if (m_TentacleCutRMSSourceElimination != m_SAACutRMSSourceElimination) {
+    cout<<"You have to do either the source elimination on both or in none, tentacle and SAA cut by RMS"<<endl;
+    return false;
+  }
+  
   if (m_ShowHistograms.Contains("s") == false) {
     gROOT->SetBatch(true); 
   }
@@ -1526,10 +1531,11 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     EvaluationRateLifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
   }
 
-  // Do lifetime correction -- NO!
+  /*
+  // Do lifetime correction
   for (int b = 1; b <= NonSAARate->GetNbinsX(); ++b) {
     if (EvaluationRateLifeTimes->GetBinContent(b) > 0) {
-      // NO LIFETIME correction!
+      // With LIFETIME correction!
       //NonSAARate->SetBinContent(b, NonSAARate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
       //EvaluationRate->SetBinContent(b, EvaluationRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
     } else {
@@ -1537,6 +1543,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       EvaluationRate->SetBinContent(b , 0);
     }
   }
+  */
   
   
   // (B) Determine the mean and rms detector count rate in the regions away from the SAA as well as the threshold
@@ -1719,11 +1726,11 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       
       // Usually the average flux is way high 
       double HintOfVariabilityCutOff = 1.4;                        // <-- into caldb 
-      if (AverageFlux < Threshold) {
-        cout<<"Suspicious: The average flux value ("<<AverageFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
+      if (AverageFlux < Threshold && MaxFlux <= (MaxAllowedRMS+2.0)*NonSAARateRMS + NonSAARateMean) {
+        cout<<"Suspicious: The average flux value ("<<AverageFlux<<" vs. max: "<<MaxFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
         Suspiciousness++;
         if (MaxFlux < Threshold) {
-          cout<<"            and the maximum flux value ("<<AverageFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
+          cout<<"            and the maximum flux value ("<<MaxFlux<<") is smaller than the threshold ("<<Threshold<<")"<<endl;
           Suspiciousness++;
         }
         if (NonSAARateRMS > HintOfVariabilityCutOff*NonSAARateSigma) {
@@ -2327,6 +2334,8 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   EvaluationRate->SetXTitle("Time [sec since 1/1/2010]");
   EvaluationRate->SetYTitle("cts/sec");
   
+  TH1D* EvaluationRateLifeTimes = new TH1D(TString("EvaluationRateLifeTimes") + iID, TString("EvaluationRateLifeTimes") + ID, EvaluationBins, MinTime, MaxTime);
+  
   TH1D* NonSAAComparisonRate = new TH1D(TString("NonSAAComparisonRate") + iID, TString("NonSAAComparisonRate") + ID, EvaluationBins, MinTime, MaxTime);
   NonSAAComparisonRate->SetXTitle("Time [sec since 1/1/2010]");
   NonSAAComparisonRate->SetYTitle("cts/sec");
@@ -2360,6 +2369,26 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     }
   }
   
+  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
+    if (F.IsGTI(F.m_Time[i]) == false) continue;
+
+    EvaluationRateLifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
+  }
+  
+  /* NO!
+  // Do lifetime correction
+  for (int b = 1; b <= NonSAAComparisonRate->GetNbinsX(); ++b) {
+    if (EvaluationRateLifeTimes->GetBinContent(b) > 0) {
+      // With LIFETIME correction!
+      //NonSAAComparisonRate->SetBinContent(b, NonSAAComparisonRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
+      //EvaluationRate->SetBinContent(b, EvaluationRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
+    } else {
+      NonSAAComparisonRate->SetBinContent(b , 0);
+      EvaluationRate->SetBinContent(b , 0);
+    }
+  }
+  */
   
   // (C) Create a rate histogram in order to be able to calculate mean and the rms of the rate
   
@@ -2538,6 +2567,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     double NAdjacentTentacles = 0;
     double LastDuration = 0;
     double DurationOfTentacles = 0;
+    double MaxFlux = 0;
     double AverageFlux = 0;
     int NAverageFluxes = 0;
     
@@ -2548,6 +2578,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
         LastDuration++;
         if (EvaluationRate->GetBinContent(i) > 0) {
           AverageFlux += EvaluationRate->GetBinContent(i);
+          if (EvaluationRate->GetBinContent(i) > MaxFlux) MaxFlux = EvaluationRate->GetBinContent(i);
           NAverageFluxes++;
         }
         if (OnOffInternalSAA->GetBinContent(i) == RejectionOn) { // Skip those here since we have an SAA and not a tentacle
@@ -2639,7 +2670,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
       // If the average flux in the tentacles is below the threshold then we have mostly likely just random flux increases
       // It is even worse, if there is some slight source variability
       double HintOfVariabilityCutOff = 1.4;                        // <-- into caldb 
-      if (AverageFlux < Threshold) {
+      if (AverageFlux < Threshold && MaxFlux <= 2.0*MaxAllowedRMS*NonSAARateRMS + NonSAARateMean) {
         cout<<"Suspicious: The average OVERALL tentacle flux is below the threshold: "<<AverageFlux<<" vs. "<<Threshold<<endl;
         ++Suspiciousness;
         if (NonSAARateRMS > HintOfVariabilityCutOff * NonSAARateSigma) {
