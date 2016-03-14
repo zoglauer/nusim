@@ -1284,6 +1284,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
     }
   }
+  //DebugOutput(ShieldRateLow, "ShieldRateLow");
  
   for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
     if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
@@ -1315,10 +1316,12 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   Binner.SetMinimumBinWidth(SuperStrictOffTimeInterval);
   Binner.SetPrior(Prior); 
   ShieldRateLow->Smooth(1);     // into caldb 
+  //DebugOutput(ShieldRateLow, "ShieldRateLowSmoothed");
   for (int b = 1; b <= ShieldRateLow->GetNbinsX(); ++b) {
     Binner.Add(ShieldRateLow->GetBinCenter(b), ShieldRateLow->GetBinContent(b));
   }
   TH1D* ShieldRateLowBB = Binner.GetNormalizedHistogram("BB-binned low count rate", "Time since epoch", "cts/sec");
+  //DebugOutput(ShieldRateLowBB, "ShieldRateLowBB");
   
   
   // (D) Calculate a simple (slightly) shifted, *normalized* gradient histogram
@@ -1559,7 +1562,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
    
   // (a) Create a rate histogram
   int NonSAARateHistogramNumberOfEntries = 0;
-  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAARate->GetMaximum());
+  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAARate->GetMaximum() + 1);
   for (int b = 2; b < NonSAARate->GetNbinsX(); ++b) {
     if (NonSAARate->GetBinContent(b) > 0 &&
         NonSAARate->GetBinContent(b-1) > 0 && NonSAARate->GetBinContent(b+1) > 0) { // Ignore half filled edge pixels
@@ -2412,7 +2415,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   
   // (a) Create a rate histogram
   int NonSAARateHistogramNumberOfEntries = 0;
-  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAAComparisonRate->GetMaximum());
+  TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAAComparisonRate->GetMaximum() + 1);
   for (int b = 2; b < NonSAAComparisonRate->GetNbinsX(); ++b) {
     // Avoid partially filled edges:
     if (NonSAAComparisonRate->GetBinContent(b-1) > 0 &&
@@ -3071,6 +3074,35 @@ void NBaseTool::ConvertPosRaw(double PosX, double PosY, int& DetectorID, int& Ra
     RawX = int(PosX);
     RawY = int(-PosY);
   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NBaseTool::DebugOutput(TH1* Hist, TString FileName)
+{
+  TString HistFileName = FileName + ".png";
+  TCanvas* C = new TCanvas("C", "C", 4000, 3000);
+  C->cd();
+  Hist->Draw();
+  C->Update();
+  C->SaveAs(HistFileName);
+  
+  
+  TString TextFileName = FileName + ".txt";
+  ofstream out;
+  out.open(TextFileName);
+  if (out.is_open() == false) {
+    cout<<"Error: Unable to open "<<TextFileName<<endl;
+    return;
+  }
+  out<<"# Bin min, Bin max, Value"<<endl;
+  for (int b = 1; b <= Hist->GetXaxis()->GetNbins(); ++b) {
+    out<<setprecision(9)<<Hist->GetXaxis()->GetBinLowEdge(b)<<"  "<<Hist->GetXaxis()->GetBinUpEdge(b)<<"  "<<Hist->GetBinContent(b)<<endl; 
+  }
+  
+  out.close();
 }
 
 

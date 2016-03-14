@@ -17,6 +17,7 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TH1.h"
 
 // NuSTAR libs:
 #include "NGlobal.h"
@@ -114,6 +115,10 @@ class NBaseTool
 
   void ConvertRawPos(int RawX, int RawY, int Detector, double& PosX, double& PosY);
   void ConvertPosRaw(double PosX, double PosY, int& DetectorID, int& RawX, int& RawY);
+  
+  // protected methods:
+ protected:
+  void DebugOutput(TH1* Hist, TString FileName); 
   
   // private methods:
  private:
