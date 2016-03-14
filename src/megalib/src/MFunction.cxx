@@ -584,7 +584,7 @@ double MFunction::Eval(double x) const
       y = m*x+t;
     }
     
-    if (isnan(y) == true) {
+    if (std::isnan(y) == true) {
       merr<<"Interpolation error for interpolation type "<<m_InterpolationType<<": y is NaN!"<<show;
     }
 
