@@ -409,7 +409,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   // Create a list of pixels with high source count for elimination
   vector<int> ExcludedDetRawXY;
   if (m_TentacleCutRMSSourceElimination == true || m_SAACutRMSSourceElimination == true) { 
-    ExcludedDetRawXY = MostlyEliminateSource(F, false);
+    ExcludedDetRawXY = MostlyEliminateSource(F, O, false);
   }
   
   
@@ -430,6 +430,8 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       cout<<"Housekeeping: Index not found for time "<<F.m_Time[e]<<"..."<<endl;
       continue;      
     }
+    double LifeTime = H.m_LiveTime[HKIndex];
+    double Count = 1.0/LifeTime;
     
     int OrbitIndex = O.FindClosestIndex(F.m_Time[e]);
     if (OrbitIndex == -1) {
@@ -454,49 +456,49 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
     }
     
     if (H.m_HardSAA[HKIndex] == false) {
-      RatesSAANoTentacleNo->Fill(F.m_Time[e]);
-      RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);
+      RatesSAANoTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);
     }
     
     if (H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAANoTentacleRMS->Fill(F.m_Time[e]);
-      RatesSAANoTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAANoTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAANoTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAStrictHSR[HKIndex] == false) {
-      RatesSAAStrictHSRTentacleNo->Fill(F.m_Time[e]);
-      RatesSAAStrictHSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAStrictHSRTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAStrictHSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAStrictHSR[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
-      RatesSAAStrictHSRTentacleFoM->Fill(F.m_Time[e]);
-      RatesSAAStrictHSRTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAStrictHSRTentacleFoM->Fill(F.m_Time[e], Count);
+      RatesSAAStrictHSRTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false) {
-      RatesSAAOptimizedHSRFoMTentacleNo->Fill(F.m_Time[e]);
-      RatesSAAOptimizedHSRFoMTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAOptimizedHSRFoMTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedHSRFoMTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
-      RatesSAAOptimizedHSRFoMTentacleFoM->Fill(F.m_Time[e]);
-      RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAOptimizedHSRFoMTentacleFoM->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAStrictLSR[HKIndex] == false) {
-      RatesSAAStrictLSRTentacleNo->Fill(F.m_Time[e]);
-      RatesSAAStrictLSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAStrictLSRTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAStrictLSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAStrictLSRTentacleRMS->Fill(F.m_Time[e]);
-      RatesSAAStrictLSRTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAStrictLSRTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAAStrictLSRTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleNo->Fill(F.m_Time[e]);
-      RatesSAAOptimizedLSRRMSTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAOptimizedLSRRMSTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedLSRRMSTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleRMS->Fill(F.m_Time[e]);
-      RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex]);    
+      RatesSAAOptimizedLSRRMSTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
   }
@@ -634,7 +636,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAANoTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAANoTentacleNo->SetBinContent(b, 0); 
     } else {
-      RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)/LifeTimesSAANoTentacleNo->GetBinContent(b));
+      RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)); ///LifeTimesSAANoTentacleNo->GetBinContent(b));
     }
     if (Max < RatesSAANoTentacleNo->GetBinContent(b)) {
       Max = RatesSAANoTentacleNo->GetBinContent(b);
@@ -650,7 +652,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)/LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
+      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)); ///LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -659,7 +661,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictLSRTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)/LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
+      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)); //LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -668,7 +670,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleNo->GetBinWidth(b)/LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b));
+      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleNo->GetBinWidth(b)); //LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -677,7 +679,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictHSRTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictHSRTentacleNo->SetBinContent(b, RatesSAAStrictHSRTentacleNo->GetBinContent(b)/RatesSAAStrictHSRTentacleNo->GetBinWidth(b)/LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b));
+      RatesSAAStrictHSRTentacleNo->SetBinContent(b, RatesSAAStrictHSRTentacleNo->GetBinContent(b)/RatesSAAStrictHSRTentacleNo->GetBinWidth(b)); //LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -686,7 +688,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAANoTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAANoTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAANoTentacleRMS->SetBinContent(b, RatesSAANoTentacleRMS->GetBinContent(b)/RatesSAANoTentacleRMS->GetBinWidth(b)/LifeTimesSAANoTentacleRMS->GetBinContent(b));
+      RatesSAANoTentacleRMS->SetBinContent(b, RatesSAANoTentacleRMS->GetBinContent(b)/RatesSAANoTentacleRMS->GetBinWidth(b)); //LifeTimesSAANoTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -695,7 +697,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleFoM->GetBinWidth(b)/LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b));
+      RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleFoM->GetBinWidth(b)); //LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -704,7 +706,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictLSRTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, RatesSAAStrictLSRTentacleRMS->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS->GetBinWidth(b)/LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b));
+      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, RatesSAAStrictLSRTentacleRMS->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS->GetBinWidth(b)); //LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -713,7 +715,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleRMS->GetBinWidth(b)/LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b));
+      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleRMS->GetBinWidth(b)); //LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -722,7 +724,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictHSRTentacleFoM->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)/LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
+      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)); //LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
     }
   }
   
@@ -762,22 +764,26 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   CreateReport(F.m_ID, "SAA: Strict (high-shield rate based), Tentacle: Figure-of-merit", ((F.m_Module == 0) ? "A" : "B"),
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAStrictHSRTentacleNo, RatesSAAStrictHSRTentacleNoByOrbit, TimeSAAStrictHSRTentacleNo,
-               RatesSAAStrictHSRTentacleFoM, RatesSAAStrictHSRTentacleFoMByOrbit, TimeSAAStrictHSRTentacleFoM);
+               RatesSAAStrictHSRTentacleFoM, RatesSAAStrictHSRTentacleFoMByOrbit, TimeSAAStrictHSRTentacleFoM,
+               SAARegion);
   
   CreateReport(F.m_ID, "SAA: Figure-of-merit (high-shield rate based), Tentacle: figure-of-merit", ((F.m_Module == 0) ? "A" : "B"),
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAOptimizedHSRFoMTentacleNo, RatesSAAOptimizedHSRFoMTentacleNoByOrbit, TimeSAAOptimizedHSRFoMTentacleNo,
-               RatesSAAOptimizedHSRFoMTentacleFoM, RatesSAAOptimizedHSRFoMTentacleFoMByOrbit, TimeSAAOptimizedHSRFoMTentacleFoM);
+               RatesSAAOptimizedHSRFoMTentacleFoM, RatesSAAOptimizedHSRFoMTentacleFoMByOrbit, TimeSAAOptimizedHSRFoMTentacleFoM,
+               SAARegion);
   
   CreateReport(F.m_ID, "SAA: Strict (low-shield rate based), Tentacle: rms-based", ((F.m_Module == 0) ? "A" : "B"),
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAStrictLSRTentacleNo, RatesSAAStrictLSRTentacleNoByOrbit, TimeSAAStrictLSRTentacleNo,
-               RatesSAAStrictLSRTentacleRMS, RatesSAAStrictLSRTentacleRMSByOrbit, TimeSAAStrictLSRTentacleRMS);
+               RatesSAAStrictLSRTentacleRMS, RatesSAAStrictLSRTentacleRMSByOrbit, TimeSAAStrictLSRTentacleRMS,
+               SAARegion);
   
   CreateReport(F.m_ID, "SAA: Optimized rms-based (low-shield rate based), Tentacle: rms-based", ((F.m_Module == 0) ? "A" : "B"),
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAOptimizedLSRRMSTentacleNo, RatesSAAOptimizedLSRRMSTentacleNoByOrbit, TimeSAAOptimizedLSRRMSTentacleNo,
-               RatesSAAOptimizedLSRRMSTentacleRMS, RatesSAAOptimizedLSRRMSTentacleRMSByOrbit, TimeSAAOptimizedLSRRMSTentacleRMS);
+               RatesSAAOptimizedLSRRMSTentacleRMS, RatesSAAOptimizedLSRRMSTentacleRMSByOrbit, TimeSAAOptimizedLSRRMSTentacleRMS,
+               SAARegion);
   
   CreateGTIs(H);
   
@@ -790,98 +796,70 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
 
 void NCheckRates::CreateGTIs(NHousekeeping& H) 
 {
-  bool GTIOff_SAANoTentacleNo = false;
-  vector<double> GTIStart_SAANoTentacleNo;
-  vector<double> GTIStop_SAANoTentacleNo;
+  bool On = true;
+  bool Off = false;
   
-  bool GTIOff_SAANoTentacleRMS = false;
+  bool GTIStatus_SAANoTentacleRMS = Off;
   vector<double> GTIStart_SAANoTentacleRMS;
   vector<double> GTIStop_SAANoTentacleRMS;
   
-  bool GTIOff_SAAOptimizedLSRRMSTentacleNo = false;
+  bool GTIStatus_SAAOptimizedLSRRMSTentacleNo = Off;
   vector<double> GTIStart_SAAOptimizedLSRRMSTentacleNo;
   vector<double> GTIStop_SAAOptimizedLSRRMSTentacleNo;
   
-  bool GTIOff_SAAOptimizedLSRRMSTentacleRMS = false;
+  bool GTIStatus_SAAOptimizedLSRRMSTentacleRMS = Off;
   vector<double> GTIStart_SAAOptimizedLSRRMSTentacleRMS;
   vector<double> GTIStop_SAAOptimizedLSRRMSTentacleRMS;
 
   for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
-    
-    // Case SAANoTentacleNo
-    if (h == 0 && H.m_HardSAA[h] == true) {
-      GTIStart_SAANoTentacleNo.push_back(H.m_Time[h]);
-    }
-    if (GTIOff_SAANoTentacleNo != H.m_HardSAA[h]) {
-      if (GTIOff_SAANoTentacleNo == true) {
-        GTIStart_SAANoTentacleNo.push_back(H.m_Time[h]);
-      } else {
-        if (GTIStop_SAANoTentacleNo.size() < GTIStart_SAANoTentacleNo.size()) {
-          GTIStop_SAANoTentacleNo.push_back(H.m_Time[h]);
-        }
-      }
-      GTIOff_SAANoTentacleNo = !GTIOff_SAANoTentacleNo;
-    }
-    if (h == H.m_Time.size()-1 && GTIOff_SAANoTentacleNo == false && 
-        GTIStop_SAANoTentacleNo.size() < GTIStart_SAANoTentacleNo.size()) {
-      GTIStop_SAANoTentacleNo.push_back(H.m_Time[h]);
-    }
-      
+          
     // Case SAANoTentacleRMS
-    if (h == 0 && H.m_SoftTentacledRMS[h] == true) {
-      GTIStart_SAANoTentacleRMS.push_back(H.m_Time[h]);
-    }
-    if (GTIOff_SAANoTentacleRMS != H.m_SoftTentacledRMS[h]) {
-      if (GTIOff_SAANoTentacleRMS == true) {
+    if (GTIStatus_SAANoTentacleRMS != H.m_SoftTentacledRMS[h]) {
+      if (H.m_SoftTentacledRMS[h] == true) {
         GTIStart_SAANoTentacleRMS.push_back(H.m_Time[h]);
       } else {
         if (GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
           GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]);
         }
       }
-      GTIOff_SAANoTentacleRMS = !GTIOff_SAANoTentacleRMS;
+      GTIStatus_SAANoTentacleRMS = H.m_SoftTentacledRMS[h];
     }
-    if (h == H.m_Time.size()-1 && GTIOff_SAANoTentacleRMS == false && 
+    if (h == H.m_Time.size()-1 && GTIStatus_SAANoTentacleRMS == On && 
         GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
-      GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]);
+      GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]+1);
     }
+
     
     // Case SAAOptimizedLSRRMSTentacleNo
-    if (h == 0 && H.m_SoftSAAOptimizedLSRRMS[h] == true) {
-      GTIStart_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
-    }
-    if (GTIOff_SAAOptimizedLSRRMSTentacleNo != H.m_SoftSAAOptimizedLSRRMS[h]) {
-      if (GTIOff_SAAOptimizedLSRRMSTentacleNo == true) {
+    if (GTIStatus_SAAOptimizedLSRRMSTentacleNo != H.m_SoftSAAOptimizedLSRRMS[h]) {
+      if (H.m_SoftSAAOptimizedLSRRMS[h] == On) {
         GTIStart_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
       } else {
         if (GTIStop_SAAOptimizedLSRRMSTentacleNo.size() < GTIStart_SAAOptimizedLSRRMSTentacleNo.size()) {
           GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
         }
       }
-      GTIOff_SAAOptimizedLSRRMSTentacleNo = !GTIOff_SAAOptimizedLSRRMSTentacleNo;
+      GTIStatus_SAAOptimizedLSRRMSTentacleNo = H.m_SoftSAAOptimizedLSRRMS[h];
     }
-    if (h == H.m_Time.size()-1 && GTIOff_SAANoTentacleNo == false && 
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMSTentacleNo == On && 
         GTIStop_SAAOptimizedLSRRMSTentacleNo.size() < GTIStart_SAAOptimizedLSRRMSTentacleNo.size()) {
-      GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
+      GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]+1);
     }
       
     // Case SAAOptimizedLSRRMSTentacleRMS
-    if (h == 0 && (H.m_SoftSAAOptimizedLSRRMS[h] == true || H.m_SoftTentacledRMS[h] == true)) {
-      GTIStart_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
-    }
-    if (GTIOff_SAAOptimizedLSRRMSTentacleRMS != (H.m_SoftSAAOptimizedLSRRMS[h] == true || H.m_SoftTentacledRMS[h] == true)) {
-      if (GTIOff_SAAOptimizedLSRRMSTentacleRMS == true) {
+    if (GTIStatus_SAAOptimizedLSRRMSTentacleRMS != (H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On)) {
+      if ((H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On) == true) {
         GTIStart_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
       } else {
         if (GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
           GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
         }
       }
-      GTIOff_SAAOptimizedLSRRMSTentacleRMS = !GTIOff_SAAOptimizedLSRRMSTentacleRMS;
+      GTIStatus_SAAOptimizedLSRRMSTentacleRMS = (H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On);
     }
-    if (h == H.m_Time.size()-1 && GTIOff_SAAOptimizedLSRRMSTentacleRMS == false && 
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMSTentacleRMS == On && 
         GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
-      GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+      GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]+1);
     }
   }
 
@@ -892,7 +870,6 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
   }
   */
   
-  CreateGTIFile(GTIStart_SAANoTentacleNo, GTIStop_SAANoTentacleNo, H, "SAANoTentacleNo");
   CreateGTIFile(GTIStart_SAANoTentacleRMS, GTIStop_SAANoTentacleRMS, H, "SAANoTentacleRMS");
   CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleNo, GTIStop_SAAOptimizedLSRRMSTentacleNo, H, "SAAOptimizedLSRRMSTentacleNo");
   CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleRMS, GTIStop_SAAOptimizedLSRRMSTentacleRMS, H, "SAAOptimizedLSRRMSTentacleRMS");
@@ -949,7 +926,8 @@ void NCheckRates::NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedia
 void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module, 
                               TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
                               TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
-                              TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes)
+                              TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes,
+                              TH1D* SAARegion)
 {
   // Define the Canvas
   double Scaler = 150;
@@ -1028,6 +1006,9 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   RatesNoNo->GetYaxis()->SetTitleSize(0.05);
   RatesNoNo->GetYaxis()->SetTitleOffset(1.2);
   RatesNoNo->Draw();
+  SAARegion->Scale(RatesNoNo->GetMaximum()/SAARegion->GetMaximum());
+  SAARegion->DrawCopy("SAME");
+  RatesNoNo->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitNoNo = new TPad("PadOrbitNoNo", "PadOrbitNoNo", RatesWidth, Bottom, 1.0, Top);
@@ -1099,6 +1080,9 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   RatesYesNo->GetYaxis()->SetTitleSize(0.05);
   RatesYesNo->GetYaxis()->SetTitleOffset(1.2);
   RatesYesNo->Draw();
+  SAARegion->Scale(RatesYesNo->GetMaximum()/SAARegion->GetMaximum());
+  SAARegion->DrawCopy("SAME");
+  RatesYesNo->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitYesNo = new TPad("PadOrbitYesNo", "PadOrbitYesNo", RatesWidth, Bottom, 1.0, Top);
@@ -1171,6 +1155,9 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   RatesYesYes->GetYaxis()->SetTitleSize(0.05);
   RatesYesYes->GetYaxis()->SetTitleOffset(1.2);
   RatesYesYes->Draw();
+  SAARegion->Scale(RatesYesYes->GetMaximum()/SAARegion->GetMaximum());
+  SAARegion->DrawCopy("SAME");
+  RatesYesYes->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitYesYes = new TPad("PadOrbitYesYes", "PadOrbitYesYes", RatesWidth, Bottom, 1.0, Top);
@@ -1271,7 +1258,7 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
   FileName += ((H.m_Module == 0) ? "A" : "B");
   FileName += "_";
   FileName += Name;
-  FileName += "_user_gti.fits";
+  FileName += "_saa_cut.fits";
 
   TString Template = "$(NUSIM)/resource/nulyses/Template_gti.fits";
   MFile::ExpandFileName(Template);
@@ -1315,7 +1302,7 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
     fits_write_col_dbl(File, Columns["START"], s, 1, 1, &GTIStart[s-1], &status);
     if (status != 0) {
       fits_get_errstatus(status, value);
-      cerr << "Error: Writing GTI failed (" << value << ")" << endl;
+      cerr << "Error: Writing GTI column START failed (" << value << ")" << endl;
       fits_close_file(File, &status);
       File = 0;
       return false;
@@ -1326,7 +1313,7 @@ bool NCheckRates::CreateGTIFile(vector<double>& GTIStart, vector<double>& GTISto
     fits_write_col_dbl(File, Columns["STOP"], s, 1, 1, &GTIStop[s-1], &status);
     if (status != 0) {
       fits_get_errstatus(status, value);
-      cerr << "Error: Writing GTI failed (" << value << ")" << endl;
+      cerr << "Error: Writing GTI column STOPfailed (" << value << ")" << endl;
       fits_close_file(File, &status);
       File = 0;
       return false;

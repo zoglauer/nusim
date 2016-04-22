@@ -25,6 +25,7 @@ using namespace std;
 
 // ROOT libs:
 #include "TCanvas.h"
+#include "TH1D.h"
 
 // MEGAlib libs:
 #include "MGlobal.h"
@@ -101,17 +102,17 @@ void MBinner::SetMinMax(double Minimum, double Maximum, bool Adapt)
 
 
 //! Return as a histogram (cts)
-TH1D* MBinner::GetHistogram(const TString& Title, const TString& xTitle, const TString& yTitle)
+TH1D* MBinner::GetHistogram(const string& Title, const string& xTitle, const string& yTitle)
 {
   if (m_IsModified == true) Histogram();
   
   TH1D* Hist = 0;
   {
     //TLockGuard G(g_Mutex);
-    Hist = new TH1D("", Title, m_BinEdges.size()-1, &m_BinEdges[0]);
+    Hist = new TH1D("", Title.c_str(), m_BinEdges.size()-1, &m_BinEdges[0]);
   }
-  Hist->SetXTitle(xTitle);
-  Hist->SetYTitle(yTitle);
+  Hist->SetXTitle(xTitle.c_str());
+  Hist->SetYTitle(yTitle.c_str());
   
   for (unsigned int i = 0; i < m_BinnedData.size(); ++i) {
     Hist->SetBinContent(i+1, m_BinnedData[i]);
@@ -125,9 +126,9 @@ TH1D* MBinner::GetHistogram(const TString& Title, const TString& xTitle, const T
 
 
 //! Return as a normalized histogram (e.g. cts/bin width)
-TH1D* MBinner::GetNormalizedHistogram(const TString& Title, const TString& xTitle, const TString& yTitle)
+TH1D* MBinner::GetNormalizedHistogram(const string& Title, const string& xTitle, const string& yTitle)
 {
-  TH1D* Hist = GetHistogram(Title, xTitle, yTitle);
+  TH1D* Hist = GetHistogram(Title.c_str(), xTitle.c_str(), yTitle.c_str());
  
   for (int b = 0; b <= Hist->GetNbinsX(); ++b) {
     if (Hist->GetBinWidth(b) > 0) {
@@ -143,9 +144,9 @@ TH1D* MBinner::GetNormalizedHistogram(const TString& Title, const TString& xTitl
 
 
 //! Draw normalized histogram (e.g. cts/bin width)
-void MBinner::DrawNormalizedHistogram(const TString& Title, const TString& xTitle, const TString& yTitle)
+void MBinner::DrawNormalizedHistogram(const string& Title, const string& xTitle, const string& yTitle)
 {
-  TH1D* Hist = GetNormalizedHistogram(Title, xTitle, yTitle);
+  TH1D* Hist = GetNormalizedHistogram(Title.c_str(), xTitle.c_str(), yTitle.c_str());
 
   TCanvas* C = new TCanvas();
   C->cd();

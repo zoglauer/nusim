@@ -17,8 +17,7 @@
 
 
 // Standard libs:
-#include <cmath>
-using namespace std;
+//#include <math.h>
 
 // ROOT libs:
 
@@ -56,13 +55,6 @@ class MBinnerBayesianBlocks : public MBinner
  protected:
   //! The actual histogramming process
   virtual void Histogram(); 
-
-  //! Fast logarithm approximation with accuracy better than 1.5% - but not useful here...
-  inline float FastLog(float a) {
-    int e = 0;
-    float m = frexp(a, &e);
-    return 0.69314718f *  (e - 1.78070 + (2.61329 - 0.833304*m)*m);
-  }
 
   
   // private methods:

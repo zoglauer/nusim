@@ -59,7 +59,8 @@ class NCheckRates : public NBaseTool
   void CreateReport(TString Observation, TString Mode, TString Module,
                     TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
                     TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
-                    TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes);
+                    TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes,
+                    TH1D* SAARegion);
   
   void NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedian);
 

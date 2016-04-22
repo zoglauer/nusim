@@ -133,8 +133,8 @@ int NBase::FindIndex(double Time) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-int NBase::FindClosestIndex(double Time) {
-  
+int NBase::FindClosestIndex(double Time) 
+{  
   unsigned int Size = m_Time.size();
   
   if (Size == 0) {
@@ -147,7 +147,24 @@ int NBase::FindClosestIndex(double Time) {
   if (Time >= m_Time.back()) {
     return Size - 1; 
   }
-    
+  
+  // Return the first value which is not lower than time
+  vector<double>::iterator I = lower_bound(m_Time.begin(), m_Time.end(), Time);
+  
+  // The above if statements should prevent this in theory:
+  if (I == m_Time.end()) {
+    cout<<"Something gastly happend which should be impossible: I did not find the correct time value in the orbit  time array! Returning the first index. Everything you do now might be wrong..."<<endl; 
+    return 0;
+  }
+  
+  // It sits on the edge:
+  if (Time == (*I)) return (int) (I - m_Time.begin());
+  
+  // Other wise we are above due to "not lower than"...
+  return (int) (I - m_Time.begin() - 1);
+  
+  
+  /* Old:
   if (m_LastClostestIndex > 0 && Time > m_Time[m_LastClostestIndex-1] && Time - m_Time[m_LastClostestIndex-1] < 20) {
     int ClosestSlow = -1;
     for (unsigned int i = m_LastClostestIndex-1; i < Size; ++i) {
@@ -165,18 +182,8 @@ int NBase::FindClosestIndex(double Time) {
     }
   }
   
-  //int ClosestSlow = -1;
   int ClosestFast = -1;
   
-  /*
-  *    int FirstAbove = -1;
-  *    for (unsigned int i = 1; i < Size; ++i) {
-  *      if (m_Time[i] > Time) {
-  *        ClosestSlow = i;
-  *        break;
-  }
-  }
-  */
   
   // Binary search:
   unsigned int upper = Size;
@@ -199,13 +206,6 @@ int NBase::FindClosestIndex(double Time) {
     ClosestFast = int(lower+1);
   }
   
-  /*
-  *    if (ClosestFast != ClosestSlow) {
-  *      cerr<<"Closest fast "<<ClosestFast<<" vs. Closest slow "<<ClosestSlow<<endl;
-  *      cout<<Time<<" vs fast: "<<m_Time[ClosestFast-1]<<" - "<<m_Time[ClosestFast]<<"  slow: "<<m_Time[ClosestSlow-1]<<" - "<<m_Time[ClosestSlow]<<endl;
-  }
-  */
-  
   if (m_Time[ClosestFast] - Time < Time - m_Time[ClosestFast-1]) {
     m_LastClostestIndex = ClosestFast;
     return ClosestFast; 
@@ -213,6 +213,7 @@ int NBase::FindClosestIndex(double Time) {
     m_LastClostestIndex = ClosestFast - 1;
     return ClosestFast - 1; 
   }
+  */
 }  
   
   

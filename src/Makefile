@@ -14,6 +14,9 @@
 #
 
 
+global:
+	@$(MAKE) -C global
+
 megalib:
 	@$(MAKE) -C megalib
 
@@ -56,9 +59,9 @@ all:
 	@$(MAKE) -C data
 	@$(MAKE) -C modules
 	@$(MAKE) -C main
-	@$(MAKE) -C addon
 	@$(MAKE) -C nulyses
-
+	@$(MAKE) -C addon
+	
 clean:
 	@$(MAKE) clean -C global
 	@$(MAKE) clean -C megalib

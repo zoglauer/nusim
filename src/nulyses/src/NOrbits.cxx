@@ -19,6 +19,7 @@
 
 // Standard libs:
 #include <limits>
+#include <iomanip>
 using namespace std;
 
 // ROOT libs:
@@ -65,6 +66,9 @@ void NOrbits::Clean()
   m_SafelyOcculted.clear();
   m_SafelyOnSource.clear();
   m_SAAFlag.clear();
+  m_SAAAFlag.clear();
+  m_SAABFlag.clear();
+  m_SlewFlag.clear();
   m_DayFlag.clear();
   m_GeomagneticCutOff.clear();
   m_Longitude.clear();
@@ -193,6 +197,19 @@ bool NOrbits::Read(const TString& OrbitsFileName)
       TimeAfterSAA = Time - m_SAASteps.back();
     }
     
+    if (fits_read_col_int(EventFile, Columns["SAA_A"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (SAA_A) failed!"<<endl;
+      break;
+    }
+    int SAAAFlag = valint;
+    
+    if (fits_read_col_int(EventFile, Columns["SAA_B"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (SAA_B) failed!"<<endl;
+      break;
+    }
+    int SAABFlag = valint;
+
+
     if (fits_read_col_int(EventFile, Columns["OCCULTED"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
       cout<<"Column read (OCCULTED) failed!"<<endl;
       break;
@@ -203,6 +220,7 @@ bool NOrbits::Read(const TString& OrbitsFileName)
       m_OccultationValues.push_back(valint);
       PreviousOccultation = valint;
     }
+    
     
     if (fits_read_col_int(EventFile, Columns["DAY"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
       cout<<"Column read (DAY) failed!"<<endl;
@@ -224,6 +242,7 @@ bool NOrbits::Read(const TString& OrbitsFileName)
       m_SlewValues.push_back(valint);
       PreviousSlew = valint;
     }
+    int SlewFlag = valint;
     
     if (fits_read_col_dbl(EventFile, Columns["GEOCOR"], r, 1, 1, nulldbl, &valdbl, &anynul, &status) ) {
       cout<<"Column read (GEOCOR) failed!"<<endl;
@@ -249,7 +268,7 @@ bool NOrbits::Read(const TString& OrbitsFileName)
     }
     double Altitude = valdbl;
     
-    Add(Time, TimeAfterSAA, SAAFlag, DayFlag, OccultedFlag, GeomagneticCutOff, Longitude, Latitude, Altitude);
+    Add(Time, TimeAfterSAA, SAAFlag, SAAAFlag, SAABFlag, SlewFlag, DayFlag, OccultedFlag, GeomagneticCutOff, Longitude, Latitude, Altitude);
   }
   
   /*
@@ -287,8 +306,56 @@ bool NOrbits::Read(const TString& OrbitsFileName)
     }
   }
   
+  // Sanity checks
+  if (m_Time.size() == 0) {
+    cout<<"Error: No orbit data found!"<<endl;
+    return false;
+  }
+  
+  // Verify we are in 1 sec intervals and there are no gaps in data:
+  if ((unsigned long) m_Time.back() - (unsigned long) m_Time[0] + 1 != m_Time.size()) {
+    cout<<"Error: The orbit data is either not in 1 sec bins or there are gaps in the orbit data!"<<endl;
+    cout<<"Start: "<<setprecision(10)<<m_Time[0]<<" End: "<<setprecision(10)<<m_Time.back()<<"  Diff: "<<(unsigned long) m_Time.back() - (unsigned long) m_Time[0] + 1<<"  Size: "<<m_Time.size()<<endl;
+    return false;
+  }
+  
   return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+unsigned int NOrbits::FindOrbitIndex(double Time)
+{
+  unsigned int Size = m_Time.size();
+  
+  // Test for Size == 0 upon reading
+  
+  if (Time <= m_Time[0]) {
+    return 0;
+  }
+  if (Time >= m_Time.back()) {
+    return Size - 1; 
+  }
+  
+  // Return the first value which is not lower than time
+  vector<double>::iterator I = lower_bound(m_Time.begin(), m_Time.end(), Time);
+  
+  // The above if statements should prevent this in theory:
+  if (I == m_Time.end()) {
+    cout<<"Something gastly happend which should be impossible: I did not find the correct time value in the orbit  time array! Returning the first index. Everything you do now might be wrong..."<<endl; 
+    return 0;
+  }
+  
+  // It sits on the edge:
+  if (Time == (*I)) return (unsigned int) (I - m_Time.begin());
+  
+  // Other wise we are above due to "not lower than"...
+  return (unsigned int) (I - m_Time.begin() - 1);
+}
+
+
 
 // NOrbits.cxx: the end...
 ////////////////////////////////////////////////////////////////////////////////

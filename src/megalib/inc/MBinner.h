@@ -22,12 +22,14 @@
 using namespace std;
 
 // ROOT libs:
-#include "TH1.h"
+
 
 // MEGAlib libs:
+#include <string>
+using namespace std;
 
 // Forward declarations:
-
+class TH1D;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,13 +82,13 @@ class MBinner
   void Add(double AxisValue, double DataValue = 1) { m_Values.push_back(MBinnedData(AxisValue, DataValue)); m_IsModified = true; }
   
   //! Return as a histogram (cts)
-  TH1D* GetHistogram(const TString& Title, const TString& xTitle, const TString& yTitle);
+  TH1D* GetHistogram(const string& Title, const string& xTitle, const string& yTitle);
   
   //! Return as a normalized histogram (e.g. cts/bin width)
-  TH1D* GetNormalizedHistogram(const TString& Title, const TString& xTitle, const TString& yTitle);
+  TH1D* GetNormalizedHistogram(const string& Title, const string& xTitle, const string& yTitle);
   
   //! Draw normalized histogram (e.g. cts/bin width)
-  void DrawNormalizedHistogram(const TString& Title, const TString& xTitle, const TString& yTitle);
+  void DrawNormalizedHistogram(const string& Title, const string& xTitle, const string& yTitle);
   
   //! Return the binned data as a vector
   vector<double> GetBinnedData();

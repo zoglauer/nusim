@@ -22,6 +22,7 @@ PRGS = \
 	$(BN)/FitsViewer \
 	$(BN)/FitsCleaner \
 	$(BN)/MakeARF \
+	$(BN)/SAAComparer \
 
 
 #----------------------------------------------------------------
@@ -43,7 +44,7 @@ clean:
 
 $(PRGS): $(BN)/%: %.cxx
 	@echo "Compiling and linking $(subst $(BN)/,,$@) ..."
-	$(LD) $(LDFLAGS) $(CXXFLAGS) $(DEFINES) -I$(LHEASOFT)/include $< -L$(LHEASOFT)/lib $(NUSIMLIBS) -lcfitsio -lm $(GLIBS) $(LIBS) -o $@
+	$(LD) $(LDFLAGS) $(CXXFLAGS) $(DEFINES) -I$(LHEASOFT)/include $< -L$(LHEASOFT)/lib -lNulyses $(NUSIMLIBS) -lcfitsio -lm $(GLIBS) $(LIBS) -o $@
 
 
 

@@ -92,7 +92,7 @@ class NBaseTool
   bool FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
   
   //! Return the pixels where the source is most likely on
-  vector<int> MostlyEliminateSource(NFilteredEvents& F, bool Show = false);
+  vector<int> MostlyEliminateSource(NFilteredEvents& F, NOrbits& O, bool Show = false);
   
   
   static const int c_SAACutNone              = 0;
@@ -119,6 +119,7 @@ class NBaseTool
   // protected methods:
  protected:
   void DebugOutput(TH1* Hist, TString FileName); 
+  void DebugOutput(vector<bool>& V, TString FileName); 
   
   // private methods:
  private:
@@ -184,6 +185,8 @@ class NBaseTool
   
   bool m_BatchMode;
   
+  bool m_DoLifeTimeCorrection;
+  
   double m_SAACutRMSThreshold;
   bool m_SAACutRMSSourceElimination;
   bool m_SAACutRMSSanityChecks;
@@ -193,6 +196,10 @@ class NBaseTool
   bool m_TentacleCutRMSRegionRestriction;
   bool m_TentacleCutRMSSanityChecks;
 
+  double m_SourceCutRMSThreshold;
+  
+  bool m_Debug;
+  
   // private members:
  private:
 

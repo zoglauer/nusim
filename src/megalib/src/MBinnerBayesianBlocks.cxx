@@ -21,7 +21,9 @@
 
 // Standard libs:
 #include <iostream>
+#include <iomanip>
 using namespace std;
+#include "math.h"
 
 // ROOT libs:
 
@@ -93,6 +95,7 @@ void MBinnerBayesianBlocks::Histogram()
   double Min = m_Minimum;
   double Max = m_Maximum;
   if (m_Adapt == true) {
+    //cout<<"Adapting"<<endl;
     double Front = m_Values.front().m_AxisValue;
     double Back = m_Values.back().m_AxisValue;
     if (Front < Back) {
@@ -107,10 +110,11 @@ void MBinnerBayesianBlocks::Histogram()
   vector<double> Edges;
   Edges.push_back(Min);
   if (m_UseBinning == true) {
+    //cout<<"Using binning: "<<setprecision(10)<<Max<<endl;
     while (Edges.back() < Max) {
       Edges.push_back(Edges.back() + m_MinimumBinWidth);
     }
-    if (Edges.back() < Max) Edges.push_back(Max);
+    //if (Edges.back() < Max) Edges.push_back(Max);
     Size = Edges.size() - 1;
   } else {
     Size = m_Values.size();
@@ -121,7 +125,8 @@ void MBinnerBayesianBlocks::Histogram()
     }
     Edges.push_back(Max);
   }
-  //cout<<"Edges:"<<endl;
+  //cout<<"Edges: "<<Edges.back() - Edges[0]<<endl;
+  //cout.precision(10);
   //Print(Edges);
 
   // Step 3: Create Block length:
@@ -237,23 +242,30 @@ void MBinnerBayesianBlocks::Histogram()
         }
       }
       //for (unsigned int i = 1; i < m_BinEdges.size(); ++i) {
-      //  cout<<m_BinEdges[i]<<endl;
+      //  cout<<"Edge in BB ("<<i<<"): "<<m_BinEdges[i]<<endl;
       //}
     }
   }
     
   // Step 8: Finally fill the data array
+  double Entered = 0;
   m_BinnedData.resize(m_BinEdges.size()+1, 0);
   for (list<MBinnedData>::iterator I = m_Values.begin(); I != m_Values.end(); ++I) {
     for (unsigned int e = 0; e < m_BinEdges.size(); ++e) {
-      if (m_BinEdges[e] > (*I).m_AxisValue) {
+      if (m_BinEdges[e] > (*I).m_AxisValue || e+1 == m_BinEdges.size()) { // Highest value might go lost
         if (e > 0) {
           m_BinnedData[e-1] += (*I).m_DataValue;
+          Entered += (*I).m_DataValue;
         }
         break;
       }
     }
   }    
+
+  double Sum = 0;
+  for (list<MBinnedData>::iterator I = m_Values.begin(); I != m_Values.end(); ++I) {
+    Sum += (*I).m_DataValue;
+  }
 
   // Step 9: Reject bins with less than X elements
   if (m_MinimumCountsPerBin > 0) {

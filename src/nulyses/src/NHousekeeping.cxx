@@ -124,12 +124,12 @@ bool NHousekeeping::Read(const TString& FileName)
     Columns[value] = c;
     //cout<<value<<endl;
   }
-  cout<<"N columns: "<<NColumns<<endl;
+  //cout<<"N columns: "<<NColumns<<endl;
 
   // Get the number of rows:
   long NRows = 0;
   fits_get_num_rows(File, &NRows, &status);
-  cout<<"Rows: "<<NRows<<endl;
+  //cout<<"Rows: "<<NRows<<endl;
 
   // Loop over the events and all columns and generate MComptonEvent's
   for (long r = 1; r <= NRows; ++r) {

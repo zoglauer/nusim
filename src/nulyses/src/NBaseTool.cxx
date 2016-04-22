@@ -67,14 +67,20 @@ NBaseTool::NBaseTool()
   
   m_BatchMode = false;
   
-  m_SAACutRMSThreshold = 5.0;
+  m_DoLifeTimeCorrection = true;
+  
+  m_SAACutRMSThreshold = 4.5;
   m_SAACutRMSSourceElimination = true;
   m_SAACutRMSSanityChecks = true;
   
-  m_TentacleCutRMSThreshold = 5.0;;
+  m_TentacleCutRMSThreshold = 4.5;
   m_TentacleCutRMSSourceElimination = true;
   m_TentacleCutRMSRegionRestriction = true;
   m_TentacleCutRMSSanityChecks = true;
+  
+  m_SourceCutRMSThreshold = 4.0;
+  
+  m_Debug = false;
 }
 
 
@@ -201,6 +207,12 @@ bool NBaseTool::ParseCommandLine(int argc, char** argv)
     } else if (Option == "--tentacle-rms-region-restriction") {
       m_TentacleCutRMSRegionRestriction = bool(atoi(argv[++i]));
       cout<<"Accepting region restriction for the Tentacle cut \"by RMS\": "<<(m_TentacleCutRMSRegionRestriction == true ? "on" : "off")<<endl;
+    } else if (Option == "--sourcecut-rms-threshold") {
+      m_SourceCutRMSThreshold = atof(argv[++i]);
+      cout<<"Accepting RMS threshold for the source cut \"by RMS\": "<<m_SourceCutRMSThreshold<<endl;
+    } else if (Option == "--debug") {
+      m_Debug = true;
+      cout<<"Activating debug mode"<<endl;
     }
   }
   
@@ -1256,10 +1268,12 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   
   // Create a list of pixels with high source count for elimination
   vector<int> ExcludedDetRawXY;
-  if (ElimiateSource == true) ExcludedDetRawXY = MostlyEliminateSource(F, Show);  
+  if (ElimiateSource == true) ExcludedDetRawXY = MostlyEliminateSource(F, O, Show);  
   
   
   // Step One: Create a mask of the regions where the low-threshold shield rate is high, utilizing a Bayesian Block peak finder  
+  
+  cout<<"Timings: "<<SuperStrictBins<<":"<<setprecision(10)<<MinTime<<":"<<setprecision(10)<<MaxTime<<endl;
   
   // (A) Define histograms
   TH1D* ShieldRateLow = new TH1D(TString("ShieldRateLow") + iID, TString("SAA/RMS: ShieldRateLow") + ID, SuperStrictBins, MinTime, MaxTime);
@@ -1271,10 +1285,15 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   TH1D* RawRate = new TH1D(TString("RawRate") + iID, TString("RawRate") + ID, OneSecBins, MinTime, MaxTime);
   RawRate->SetXTitle("Time [sec since 1/1/2010]");
   RawRate->SetYTitle("cts/sec");
+
+  TH1D* LifeTime = new TH1D(TString("LifeTime") + iID, TString("LifeTime") + ID, OneSecBins, MinTime, MaxTime);
+  LifeTime->SetXTitle("Time [sec since 1/1/2010]");
+  LifeTime->SetYTitle("cts/sec");
      
   // (B) Fill the histograms
   int ExposureTimeInternalSAA = 0;
   for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    LifeTime->Fill(H.m_Time[i], H.m_LiveTime[i]);  
     if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
     if (H.m_HardSAA[i] == false) {
       ShieldRateLow->Fill(H.m_Time[i], H.m_ShieldRateLow[i]);
@@ -1284,12 +1303,14 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
     }
   }
-  //DebugOutput(ShieldRateLow, "ShieldRateLow");
+  DebugOutput(LifeTime, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_LiveTime");
+  DebugOutput(ShieldRateLow, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_ShieldRateLow");
+  DebugOutput(OnOffInternalSAA, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffInternalSAA"); 
  
   for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
     if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
     if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;    
-    if (F.IsGTI(F.m_Time[i]) == false) continue;
+    //if (F.IsGTI(F.m_Time[i]) == false) continue;
 
     int DetectorID = F.m_DetectorID[i];
     int RawX = F.m_RawX[i];
@@ -1312,16 +1333,20 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   
   // Step 1: Create a histogram with Bayesian block binning
   MBinnerBayesianBlocks Binner;
-  Binner.SetMinMax(ShieldRateLow->GetBinCenter(1), ShieldRateLow->GetBinCenter(ShieldRateLow->GetNbinsX()));
+  //cout<<"Min/Max/Diff/Bins: "<<ShieldRateLow->GetBinCenter(1)<<":"<<ShieldRateLow->GetBinCenter(ShieldRateLow->GetNbinsX())<<":"<<ShieldRateLow->GetBinCenter(ShieldRateLow->GetNbinsX()) - ShieldRateLow->GetBinCenter(1)<<":"<<ShieldRateLow->GetNbinsX()<<endl;
+  //Binner.SetMinMax(ShieldRateLow->GetBinCenter(1), ShieldRateLow->GetBinCenter(ShieldRateLow->GetNbinsX()));
+  Binner.SetMinMax(MinTime, MaxTime);
   Binner.SetMinimumBinWidth(SuperStrictOffTimeInterval);
   Binner.SetPrior(Prior); 
   ShieldRateLow->Smooth(1);     // into caldb 
-  //DebugOutput(ShieldRateLow, "ShieldRateLowSmoothed");
+  DebugOutput(ShieldRateLow, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_ShieldRateLowSmoothed");
+  
   for (int b = 1; b <= ShieldRateLow->GetNbinsX(); ++b) {
     Binner.Add(ShieldRateLow->GetBinCenter(b), ShieldRateLow->GetBinContent(b));
   }
   TH1D* ShieldRateLowBB = Binner.GetNormalizedHistogram("BB-binned low count rate", "Time since epoch", "cts/sec");
-  //DebugOutput(ShieldRateLowBB, "ShieldRateLowBB");
+  
+  DebugOutput(ShieldRateLowBB, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_ShieldRateLowBB");
   
   
   // (D) Calculate a simple (slightly) shifted, *normalized* gradient histogram
@@ -1333,6 +1358,8 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     GradientHistogram->SetBinContent(b, (ShieldRateLowBB->GetBinContent(b)-ShieldRateLowBB->GetBinContent(b-1))/
                                         (ShieldRateLowBB->GetBinCenter(b)-ShieldRateLowBB->GetBinCenter(b-1))/Average);
   }
+  
+  DebugOutput(GradientHistogram, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_Gradient");
 
   
   // (E) Find zero passages + --> - and regions around zero passages for SAA exclusion
@@ -1345,14 +1372,14 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   TH1I* OnOffStrictLSR = new TH1I(TString("OnOffStrictLSR") + iID, TString("OnOffStrictLSR") + ID, OneSecBins, MinTime, MaxTime);
   OnOffStrictLSR->Add(OnOffInternalSAA);
   
-  for (int b = 2; b <= GradientHistogram->GetNbinsX(); ++b) {
-    if (GradientHistogram->GetBinContent(b) > 0 && GradientHistogram->GetBinContent(b+1) < 0) {
+  for (int b = 1; b < GradientHistogram->GetNbinsX(); ++b) { // Shifted one down 
+    if (GradientHistogram->GetBinContent(b) > 0 && GradientHistogram->GetBinContent(b+1) < 0) {  
       //PeakBin = GradientHistogram->GetBinLowEdge(b+1);
       //cout<<PeakBin<<" - investigating..."<<endl;
       
       // Find edges:
       int MaximumBin = b;
-      for (int bb = MaximumBin-1; bb > 2; --bb) {
+      for (int bb = MaximumBin-1; bb >= 1; --bb) {
         if (GradientHistogram->GetBinContent(bb) > GradientHistogram->GetBinContent(MaximumBin)) {
           MaximumBin = bb;
         } else {
@@ -1388,10 +1415,10 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       // Go further, until the variation from zero is below XYZ (rights lower for activation):
       double MinVariationLeft = 0.0005;           // in caldb
       double MinVariationRight = 0.00035;          // in caldb
-      while (fabs(GradientHistogram->GetBinContent(MaximumBin-1)) > MinVariationLeft) {
+      while (MaximumBin > 1 && fabs(GradientHistogram->GetBinContent(MaximumBin-1)) > MinVariationLeft) {
         --MaximumBin;
       }
-      while (fabs(GradientHistogram->GetBinContent(MinimumBin+1)) > MinVariationRight) { // Relaxed for delayed decay
+      while (MinimumBin < GradientHistogram->GetNbinsX() && fabs(GradientHistogram->GetBinContent(MinimumBin+1)) > MinVariationRight) { // Relaxed for delayed decay
         ++MinimumBin; 
       }
       // Go one further in the minimum direction to
@@ -1416,7 +1443,10 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       OnOffStrictLSR->SetBinContent(b, RejectionOn);
     }
   }
-    
+
+  DebugOutput(OnOffStrictLSR, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffStrictLSRFinal"); 
+  
+  
   // (G) Store the preliminary cut
   int ExposureTimeStrictLSR = 0;
   for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
@@ -1443,6 +1473,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     Rate->SetXTitle("Time [sec since 1/1/2010]");
     Rate->SetYTitle("cts/sec");
     
+    cout<<"Events: "<<F.m_Time.size()<<endl;
     for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
       if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
       if (F.IsGTI(F.m_Time[i]) == false) continue;
@@ -1518,44 +1549,53 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   EvaluationRateLifeTimes->SetXTitle("Time [sec since 1/1/2010]");
   EvaluationRateLifeTimes->SetYTitle("cts/sec");
 
+  ofstream deb;
+  if (m_Debug == true) deb.open(TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_EventLog");
+  
   for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
-    if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
-    if (F.IsGTI(F.m_Time[i]) == false) continue;
-    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
+    if (WithinSpecialGTI(F.m_Time[i]) == false) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> special GTI reject"<<endl;
+      continue;
+    }
+    //if (F.IsGTI(F.m_Time[i]) == false) continue;
+    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> energy reject"<<endl;
+      continue;
+    }
+    if (O.IsGoodOrbit(F.m_Time[i]) == false) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> orbit reject, index: "<<O.FindOrbitIndex(F.m_Time[i])<<endl;
+      continue;
+    }
     
+    // Exclude source region
     int DetectorID = F.m_DetectorID[i];
     int RawX = F.m_RawX[i];
     int RawY = F.m_RawY[i];
     int ID = 10000*DetectorID + 100*RawX + RawY;
     vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
     if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
-      
-    EvaluationRate->Fill(F.m_Time[i]);
+    
+    int HKIndex = H.FindClosestIndex(F.m_Time[i]);
+    if (HKIndex < 0) continue;
+    
+    double LifeTime = H.m_LiveTime[HKIndex];
+    if (m_DoLifeTimeCorrection == false) LifeTime = 1.0;
+    if (LifeTime > 0) {
+      EvaluationRate->Fill(F.m_Time[i], 1.0/LifeTime);
+    }
+    if (m_Debug == true) deb<<"ID "<<i<<" time: "<<setprecision(10)<<F.m_Time[i]<<" bin: "<<EvaluationRate->FindBin(F.m_Time[i])-1<<" content "<<EvaluationRate->GetBinContent(EvaluationRate->FindBin(F.m_Time[i]))<<" --> Good"<<endl;
     int Index = O.FindClosestIndex(F.m_Time[i]);
     if (O.m_Longitude[Index] >= NonSAAMinLong && O.m_Longitude[Index] <= NonSAAMaxLong) {
-      NonSAARate->Fill(F.m_Time[i]);
+      if (LifeTime > 0) {
+        NonSAARate->Fill(F.m_Time[i], 1.0/LifeTime);
+      }
     }
   }
-  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
-    if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
-    if (F.IsGTI(F.m_Time[i]) == false) continue;
+  if (m_Debug == true) deb.close();
 
-    EvaluationRateLifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
-  }
-
-  /*
-  // Do lifetime correction
-  for (int b = 1; b <= NonSAARate->GetNbinsX(); ++b) {
-    if (EvaluationRateLifeTimes->GetBinContent(b) > 0) {
-      // With LIFETIME correction!
-      //NonSAARate->SetBinContent(b, NonSAARate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
-      //EvaluationRate->SetBinContent(b, EvaluationRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
-    } else {
-      NonSAARate->SetBinContent(b , 0);
-      EvaluationRate->SetBinContent(b , 0);
-    }
-  }
-  */
+  
+  DebugOutput(NonSAARate, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_NonSAARate"); 
+  DebugOutput(EvaluationRate, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_EvaluationRate"); 
   
   
   // (B) Determine the mean and rms detector count rate in the regions away from the SAA as well as the threshold
@@ -1571,6 +1611,8 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     }
   }
 
+  DebugOutput(NonSAARateHistogram, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_NonSAARateHistogram");
+  
   // (b) Calculate Average and RMS
   double NonSAARateMax = NonSAARate->GetMaximum();
   double NonSAARateMean = NonSAARateHistogram->GetMean();
@@ -1691,6 +1733,10 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     }
   }
 
+  DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMS"); 
+  DebugOutput(OnOffOptimizedRMSRightToLeft, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMSRightToLeft"); 
+  DebugOutput(OnOffOptimizedRMSLeftToRight, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMSLeftToRight"); 
+  
  
   // (d) Make sure we include edge bins in the rejection:
   for (int b = 3; b < OnOffOptimizedRMS->GetNbinsX()-1; ++b) {
@@ -1700,6 +1746,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     }
   }
   
+  DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMS_NextStep"); 
   
   // (e) Mask it with the low-shield rate cut
   for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
@@ -1708,6 +1755,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     }
   }
   
+  DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMS_BeforeSanityChecks"); 
   
   // (D) Sanity checks:
   
@@ -1767,10 +1815,12 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     }
   }
   
+  DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMSFinal"); 
   
   // (E) Now set it (slow...):
   for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
     int Bin = OnOffOptimizedRMS->FindBin(H.m_Time[h]);
+
     if (Bin == 0 || Bin > OnOffOptimizedRMS->GetNbinsX()) {
       cerr<<"Something is wrong with the times as I cannot find a rejection value for time "<<H.m_Time[h]<<endl; 
       if (Mode == c_SAACutOptimizedLSRRMS) H.m_SoftSAA[h] = true;
@@ -1785,14 +1835,25 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       }    
     }
   }
-    
   
+  if (m_Debug == true) {
+    ofstream out;
+    out.open(TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_SoftSAA_OPTIMIZED.txt");
+    for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+      out<<"Time["<<h<<"] "<<setprecision(10)<<H.m_Time[h]<<"   SoftSAA["<<h<<"] "<<H.m_SoftSAAOptimizedLSRRMS[h]<<endl;
+    }
+    out.close();
+  }
 
   // (F) Show the result if desired
   if (Show == true) {
     TH1D* FinalOptimizedRate = new TH1D(TString("FinalOptimizedRate") + iID, TString("SAA/RMS: FinalOptimizedRate") + ID, SuperStrictBins, MinTime, MaxTime);
     FinalOptimizedRate->SetXTitle("Time [sec since 1/1/2010]");
     FinalOptimizedRate->SetYTitle("cts/sec");
+    
+    TH1D* FinalSAAOnOff = new TH1D(TString("FinalSAAOnOff") + iID, TString("SAA/RMS: FinalSAAOnOff") + ID, OneSecBins, MinTime, MaxTime);
+    FinalSAAOnOff->SetXTitle("Time [sec since 1/1/2010]");
+    FinalSAAOnOff->SetYTitle("on = 1");
     
     for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
       if (F.IsGTI(F.m_Time[i]) == false) continue;
@@ -1803,7 +1864,10 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
         cout<<"Housekeeping: Index not found for time "<<F.m_Time[i]<<"..."<<endl;
         continue;      
       }
-      if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == true) continue;
+      if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == true) {
+        FinalSAAOnOff->SetBinContent(FinalSAAOnOff->FindBin(F.m_Time[i]), 1.0);
+        continue;
+      }
       
       int DetectorID = F.m_DetectorID[i];
       int RawX = F.m_RawX[i];
@@ -1814,7 +1878,18 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
       
       FinalOptimizedRate->Fill(F.m_Time[i]);
     }
+    for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
+      if (H.m_SoftSAAOptimizedLSRRMS[h] == true) {
+        FinalSAAOnOff->SetBinContent(h, 1.0);
+      }      
+    }
     
+    DebugOutput(FinalSAAOnOff, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_FinalSAAOnOff"); 
+ 
+    TCanvas* FinalSAAOnOffCanvas = new TCanvas();
+    FinalSAAOnOffCanvas->cd();
+    FinalSAAOnOff->Draw();
+    FinalSAAOnOffCanvas->Update();
  
     TCanvas* NonSAARateCanvas = new TCanvas();
     NonSAARateCanvas->cd();
@@ -2342,7 +2417,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   
   // Create a list of pixels with high source count for elimination
   vector<int> ExcludedDetRawXY;
-  if (DoSourceElimination == true) ExcludedDetRawXY = MostlyEliminateSource(F, Show);  
+  if (DoSourceElimination == true) ExcludedDetRawXY = MostlyEliminateSource(F, O, Show);  
 
   TString iID = TString("_ID_") + H.m_ID + "_M_" + ((H.m_Module == 0) ? "A" : "B");
   TString ID = TString(" (ID: ") + H.m_ID + ((H.m_Module == 0) ? "A" : "B") + ")";
@@ -2355,8 +2430,6 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   EvaluationRate->SetXTitle("Time [sec since 1/1/2010]");
   EvaluationRate->SetYTitle("cts/sec");
   
-  TH1D* EvaluationRateLifeTimes = new TH1D(TString("EvaluationRateLifeTimes") + iID, TString("Tentacle - EvaluationRateLifeTimes") + ID, EvaluationBins, MinTime, MaxTime);
-  
   TH1D* NonSAAComparisonRate = new TH1D(TString("NonSAAComparisonRate") + iID, TString("Tentacle - NonSAAComparisonRate") + ID, EvaluationBins, MinTime, MaxTime);
   NonSAAComparisonRate->SetXTitle("Time [sec since 1/1/2010]");
   NonSAAComparisonRate->SetYTitle("cts/sec");
@@ -2364,52 +2437,65 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("Tentacle - OnOffInternalSAA") + ID, EvaluationBins, MinTime, MaxTime);
   for (int b = 1; b <= EvaluationBins; ++b) OnOffInternalSAA->SetBinContent(b, RejectionOff);
   
+  ofstream deb;
+  if (m_Debug == true) deb.open(TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_TentacleEventLog");
+
   for (unsigned int i = 0; i < F.m_Time.size(); ++i) {
-    if (WithinSpecialGTI(F.m_Time[i]) == false) continue;
-    if (F.IsGTI(F.m_Time[i]) == false) continue;
-    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) continue;
-   
+    if (WithinSpecialGTI(F.m_Time[i]) == false) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> special GTI reject"<<endl;
+      continue;
+    }
+    if (F.IsGTI(F.m_Time[i]) == false) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> GTI reject"<<endl;
+      continue;
+    }
+    if (F.m_Energy[i] < m_SpectrumMin || F.m_Energy[i] > m_SpectrumMax) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> energy reject"<<endl;
+      continue;
+    }
+    if (O.IsGoodOrbit(F.m_Time[i]) == false) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> orbit reject, index: "<<O.FindOrbitIndex(F.m_Time[i])<<endl;
+      continue;
+    }
+    
     int DetectorID = F.m_DetectorID[i];
     int RawX = F.m_RawX[i];
     int RawY = F.m_RawY[i];
     int ID = 10000*DetectorID + 100*RawX + RawY;
     vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
-    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
-
-    EvaluationRate->Fill(F.m_Time[i]);
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) {
+      deb<<"ID "<<i<<" --> source pos reject"<<endl;
+      continue;
+    }
+    
+    int HKIndex = H.FindClosestIndex(F.m_Time[i]);
+    if (HKIndex < 0) continue;
+    
+    double LifeTime = H.m_LiveTime[HKIndex];
+    if (m_DoLifeTimeCorrection == false) LifeTime = 1.0;
+    if (LifeTime > 0) {
+      EvaluationRate->Fill(F.m_Time[i], 1.0/LifeTime);
+    }
+    if (m_Debug == true) deb<<"ID "<<i<<" time: "<<setprecision(10)<<F.m_Time[i]<<" bin: "<<EvaluationRate->FindBin(F.m_Time[i])-1<<" content "<<EvaluationRate->GetBinContent(EvaluationRate->FindBin(F.m_Time[i]))<<" --> Good"<<endl;
     
     int Index = O.FindClosestIndex(F.m_Time[i]);
     if (O.m_Longitude[Index] >= NonSAAMinLong && O.m_Longitude[Index] <= NonSAAMaxLong) {
-      NonSAAComparisonRate->Fill(F.m_Time[i]);
+      if (LifeTime > 0) {
+        NonSAAComparisonRate->Fill(F.m_Time[i], 1.0/LifeTime);
+      }
     }    
   }
+
+  if (m_Debug == true) deb.close();
+  DebugOutput(EvaluationRate, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_TentacleEvaluationRate"); 
+  
   
   for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
     if (H.m_HardSAA[i] == true) {
       OnOffInternalSAA->SetBinContent(OnOffInternalSAA->FindBin(H.m_Time[i]), RejectionOn);
     }
   }
-  
-  for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
-    if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
-    if (F.IsGTI(F.m_Time[i]) == false) continue;
 
-    EvaluationRateLifeTimes->Fill(H.m_Time[i], H.m_LiveTime[i]);
-  }
-  
-  /* NO!
-  // Do lifetime correction
-  for (int b = 1; b <= NonSAAComparisonRate->GetNbinsX(); ++b) {
-    if (EvaluationRateLifeTimes->GetBinContent(b) > 0) {
-      // With LIFETIME correction!
-      //NonSAAComparisonRate->SetBinContent(b, NonSAAComparisonRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
-      //EvaluationRate->SetBinContent(b, EvaluationRate->GetBinContent(b)/EvaluationRateLifeTimes->GetBinContent(b));
-    } else {
-      NonSAAComparisonRate->SetBinContent(b , 0);
-      EvaluationRate->SetBinContent(b , 0);
-    }
-  }
-  */
   
   // (C) Create a rate histogram in order to be able to calculate mean and the rms of the rate
   
@@ -2554,6 +2640,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   }
   
   
+  DebugOutput(OnOff, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_TentacleOnOffRMS"); 
   
   
   // (E) Restriction to tentacle region
@@ -2588,8 +2675,11 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     // A tentacle has some 
     
     double OrbitDuration = 6240; //sec  --- no need at all to be perfect here
+    double LongTentacleDuration = 7; // x 60 sec  --> into caldb
     
     double NTentacles = 0;
+    double NLongTentacles = 0;
+    
     bool LastAdjacentCounted = false;
     int LastAdjacentBin = 0; 
     double NAdjacentTentacles = 0;
@@ -2598,7 +2688,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     double MaxFlux = 0;
     double AverageFlux = 0;
     int NAverageFluxes = 0;
-    
+     
     bool Started = false;
     for (int i = 1; i <= OnOff->GetNbinsX(); ++i) {
       if (OnOff->GetBinContent(i) == RejectionOn) {
@@ -2616,9 +2706,10 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
         }
       } else {
         if (Started == true) {
-          cout<<"Tentacle "<<i-LastDuration<<": Duration: "<<LastDuration<<endl;
+          cout<<"Tentacle "<<i-LastDuration<<": Duration: "<<LastDuration<<" Orbit: "<<(int) ((OnOff->GetBinCenter(i)-OnOff->GetBinCenter(1))/OrbitDuration + 0.5)<<endl;
           DurationOfTentacles += LastDuration;
           NTentacles++;
+          if (LastDuration >= LongTentacleDuration) NLongTentacles++;
           Started = false;
           LastDuration = 0;
           if (LastAdjacentBin != 0) {
@@ -2670,6 +2761,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
       // If we really have a tentacle most of the tentacle region crossings should produce a signal 
       double TentacleVsRegionCrossingsBadCutoff = 0.5;             // <-- into caldb 
       double TentacleVsRegionCrossingsReallyBadCutoff = 0.15;      // <-- into caldb 
+      double AdjacentOrNotCutOff = 0.5;                            // <-- into caldb  
       if (NTentacles < TentacleVsRegionCrossingsBadCutoff * NCrossings) {
         cout<<"Suspicious: Only "<<NTentacles<<" tentacles in "<<NCrossings<<" crossings of the tentacle zone"<<endl;
         ++Suspiciousness;
@@ -2680,15 +2772,14 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
       
       // Sanity check 2:
       // The average tentacle cut duration is 4-5, i.e. 240-300 seconds
-      double TentacleDurationCutOff = 2.5*60;                    // = 150 sec<-- into caldb (60 is from default Timeintervall)
-      if (DurationOfTentacles*TimeInterval <= TentacleDurationCutOff) {
+      double TentacleDurationCutOff = 3;                    // = 150 sec<-- into caldb (60 is from default Timeintervall)
+      if (DurationOfTentacles <= TentacleDurationCutOff) {
         cout<<"Suspicious: The average duration of a tentacle passing is only "<<DurationOfTentacles<<" instead of ~5"<<endl;
         ++Suspiciousness;
       }
       
       // Sanity check 3:
       // Tentacle follows after tentacle follows after tentacle follows...
-      double AdjacentOrNotCutOff = 0.5;                            // <-- into caldb  
       if (NTentacles > 2 && NAdjacentTentacles < AdjacentOrNotCutOff * NTentacles) {
         cout<<"Suspicious: Only "<<NAdjacentTentacles<<" out of "<<NTentacles<<" are in sequential (or same) orbit"<<endl;
         ++Suspiciousness;
@@ -2706,6 +2797,23 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
           ++Suspiciousness;
         }
       }
+      
+      // Sanity check 5:
+      // If we have a few tentacles with above average length, then we likely have a tentacle
+      unsigned int LongTentacleThreshold = 2;
+      if (NLongTentacles > LongTentacleThreshold) {
+        cout<<"Positive: We have a few long duration tentacles: "<<NLongTentacles<<" out of "<<NTentacles<<endl;    
+        --Suspiciousness;
+      }
+      
+      // Sanity check 6:
+      // If we have a tentacle with at least 5 times the average flux, then we likely have a tentacle 
+      unsigned int TentacleFluxThreshold = 5;
+      if (MaxFlux > TentacleFluxThreshold*AverageFlux) {
+        cout<<"Positive: We have at least one strong tentacles: "<<MaxFlux<<" vs. average "<<AverageFlux<<endl;    
+        --Suspiciousness;
+      }
+      
       
       // More than 2 suspicousness points? No Tentacle!
       int SuspiciousnessThreshold = 2;                              // <-- into caldb 
@@ -2738,6 +2846,9 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
       }    
     }
   }
+    
+  DebugOutput(H.m_SoftTentacledRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_TentacleOnOffRMSFinalAll"); 
+  DebugOutput(OnOff, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_TentacleOnOffRMSFinal"); 
   
   
   // (H) Show everything
@@ -2880,7 +2991,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
 ////////////////////////////////////////////////////////////////////////////////
 
 
-vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
+vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, NOrbits& O, bool Show)
 {
   //! Return the pixels where the source is most likely on
 
@@ -2897,7 +3008,8 @@ vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
     //if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
     if (F.m_Energy[e] < m_SpectrumMin || F.m_Energy[e] > m_SpectrumMax) continue;
     if (F.IsGTI(F.m_Time[e]) == false) continue;
-  
+    if (O.IsGoodOrbit(F.m_Time[e]) == false) continue;
+    
     int DetectorID = F.m_DetectorID[e];
     int RawX = F.m_RawX[e];
     int RawY = F.m_RawY[e];
@@ -2923,19 +3035,26 @@ vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
       }
     }
   }
-  vector<double> LogBinning(LogBinningBins + 1);
-  LogBinningMin = log(LogBinningMin);
-  LogBinningMax = log(LogBinningMax);
-  double Dist = (LogBinningMax-LogBinningMin)/(LogBinningBins);
   
-  double RealLogBinningBins = 0;
-  LogBinning[0] = int(exp(LogBinningMin)) - 0.5; // Always >= 0.5
-  for (int i = 1; i < LogBinningBins+1; ++i) {
-    double Candidate = int(exp(LogBinningMin+i*Dist)) - 0.5;
-    if (Candidate == LogBinning[RealLogBinningBins]) continue;
+  LogBinningMax += 1;  // Make it 1 count larger, to ensure everything is contained
+  
+  vector<double> LogBinning(LogBinningBins);
+  LogBinningMin = log(LogBinningMin);
+  LogBinningMax = log(LogBinningMax); 
+  double LogDist = (LogBinningMax-LogBinningMin)/(LogBinningBins - 1); // one smaller, since one is the edge
+  
+  int RealLogBinningBins = 0;
+  LogBinning[0] = int(exp(LogBinningMin) + 0.5) - 0.5; // Always >= 0.5
+  for (int i = 1; i < LogBinningBins; ++i) {
+    double Candidate = int(exp(LogBinningMin+i*LogDist) + 0.5) - 0.5;
+    if (Candidate == LogBinning[RealLogBinningBins]) continue; // if the difference is smaller than 1, do not do anything
     LogBinning[++RealLogBinningBins] = Candidate;
   }   
   
+  //cout<<"Bins: "<<endl;
+  //for (int i = 0; i < LogBinningBins; ++i) {
+  //  cout<<i<<" "<<LogBinning[i]<<endl; 
+  //}
   TH1D* PositionRates = new TH1D("PositionRates", "PositionRates", RealLogBinningBins, &LogBinning[0]);
   
   double GoodPixels = 0;
@@ -2947,18 +3066,26 @@ vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
       }
     }
   }
+  cout<<"Source elimiation: Good Pixels: "<<GoodPixels<<endl;
+  cout<<"Real log binning bins: "<<RealLogBinningBins<<endl;
   for (int b = 1; b <= RealLogBinningBins; ++b) {
     PositionRates->SetBinContent(b, PositionRates->GetBinContent(b)/PositionRates->GetBinWidth(b));
   }
   
+  DebugOutput(PositionRates, "00000000000_X_PositionRatesBeforeSmooth"); 
+  
   // Smooth the hell out of it:
   PositionRates->Smooth(100);
   
+  DebugOutput(PositionRates, "00000000000_X_PositionRatesAfterSmooth"); 
+
   // Find the maximum
   double PositionRatesMaximum = PositionRates->GetBinCenter(PositionRates->GetMaximumBin());
+  cout<<"PositionRatesMaximum: "<<PositionRatesMaximum<<endl;
   
   // It is definitely non-Gaussian, but let's just use the 5-sigma upper limit as our cut-off Count
-  double PositionRatesCutoff = PositionRatesMaximum + 5*sqrt(PositionRatesMaximum);
+  double PositionRatesCutoff = PositionRatesMaximum + m_SourceCutRMSThreshold*sqrt(PositionRatesMaximum);
+  cout<<"PositionRatesCutoff: "<<PositionRatesCutoff<<endl;
   
   // This task should just eliminate the worst offenders, we do not want to cut more than ~25% of the data
   double NotEliminatedPixels = 0;
@@ -2966,13 +3093,16 @@ vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
     if (PositionRates->GetBinCenter(b) < PositionRatesCutoff) {
       NotEliminatedPixels += PositionRates->GetBinContent(b) * PositionRates->GetBinWidth(b);
     } else {
+      /*
       if (NotEliminatedPixels < 0.75 * GoodPixels) {
         PositionRatesCutoff = PositionRates->GetBinCenter(b);
         NotEliminatedPixels += PositionRates->GetBinContent(b) * PositionRates->GetBinWidth(b);
       }
+      */
     }
+    //printf("Not elim: %d: %f (%f * %f)\n", b-1, NotEliminatedPixels, PositionRates->GetBinContent(b), PositionRates->GetBinWidth(b));
   }
-  cout<<"CutOff: "<<PositionRatesCutoff<<" with "<<NotEliminatedPixels<<" of "<<GoodPixels<<" used pixels"<<endl;
+  cout<<"Source elimiation: Cut off: "<<PositionRatesCutoff<<" with "<<NotEliminatedPixels<<" of "<<GoodPixels<<" used pixels"<<endl;
   
   
   // Create a map of excluded bins: Notation 1000*Det + 100*RawX + RawY (for faster lookup later)
@@ -2992,7 +3122,7 @@ vector<int> NBaseTool::MostlyEliminateSource(NFilteredEvents& F, bool Show)
   }
   sort(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end());
   
-  cout<<"Eliminated pixels: "<<100.0 * ExcludedDetRawXY.size() / (64*64)<<" %"<<endl;
+  cout<<"Source elimiation: Eliminated pixels: "<<100.0 * ExcludedDetRawXY.size() / (64*64)<<" %"<<endl;
   
   // Redo to check it has worked!
   PositionsOnSource->Reset();
@@ -3082,13 +3212,48 @@ void NBaseTool::ConvertPosRaw(double PosX, double PosY, int& DetectorID, int& Ra
 
 void NBaseTool::DebugOutput(TH1* Hist, TString FileName)
 {
-  TString HistFileName = FileName + ".png";
+  if (m_Debug == false) return; 
+
+  /*
+  TString HistFileName = TString("Nulyses_") + FileName + ".png";
   TCanvas* C = new TCanvas("C", "C", 4000, 3000);
   C->cd();
   Hist->Draw();
   C->Update();
   C->SaveAs(HistFileName);
+  */
+    
+  TString TextFileName = FileName + ".txt";
+  ofstream out;
+  out.open(TextFileName);
+  if (out.is_open() == false) {
+    cout<<"Error: Unable to open "<<TextFileName<<endl;
+    return;
+  }
+  /*
+  out<<"# Bin min, Bin max, Value"<<endl;
+  for (int b = 1; b <= Hist->GetXaxis()->GetNbins(); ++b) {
+    out<<setprecision(9)<<Hist->GetXaxis()->GetBinLowEdge(b)<<"  "<<Hist->GetXaxis()->GetBinUpEdge(b)<<"  "<<Hist->GetBinContent(b)<<endl; 
+  }
+  */
   
+  if (FileName.Contains("_")) {
+    FileName = FileName(14, FileName.Length() - 14);
+  }
+  for (int b = 1; b <= Hist->GetXaxis()->GetNbins(); ++b) {
+    out<<FileName<<" "<<b-1<<" "<<fixed<<setprecision(6)<<Hist->GetBinContent(b)<<endl; 
+  }
+  
+  out.close();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NBaseTool::DebugOutput(vector<bool>& V, TString FileName)
+{
+  if (m_Debug == false) return; 
   
   TString TextFileName = FileName + ".txt";
   ofstream out;
@@ -3097,9 +3262,13 @@ void NBaseTool::DebugOutput(TH1* Hist, TString FileName)
     cout<<"Error: Unable to open "<<TextFileName<<endl;
     return;
   }
-  out<<"# Bin min, Bin max, Value"<<endl;
-  for (int b = 1; b <= Hist->GetXaxis()->GetNbins(); ++b) {
-    out<<setprecision(9)<<Hist->GetXaxis()->GetBinLowEdge(b)<<"  "<<Hist->GetXaxis()->GetBinUpEdge(b)<<"  "<<Hist->GetBinContent(b)<<endl; 
+
+  
+  if (FileName.Contains("_")) {
+    FileName = FileName(14, FileName.Length() - 14);
+  }
+  for (unsigned int b = 0; b < V.size(); ++b) {
+    out<<FileName<<" "<<b<<" "<<fixed<<setprecision(6)<<V[b]<<endl; 
   }
   
   out.close();

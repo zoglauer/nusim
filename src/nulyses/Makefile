@@ -22,6 +22,7 @@ LOBJS     = $(LB)/NBase.o \
 	$(LB)/NEngineering.o \
 	$(LB)/NFilteredEvents.o \
 	$(LB)/NHousekeeping.o \
+	$(LB)/NGTI.o \
 	$(LB)/NUnfilteredEvents.o \
 	$(LB)/NBadPixel.o \
 	$(LB)/NPhaFile.o \

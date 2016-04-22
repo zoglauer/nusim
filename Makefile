@@ -51,7 +51,7 @@ LDFLAGS     += -L$(LB)
 
 NUSIMLIBS = -lMain -lModules -lMegalib -lOrbit -lData -lGlobal
 
-all: info link modules data main megalib orbit
+all: info link modules data main megalib orbit nulyses
 	@$(MAKE) all -C src
 
 nusim: all
@@ -68,6 +68,9 @@ nulyses: link global megalib
 
 modules: link megalib orbit
 	@$(MAKE) modules -C src
+
+global: link 
+	@$(MAKE) global -C src
 
 data: link megalib orbit
 	@$(MAKE) data -C src
@@ -88,11 +91,6 @@ ROOTVERSIONOK   = $(shell bash $(CF)/configure_rootversiontest )
 #GEANT4VERSIONOK = $(shell bash $(CF)/configure_geant4versiontest )
 
 info:
-	bash $(CF)/configure_revision
-ifneq ($(strip $(ROOTVERSIONOK)),)
-	echo "$(ROOTVERSIONOK)"
-	exit 1;		
-endif
 	echo "NuSIM compilation mode: $(CMODE)"
 
 #ifneq ($(strip $(GEANT4VERSIONOK)),)
