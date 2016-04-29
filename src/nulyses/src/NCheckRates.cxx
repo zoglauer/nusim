@@ -787,6 +787,37 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   
   CreateGTIs(H);
   
+  // And finally write all settings
+  ofstream settings;
+  
+  TString Report = "Settings_id";
+  Report += F.m_ID;
+  Report += "_m";
+  Report += ((F.m_Module == 0) ? "A" : "B");
+  Report += ".txt";
+  Report.ReplaceAll(" ", "");
+  Report.ReplaceAll(")", "");
+  Report.ReplaceAll("(", "");
+  Report.ReplaceAll(":", "");
+  Report.ReplaceAll("-", "");
+  Report.ReplaceAll(",", "");
+  
+  settings.open(Report);
+  
+  settings<<"nulyses checkrates settings:"<<endl;
+  settings<<endl;
+  settings<<"Spectral range:                      "<<m_SpectrumMin<<" - "<<m_SpectrumMax<<endl;
+  settings<<"SAA cut RMS threshold:               "<<m_SAACutRMSThreshold<<endl;
+  settings<<"SAAC cut RMS source elimination:     "<<m_SAACutRMSSourceElimination<<endl;
+  settings<<"SAA Cut RMS sanity checks:           "<<m_SAACutRMSSanityChecks<<endl;
+  settings<<"Tentacle cut RMS threshold:          "<<m_TentacleCutRMSThreshold<<endl;
+  settings<<"Tentacle cut RMS source elimination: "<<m_TentacleCutRMSSourceElimination<<endl;
+  settings<<"Tentacle cut RMS region restriction: "<<m_TentacleCutRMSRegionRestriction<<endl;
+  settings<<"Tentacle cut RMS sanity checks:      "<<m_TentacleCutRMSSanityChecks<<endl;
+  settings<<"Source cut RMS threshold:            "<<m_SourceCutRMSThreshold<<endl;
+  
+  settings.close();
+  
   return true;
 }
 
