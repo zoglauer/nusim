@@ -1573,10 +1573,16 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     int RawY = F.m_RawY[i];
     int ID = 10000*DetectorID + 100*RawX + RawY;
     vector<int>::iterator I = lower_bound(ExcludedDetRawXY.begin(), ExcludedDetRawXY.end(), 10000*DetectorID + 100*RawX + RawY);
-    if (I != ExcludedDetRawXY.end() && (*I) == ID) continue;
+    if (I != ExcludedDetRawXY.end() && (*I) == ID) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> source region reject"<<endl;
+      continue;
+    }
     
     int HKIndex = H.FindClosestIndex(F.m_Time[i]);
-    if (HKIndex < 0) continue;
+    if (HKIndex < 0) {
+      if (m_Debug == true) deb<<"ID "<<i<<" --> No housekeeping index found"<<endl;
+      continue;
+    }
     
     double LifeTime = H.m_LiveTime[HKIndex];
     if (m_DoLifeTimeCorrection == false) LifeTime = 1.0;
