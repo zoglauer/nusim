@@ -268,7 +268,7 @@ int main(int argc, char** argv)
   //(void) signal(SIGINT, CatchSignal);
 
 
-  TApplication SphericalPatternApp("SphericalPatternApp", 0, 0);
+  TApplication* SphericalPatternApp = new TApplication("SphericalPatternApp", 0, 0);
 
   g_Prg = new SphericalPattern();
 
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
   bool Identical = g_Prg->Analyze();
 
   if (gROOT->IsBatch() == false) {
-    SphericalPatternApp.Run();
+    SphericalPatternApp->Run();
   } 
 
   return (Identical == true) ? 0 : 1;

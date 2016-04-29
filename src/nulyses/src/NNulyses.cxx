@@ -302,7 +302,7 @@ int main(int argc, char** argv)
   // Initialize global MEGALIB variables, especially mgui, etc.
   NGlobal::Initialize();
 
-  TApplication NulysesApp("NulysesApp", 0, 0);
+  TApplication* NulysesApp = new TApplication("NulysesApp", 0, 0);
 
   g_Prg = new Nulyses();
 
@@ -312,7 +312,7 @@ int main(int argc, char** argv)
   } 
 
   if (gROOT->IsBatch() == false) {
-    NulysesApp.Run();
+    NulysesApp->Run();
   }
 
   cout<<"Program exited normally!"<<endl;
