@@ -61,6 +61,11 @@ void NFilteredEvents::Clean()
   m_CleanLevel = 0;
   
   m_LiveTime = 0;
+  
+  m_StartTime = 0;
+  m_ObservationDate = "2000-01-01T12:00:00";
+  m_Object = "ERROR: UNKNOWN";  
+  
   m_DetectorArea = 0;
 
   m_PI.clear();
@@ -118,7 +123,16 @@ bool NFilteredEvents::Read(const TString& FileName)
 
   fits_read_key(File, TDOUBLE, "LiveTime", &valdbl, value, &status);
   m_LiveTime = valdbl;
-  //cout<<"Live time: "<<valdbl<<endl;
+
+  fits_read_key(File, TDOUBLE, "TSTART", &valdbl, value, &status);
+  m_StartTime = valdbl;
+  
+  fits_read_key(File, TSTRING, "DATE-OBS", value, NULL, &status);
+  m_ObservationDate = value;
+  
+  fits_read_key(File, TSTRING, "OBJECT", value, NULL, &status);
+  m_Object = value;
+      
 
   // Get the number of columns
   int NColumns = 0;

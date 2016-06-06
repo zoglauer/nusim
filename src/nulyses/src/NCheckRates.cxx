@@ -24,6 +24,8 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <ctime>
+#include <cstdlib>
 using namespace std;
 
 // ROOT libs:
@@ -31,6 +33,7 @@ using namespace std;
 #include "TH2.h"
 #include "TText.h"
 #include "TCanvas.h"
+#include "TLine.h"
 #include "TColor.h"
 #include "TStyle.h"
 #include "TPaletteAxis.h"
@@ -166,15 +169,21 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   
   
   int RatesBins = (H.GetMaxTime() - H.GetMinTime()+1)/60;
+  double StartTime = H.GetMinTime()-0.5;
   double MinTime = H.GetMinTime()-0.5;
   double MaxTime = H.GetMaxTime()+0.5;
 
+  // Convert to ks since start of abservation
+  MaxTime -= MinTime;
+  MinTime = 0;
+  MaxTime /= 1000.0;
+  
   TH1D* Rates = new TH1D(TString("Rates") + iID, TString("Rates all") + ID, RatesBins, MinTime, MaxTime);
-  Rates->SetXTitle("Time [s]");
+  Rates->SetXTitle("Time since start of observation [ks]");
   Rates->SetYTitle("cts/sec");
 
   TH1D* ShieldRatesHigh = new TH1D(TString("ShieldRatesHigh") + iID, TString("ShieldRatesHigh") + ID, RatesBins, MinTime, MaxTime);
-  ShieldRatesHigh->SetXTitle("Time [s]");
+  ShieldRatesHigh->SetXTitle("Time since start of observation [ks]");
   ShieldRatesHigh->SetYTitle("cts/sec");
 
   TH2D* OrbitNormalizerShieldRatesHighByOrbit = new TH2D(TString("OrbitNormalizerShieldRatesHighByOrbit") + iID, 
@@ -187,7 +196,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   
   
   TH1D* ShieldRatesLow = new TH1D(TString("ShieldRatesLow") + iID, TString("ShieldRatesLow") + ID, RatesBins, MinTime, MaxTime);
-  ShieldRatesLow->SetXTitle("Time [s]");
+  ShieldRatesLow->SetXTitle("Time since start of observation [ks]");
   ShieldRatesLow->SetYTitle("cts/sec");
 
   TH2D* OrbitNormalizerShieldRatesLowByOrbit = new TH2D(TString("OrbitNormalizerShieldRatesLowByOrbit") + iID, 
@@ -199,109 +208,109 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   ShieldRatesLowByOrbit->SetZTitle("cts/sec");  
 
   TH1D* ShieldRatesEntries = new TH1D(TString("ShieldRatesEntries") + iID, TString("ShieldRatesEntries") + ID, RatesBins, MinTime, MaxTime);
-  ShieldRatesEntries->SetXTitle("Time [s]");
+  ShieldRatesEntries->SetXTitle("Time since start of observation [ks]");
   ShieldRatesEntries->SetYTitle("cts");
 
   TH1D* SAARegion = new TH1D(TString("SAARegion") + iID, TString("SAARegion") + ID, RatesBins, MinTime, MaxTime);
-  SAARegion->SetXTitle("Time [s]");
+  SAARegion->SetXTitle("Time since start of observation [ks]");
   SAARegion->SetYTitle("cts/sec");
   SAARegion->SetLineColor(kYellow);
   SAARegion->SetFillColor(kYellow);
   
   TH1D* LifeTimes = new TH1D(TString("LifeTimes") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimes->SetXTitle("Time [s]");
+  LifeTimes->SetXTitle("Time since start of observation [ks]");
   LifeTimes->SetYTitle("cts/sec");
 
   
   
   TH1D* RatesSAANoTentacleNo = new TH1D(TString("RatesSAANoTentacleNo") + iID, TString("Rates - SAA: No, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAANoTentacleNo->SetXTitle("Time [s]");
+  RatesSAANoTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAANoTentacleNo->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAANoTentacleNo = new TH1D(TString("LifeTimesSAANoTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAANoTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAANoTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAANoTentacleNo->SetYTitle("cts/sec");
   
   
   TH1D* RatesSAAStrictHSRTentacleNo = new TH1D(TString("RatesSAAStrictHSRTentacleNo") + iID, TString("Rates - SAA: StrictHSR, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictHSRTentacleNo->SetXTitle("Time [s]");
+  RatesSAAStrictHSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAStrictHSRTentacleNo->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAStrictHSRTentacleNo = new TH1D(TString("LifeTimesSAAStrictHSRTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictHSRTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAStrictHSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAStrictHSRTentacleNo->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAOptimizedHSRFoMTentacleNo = new TH1D(TString("RatesSAAOptimizedHSRFoMTentacleNo") + iID, TString("Rates - SAA: Optimized, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time [s]");
+  RatesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedHSRFoMTentacleNo->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAOptimizedHSRFoMTentacleNo = new TH1D(TString("LifeTimesSAAOptimizedHSRFoMTentacleNo") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedHSRFoMTentacleNo->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAStrictLSRTentacleNo = new TH1D(TString("RatesSAAStrictLSRTentacleNo") + iID, TString("Rates - SAA: Super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictLSRTentacleNo->SetXTitle("Time [s]");
+  RatesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAStrictLSRTentacleNo = new TH1D(TString("LifeTimesSAAStrictLSRTentacleNo") + iID, TString("LifeTimesSAAStrictLSRTentacleNo") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictLSRTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAOptimizedLSRRMSTentacleNo = new TH1D(TString("RatesSAAOptimizedLSRRMSTentacleNo") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time [s]");
+  RatesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedLSRRMSTentacleNo->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAOptimizedLSRRMSTentacleNo = new TH1D(TString("LifeTimesSAAOptimizedLSRRMSTentacleNo") + iID, TString("LifeTimesSAAOptimizedLSRRMSTentacleNo") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedLSRRMSTentacleNo->SetYTitle("cts/sec");
 
   
   
   TH1D* RatesSAANoTentacleRMS = new TH1D(TString("RatesSAANoTentacleRMS") + iID, TString("Rates - SAA: No, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAANoTentacleRMS->SetXTitle("Time [s]");
+  RatesSAANoTentacleRMS->SetXTitle("Time since start of observation [ks]");
   RatesSAANoTentacleRMS->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAANoTentacleRMS = new TH1D(TString("LifeTimesSAANoTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAANoTentacleRMS->SetXTitle("Time [s]");
+  LifeTimesSAANoTentacleRMS->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAANoTentacleRMS->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAStrictHSRTentacleFoM = new TH1D(TString("RatesSAAStrictHSRTentacleFoM") + iID, TString("Rates - SAA: StrictHSR, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictHSRTentacleFoM->SetXTitle("Time [s]");
+  RatesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
   RatesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAStrictHSRTentacleFoM = new TH1D(TString("LifeTimesSAAStrictHSRTentacleFoM") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictHSRTentacleFoM->SetXTitle("Time [s]");
+  LifeTimesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAOptimizedHSRFoMTentacleFoM = new TH1D(TString("RatesSAAOptimizedHSRFoMTentacleFoM") + iID, TString("Rates - SAA: Optimized, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time [s]");
+  RatesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedHSRFoMTentacleFoM->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAOptimizedHSRFoMTentacleFoM = new TH1D(TString("LifeTimesSAAOptimizedHSRFoMTentacleFoM") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedHSRFoMTentacleFoM->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAStrictLSRTentacleRMS = new TH1D(TString("RatesSAAStrictLSRTentacleRMS") + iID, TString("Rates - SAA: Super strict, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictLSRTentacleRMS->SetXTitle("Time [s]");
+  RatesSAAStrictLSRTentacleRMS->SetXTitle("Time since start of observation [ks]");
   RatesSAAStrictLSRTentacleRMS->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAStrictLSRTentacleRMS = new TH1D(TString("LifeTimesSAAStrictLSRTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictLSRTentacleRMS->SetXTitle("Time [s]");
+  LifeTimesSAAStrictLSRTentacleRMS->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAStrictLSRTentacleRMS->SetYTitle("cts/sec");
 
   
   TH1D* RatesSAAOptimizedLSRRMSTentacleRMS = new TH1D(TString("RatesSAAOptimizedLSRRMSTentacleRMS") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time [s]");
+  RatesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedLSRRMSTentacleRMS->SetYTitle("cts/sec");
   
   TH1D* LifeTimesSAAOptimizedLSRRMSTentacleRMS = new TH1D(TString("LifeTimesSAAOptimizedLSRRMSTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time [s]");
+  LifeTimesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedLSRRMSTentacleRMS->SetYTitle("cts/sec");
 
 
@@ -419,8 +428,8 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   // Fill histograms which require filling by event
   for (unsigned int e = 0; e < F.m_Time.size(); ++e) {
     
-    //if (WithinSpecialGTI(F.m_Time[e]) == false) continue;
-    //if (WithinSpecialBTI(F.m_Time[e]) == true) continue;
+    //if (WithinSpecialGTI((F.m_Time[e] - StartTime)/1000) == false) continue;
+    //if (WithinSpecialBTI((F.m_Time[e] - StartTime)/1000) == true) continue;
     if (F.m_Energy[e] < SpectrumMin || F.m_Energy[e] > SpectrumMax) continue;
     
     if (F.IsGTI(F.m_Time[e]) == false) continue;
@@ -456,60 +465,60 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
     }
     
     if (H.m_HardSAA[HKIndex] == false) {
-      RatesSAANoTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAANoTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);
     }
     
     if (H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAANoTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAANoTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAANoTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAStrictHSR[HKIndex] == false) {
-      RatesSAAStrictHSRTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAStrictHSRTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictHSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAStrictHSR[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
-      RatesSAAStrictHSRTentacleFoM->Fill(F.m_Time[e], Count);
+      RatesSAAStrictHSRTentacleFoM->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictHSRTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false) {
-      RatesSAAOptimizedHSRFoMTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedHSRFoMTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedHSRFoMTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
-      RatesSAAOptimizedHSRFoMTentacleFoM->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedHSRFoMTentacleFoM->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAStrictLSR[HKIndex] == false) {
-      RatesSAAStrictLSRTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAStrictLSRTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictLSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAStrictLSRTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAAStrictLSRTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictLSRTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
     if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleNo->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedLSRRMSTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedLSRRMSTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleRMS->Fill(F.m_Time[e], Count);
+      RatesSAAOptimizedLSRRMSTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
   }
-  
+
   
   double TotalTime = 0;
   LiveTime = 0;
   for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
     double Life = 1.0; //H.m_LiveTime[h];
 
-    LifeTimes->Fill(H.m_Time[h], Life);
+    LifeTimes->Fill((H.m_Time[h] - StartTime)/1000, Life);
     
     int OrbitIndex = O.FindClosestIndex(H.m_Time[h]);
     if (OrbitIndex == -1) {
@@ -518,77 +527,77 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
     }
 
     if (O.m_Longitude[OrbitIndex] > SAARegionMin && O.m_Longitude[OrbitIndex] < SAARegionMax) {
-      SAARegion->SetBinContent(SAARegion->FindBin(H.m_Time[h]), 1); 
+      SAARegion->SetBinContent(SAARegion->FindBin((H.m_Time[h] - StartTime)/1000), 1); 
     }
 
     if (WithinSpecialGTI(H.m_Time[h]) == false) continue;
     if (WithinSpecialBTI(H.m_Time[h]) == true) continue;
     if (F.IsGTI(H.m_Time[h]) == false) continue;
 
-    ShieldRatesHigh->Fill(H.m_Time[h], H.m_ShieldRateHigh[h]);  
+    ShieldRatesHigh->Fill((H.m_Time[h] - StartTime)/1000, H.m_ShieldRateHigh[h]);  
     OrbitNormalizerShieldRatesHighByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);
     ShieldRatesHighByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_ShieldRateHigh[h]);  
-    ShieldRatesLow->Fill(H.m_Time[h], H.m_ShieldRateLow[h]);  
+    ShieldRatesLow->Fill((H.m_Time[h] - StartTime)/1000, H.m_ShieldRateLow[h]);  
     OrbitNormalizerShieldRatesLowByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);
     ShieldRatesLowByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], H.m_ShieldRateLow[h]);  
-    ShieldRatesEntries->Fill(H.m_Time[h], 1);  
+    ShieldRatesEntries->Fill((H.m_Time[h] - StartTime)/1000, 1);  
  
     //if (H.m_LiveTime[h] == 0) continue;
     
     
     if (H.m_HardSAA[h] == false) {
       OrbitNormalizerDetectorSAANoTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);
-      LifeTimesSAANoTentacleNo->Fill(H.m_Time[h], Life);
+      LifeTimesSAANoTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAANoTentacleNo += 1;
     }
     
     if (H.m_SoftTentacledRMS[h] == false) {
       OrbitNormalizerDetectorSAANoTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAANoTentacleRMS->Fill(H.m_Time[h], Life);
+      LifeTimesSAANoTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAANoTentacleRMS += 1;
     }
           
     if (H.m_SoftSAAStrictHSR[h] == false) {
       OrbitNormalizerDetectorSAAStrictHSRTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAStrictHSRTentacleNo->Fill(H.m_Time[h], Life);
+      LifeTimesSAAStrictHSRTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictHSRTentacleNo += 1;
     }
     if (H.m_SoftSAAStrictHSR[h] == false && H.m_SoftTentacledFoM[h] == false) {
       OrbitNormalizerDetectorSAAStrictHSRTentacleFoM->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAStrictHSRTentacleFoM->Fill(H.m_Time[h], Life);
+      LifeTimesSAAStrictHSRTentacleFoM->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictHSRTentacleFoM += 1;
     }
 
     if (H.m_SoftSAAOptimizedHSRFoM[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedHSRFoMTentacleNo->Fill(H.m_Time[h], Life);
+      LifeTimesSAAOptimizedHSRFoMTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedHSRFoMTentacleNo += 1;
     }
     if (H.m_SoftSAAOptimizedHSRFoM[h] == false && H.m_SoftTentacledFoM[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedHSRFoMTentacleFoM->Fill(H.m_Time[h], Life);
+      LifeTimesSAAOptimizedHSRFoMTentacleFoM->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedHSRFoMTentacleFoM += 1;
     }
 
     if (H.m_SoftSAAStrictLSR[h] == false) {
       OrbitNormalizerDetectorSAAStrictLSRTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAStrictLSRTentacleNo->Fill(H.m_Time[h], Life);
+      LifeTimesSAAStrictLSRTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictLSRTentacleNo += 1;
     }
     if (H.m_SoftSAAStrictLSR[h] == false && H.m_SoftTentacledRMS[h] == false) {
       OrbitNormalizerDetectorSAAStrictLSRTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAStrictLSRTentacleRMS->Fill(H.m_Time[h], Life);
+      LifeTimesSAAStrictLSRTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictLSRTentacleRMS += 1;
     }
 
     if (H.m_SoftSAAOptimizedLSRRMS[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedLSRRMSTentacleNo->Fill(H.m_Time[h], Life);
+      LifeTimesSAAOptimizedLSRRMSTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedLSRRMSTentacleNo += 1;
     }
     if (H.m_SoftSAAOptimizedLSRRMS[h] == false && H.m_SoftTentacledRMS[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedLSRRMSTentacleRMS->Fill(H.m_Time[h], Life);
+      LifeTimesSAAOptimizedLSRRMSTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedLSRRMSTentacleRMS += 1;
     }
    
@@ -761,25 +770,37 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   //if (m_ShowHistograms.Contains("f")) PositionsOnSourceCanvas->SaveAs(PositionsOnSource->GetName() + m_FileType);
 
   
-  CreateReport(F.m_ID, "SAA: Strict (high-shield rate based), Tentacle: Figure-of-merit", ((F.m_Module == 0) ? "A" : "B"),
+  CreateReport(F.m_ID, 1, 1, 
+               "Filter options: SAA algorithm 1 (high-shield rate based using a figure-of-merit as evaluation metric), strict SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAStrictHSRTentacleNo, RatesSAAStrictHSRTentacleNoByOrbit, TimeSAAStrictHSRTentacleNo,
                RatesSAAStrictHSRTentacleFoM, RatesSAAStrictHSRTentacleFoMByOrbit, TimeSAAStrictHSRTentacleFoM,
                SAARegion);
   
-  CreateReport(F.m_ID, "SAA: Figure-of-merit (high-shield rate based), Tentacle: figure-of-merit", ((F.m_Module == 0) ? "A" : "B"),
+  CreateReport(F.m_ID, 1, 2,
+               "Filter options: SAA algorithm 1 (high-shield rate based using a figure-of-merit as evaluation metric), optimized SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAOptimizedHSRFoMTentacleNo, RatesSAAOptimizedHSRFoMTentacleNoByOrbit, TimeSAAOptimizedHSRFoMTentacleNo,
                RatesSAAOptimizedHSRFoMTentacleFoM, RatesSAAOptimizedHSRFoMTentacleFoMByOrbit, TimeSAAOptimizedHSRFoMTentacleFoM,
                SAARegion);
   
-  CreateReport(F.m_ID, "SAA: Strict (low-shield rate based), Tentacle: rms-based", ((F.m_Module == 0) ? "A" : "B"),
+  CreateReport(F.m_ID, 2, 1, 
+               "Filter options: SAA algorithm 2 (low-shield rate based using rms as evaluation metric), strict SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAStrictLSRTentacleNo, RatesSAAStrictLSRTentacleNoByOrbit, TimeSAAStrictLSRTentacleNo,
                RatesSAAStrictLSRTentacleRMS, RatesSAAStrictLSRTentacleRMSByOrbit, TimeSAAStrictLSRTentacleRMS,
                SAARegion);
   
-  CreateReport(F.m_ID, "SAA: Optimized rms-based (low-shield rate based), Tentacle: rms-based", ((F.m_Module == 0) ? "A" : "B"),
+  CreateReport(F.m_ID, 2, 2, 
+               "Filter options: SAA algorithm 2 (low-shield rate based using rms as evaluation metric), optimized SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAOptimizedLSRRMSTentacleNo, RatesSAAOptimizedLSRRMSTentacleNoByOrbit, TimeSAAOptimizedLSRRMSTentacleNo,
                RatesSAAOptimizedLSRRMSTentacleRMS, RatesSAAOptimizedLSRRMSTentacleRMSByOrbit, TimeSAAOptimizedLSRRMSTentacleRMS,
@@ -954,48 +975,123 @@ void NCheckRates::NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedia
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module, 
-                              TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
-                              TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
-                              TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes,
-                              TH1D* SAARegion)
+time_t NCheckRates::GetUTCTime(struct tm* T)
 {
+  // From: https://stackoverflow.com/questions/283166/easy-way-to-convert-a-struct-tm-expressed-in-utc-to-time-t-type
+  
+  char* tz = getenv("TZ");
+  setenv("TZ", "", 1);
+  tzset();
+  
+  time_t Time = mktime(T);
+  
+  if (tz) {
+    setenv("TZ", tz, 1);
+  } else {
+    unsetenv("TZ");
+  }
+  tzset();
+  
+  return Time;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
+                               TString ModeText, TString Module, 
+                               double StartTime, TString ObservationDate, TString Object,
+                               TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
+                               TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
+                               TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes,
+                               TH1D* SAARegion)
+{
+  // Each rates plot has lines indicating day changes, calculate the position here:
+  ObservationDate = ObservationDate.ReplaceAll("T", " ");
+  
+  struct tm BaseTime;
+  strptime(ObservationDate.Data(), "%Y-%m-%d %H:%M:%S", &BaseTime);
+  time_t Base = mktime(&BaseTime); 
+  
+  struct tm NextDay = BaseTime;
+  NextDay.tm_sec = 0;
+  NextDay.tm_min = 0;
+  NextDay.tm_hour = 0;
+  
+  vector<double> Days;
+  do {
+    NextDay.tm_mday += 1;
+    time_t New = mktime(&NextDay); // This automatically takes care of overflows!
+    if ((New - Base) / 1000.0 > RatesNoNo->GetXaxis()->GetXmax()) break;
+    Days.push_back((New - Base) / 1000.0);
+  } while (true);
+    
+  TString AlgorithmString = "Unknown";
+  if (Algorithm == 1) AlgorithmString = "Figure-of-merit";
+  else if (Algorithm == 2) AlgorithmString = "RMS-based";
+  
+  TString ModeString = "unknown";
+  if (Mode == 1) ModeString = "strict";
+  else if (Mode == 2) ModeString = "optimized";
+    
   // Define the Canvas
   double Scaler = 150;
-  TString CanvasTitle = TString("Canvas_") + Mode + "_" + Module;
+  TString CanvasTitle = TString("Canvas_") + ModeText + "_" + Module;
   TCanvas* Canvas = new TCanvas(CanvasTitle, "Canvas", 11*Scaler, 8.5*Scaler);
   
-  double TitleSize = 0.05;
-  double GapSize = 0.03; 
+  double TitleSize = 0.03499;
+  double TitleFontSize = 0.8;
+  double SubTitleGap = 0.01;
+  double SubTitleSize = 0.030;
+  double SubTitleFontSize = 0.8;
+  double GapSize = 0.025; 
   
-  double HeaderSize = 0.03;
+  double HeaderSize = 0.025;
+  double HeaderFontSize = 0.8;
   double BodySize = 0.25;
   double RatesWidth = 0.3;
   
   double Top = 0.0;
   double Bottom = 0.0;
   
-  double TopMargin = 0.02;
+  double TopMargin = 0.07;
   
   // Upper plot will be in pad1
   Canvas->cd();
   Top = 1.0;
   Bottom = Top - TitleSize;
-  TPad* Title = new TPad("Title", "pTitlead1", 0, Bottom, 1, Top);
+  TPad* Title = new TPad("Title", "Title", 0, Bottom, 1, Top);
   Title->Draw();
   //Title->SetFillColor(2);
   Title->cd();
   TString TitleString;
-  TitleString += "   Filter: ";
-  TitleString += Mode;
-  TitleString += "   Observation: ";
+  TitleString += "Target: ";
+  TitleString += Object;
+  TitleString += "      ID: ";
   TitleString += Observation;
-  TitleString += "   Module: ";
+  TitleString += "      Start: ";
+  TitleString += ObservationDate;
+  TitleString += " UTC";
+  TitleString += "      Module: ";
   TitleString += Module;
   TText* T = new TText(.5, .5, TitleString);
-  T->SetTextSize(0.45);
+  T->SetTextSize(TitleFontSize);
   T->SetTextAlign(22);
   T->Draw();
+  
+  Canvas->cd();   
+  Top = Bottom - SubTitleGap;
+  Bottom = Top - SubTitleSize;
+  TPad* SubTitle = new TPad("SubTitle", "SubTitle", 0, Bottom, 1, Top);
+  SubTitle->Draw();
+  //SubTitle->SetFillColor(3);
+  SubTitle->cd();
+  TString SubTitleString(ModeText);
+  TText* ST = new TText(.5, .5, SubTitleString);
+  ST->SetTextSize(SubTitleFontSize);
+  ST->SetTextAlign(22);
+  ST->Draw();
   
   
   
@@ -1005,15 +1101,16 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   TPad* PadTitleNoNo = new TPad("PadTitleNoNo", "PadTitleNoNo", 0, Bottom, 1, Top);
   //PadTitleNoNo->SetFillColor(3);
   PadTitleNoNo->Draw();
-  PadTitleNoNo->cd(); 
-  TText* TextNoNo = new TText(.02, .5, "Mode: SAA=OFF, Tentacle=OFF");
-  TextNoNo->SetTextSize(0.6);
+  PadTitleNoNo->cd();
+  TString NoNoMode("nucalcsaa options: nucalcsaa task not used!");
+  TText* TextNoNo = new TText(.02, .5, NoNoMode);
+  TextNoNo->SetTextSize(HeaderFontSize);
   TextNoNo->SetTextAlign(12);
   TextNoNo->Draw();
   ostringstream NoNoOut;
   NoNoOut<<"Effective exposure time: "<<ObsTimeNoNo<<" sec  (100.0%)";
   TText* TextTimesNoNo = new TText(.98, .5, NoNoOut.str().c_str());
-  TextTimesNoNo->SetTextSize(0.6);
+  TextTimesNoNo->SetTextSize(HeaderFontSize);
   TextTimesNoNo->SetTextAlign(32);
   TextTimesNoNo->Draw();
   
@@ -1022,49 +1119,71 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   Bottom = Top - BodySize;
   TPad* PadRatesNoNo = new TPad("PadRatesNoNo", "PadRatesNoNo", 0, Bottom, RatesWidth, Top);
   //PadRatesNoNo->SetFillColor(4);
-  PadRatesNoNo->SetLeftMargin(0.15);
+  PadRatesNoNo->SetLeftMargin(0.20);
+  PadRatesNoNo->SetRightMargin(0.05);
   PadRatesNoNo->SetTopMargin(TopMargin);
-  PadRatesNoNo->SetBottomMargin(0.1);
   PadRatesNoNo->SetBottomMargin(0.15);
   PadRatesNoNo->Draw();
   PadRatesNoNo->cd();
   RatesNoNo->SetTitle("");
+  RatesNoNo->GetXaxis()->CenterTitle(true);
   RatesNoNo->GetXaxis()->SetNdivisions(505);
-  RatesNoNo->GetXaxis()->SetLabelSize(0.05);
-  RatesNoNo->GetXaxis()->SetTitleSize(0.05);
-  RatesNoNo->GetXaxis()->SetTitleOffset(1.2);
-  RatesNoNo->GetYaxis()->SetLabelSize(0.05);
-  RatesNoNo->GetYaxis()->SetTitleSize(0.05);
-  RatesNoNo->GetYaxis()->SetTitleOffset(1.2);
+  RatesNoNo->GetXaxis()->SetLabelSize(0.06);
+  RatesNoNo->GetXaxis()->SetTitleSize(0.07);
+  RatesNoNo->GetXaxis()->SetTitleOffset(0.9);
+  RatesNoNo->GetYaxis()->CenterTitle(true);
+  RatesNoNo->GetYaxis()->SetNdivisions(505);
+  RatesNoNo->GetYaxis()->SetLabelSize(0.06);
+  RatesNoNo->GetYaxis()->SetTitleSize(0.07);
+  RatesNoNo->GetYaxis()->SetTitleOffset(1.3);
+  RatesNoNo->SetMaximum(1.02*RatesNoNo->GetMaximum());
   RatesNoNo->Draw();
-  SAARegion->Scale(RatesNoNo->GetMaximum()/SAARegion->GetMaximum());
-  SAARegion->DrawCopy("SAME");
+  // Draw some lines
+  for (unsigned int i = 0; i < Days.size(); ++i) {
+    TLine* L = new TLine(Days[i], 0, Days[i], RatesNoNo->GetMaximum());
+    L->SetLineStyle(2);
+    L->SetLineColor(15);
+    L->Draw("SAME");
+  }
   RatesNoNo->Draw("SAME");
+  
+  //SAARegion->Scale(RatesNoNo->GetMaximum()/SAARegion->GetMaximum());
+  //SAARegion->DrawCopy("SAME");
+  //RatesNoNo->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitNoNo = new TPad("PadOrbitNoNo", "PadOrbitNoNo", RatesWidth, Bottom, 1.0, Top);
   //PadOrbitNoNo->SetFillColor(5);
   PadOrbitNoNo->SetLeftMargin(0.08);
-  PadOrbitNoNo->SetRightMargin(0.11);
+  PadOrbitNoNo->SetRightMargin(0.13);
   PadOrbitNoNo->SetTopMargin(TopMargin);
   PadOrbitNoNo->SetBottomMargin(0.15);
+  PadOrbitNoNo->SetGridx();
+  PadOrbitNoNo->SetGridy();
   PadOrbitNoNo->Draw();
   PadOrbitNoNo->cd(); 
   PadOrbitNoNo->SetLogz();
   if (OrbitNoNo->GetMinimum() < 0.2) OrbitNoNo->SetMinimum(0.2);
   OrbitNoNo->SetTitle("");
-  OrbitNoNo->GetXaxis()->SetLabelSize(0.05);
-  OrbitNoNo->GetXaxis()->SetTitleSize(0.05);
-  OrbitNoNo->GetXaxis()->SetTitleOffset(1.2);
-  OrbitNoNo->GetYaxis()->SetLabelSize(0.05);
-  OrbitNoNo->GetYaxis()->SetTitleSize(0.05);
-  OrbitNoNo->GetYaxis()->SetTitleOffset(0.5);
+  OrbitNoNo->GetXaxis()->CenterTitle(true);
+  OrbitNoNo->GetXaxis()->SetLabelSize(0.06);
+  OrbitNoNo->GetXaxis()->SetTitleSize(0.07);
+  OrbitNoNo->GetXaxis()->SetTitleOffset(0.9);
+  OrbitNoNo->GetXaxis()->SetNdivisions(612, false);
+  OrbitNoNo->GetYaxis()->CenterTitle(true);
+  OrbitNoNo->GetYaxis()->SetLabelSize(0.06);
+  OrbitNoNo->GetYaxis()->SetTitleSize(0.07);
+  OrbitNoNo->GetYaxis()->SetTitleOffset(0.35);
+  OrbitNoNo->GetYaxis()->SetTickLength(0.015);
   OrbitNoNo->GetZaxis()->SetLabelSize(0.05);
+  OrbitNoNo->GetZaxis()->CenterTitle(true);
+  OrbitNoNo->GetZaxis()->SetLabelSize(0.06);
   OrbitNoNo->GetZaxis()->SetLabelOffset(0.0);
-  OrbitNoNo->GetZaxis()->SetTitleSize(0.05);
-  OrbitNoNo->GetZaxis()->SetTitleOffset(0.5);
+  OrbitNoNo->GetZaxis()->SetTitleSize(0.07);
+  OrbitNoNo->GetZaxis()->SetTitleOffset(0.6);
   OrbitNoNo->GetZaxis()->SetMoreLogLabels(true);
   OrbitNoNo->Draw("colz");
+  /*
   TPaletteAxis* OrbitNoNoPalette = (TPaletteAxis*) OrbitNoNo->GetListOfFunctions()->FindObject("palette");
   if (OrbitNoNoPalette != 0) {
     OrbitNoNoPalette->SetX1NDC(0.9);
@@ -1073,6 +1192,7 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
     OrbitNoNoPalette->SetY2NDC(1.0 - TopMargin);
     PadOrbitNoNo->Update();
   }
+  */
   
   Canvas->cd();   
   Top = Bottom - GapSize;
@@ -1080,14 +1200,19 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   TPad* PadTitleYesNo = new TPad("PadTitleYesNo", "PadTitleYesNo", 0, Bottom, 1, Top);
   PadTitleYesNo->Draw();
   PadTitleYesNo->cd(); 
-  TText* TextYesNo = new TText(.02, .5, "Mode: SAA=ON, Tentacle=OFF");
-  TextYesNo->SetTextSize(0.6);
+  TString YesNoMode("nucalcsaa options: --saacalc=");
+  YesNoMode += Algorithm;
+  YesNoMode += " --saamode=";
+  YesNoMode += ModeString;
+  YesNoMode += " --tentacle=no";
+  TText* TextYesNo = new TText(.02, .5, YesNoMode);
+  TextYesNo->SetTextSize(HeaderFontSize);
   TextYesNo->SetTextAlign(12);
   TextYesNo->Draw();
   ostringstream YesNoOut;
   YesNoOut<<"Effective exposure time: "<<ObsTimeYesNo<<" sec  ("<<setprecision(4)<<100.0*ObsTimeYesNo/ObsTimeNoNo<<"%)";
   TText* TextTimesYesNo = new TText(.98, .5, YesNoOut.str().c_str());
-  TextTimesYesNo->SetTextSize(0.6);
+  TextTimesYesNo->SetTextSize(HeaderFontSize);
   TextTimesYesNo->SetTextAlign(32);
   TextTimesYesNo->Draw();
   
@@ -1096,49 +1221,70 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   Bottom = Top - BodySize;
   TPad* PadRatesYesNo = new TPad("PadRatesYesNo", "PadRatesYesNo", 0, Bottom, RatesWidth, Top);
   //PadRatesYesNo->SetFillColor(4);
-  PadRatesYesNo->SetLeftMargin(0.15);
+  PadRatesYesNo->SetLeftMargin(0.20);
+  PadRatesYesNo->SetRightMargin(0.05);
   PadRatesYesNo->SetTopMargin(TopMargin);
-  PadRatesYesNo->SetBottomMargin(0.1);
   PadRatesYesNo->SetBottomMargin(0.15);
   PadRatesYesNo->Draw();
   PadRatesYesNo->cd();
   RatesYesNo->SetTitle("");
+  RatesYesNo->GetXaxis()->CenterTitle(true);
   RatesYesNo->GetXaxis()->SetNdivisions(505);
-  RatesYesNo->GetXaxis()->SetLabelSize(0.05);
-  RatesYesNo->GetXaxis()->SetTitleSize(0.05);
-  RatesYesNo->GetXaxis()->SetTitleOffset(1.2);
-  RatesYesNo->GetYaxis()->SetLabelSize(0.05);
-  RatesYesNo->GetYaxis()->SetTitleSize(0.05);
-  RatesYesNo->GetYaxis()->SetTitleOffset(1.2);
+  RatesYesNo->GetXaxis()->SetLabelSize(0.06);
+  RatesYesNo->GetXaxis()->SetTitleSize(0.07);
+  RatesYesNo->GetXaxis()->SetTitleOffset(0.9);
+  RatesYesNo->GetYaxis()->CenterTitle(true);
+  RatesYesNo->GetYaxis()->SetNdivisions(505);
+  RatesYesNo->GetYaxis()->SetLabelSize(0.06);
+  RatesYesNo->GetYaxis()->SetTitleSize(0.07);
+  RatesYesNo->GetYaxis()->SetTitleOffset(1.3);
+  RatesYesNo->SetMaximum(1.02*RatesYesNo->GetMaximum());
   RatesYesNo->Draw();
-  SAARegion->Scale(RatesYesNo->GetMaximum()/SAARegion->GetMaximum());
-  SAARegion->DrawCopy("SAME");
+  // Draw some lines
+  for (unsigned int i = 0; i < Days.size(); ++i) {
+    TLine* L = new TLine(Days[i], 0, Days[i], RatesYesNo->GetMaximum());
+    L->SetLineStyle(2);
+    L->SetLineColor(15);
+    L->Draw("SAME");
+  }
   RatesYesNo->Draw("SAME");
+  //SAARegion->Scale(RatesYesNo->GetMaximum()/SAARegion->GetMaximum());
+  //SAARegion->DrawCopy("SAME");
+  //RatesYesNo->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitYesNo = new TPad("PadOrbitYesNo", "PadOrbitYesNo", RatesWidth, Bottom, 1.0, Top);
   //PadOrbitYesNo->SetFillColor(5);
   PadOrbitYesNo->SetLeftMargin(0.08);
-  PadOrbitYesNo->SetRightMargin(0.11);
+  PadOrbitYesNo->SetRightMargin(0.13);
   PadOrbitYesNo->SetTopMargin(TopMargin);
   PadOrbitYesNo->SetBottomMargin(0.15);
+  PadOrbitYesNo->SetGridx();
+  PadOrbitYesNo->SetGridy();
   PadOrbitYesNo->Draw();
   PadOrbitYesNo->cd(); 
   PadOrbitYesNo->SetLogz();
   if (OrbitYesNo->GetMinimum() < 0.2) OrbitYesNo->SetMinimum(0.2);
   OrbitYesNo->SetTitle("");
-  OrbitYesNo->GetXaxis()->SetLabelSize(0.05);
-  OrbitYesNo->GetXaxis()->SetTitleSize(0.05);
-  OrbitYesNo->GetXaxis()->SetTitleOffset(1.2);
-  OrbitYesNo->GetYaxis()->SetLabelSize(0.05);
-  OrbitYesNo->GetYaxis()->SetTitleSize(0.05);
-  OrbitYesNo->GetYaxis()->SetTitleOffset(0.5);
+  OrbitYesNo->GetXaxis()->CenterTitle(true);
+  OrbitYesNo->GetXaxis()->SetLabelSize(0.06);
+  OrbitYesNo->GetXaxis()->SetTitleSize(0.07);
+  OrbitYesNo->GetXaxis()->SetTitleOffset(0.9);
+  OrbitYesNo->GetXaxis()->SetNdivisions(612, false);
+  OrbitYesNo->GetYaxis()->CenterTitle(true);
+  OrbitYesNo->GetYaxis()->SetLabelSize(0.06);
+  OrbitYesNo->GetYaxis()->SetTitleSize(0.07);
+  OrbitYesNo->GetYaxis()->SetTitleOffset(0.35);
+  OrbitYesNo->GetYaxis()->SetTickLength(0.015);
   OrbitYesNo->GetZaxis()->SetLabelSize(0.05);
+  OrbitYesNo->GetZaxis()->CenterTitle(true);
+  OrbitYesNo->GetZaxis()->SetLabelSize(0.06);
   OrbitYesNo->GetZaxis()->SetLabelOffset(0.0);
-  OrbitYesNo->GetZaxis()->SetTitleSize(0.05);
-  OrbitYesNo->GetZaxis()->SetTitleOffset(0.5);
+  OrbitYesNo->GetZaxis()->SetTitleSize(0.07);
+  OrbitYesNo->GetZaxis()->SetTitleOffset(0.6);
   OrbitYesNo->GetZaxis()->SetMoreLogLabels(true);
   OrbitYesNo->Draw("colz");
+  /*
   TPaletteAxis* OrbitYesNoPalette = (TPaletteAxis*) OrbitYesNo->GetListOfFunctions()->FindObject("palette");
   if (OrbitYesNoPalette != 0) {
     OrbitYesNoPalette->SetX1NDC(0.9);
@@ -1147,6 +1293,7 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
     OrbitYesNoPalette->SetY2NDC(1.0 - TopMargin);
     PadOrbitYesNo->Update();
   }
+  */
   
   
   Canvas->cd();   
@@ -1155,14 +1302,19 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   TPad* PadTitleYesYes = new TPad("PadTitleYesYes", "PadTitleYesYes", 0, Bottom, 1, Top);
   PadTitleYesYes->Draw();
   PadTitleYesYes->cd(); 
-  TText* TextYesYes = new TText(.02, .5, "Mode: SAA=ON, Tentacle=ON");
-  TextYesYes->SetTextSize(0.6);
+  TString YesYesMode("nucalcsaa options: --saacalc=");
+  YesYesMode += Algorithm;
+  YesYesMode += " --saamode=";
+  YesYesMode += ModeString;
+  YesYesMode += " --tentacle=yes";
+  TText* TextYesYes = new TText(.02, .5, YesYesMode);
+  TextYesYes->SetTextSize(HeaderFontSize);
   TextYesYes->SetTextAlign(12);
   TextYesYes->Draw();
   ostringstream YesYesOut;
   YesYesOut<<"Effective exposure time: "<<ObsTimeYesYes<<" sec  ("<<setprecision(4)<<100.0*ObsTimeYesYes/ObsTimeNoNo<<"%)";
   TText* TextTimesYesYes = new TText(.98, .5, YesYesOut.str().c_str());
-  TextTimesYesYes->SetTextSize(0.6);
+  TextTimesYesYes->SetTextSize(HeaderFontSize);
   TextTimesYesYes->SetTextAlign(32);
   TextTimesYesYes->Draw();
   
@@ -1171,49 +1323,70 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
   Bottom = Top - BodySize;
   TPad* PadRatesYesYes = new TPad("PadRatesYesYes", "PadRatesYesYes", 0, Bottom, RatesWidth, Top);
   //PadRatesYesYes->SetFillColor(4);
-  PadRatesYesYes->SetLeftMargin(0.15);
+  PadRatesYesYes->SetLeftMargin(0.20);
+  PadRatesYesYes->SetRightMargin(0.05);
   PadRatesYesYes->SetTopMargin(TopMargin);
-  PadRatesYesYes->SetBottomMargin(0.1);
   PadRatesYesYes->SetBottomMargin(0.15);
   PadRatesYesYes->Draw();
   PadRatesYesYes->cd(); 
   RatesYesYes->SetTitle("");
+  RatesYesYes->GetXaxis()->CenterTitle(true);
   RatesYesYes->GetXaxis()->SetNdivisions(505);
-  RatesYesYes->GetXaxis()->SetLabelSize(0.05);
-  RatesYesYes->GetXaxis()->SetTitleSize(0.05);
-  RatesYesYes->GetXaxis()->SetTitleOffset(1.2);
-  RatesYesYes->GetYaxis()->SetLabelSize(0.05);
-  RatesYesYes->GetYaxis()->SetTitleSize(0.05);
-  RatesYesYes->GetYaxis()->SetTitleOffset(1.2);
+  RatesYesYes->GetXaxis()->SetLabelSize(0.06);
+  RatesYesYes->GetXaxis()->SetTitleSize(0.07);
+  RatesYesYes->GetXaxis()->SetTitleOffset(0.9);
+  RatesYesYes->GetYaxis()->CenterTitle(true);
+  RatesYesYes->GetYaxis()->SetNdivisions(505);
+  RatesYesYes->GetYaxis()->SetLabelSize(0.06);
+  RatesYesYes->GetYaxis()->SetTitleSize(0.07);
+  RatesYesYes->GetYaxis()->SetTitleOffset(1.3);
+  RatesYesYes->SetMaximum(1.02*RatesYesYes->GetMaximum());
   RatesYesYes->Draw();
-  SAARegion->Scale(RatesYesYes->GetMaximum()/SAARegion->GetMaximum());
-  SAARegion->DrawCopy("SAME");
+  // Draw some lines
+  for (unsigned int i = 0; i < Days.size(); ++i) {
+    TLine* L = new TLine(Days[i], 0, Days[i], RatesYesYes->GetMaximum());
+    L->SetLineStyle(2);
+    L->SetLineColor(15);
+    L->Draw("SAME");
+  }
   RatesYesYes->Draw("SAME");
+  //SAARegion->Scale(RatesYesYes->GetMaximum()/SAARegion->GetMaximum());
+  //SAARegion->DrawCopy("SAME");
+  //RatesYesYes->Draw("SAME");
   
   Canvas->cd();         
   TPad* PadOrbitYesYes = new TPad("PadOrbitYesYes", "PadOrbitYesYes", RatesWidth, Bottom, 1.0, Top);
   //PadOrbitYesYes->SetFillColor(5);
   PadOrbitYesYes->SetLeftMargin(0.08);
-  PadOrbitYesYes->SetRightMargin(0.11);
+  PadOrbitYesYes->SetRightMargin(0.13);
   PadOrbitYesYes->SetTopMargin(TopMargin);
   PadOrbitYesYes->SetBottomMargin(0.15);
+  PadOrbitYesYes->SetGridx();
+  PadOrbitYesYes->SetGridy();
   PadOrbitYesYes->Draw();
   PadOrbitYesYes->cd(); 
   PadOrbitYesYes->SetLogz();
   if (OrbitYesYes->GetMinimum() < 0.2) OrbitYesYes->SetMinimum(0.2);
   OrbitYesYes->SetTitle("");
-  OrbitYesYes->GetXaxis()->SetLabelSize(0.05);
-  OrbitYesYes->GetXaxis()->SetTitleSize(0.05);
-  OrbitYesYes->GetXaxis()->SetTitleOffset(1.2);
-  OrbitYesYes->GetYaxis()->SetLabelSize(0.05);
-  OrbitYesYes->GetYaxis()->SetTitleSize(0.05);
-  OrbitYesYes->GetYaxis()->SetTitleOffset(0.5);
+  OrbitYesYes->GetXaxis()->CenterTitle(true);
+  OrbitYesYes->GetXaxis()->SetLabelSize(0.06);
+  OrbitYesYes->GetXaxis()->SetTitleSize(0.07);
+  OrbitYesYes->GetXaxis()->SetTitleOffset(0.9);
+  OrbitYesYes->GetXaxis()->SetNdivisions(612, false);
+  OrbitYesYes->GetYaxis()->CenterTitle(true);
+  OrbitYesYes->GetYaxis()->SetLabelSize(0.06);
+  OrbitYesYes->GetYaxis()->SetTitleSize(0.07);
+  OrbitYesYes->GetYaxis()->SetTitleOffset(0.35);
+  OrbitYesYes->GetYaxis()->SetTickLength(0.015);
   OrbitYesYes->GetZaxis()->SetLabelSize(0.05);
+  OrbitYesYes->GetZaxis()->CenterTitle(true);
+  OrbitYesYes->GetZaxis()->SetLabelSize(0.06);
   OrbitYesYes->GetZaxis()->SetLabelOffset(0.0);
-  OrbitYesYes->GetZaxis()->SetTitleSize(0.05);
-  OrbitYesYes->GetZaxis()->SetTitleOffset(0.5);
+  OrbitYesYes->GetZaxis()->SetTitleSize(0.07);
+  OrbitYesYes->GetZaxis()->SetTitleOffset(0.6);
   OrbitYesYes->GetZaxis()->SetMoreLogLabels(true);
   OrbitYesYes->Draw("colz");
+  /*
   TPaletteAxis* OrbitYesYesPalette = (TPaletteAxis*) OrbitYesYes->GetListOfFunctions()->FindObject("palette");
   if (OrbitYesYesPalette != 0) {
     OrbitYesYesPalette->SetX1NDC(0.9);
@@ -1222,9 +1395,15 @@ void NCheckRates::CreateReport(TString Observation, TString Mode, TString Module
     OrbitYesYesPalette->SetY2NDC(1.0 - TopMargin);
     PadOrbitYesYes->Update();
   }
+  */
   // Mark highest pixel:
+  //cout<<"Final bottom: "<<Bottom<<endl;
   
-  TString Report = "Report_"  + Mode + "_id" + Observation + "_m" + Module + m_FileType;
+  
+  TString Report = TString("Report") + "_id" + Observation + "_m" + Module;
+  Report += "_saaalgorithm";
+  Report += Algorithm;
+  Report += TString("_saacut") + ModeString + m_FileType;
   Report.ReplaceAll(" ", "");
   Report.ReplaceAll(")", "");
   Report.ReplaceAll("(", "");

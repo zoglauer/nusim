@@ -79,6 +79,9 @@ public:
       m_ID = M.m_ID;
       m_Module = M.m_Module;
       m_LiveTime = M.m_LiveTime;
+      m_StartTime = M.m_StartTime;
+      m_ObservationDate = M.m_ObservationDate;
+      m_Object = M.m_Object;
       m_DetectorArea = M.m_DetectorArea;
       m_PI = M.m_PI;
       m_Energy = M.m_Energy;
@@ -141,6 +144,9 @@ public:
   int m_CleanLevel;
   
   double m_LiveTime;
+  double m_StartTime;
+  TString m_ObservationDate;
+  TString m_Object;
   double m_DetectorArea;
 
   vector<int> m_PI;

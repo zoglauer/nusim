@@ -15,6 +15,8 @@
 
 
 // Standard libs:
+#include <ctime>
+using namespace std;
 
 // ROOT libs:
 
@@ -56,7 +58,9 @@ class NCheckRates : public NBaseTool
   void ShowRates(TH1D* Rates, TH1D* SAA, double LifeTime);
   void ShowRates(TH2D* Rates, double LifeTime);
   
-  void CreateReport(TString Observation, TString Mode, TString Module,
+  void CreateReport(TString Observation, int Algorithm, int Mode,
+                    TString ModeString, TString Module,
+                    double StartTime, TString ObservationDate, TString m_Object,
                     TH1D* RatesNoNo, TH2D* OrbitNoNo, double ObsTimeNoNo,
                     TH1D* RatesYesNo, TH2D* OrbitYesNo, double ObsTimeYesNo,
                     TH1D* RatesYesYes, TH2D* OrbitYesYes, double ObsTimeYesYes,
@@ -65,6 +69,8 @@ class NCheckRates : public NBaseTool
   void NormalizeOrbit(TH2D* Rates, TH2D* Normalizer, int ShiftedMedian);
 
   void CreateGTIs(NHousekeeping& H);
+  
+  time_t GetUTCTime(struct tm* T);
   
   // private methods:
  private:

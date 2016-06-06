@@ -28,6 +28,7 @@ using namespace std;
 #include "TH2.h"
 #include "TCanvas.h"
 #include "TSystem.h"
+#include "TStyle.h"
 
 // MEGAlib libs:
 #include "MBinnerBayesianBlocks.h"
@@ -81,6 +82,8 @@ NBaseTool::NBaseTool()
   m_SourceCutRMSThreshold = 4.0;
   
   m_Debug = false;
+  
+  gStyle->SetLineScalePS(1);
 }
 
 
