@@ -645,7 +645,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAANoTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAANoTentacleNo->SetBinContent(b, 0); 
     } else {
-      RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)); ///LifeTimesSAANoTentacleNo->GetBinContent(b));
+      RatesSAANoTentacleNo->SetBinContent(b, RatesSAANoTentacleNo->GetBinContent(b)/RatesSAANoTentacleNo->GetBinWidth(b)/1000.0); ///LifeTimesSAANoTentacleNo->GetBinContent(b));
     }
     if (Max < RatesSAANoTentacleNo->GetBinContent(b)) {
       Max = RatesSAANoTentacleNo->GetBinContent(b);
@@ -661,7 +661,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)); ///LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
+      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)/1000.0); ///LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -670,7 +670,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictLSRTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)); //LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
+      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -679,7 +679,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleNo->GetBinWidth(b)); //LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b));
+      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -688,7 +688,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictHSRTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictHSRTentacleNo->SetBinContent(b, RatesSAAStrictHSRTentacleNo->GetBinContent(b)/RatesSAAStrictHSRTentacleNo->GetBinWidth(b)); //LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b));
+      RatesSAAStrictHSRTentacleNo->SetBinContent(b, RatesSAAStrictHSRTentacleNo->GetBinContent(b)/RatesSAAStrictHSRTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -697,7 +697,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAANoTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAANoTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAANoTentacleRMS->SetBinContent(b, RatesSAANoTentacleRMS->GetBinContent(b)/RatesSAANoTentacleRMS->GetBinWidth(b)); //LifeTimesSAANoTentacleRMS->GetBinContent(b));
+      RatesSAANoTentacleRMS->SetBinContent(b, RatesSAANoTentacleRMS->GetBinContent(b)/RatesSAANoTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAANoTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -706,7 +706,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleFoM->GetBinWidth(b)); //LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b));
+      RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleFoM->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -715,7 +715,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictLSRTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, RatesSAAStrictLSRTentacleRMS->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS->GetBinWidth(b)); //LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b));
+      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, RatesSAAStrictLSRTentacleRMS->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -724,7 +724,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleRMS->GetBinWidth(b)); //LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b));
+      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b));
     }
   }
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
@@ -733,15 +733,15 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
         LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
       RatesSAAStrictHSRTentacleFoM->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)); //LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
+      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
     }
   }
   
   
   for (int b = 1; b <= ShieldRatesEntries->GetNbinsX(); ++b) {
     if (ShieldRatesEntries->GetBinContent(b) == 0) continue;
-    ShieldRatesHigh->SetBinContent(b, ShieldRatesHigh->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b));
-    ShieldRatesLow->SetBinContent(b, ShieldRatesLow->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b));
+    ShieldRatesHigh->SetBinContent(b, ShieldRatesHigh->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b)/1000.0);
+    ShieldRatesLow->SetBinContent(b, ShieldRatesLow->GetBinContent(b)/ShieldRatesEntries->GetBinContent(b)/1000.0);
   }
   
   
