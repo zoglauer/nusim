@@ -106,7 +106,7 @@ NBaseTool::NBaseTool()
   m_TentacleRegionBottomRightLong = { 320.00, 320.00 }; 
   
   
-  m_Debug = true;
+  m_Debug = false;
   
   gStyle->SetLineScalePS(1);
 }
