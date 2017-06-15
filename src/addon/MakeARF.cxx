@@ -284,7 +284,7 @@ bool Target::LoadEffArea()
   int HDUNumber = 2;
   fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
   if (Status != 0) {
-    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<endl;
     return false;
   }
 
@@ -324,7 +324,7 @@ bool Target::LoadVignet()
   int HDUNumber = 2;
   fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
   if (Status != 0) {
-    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<endl;
     return false;
   }
 
@@ -412,7 +412,7 @@ bool Target::OpenEvtFile()
   int HDUNumber = 2;
   fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
   if (Status != 0) {
-    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<endl;
     return false;
   }
  
@@ -902,7 +902,7 @@ bool Target::GenerateARF()
   int HDUNumber = 2;
   fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
   if (Status != 0) {
-    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<endl;
     return false;
   }
 
@@ -1192,7 +1192,7 @@ bool Target::GenerateExtendedARF()
   int HDUNumber = 2;
   fits_movabs_hdu(m_File, HDUNumber, NULL, &Status);
   if (Status != 0) {
-    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<cout;
+    cout<<"HDU number "<<HDUNumber<<" not found in fits file!"<<endl;
     return false;
   }
   

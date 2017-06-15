@@ -20,7 +20,7 @@ ROOTGLIBS     = $(shell root-config --glibs)
 
 # Compiler & linker options:
 CXX           = c++
-CXXFLAGS      = $(OPT) -pipe -Wall -Wno-write-strings -fPIC -D_REENTRANT -I$(LHEASOFT)/include -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
+CXXFLAGS      = $(OPT) -pipe -Wall -Wno-write-strings -fPIC -std=c++0x -D_REENTRANT -I$(LHEASOFT)/include -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
 #-fno-common -fno-exceptions 
 DEFINES       = -UHARDWARE
 LD            = c++
