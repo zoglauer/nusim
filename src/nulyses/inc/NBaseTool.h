@@ -78,32 +78,41 @@ class NBaseTool
 
   //! Find the SAA cut
   bool FindSAAs(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
-  
   //! Find the SAA - modes based on the high shield rate
-  bool FindSAAsHighThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  bool FindSAAsHighThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, bool Show = false);
   //! Find the SAA - modes based on the low shield rate
   bool FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
   
   //! Find the SAA passage
   bool FindSAATentacle(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
   //! Find the SAA passage - old figure-of-merit approach 
-  bool FindSAATentacleFoM(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
+  bool FindSAATentacleFoM(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, bool Show = false);
   //! Find the SAA passage - new rms-based approach
   bool FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, int Mode, bool Show = false);
   
   //! Return the pixels where the source is most likely on
   vector<int> MostlyEliminateSource(NFilteredEvents& F, NOrbits& O, bool Show = false);
   
+  //! Return true if the position is in the RMS calculation region 
+  bool InRMSCalculationRegion(double Latitude, double Longitude, int Mode) const;
+
+  //! Return true if the position is in the tentacle region 
+  bool InTentacleRegion(double Latitude, double Longitude, int Mode) const;
   
-  static const int c_SAACutNone              = 0;
-  static const int c_SAACutStrictHSR         = 1;
-  static const int c_SAACutOptimizedHSRFoM   = 2;
-  static const int c_SAACutStrictLSR         = 3;
-  static const int c_SAACutOptimizedLSRRMS   = 4;
+  //! Return an interpolated longitude, -1 on error
+  double InterpolateLong(double Lat1, double Long1, double Lat2, double Long2, double LatRef) const;
+ 
+  static const int c_SAACutNone                 = 100;
+  static const int c_SAACutStrictHSR            = 101;
+  static const int c_SAACutOptimizedHSRFoM      = 102;
+  static const int c_SAACutStrictLSR            = 103;
+  static const int c_SAACutOptimizedLSRRMS_v1   = 104;
+  static const int c_SAACutOptimizedLSRRMS_v2   = 105;
   
-  static const int c_TentacleCutNone       = 0;
-  static const int c_TentacleCutFoM        = 1;
-  static const int c_TentacleCutRMS        = 2;
+  static const int c_TentacleCutNone            = 200;
+  static const int c_TentacleCutFoM             = 201;
+  static const int c_TentacleCutRMS_v1          = 202;
+  static const int c_TentacleCutRMS_v2          = 203;
   
   bool IsGoodEventByInternalDetectorEffectsFilter(int ModuleID, double Energy, int Grade, int Veto, 
                                                   double Baseline, double Reset, double Prior);
@@ -197,6 +206,33 @@ class NBaseTool
   bool m_TentacleCutRMSSanityChecks;
 
   double m_SourceCutRMSThreshold;
+  
+  
+  vector<double> m_RMSRegionTopLeftLat; 
+  vector<double> m_RMSRegionTopLeftLong; 
+
+  vector<double> m_RMSRegionBottomLeftLat; 
+  vector<double> m_RMSRegionBottomLeftLong; 
+  
+  vector<double> m_RMSRegionTopRightLat; 
+  vector<double> m_RMSRegionTopRightLong; 
+
+  vector<double> m_RMSRegionBottomRightLat; 
+  vector<double> m_RMSRegionBottomRightLong; 
+  
+  
+  vector<double> m_TentacleRegionTopLeftLat; 
+  vector<double> m_TentacleRegionTopLeftLong; 
+
+  vector<double> m_TentacleRegionBottomLeftLat; 
+  vector<double> m_TentacleRegionBottomLeftLong; 
+  
+  vector<double> m_TentacleRegionTopRightLat; 
+  vector<double> m_TentacleRegionTopRightLong; 
+
+  vector<double> m_TentacleRegionBottomRightLat; 
+  vector<double> m_TentacleRegionBottomRightLong; 
+
   
   bool m_Debug;
   

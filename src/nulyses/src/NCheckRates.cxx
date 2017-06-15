@@ -191,7 +191,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   TH2D* ShieldRatesHighByOrbit = new TH2D(TString("ShieldRatesHighByOrbit") + iID, 
                                           TString("Shield rates high by orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   ShieldRatesHighByOrbit->SetXTitle("Longitude [deg]");
-  ShieldRatesHighByOrbit->SetYTitle("Latutude [deg]");
+  ShieldRatesHighByOrbit->SetYTitle("Latitude [deg]");
   ShieldRatesHighByOrbit->SetZTitle("cts/sec");  
   
   
@@ -204,7 +204,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   TH2D* ShieldRatesLowByOrbit = new TH2D(TString("ShieldRatesLowByOrbit") + iID, 
                                           TString("Shield rates low by orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   ShieldRatesLowByOrbit->SetXTitle("Longitude [deg]");
-  ShieldRatesLowByOrbit->SetYTitle("Latutude [deg]");
+  ShieldRatesLowByOrbit->SetYTitle("Latitude [deg]");
   ShieldRatesLowByOrbit->SetZTitle("cts/sec");  
 
   TH1D* ShieldRatesEntries = new TH1D(TString("ShieldRatesEntries") + iID, TString("ShieldRatesEntries") + ID, RatesBins, MinTime, MaxTime);
@@ -223,6 +223,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
 
   
   
+  // Base: 1A-1, 1B-1, 2A-1, 2B-1, 3A-1, 3B-1
   TH1D* RatesSAANoTentacleNo = new TH1D(TString("RatesSAANoTentacleNo") + iID, TString("Rates - SAA: No, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAANoTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAANoTentacleNo->SetYTitle("cts/sec");
@@ -231,7 +232,18 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   LifeTimesSAANoTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAANoTentacleNo->SetYTitle("cts/sec");
   
+  TH2D* OrbitNormalizerDetectorSAANoTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAANoTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAANoTentacleNoByOrbit = new TH2D(TString("RatesSAANoTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAANoTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAANoTentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAANoTentacleNoByOrbit->SetZTitle("cts/sec");
+
+  double TimeSAANoTentacleNo = 0.0; 
+
   
+  // 1A-2
   TH1D* RatesSAAStrictHSRTentacleNo = new TH1D(TString("RatesSAAStrictHSRTentacleNo") + iID, TString("Rates - SAA: StrictHSR, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAStrictHSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAStrictHSRTentacleNo->SetYTitle("cts/sec");
@@ -240,7 +252,40 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   LifeTimesSAAStrictHSRTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAStrictHSRTentacleNo->SetYTitle("cts/sec");
 
+  TH2D* OrbitNormalizerDetectorSAAStrictHSRTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictHSRTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictHSRTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictHSRTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictHSRTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: StrictHSR, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictHSRTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictHSRTentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAStrictHSRTentacleNoByOrbit->SetZTitle("cts/sec");
   
+  double TimeSAAStrictHSRTentacleNo = 0.0; 
+
+
+  
+  // 1A-3
+  TH1D* RatesSAAStrictHSRTentacleFoM = new TH1D(TString("RatesSAAStrictHSRTentacleFoM") + iID, TString("Rates - SAA: StrictHSR, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
+  RatesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictHSRTentacleFoM = new TH1D(TString("LifeTimesSAAStrictHSRTentacleFoM") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAStrictHSRTentacleFoM = new TH2D(TString("OrbitNormalizerDetectorSAAStrictHSRTentacleFoM") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictHSRTentacleFoM") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictHSRTentacleFoMByOrbit = new TH2D(TString("RatesSAAStrictHSRTentacleFoMByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: StrictHSR, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictHSRTentacleFoMByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictHSRTentacleFoMByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAStrictHSRTentacleFoMByOrbit->SetZTitle("cts/sec");
+
+  double TimeSAAStrictHSRTentacleFoM = 0.0; 
+
+
+  
+  // 1B-2
   TH1D* RatesSAAOptimizedHSRFoMTentacleNo = new TH1D(TString("RatesSAAOptimizedHSRFoMTentacleNo") + iID, TString("Rates - SAA: Optimized, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedHSRFoMTentacleNo->SetYTitle("cts/sec");
@@ -249,44 +294,19 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   LifeTimesSAAOptimizedHSRFoMTentacleNo->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedHSRFoMTentacleNo->SetYTitle("cts/sec");
 
+  TH2D* OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedHSRFoMTentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedHSRFoMTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetZTitle("cts/sec");  
   
-  TH1D* RatesSAAStrictLSRTentacleNo = new TH1D(TString("RatesSAAStrictLSRTentacleNo") + iID, TString("Rates - SAA: Super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
-  RatesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAAStrictLSRTentacleNo = new TH1D(TString("LifeTimesSAAStrictLSRTentacleNo") + iID, TString("LifeTimesSAAStrictLSRTentacleNo") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
+  double TimeSAAOptimizedHSRFoMTentacleNo = 0.0; 
+
 
   
-  TH1D* RatesSAAOptimizedLSRRMSTentacleNo = new TH1D(TString("RatesSAAOptimizedLSRRMSTentacleNo") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time since start of observation [ks]");
-  RatesSAAOptimizedLSRRMSTentacleNo->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAAOptimizedLSRRMSTentacleNo = new TH1D(TString("LifeTimesSAAOptimizedLSRRMSTentacleNo") + iID, TString("LifeTimesSAAOptimizedLSRRMSTentacleNo") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedLSRRMSTentacleNo->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAAOptimizedLSRRMSTentacleNo->SetYTitle("cts/sec");
-
-  
-  
-  TH1D* RatesSAANoTentacleRMS = new TH1D(TString("RatesSAANoTentacleRMS") + iID, TString("Rates - SAA: No, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAANoTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  RatesSAANoTentacleRMS->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAANoTentacleRMS = new TH1D(TString("LifeTimesSAANoTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAANoTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAANoTentacleRMS->SetYTitle("cts/sec");
-
-  
-  TH1D* RatesSAAStrictHSRTentacleFoM = new TH1D(TString("RatesSAAStrictHSRTentacleFoM") + iID, TString("Rates - SAA: StrictHSR, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
-  RatesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAAStrictHSRTentacleFoM = new TH1D(TString("LifeTimesSAAStrictHSRTentacleFoM") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictHSRTentacleFoM->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAAStrictHSRTentacleFoM->SetYTitle("cts/sec");
-
-  
+  // 1B-3
   TH1D* RatesSAAOptimizedHSRFoMTentacleFoM = new TH1D(TString("RatesSAAOptimizedHSRFoMTentacleFoM") + iID, TString("Rates - SAA: Optimized, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
   RatesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time since start of observation [ks]");
   RatesSAAOptimizedHSRFoMTentacleFoM->SetYTitle("cts/sec");
@@ -295,125 +315,166 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   LifeTimesSAAOptimizedHSRFoMTentacleFoM->SetXTitle("Time since start of observation [ks]");
   LifeTimesSAAOptimizedHSRFoMTentacleFoM->SetYTitle("cts/sec");
 
-  
-  TH1D* RatesSAAStrictLSRTentacleRMS = new TH1D(TString("RatesSAAStrictLSRTentacleRMS") + iID, TString("Rates - SAA: Super strict, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAStrictLSRTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  RatesSAAStrictLSRTentacleRMS->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAAStrictLSRTentacleRMS = new TH1D(TString("LifeTimesSAAStrictLSRTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAStrictLSRTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAAStrictLSRTentacleRMS->SetYTitle("cts/sec");
-
-  
-  TH1D* RatesSAAOptimizedLSRRMSTentacleRMS = new TH1D(TString("RatesSAAOptimizedLSRRMSTentacleRMS") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: Yes") + ID, RatesBins, MinTime, MaxTime);
-  RatesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  RatesSAAOptimizedLSRRMSTentacleRMS->SetYTitle("cts/sec");
-  
-  TH1D* LifeTimesSAAOptimizedLSRRMSTentacleRMS = new TH1D(TString("LifeTimesSAAOptimizedLSRRMSTentacleRMS") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
-  LifeTimesSAAOptimizedLSRRMSTentacleRMS->SetXTitle("Time since start of observation [ks]");
-  LifeTimesSAAOptimizedLSRRMSTentacleRMS->SetYTitle("cts/sec");
-
-
-  
-  TH2D* OrbitNormalizerDetectorSAANoTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleNo") + iID, 
-                                   TString("OrbitNormalizerDetectorSAANoTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAANoTentacleNoByOrbit = new TH2D(TString("RatesSAANoTentacleNoByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: No, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAANoTentacleNoByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAANoTentacleNoByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAANoTentacleNoByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAOptimizedHSRFoMTentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedHSRFoMTentacleNoByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: Optimized, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAOptimizedHSRFoMTentacleNoByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAStrictLSRTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictLSRTentacleNo") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAStrictLSRTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAStrictLSRTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictLSRTentacleNoByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: Super strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAStrictLSRTentacleNoByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAStrictLSRTentacleNoByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAStrictLSRTentacleNoByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAOptimizedLSRRMSTentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMSTentacleNoByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: Optimized super strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAOptimizedLSRRMSTentacleNoByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAOptimizedLSRRMSTentacleNoByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAOptimizedLSRRMSTentacleNoByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAStrictHSRTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictHSRTentacleNo") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAStrictHSRTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAStrictHSRTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictHSRTentacleNoByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: StrictHSR, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAStrictHSRTentacleNoByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAStrictHSRTentacleNoByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAStrictHSRTentacleNoByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAANoTentacleRMS = new TH2D(TString("OrbitNormalizerDetectorSAANoTentacleRMS") + iID, 
-                                   TString("OrbitNormalizerDetectorSAANoTentacleRMS") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAANoTentacleRMSByOrbit = new TH2D(TString("RatesSAANoTentacleRMSByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: No, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAANoTentacleRMSByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAANoTentacleRMSByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAANoTentacleRMSByOrbit->SetZTitle("cts/sec");
-  
   TH2D* OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM") + iID, 
                                    TString("OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   TH2D* RatesSAAOptimizedHSRFoMTentacleFoMByOrbit = new TH2D(TString("RatesSAAOptimizedHSRFoMTentacleFoMByOrbit") + iID, 
                                                TString("Rates by orbit - SAA: Optimized, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
   RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->SetYTitle("Latutude [deg]");
+  RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->SetYTitle("Latitude [deg]");
   RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAStrictLSRTentacleRMS = new TH2D(TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAStrictLSRTentacleRMSByOrbit = new TH2D(TString("RatesSAAStrictLSRTentacleRMSByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: Super strict, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAStrictLSRTentacleRMSByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAStrictLSRTentacleRMSByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAStrictLSRTentacleRMSByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAOptimizedLSRRMSTentacleRMSByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMSTentacleRMSByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: Optimized super strict, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->SetZTitle("cts/sec");
-  
-  TH2D* OrbitNormalizerDetectorSAAStrictHSRTentacleFoM = new TH2D(TString("OrbitNormalizerDetectorSAAStrictHSRTentacleFoM") + iID, 
-                                   TString("OrbitNormalizerDetectorSAAStrictHSRTentacleFoM") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  TH2D* RatesSAAStrictHSRTentacleFoMByOrbit = new TH2D(TString("RatesSAAStrictHSRTentacleFoMByOrbit") + iID, 
-                                               TString("Rates by orbit - SAA: StrictHSR, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
-  RatesSAAStrictHSRTentacleFoMByOrbit->SetXTitle("Longitude [deg]");
-  RatesSAAStrictHSRTentacleFoMByOrbit->SetYTitle("Latutude [deg]");
-  RatesSAAStrictHSRTentacleFoMByOrbit->SetZTitle("cts/sec");
-  
-  
-  // GTI's
-  //vector<double> GTIStart;
-  
-  // Exposures:
-  double TimeSAANoTentacleNo = 0.0; 
-  double TimeSAANoTentacleRMS = 0.0; 
 
-  double TimeSAAStrictHSRTentacleNo = 0.0; 
-  double TimeSAAStrictHSRTentacleFoM = 0.0; 
-
-  double TimeSAAOptimizedHSRFoMTentacleNo = 0.0; 
   double TimeSAAOptimizedHSRFoMTentacleFoM = 0.0; 
+  
+  
+  
+  // 2A-2 = 3A-2
+  TH1D* RatesSAAStrictLSRTentacleNo = new TH1D(TString("RatesSAAStrictLSRTentacleNo") + iID, TString("Rates - SAA: Super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
+  RatesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictLSRTentacleNo = new TH1D(TString("LifeTimesSAAStrictLSRTentacleNo") + iID, TString("LifeTimesSAAStrictLSRTentacleNo") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictLSRTentacleNo->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAStrictLSRTentacleNo->SetYTitle("cts/sec");
 
+  TH2D* OrbitNormalizerDetectorSAAStrictLSRTentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAStrictLSRTentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictLSRTentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictLSRTentacleNoByOrbit = new TH2D(TString("RatesSAAStrictLSRTentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Super strict, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictLSRTentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictLSRTentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAStrictLSRTentacleNoByOrbit->SetZTitle("cts/sec");
+  
   double TimeSAAStrictLSRTentacleNo = 0.0; 
-  double TimeSAAStrictLSRTentacleRMS = 0.0; 
 
-  double TimeSAAOptimizedLSRRMSTentacleNo = 0.0; 
-  double TimeSAAOptimizedLSRRMSTentacleRMS = 0.0; 
+  
+  
+  // 2A-3
+  TH1D* RatesSAAStrictLSRTentacleRMS1 = new TH1D(TString("RatesSAAStrictLSRTentacleRMS1") + iID, TString("Rates - SAA: Super strict, Tentacle: RMS v1") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAStrictLSRTentacleRMS1->SetXTitle("Time since start of observation [ks]");
+  RatesSAAStrictLSRTentacleRMS1->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictLSRTentacleRMS1 = new TH1D(TString("LifeTimesSAAStrictLSRTentacleRMS1") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictLSRTentacleRMS1->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAStrictLSRTentacleRMS1->SetYTitle("cts/sec");
+
+  TH2D* OrbitNormalizerDetectorSAAStrictLSRTentacleRMS1 = new TH2D(TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS1") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS1") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictLSRTentacleRMS1ByOrbit = new TH2D(TString("RatesSAAStrictLSRTentacleRMS1ByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Super strict, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictLSRTentacleRMS1ByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictLSRTentacleRMS1ByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAStrictLSRTentacleRMS1ByOrbit->SetZTitle("cts/sec");
+
+  double TimeSAAStrictLSRTentacleRMS1 = 0.0; 
+    
+
+
+  // 2B-2
+  TH1D* RatesSAAOptimizedLSRRMS1TentacleNo = new TH1D(TString("RatesSAAOptimizedLSRRMS1TentacleNo") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedLSRRMS1TentacleNo->SetXTitle("Time since start of observation [ks]");
+  RatesSAAOptimizedLSRRMS1TentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedLSRRMS1TentacleNo = new TH1D(TString("LifeTimesSAAOptimizedLSRRMS1TentacleNo") + iID, TString("LifeTimesSAAOptimizedLSRRMS1TentacleNo") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedLSRRMS1TentacleNo->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAOptimizedLSRRMS1TentacleNo->SetYTitle("cts/sec");
+
+  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedLSRRMS1TentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMS1TentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized RMS v1, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedLSRRMS1TentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedLSRRMS1TentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAOptimizedLSRRMS1TentacleNoByOrbit->SetZTitle("cts/sec");
+
+  double TimeSAAOptimizedLSRRMS1TentacleNo = 0.0; 
+
+  
+  
+  // 2B-3
+  TH1D* RatesSAAOptimizedLSRRMS1TentacleRMS1 = new TH1D(TString("RatesSAAOptimizedLSRRMS1TentacleRMS1") + iID, TString("Rates - SAA: Optimized RMS v1, Tentacle: RMS v1") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedLSRRMS1TentacleRMS1->SetXTitle("Time since start of observation [ks]");
+  RatesSAAOptimizedLSRRMS1TentacleRMS1->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedLSRRMS1TentacleRMS1 = new TH1D(TString("LifeTimesSAAOptimizedLSRRMS1TentacleRMS1") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->SetYTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleRMS1 = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleRMS1") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleRMS1") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized RMS v1, Tentacle: RMS v1") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit->SetZTitle("cts/sec");
+  
+  double TimeSAAOptimizedLSRRMS1TentacleRMS1 = 0.0; 
+
+  
+  // 3A-2 == 2A-2
+  
+  // 3A-3
+  TH1D* RatesSAAStrictLSRTentacleRMS2 = new TH1D(TString("RatesSAAStrictLSRTentacleRMS2") + iID, TString("Rates - SAA: Super strict, Tentacle: RMS v1") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAStrictLSRTentacleRMS2->SetXTitle("Time since start of observation [ks]");
+  RatesSAAStrictLSRTentacleRMS2->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAStrictLSRTentacleRMS2 = new TH1D(TString("LifeTimesSAAStrictLSRTentacleRMS2") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAStrictLSRTentacleRMS2->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAStrictLSRTentacleRMS2->SetYTitle("cts/sec");
+
+  TH2D* OrbitNormalizerDetectorSAAStrictLSRTentacleRMS2 = new TH2D(TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS2") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAStrictLSRTentacleRMS2") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAStrictLSRTentacleRMS2ByOrbit = new TH2D(TString("RatesSAAStrictLSRTentacleRMS2ByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Super strict, Tentacle: Yes") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAStrictLSRTentacleRMS2ByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAStrictLSRTentacleRMS2ByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAStrictLSRTentacleRMS2ByOrbit->SetZTitle("cts/sec");  
+
+  double TimeSAAStrictLSRTentacleRMS2 = 0.0; 
+
+  
+  
+  // 3B-2
+  TH1D* RatesSAAOptimizedLSRRMS2TentacleNo = new TH1D(TString("RatesSAAOptimizedLSRRMS2TentacleNo") + iID, TString("Rates - SAA: Optimized super strict, Tentacle: No") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedLSRRMS2TentacleNo->SetXTitle("Time since start of observation [ks]");
+  RatesSAAOptimizedLSRRMS2TentacleNo->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedLSRRMS2TentacleNo = new TH1D(TString("LifeTimesSAAOptimizedLSRRMS2TentacleNo") + iID, TString("LifeTimesSAAOptimizedLSRRMS2TentacleNo") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedLSRRMS2TentacleNo->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAOptimizedLSRRMS2TentacleNo->SetYTitle("cts/sec");
+
+  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleNo = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleNo") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleNo") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedLSRRMS2TentacleNoByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMS2TentacleNoByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized RMS v2, Tentacle: No") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedLSRRMS2TentacleNoByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedLSRRMS2TentacleNoByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAOptimizedLSRRMS2TentacleNoByOrbit->SetZTitle("cts/sec");
+
+  double TimeSAAOptimizedLSRRMS2TentacleNo = 0.0; 
+
+  
+  
+  // 3B-3
+  TH1D* RatesSAAOptimizedLSRRMS2TentacleRMS2 = new TH1D(TString("RatesSAAOptimizedLSRRMS2TentacleRMS2") + iID, TString("Rates - SAA: Optimized RMS v2, Tentacle: RMS v2") + ID, RatesBins, MinTime, MaxTime);
+  RatesSAAOptimizedLSRRMS2TentacleRMS2->SetXTitle("Time since start of observation [ks]");
+  RatesSAAOptimizedLSRRMS2TentacleRMS2->SetYTitle("cts/sec");
+  
+  TH1D* LifeTimesSAAOptimizedLSRRMS2TentacleRMS2 = new TH1D(TString("LifeTimesSAAOptimizedLSRRMS2TentacleRMS2") + iID, TString("LifeTimes all") + ID, RatesBins, MinTime, MaxTime);
+  LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->SetXTitle("Time since start of observation [ks]");
+  LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->SetYTitle("cts/sec");
+  
+  TH2D* OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleRMS2 = new TH2D(TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleRMS2") + iID, 
+                                   TString("OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleRMS2") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  TH2D* RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit = new TH2D(TString("RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit") + iID, 
+                                               TString("Rates by orbit - SAA: Optimized RMS v2, Tentacle: RMS v2") + ID, LongitudeBins, 0, 360, LatitudeBins, MinLatitude, MaxLatitude);
+  RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit->SetXTitle("Longitude [deg]");
+  RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit->SetYTitle("Latitude [deg]");
+  RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit->SetZTitle("cts/sec");  
+
+  double TimeSAAOptimizedLSRRMS2TentacleRMS2 = 0.0;   
+
+
+
   
   // Create a list of pixels with high source count for elimination
   vector<int> ExcludedDetRawXY;
@@ -464,50 +525,65 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       PositionsOnSource->Fill(PosX, PosY);
     }
     
+    // Base
     if (H.m_HardSAA[HKIndex] == false) {
       RatesSAANoTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAANoTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);
     }
-    
-    if (H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAANoTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
-      RatesSAANoTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
-    }
-    
+    // 1A-2
     if (H.m_SoftSAAStrictHSR[HKIndex] == false) {
       RatesSAAStrictHSRTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictHSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
+    // 1A-3
     if (H.m_SoftSAAStrictHSR[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
       RatesSAAStrictHSRTentacleFoM->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictHSRTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
-    
+    // 1B-2
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false) {
       RatesSAAOptimizedHSRFoMTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedHSRFoMTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
+    // 1B-3
     if (H.m_SoftSAAOptimizedHSRFoM[HKIndex] == false && H.m_SoftTentacledFoM[HKIndex] == false) {
       RatesSAAOptimizedHSRFoMTentacleFoM->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAOptimizedHSRFoMTentacleFoMByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
-    
+    // 2A-2
     if (H.m_SoftSAAStrictLSR[HKIndex] == false) {
       RatesSAAStrictLSRTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
       RatesSAAStrictLSRTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
-    if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAStrictLSRTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
-      RatesSAAStrictLSRTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    // 2A-3
+    if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS_v1[HKIndex] == false) {
+      RatesSAAStrictLSRTentacleRMS1->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAStrictLSRTentacleRMS1ByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
-    
-    if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
-      RatesSAAOptimizedLSRRMSTentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    // 2B-2
+    if (H.m_SoftSAAOptimizedLSRRMS_v1[HKIndex] == false) {
+      RatesSAAOptimizedLSRRMS1TentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAOptimizedLSRRMS1TentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
-    if (H.m_SoftSAAOptimizedLSRRMS[HKIndex] == false && H.m_SoftTentacledRMS[HKIndex] == false) {
-      RatesSAAOptimizedLSRRMSTentacleRMS->Fill((F.m_Time[e] - StartTime)/1000, Count);
-      RatesSAAOptimizedLSRRMSTentacleRMSByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    // 2B-3
+    if (H.m_SoftSAAOptimizedLSRRMS_v1[HKIndex] == false && H.m_SoftTentacledRMS_v1[HKIndex] == false) {
+      RatesSAAOptimizedLSRRMS1TentacleRMS1->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    }
+    // 3A-3
+    if (H.m_SoftSAAStrictLSR[HKIndex] == false && H.m_SoftTentacledRMS_v2[HKIndex] == false) {
+      RatesSAAStrictLSRTentacleRMS2->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAStrictLSRTentacleRMS2ByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    }
+    // 3A-2
+    if (H.m_SoftSAAOptimizedLSRRMS_v2[HKIndex] == false) {
+      RatesSAAOptimizedLSRRMS2TentacleNo->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAOptimizedLSRRMS2TentacleNoByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
+    }
+    // 3A-3
+    if (H.m_SoftSAAOptimizedLSRRMS_v2[HKIndex] == false && H.m_SoftTentacledRMS_v2[HKIndex] == false) {
+      RatesSAAOptimizedLSRRMS2TentacleRMS2->Fill((F.m_Time[e] - StartTime)/1000, Count);
+      RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Count);    
     }
     
   }
@@ -544,61 +620,77 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
  
     //if (H.m_LiveTime[h] == 0) continue;
     
-    
+    // Base
     if (H.m_HardSAA[h] == false) {
       OrbitNormalizerDetectorSAANoTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);
       LifeTimesSAANoTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAANoTentacleNo += 1;
     }
-    
-    if (H.m_SoftTentacledRMS[h] == false) {
-      OrbitNormalizerDetectorSAANoTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAANoTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
-      TimeSAANoTentacleRMS += 1;
-    }
-          
+    // 1A-2      
     if (H.m_SoftSAAStrictHSR[h] == false) {
       OrbitNormalizerDetectorSAAStrictHSRTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
       LifeTimesSAAStrictHSRTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictHSRTentacleNo += 1;
     }
+    // 1A-3
     if (H.m_SoftSAAStrictHSR[h] == false && H.m_SoftTentacledFoM[h] == false) {
       OrbitNormalizerDetectorSAAStrictHSRTentacleFoM->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
       LifeTimesSAAStrictHSRTentacleFoM->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictHSRTentacleFoM += 1;
     }
-
+    // 1B-2
     if (H.m_SoftSAAOptimizedHSRFoM[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
       LifeTimesSAAOptimizedHSRFoMTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedHSRFoMTentacleNo += 1;
     }
+    // 1B-3
     if (H.m_SoftSAAOptimizedHSRFoM[h] == false && H.m_SoftTentacledFoM[h] == false) {
       OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
       LifeTimesSAAOptimizedHSRFoMTentacleFoM->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAOptimizedHSRFoMTentacleFoM += 1;
     }
-
+    // 2A-2
     if (H.m_SoftSAAStrictLSR[h] == false) {
       OrbitNormalizerDetectorSAAStrictLSRTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
       LifeTimesSAAStrictLSRTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
       TimeSAAStrictLSRTentacleNo += 1;
     }
-    if (H.m_SoftSAAStrictLSR[h] == false && H.m_SoftTentacledRMS[h] == false) {
-      OrbitNormalizerDetectorSAAStrictLSRTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAStrictLSRTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
-      TimeSAAStrictLSRTentacleRMS += 1;
+    // 2A-3
+    if (H.m_SoftSAAStrictLSR[h] == false && H.m_SoftTentacledRMS_v1[h] == false) {
+      OrbitNormalizerDetectorSAAStrictLSRTentacleRMS1->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAStrictLSRTentacleRMS1->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAStrictLSRTentacleRMS1 += 1;
     }
-
-    if (H.m_SoftSAAOptimizedLSRRMS[h] == false) {
-      OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedLSRRMSTentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
-      TimeSAAOptimizedLSRRMSTentacleNo += 1;
+    // 2B-2
+    if (H.m_SoftSAAOptimizedLSRRMS_v1[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAOptimizedLSRRMS1TentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAOptimizedLSRRMS1TentacleNo += 1;
     }
-    if (H.m_SoftSAAOptimizedLSRRMS[h] == false && H.m_SoftTentacledRMS[h] == false) {
-      OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
-      LifeTimesSAAOptimizedLSRRMSTentacleRMS->Fill((H.m_Time[h] - StartTime)/1000, Life);
-      TimeSAAOptimizedLSRRMSTentacleRMS += 1;
+    // 2B-3
+    if (H.m_SoftSAAOptimizedLSRRMS_v1[h] == false && H.m_SoftTentacledRMS_v1[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleRMS1->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAOptimizedLSRRMS1TentacleRMS1 += 1;
+    }
+    // 3A-3
+    if (H.m_SoftSAAStrictLSR[h] == false && H.m_SoftTentacledRMS_v2[h] == false) {
+      OrbitNormalizerDetectorSAAStrictLSRTentacleRMS2->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAStrictLSRTentacleRMS2->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAStrictLSRTentacleRMS2 += 1;
+    }
+    // 3B-2
+    if (H.m_SoftSAAOptimizedLSRRMS_v2[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleNo->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAOptimizedLSRRMS2TentacleNo->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAOptimizedLSRRMS2TentacleNo += 1;
+    }
+    // 3B-3
+    if (H.m_SoftSAAOptimizedLSRRMS_v2[h] == false && H.m_SoftTentacledRMS_v2[h] == false) {
+      OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleRMS2->Fill(O.m_Longitude[OrbitIndex], O.m_Latitude[OrbitIndex], Life);    
+      LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->Fill((H.m_Time[h] - StartTime)/1000, Life);
+      TimeSAAOptimizedLSRRMS2TentacleRMS2 += 1;
     }
    
     
@@ -619,16 +711,23 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   int ShiftedMedian = 10;
 
   NormalizeOrbit(RatesSAANoTentacleNoByOrbit, OrbitNormalizerDetectorSAANoTentacleNo, ShiftedMedian);
-  NormalizeOrbit(RatesSAAStrictHSRTentacleNoByOrbit, OrbitNormalizerDetectorSAAStrictHSRTentacleNo, ShiftedMedian);
-  NormalizeOrbit(RatesSAAOptimizedHSRFoMTentacleNoByOrbit, OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo, ShiftedMedian);
-  NormalizeOrbit(RatesSAAStrictLSRTentacleNoByOrbit, OrbitNormalizerDetectorSAAStrictLSRTentacleNo, ShiftedMedian);
-  NormalizeOrbit(RatesSAAOptimizedLSRRMSTentacleNoByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleNo, ShiftedMedian);
   
-  NormalizeOrbit(RatesSAANoTentacleRMSByOrbit, OrbitNormalizerDetectorSAANoTentacleRMS, ShiftedMedian);
+  NormalizeOrbit(RatesSAAStrictHSRTentacleNoByOrbit, OrbitNormalizerDetectorSAAStrictHSRTentacleNo, ShiftedMedian);
   NormalizeOrbit(RatesSAAStrictHSRTentacleFoMByOrbit, OrbitNormalizerDetectorSAAStrictHSRTentacleFoM, ShiftedMedian);
+  
+  NormalizeOrbit(RatesSAAOptimizedHSRFoMTentacleNoByOrbit, OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleNo, ShiftedMedian);
   NormalizeOrbit(RatesSAAOptimizedHSRFoMTentacleFoMByOrbit, OrbitNormalizerDetectorSAAOptimizedHSRFoMTentacleFoM, ShiftedMedian);
-  NormalizeOrbit(RatesSAAStrictLSRTentacleRMSByOrbit, OrbitNormalizerDetectorSAAStrictLSRTentacleRMS, ShiftedMedian);
-  NormalizeOrbit(RatesSAAOptimizedLSRRMSTentacleRMSByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMSTentacleRMS, ShiftedMedian);
+  
+  NormalizeOrbit(RatesSAAStrictLSRTentacleNoByOrbit, OrbitNormalizerDetectorSAAStrictLSRTentacleNo, ShiftedMedian);
+  NormalizeOrbit(RatesSAAStrictLSRTentacleRMS1ByOrbit, OrbitNormalizerDetectorSAAStrictLSRTentacleRMS1, ShiftedMedian);
+  
+  NormalizeOrbit(RatesSAAOptimizedLSRRMS1TentacleNoByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleNo, ShiftedMedian);
+  NormalizeOrbit(RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMS1TentacleRMS1, ShiftedMedian);
+  
+  NormalizeOrbit(RatesSAAStrictLSRTentacleRMS2ByOrbit, OrbitNormalizerDetectorSAAStrictLSRTentacleRMS2, ShiftedMedian);
+
+  NormalizeOrbit(RatesSAAOptimizedLSRRMS2TentacleNoByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleNo, ShiftedMedian);
+  NormalizeOrbit(RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit, OrbitNormalizerDetectorSAAOptimizedLSRRMS2TentacleRMS2, ShiftedMedian);
   
   NormalizeOrbit(ShieldRatesHighByOrbit, OrbitNormalizerShieldRatesHighByOrbit, ShiftedMedian);
   NormalizeOrbit(ShieldRatesLowByOrbit, OrbitNormalizerShieldRatesLowByOrbit, ShiftedMedian);
@@ -638,7 +737,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   double Max = 0;
   double CutOffLifeTimeFraction = 0.5; // In some bins we will only be partially on - skip those where we are below CutOffLifeTimeFraction on
   
-  
+  // Base
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
     if (LifeTimesSAANoTentacleNo->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
@@ -653,35 +752,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   }
   SAARegion->Scale(Max);
   
-  
-  
-  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b) == 0 || 
-        LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, 0);
-    } else {
-      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)/1000.0); ///LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
-    }
-  }
-  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b) == 0 || 
-        LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAStrictLSRTentacleNo->SetBinContent(b, 0);
-    } else {
-      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
-    }
-  }
-  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b) == 0 || 
-        LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, 0);
-    } else {
-      RatesSAAOptimizedLSRRMSTentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMSTentacleNo->GetBinContent(b));
-    }
-  }
+  // 1A-2
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
     if (LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
@@ -691,15 +762,28 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       RatesSAAStrictHSRTentacleNo->SetBinContent(b, RatesSAAStrictHSRTentacleNo->GetBinContent(b)/RatesSAAStrictHSRTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictHSRTentacleNo->GetBinContent(b));
     }
   }
+  // 1A-3
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAANoTentacleRMS->GetBinContent(b) == 0 || 
+    if (LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAANoTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAANoTentacleRMS->SetBinContent(b, 0);
+        LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, 0);
     } else {
-      RatesSAANoTentacleRMS->SetBinContent(b, RatesSAANoTentacleRMS->GetBinContent(b)/RatesSAANoTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAANoTentacleRMS->GetBinContent(b));
+      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
+    }
+  } 
+  
+  // 1B-2
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedHSRFoMTentacleNo->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleNo->GetBinWidth(b)/1000.0); ///LifeTimesSAAOptimizedHSRFoMTentacleNo->GetBinContent(b));
     }
   }
+  // 1B-3
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
     if (LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
@@ -709,33 +793,81 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       RatesSAAOptimizedHSRFoMTentacleFoM->SetBinContent(b, RatesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b)/RatesSAAOptimizedHSRFoMTentacleFoM->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedHSRFoMTentacleFoM->GetBinContent(b));
     }
   }
+  
+  // 2A-2
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b) == 0 || 
+    if (LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, 0);
+        LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictLSRTentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictLSRTentacleRMS->SetBinContent(b, RatesSAAStrictLSRTentacleRMS->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleRMS->GetBinContent(b));
+      RatesSAAStrictLSRTentacleNo->SetBinContent(b, RatesSAAStrictLSRTentacleNo->GetBinContent(b)/RatesSAAStrictLSRTentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleNo->GetBinContent(b));
     }
   }
+  // 2A-3
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b) == 0 || 
+    if (LifeTimesSAAStrictLSRTentacleRMS1->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, 0);
+        LifeTimesSAAStrictLSRTentacleRMS1->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictLSRTentacleRMS1->SetBinContent(b, 0);
     } else {
-      RatesSAAOptimizedLSRRMSTentacleRMS->SetBinContent(b, RatesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b)/RatesSAAOptimizedLSRRMSTentacleRMS->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMSTentacleRMS->GetBinContent(b));
+      RatesSAAStrictLSRTentacleRMS1->SetBinContent(b, RatesSAAStrictLSRTentacleRMS1->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS1->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleRMS1->GetBinContent(b));
     }
   }
+  
+  // 2B-2
   for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
-    if (LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b) == 0 || 
+    if (LifeTimesSAAOptimizedLSRRMS1TentacleNo->GetBinContent(b) == 0 || 
         LifeTimes->GetBinContent(b) == 0 || 
-        LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
-      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, 0);
+        LifeTimesSAAOptimizedLSRRMS1TentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedLSRRMS1TentacleNo->SetBinContent(b, 0);
     } else {
-      RatesSAAStrictHSRTentacleFoM->SetBinContent(b, RatesSAAStrictHSRTentacleFoM->GetBinContent(b)/RatesSAAStrictHSRTentacleFoM->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictHSRTentacleFoM->GetBinContent(b));
+      RatesSAAOptimizedLSRRMS1TentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMS1TentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMS1TentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMS1TentacleNo->GetBinContent(b));
     }
   }
+  // 2B-3
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedLSRRMS1TentacleRMS1->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedLSRRMS1TentacleRMS1->SetBinContent(b, RatesSAAOptimizedLSRRMS1TentacleRMS1->GetBinContent(b)/RatesSAAOptimizedLSRRMS1TentacleRMS1->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMS1TentacleRMS1->GetBinContent(b));
+    }
+  }
+  
+  // 3A-3
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAStrictLSRTentacleRMS2->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAStrictLSRTentacleRMS2->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAStrictLSRTentacleRMS2->SetBinContent(b, 0);
+    } else {
+      RatesSAAStrictLSRTentacleRMS2->SetBinContent(b, RatesSAAStrictLSRTentacleRMS2->GetBinContent(b)/RatesSAAStrictLSRTentacleRMS2->GetBinWidth(b)/1000.0); //LifeTimesSAAStrictLSRTentacleRMS2->GetBinContent(b));
+    }
+  }
+  
+  // 3B-2
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAOptimizedLSRRMS2TentacleNo->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedLSRRMS2TentacleNo->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedLSRRMS2TentacleNo->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedLSRRMS2TentacleNo->SetBinContent(b, RatesSAAOptimizedLSRRMS2TentacleNo->GetBinContent(b)/RatesSAAOptimizedLSRRMS2TentacleNo->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMS2TentacleNo->GetBinContent(b));
+    }
+  }
+  // 3B-3
+  for (int b = 1; b <= RatesSAANoTentacleNo->GetNbinsX(); ++b) {
+    if (LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->GetBinContent(b) == 0 || 
+        LifeTimes->GetBinContent(b) == 0 || 
+        LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->GetBinContent(b)/LifeTimes->GetBinContent(b) < CutOffLifeTimeFraction) {
+      RatesSAAOptimizedLSRRMS2TentacleRMS2->SetBinContent(b, 0);
+    } else {
+      RatesSAAOptimizedLSRRMS2TentacleRMS2->SetBinContent(b, RatesSAAOptimizedLSRRMS2TentacleRMS2->GetBinContent(b)/RatesSAAOptimizedLSRRMS2TentacleRMS2->GetBinWidth(b)/1000.0); //LifeTimesSAAOptimizedLSRRMS2TentacleRMS2->GetBinContent(b));
+    }
+  }
+  
   
   
   for (int b = 1; b <= ShieldRatesEntries->GetNbinsX(); ++b) {
@@ -769,7 +901,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
   //ositionsOnSourceCanvas->Update();
   //if (m_ShowHistograms.Contains("f")) PositionsOnSourceCanvas->SaveAs(PositionsOnSource->GetName() + m_FileType);
 
-  
+  // 1A
   CreateReport(F.m_ID, 1, 1, 
                "Filter options: SAA algorithm 1 (high-shield rate based using a figure-of-merit as evaluation metric), strict SAA cut",
                ((F.m_Module == 0) ? "A" : "B"),
@@ -778,7 +910,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
                RatesSAAStrictHSRTentacleNo, RatesSAAStrictHSRTentacleNoByOrbit, TimeSAAStrictHSRTentacleNo,
                RatesSAAStrictHSRTentacleFoM, RatesSAAStrictHSRTentacleFoMByOrbit, TimeSAAStrictHSRTentacleFoM,
                SAARegion);
-  
+  // 1B
   CreateReport(F.m_ID, 1, 2,
                "Filter options: SAA algorithm 1 (high-shield rate based using a figure-of-merit as evaluation metric), optimized SAA cut",
                ((F.m_Module == 0) ? "A" : "B"),
@@ -788,22 +920,43 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
                RatesSAAOptimizedHSRFoMTentacleFoM, RatesSAAOptimizedHSRFoMTentacleFoMByOrbit, TimeSAAOptimizedHSRFoMTentacleFoM,
                SAARegion);
   
+  // 2A
   CreateReport(F.m_ID, 2, 1, 
                "Filter options: SAA algorithm 2 (low-shield rate based using rms as evaluation metric), strict SAA cut",
                ((F.m_Module == 0) ? "A" : "B"),
                F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
                RatesSAAStrictLSRTentacleNo, RatesSAAStrictLSRTentacleNoByOrbit, TimeSAAStrictLSRTentacleNo,
-               RatesSAAStrictLSRTentacleRMS, RatesSAAStrictLSRTentacleRMSByOrbit, TimeSAAStrictLSRTentacleRMS,
+               RatesSAAStrictLSRTentacleRMS1, RatesSAAStrictLSRTentacleRMS1ByOrbit, TimeSAAStrictLSRTentacleRMS1,
                SAARegion);
-  
+  // 2B
   CreateReport(F.m_ID, 2, 2, 
                "Filter options: SAA algorithm 2 (low-shield rate based using rms as evaluation metric), optimized SAA cut",
                ((F.m_Module == 0) ? "A" : "B"),
                F.m_StartTime, F.m_ObservationDate, F.m_Object,
                RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
-               RatesSAAOptimizedLSRRMSTentacleNo, RatesSAAOptimizedLSRRMSTentacleNoByOrbit, TimeSAAOptimizedLSRRMSTentacleNo,
-               RatesSAAOptimizedLSRRMSTentacleRMS, RatesSAAOptimizedLSRRMSTentacleRMSByOrbit, TimeSAAOptimizedLSRRMSTentacleRMS,
+               RatesSAAOptimizedLSRRMS1TentacleNo, RatesSAAOptimizedLSRRMS1TentacleNoByOrbit, TimeSAAOptimizedLSRRMS1TentacleNo,
+               RatesSAAOptimizedLSRRMS1TentacleRMS1, RatesSAAOptimizedLSRRMS1TentacleRMS1ByOrbit, TimeSAAOptimizedLSRRMS1TentacleRMS1,
+               SAARegion);
+  
+  // 3A
+  CreateReport(F.m_ID, 3, 1, 
+               "Filter options: SAA algorithm 3 (low-shield rate based using rms as evaluation metric), strict SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
+               RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
+               RatesSAAStrictLSRTentacleNo, RatesSAAStrictLSRTentacleNoByOrbit, TimeSAAStrictLSRTentacleNo,
+               RatesSAAStrictLSRTentacleRMS2, RatesSAAStrictLSRTentacleRMS2ByOrbit, TimeSAAStrictLSRTentacleRMS2,
+               SAARegion);
+  
+  // 3B
+  CreateReport(F.m_ID, 3, 2, 
+               "Filter options: SAA algorithm 3 (low-shield rate based using rms as evaluation metric), optimized SAA cut",
+               ((F.m_Module == 0) ? "A" : "B"),
+               F.m_StartTime, F.m_ObservationDate, F.m_Object,
+               RatesSAANoTentacleNo, RatesSAANoTentacleNoByOrbit, TimeSAANoTentacleNo,
+               RatesSAAOptimizedLSRRMS2TentacleNo, RatesSAAOptimizedLSRRMS2TentacleNoByOrbit, TimeSAAOptimizedLSRRMS2TentacleNo,
+               RatesSAAOptimizedLSRRMS2TentacleRMS2, RatesSAAOptimizedLSRRMS2TentacleRMS2ByOrbit, TimeSAAOptimizedLSRRMS2TentacleRMS2,
                SAARegion);
   
   CreateGTIs(H);
@@ -851,80 +1004,101 @@ void NCheckRates::CreateGTIs(NHousekeeping& H)
   bool On = true;
   bool Off = false;
   
-  bool GTIStatus_SAANoTentacleRMS = Off;
-  vector<double> GTIStart_SAANoTentacleRMS;
-  vector<double> GTIStop_SAANoTentacleRMS;
+  bool GTIStatus_SAAOptimizedLSRRMS1TentacleNo = Off;
+  vector<double> GTIStart_SAAOptimizedLSRRMS1TentacleNo;
+  vector<double> GTIStop_SAAOptimizedLSRRMS1TentacleNo;
   
-  bool GTIStatus_SAAOptimizedLSRRMSTentacleNo = Off;
-  vector<double> GTIStart_SAAOptimizedLSRRMSTentacleNo;
-  vector<double> GTIStop_SAAOptimizedLSRRMSTentacleNo;
+  bool GTIStatus_SAAOptimizedLSRRMS1TentacleRMS1 = Off;
+  vector<double> GTIStart_SAAOptimizedLSRRMS1TentacleRMS1;
+  vector<double> GTIStop_SAAOptimizedLSRRMS1TentacleRMS1;
   
-  bool GTIStatus_SAAOptimizedLSRRMSTentacleRMS = Off;
-  vector<double> GTIStart_SAAOptimizedLSRRMSTentacleRMS;
-  vector<double> GTIStop_SAAOptimizedLSRRMSTentacleRMS;
+  bool GTIStatus_SAAOptimizedLSRRMS2TentacleNo = Off;
+  vector<double> GTIStart_SAAOptimizedLSRRMS2TentacleNo;
+  vector<double> GTIStop_SAAOptimizedLSRRMS2TentacleNo;
+  
+  bool GTIStatus_SAAOptimizedLSRRMS2TentacleRMS2 = Off;
+  vector<double> GTIStart_SAAOptimizedLSRRMS2TentacleRMS2;
+  vector<double> GTIStop_SAAOptimizedLSRRMS2TentacleRMS2;
 
   for (unsigned int h = 0; h < H.m_Time.size(); ++h) {
-          
-    // Case SAANoTentacleRMS
-    if (GTIStatus_SAANoTentacleRMS != H.m_SoftTentacledRMS[h]) {
-      if (H.m_SoftTentacledRMS[h] == true) {
-        GTIStart_SAANoTentacleRMS.push_back(H.m_Time[h]);
+              
+    // Case SAAOptimizedLSRRMS1TentacleNo
+    if (GTIStatus_SAAOptimizedLSRRMS1TentacleNo != H.m_SoftSAAOptimizedLSRRMS_v1[h]) {
+      if (H.m_SoftSAAOptimizedLSRRMS_v1[h] == On) {
+        GTIStart_SAAOptimizedLSRRMS1TentacleNo.push_back(H.m_Time[h]);
       } else {
-        if (GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
-          GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]);
+        if (GTIStop_SAAOptimizedLSRRMS1TentacleNo.size() < GTIStart_SAAOptimizedLSRRMS1TentacleNo.size()) {
+          GTIStop_SAAOptimizedLSRRMS1TentacleNo.push_back(H.m_Time[h]);
         }
       }
-      GTIStatus_SAANoTentacleRMS = H.m_SoftTentacledRMS[h];
+      GTIStatus_SAAOptimizedLSRRMS1TentacleNo = H.m_SoftSAAOptimizedLSRRMS_v1[h];
     }
-    if (h == H.m_Time.size()-1 && GTIStatus_SAANoTentacleRMS == On && 
-        GTIStop_SAANoTentacleRMS.size() < GTIStart_SAANoTentacleRMS.size()) {
-      GTIStop_SAANoTentacleRMS.push_back(H.m_Time[h]+1);
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMS1TentacleNo == On && 
+        GTIStop_SAAOptimizedLSRRMS1TentacleNo.size() < GTIStart_SAAOptimizedLSRRMS1TentacleNo.size()) {
+      GTIStop_SAAOptimizedLSRRMS1TentacleNo.push_back(H.m_Time[h]+1);
+    }
+      
+    // Case SAAOptimizedLSRRMS1TentacleRMS1
+    if (GTIStatus_SAAOptimizedLSRRMS1TentacleRMS1 != (H.m_SoftSAAOptimizedLSRRMS_v1[h] == On || H.m_SoftTentacledRMS_v1[h] == On)) {
+      if ((H.m_SoftSAAOptimizedLSRRMS_v1[h] == On || H.m_SoftTentacledRMS_v1[h] == On) == true) {
+        GTIStart_SAAOptimizedLSRRMS1TentacleRMS1.push_back(H.m_Time[h]);
+      } else {
+        if (GTIStop_SAAOptimizedLSRRMS1TentacleRMS1.size() < GTIStart_SAAOptimizedLSRRMS1TentacleRMS1.size()) {
+          GTIStop_SAAOptimizedLSRRMS1TentacleRMS1.push_back(H.m_Time[h]);
+        }
+      }
+      GTIStatus_SAAOptimizedLSRRMS1TentacleRMS1 = (H.m_SoftSAAOptimizedLSRRMS_v1[h] == On || H.m_SoftTentacledRMS_v1[h] == On);
+    }
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMS1TentacleRMS1 == On && 
+        GTIStop_SAAOptimizedLSRRMS1TentacleRMS1.size() < GTIStart_SAAOptimizedLSRRMS1TentacleRMS1.size()) {
+      GTIStop_SAAOptimizedLSRRMS1TentacleRMS1.push_back(H.m_Time[h]+1);
     }
 
     
-    // Case SAAOptimizedLSRRMSTentacleNo
-    if (GTIStatus_SAAOptimizedLSRRMSTentacleNo != H.m_SoftSAAOptimizedLSRRMS[h]) {
-      if (H.m_SoftSAAOptimizedLSRRMS[h] == On) {
-        GTIStart_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
+    // Case SAAOptimizedLSRRMS2TentacleNo
+    if (GTIStatus_SAAOptimizedLSRRMS2TentacleNo != H.m_SoftSAAOptimizedLSRRMS_v2[h]) {
+      if (H.m_SoftSAAOptimizedLSRRMS_v2[h] == On) {
+        GTIStart_SAAOptimizedLSRRMS2TentacleNo.push_back(H.m_Time[h]);
       } else {
-        if (GTIStop_SAAOptimizedLSRRMSTentacleNo.size() < GTIStart_SAAOptimizedLSRRMSTentacleNo.size()) {
-          GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]);
+        if (GTIStop_SAAOptimizedLSRRMS2TentacleNo.size() < GTIStart_SAAOptimizedLSRRMS2TentacleNo.size()) {
+          GTIStop_SAAOptimizedLSRRMS2TentacleNo.push_back(H.m_Time[h]);
         }
       }
-      GTIStatus_SAAOptimizedLSRRMSTentacleNo = H.m_SoftSAAOptimizedLSRRMS[h];
+      GTIStatus_SAAOptimizedLSRRMS2TentacleNo = H.m_SoftSAAOptimizedLSRRMS_v2[h];
     }
-    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMSTentacleNo == On && 
-        GTIStop_SAAOptimizedLSRRMSTentacleNo.size() < GTIStart_SAAOptimizedLSRRMSTentacleNo.size()) {
-      GTIStop_SAAOptimizedLSRRMSTentacleNo.push_back(H.m_Time[h]+1);
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMS2TentacleNo == On && 
+        GTIStop_SAAOptimizedLSRRMS2TentacleNo.size() < GTIStart_SAAOptimizedLSRRMS2TentacleNo.size()) {
+      GTIStop_SAAOptimizedLSRRMS2TentacleNo.push_back(H.m_Time[h]+1);
     }
       
-    // Case SAAOptimizedLSRRMSTentacleRMS
-    if (GTIStatus_SAAOptimizedLSRRMSTentacleRMS != (H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On)) {
-      if ((H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On) == true) {
-        GTIStart_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+    // Case SAAOptimizedLSRRMS2TentacleRMS2
+    if (GTIStatus_SAAOptimizedLSRRMS2TentacleRMS2 != (H.m_SoftSAAOptimizedLSRRMS_v2[h] == On || H.m_SoftTentacledRMS_v2[h] == On)) {
+      if ((H.m_SoftSAAOptimizedLSRRMS_v2[h] == On || H.m_SoftTentacledRMS_v2[h] == On) == true) {
+        GTIStart_SAAOptimizedLSRRMS2TentacleRMS2.push_back(H.m_Time[h]);
       } else {
-        if (GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
-          GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]);
+        if (GTIStop_SAAOptimizedLSRRMS2TentacleRMS2.size() < GTIStart_SAAOptimizedLSRRMS2TentacleRMS2.size()) {
+          GTIStop_SAAOptimizedLSRRMS2TentacleRMS2.push_back(H.m_Time[h]);
         }
       }
-      GTIStatus_SAAOptimizedLSRRMSTentacleRMS = (H.m_SoftSAAOptimizedLSRRMS[h] == On || H.m_SoftTentacledRMS[h] == On);
+      GTIStatus_SAAOptimizedLSRRMS2TentacleRMS2 = (H.m_SoftSAAOptimizedLSRRMS_v2[h] == On || H.m_SoftTentacledRMS_v2[h] == On);
     }
-    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMSTentacleRMS == On && 
-        GTIStop_SAAOptimizedLSRRMSTentacleRMS.size() < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()) {
-      GTIStop_SAAOptimizedLSRRMSTentacleRMS.push_back(H.m_Time[h]+1);
+    if (h == H.m_Time.size()-1 && GTIStatus_SAAOptimizedLSRRMS2TentacleRMS2 == On && 
+        GTIStop_SAAOptimizedLSRRMS2TentacleRMS2.size() < GTIStart_SAAOptimizedLSRRMS2TentacleRMS2.size()) {
+      GTIStop_SAAOptimizedLSRRMS2TentacleRMS2.push_back(H.m_Time[h]+1);
     }
   }
 
   /*
-  cout<<"Sizes: "<<GTIStart_SAAOptimizedLSRRMSTentacleRMS.size()<<" vs. "<<GTIStop_SAAOptimizedLSRRMSTentacleRMS.size()<<endl;
-  for (unsigned int i = 0; i < GTIStart_SAAOptimizedLSRRMSTentacleRMS.size(); ++i) {
-    cout<<GTIStart_SAAOptimizedLSRRMSTentacleRMS[i]<<":"<<GTIStop_SAAOptimizedLSRRMSTentacleRMS[i]<<endl; 
+  cout<<"Sizes: "<<GTIStart_SAAOptimizedLSRRMS1TentacleRMS1.size()<<" vs. "<<GTIStop_SAAOptimizedLSRRMS1TentacleRMS1.size()<<endl;
+  for (unsigned int i = 0; i < GTIStart_SAAOptimizedLSRRMS1TentacleRMS1.size(); ++i) {
+    cout<<GTIStart_SAAOptimizedLSRRMS1TentacleRMS1[i]<<":"<<GTIStop_SAAOptimizedLSRRMS1TentacleRMS1[i]<<endl; 
   }
   */
   
-  CreateGTIFile(GTIStart_SAANoTentacleRMS, GTIStop_SAANoTentacleRMS, H, "SAANoTentacleRMS");
-  CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleNo, GTIStop_SAAOptimizedLSRRMSTentacleNo, H, "SAAOptimizedLSRRMSTentacleNo");
-  CreateGTIFile(GTIStart_SAAOptimizedLSRRMSTentacleRMS, GTIStop_SAAOptimizedLSRRMSTentacleRMS, H, "SAAOptimizedLSRRMSTentacleRMS");
+  CreateGTIFile(GTIStart_SAAOptimizedLSRRMS1TentacleNo, GTIStop_SAAOptimizedLSRRMS1TentacleNo, H, "SAAOptimizedLSRRMS1TentacleNo");
+  CreateGTIFile(GTIStart_SAAOptimizedLSRRMS1TentacleRMS1, GTIStop_SAAOptimizedLSRRMS1TentacleRMS1, H, "SAAOptimizedLSRRMS1TentacleRMS1");
+  CreateGTIFile(GTIStart_SAAOptimizedLSRRMS2TentacleNo, GTIStop_SAAOptimizedLSRRMS2TentacleNo, H, "SAAOptimizedLSRRMS2TentacleNo");
+  CreateGTIFile(GTIStart_SAAOptimizedLSRRMS2TentacleRMS2, GTIStop_SAAOptimizedLSRRMS2TentacleRMS2, H, "SAAOptimizedLSRRMS2TentacleRMS2");
 }
 
 

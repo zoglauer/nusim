@@ -55,10 +55,12 @@ public:
     m_SoftSAAStrictHSR.push_back(false);
     m_SoftSAAOptimizedHSRFoM.push_back(false);
     m_SoftSAAStrictLSR.push_back(false);
-    m_SoftSAAOptimizedLSRRMS.push_back(false);
+    m_SoftSAAOptimizedLSRRMS_v1.push_back(false);
+    m_SoftSAAOptimizedLSRRMS_v2.push_back(false);
     m_SoftTentacled.push_back(false);
     m_SoftTentacledFoM.push_back(false);
-    m_SoftTentacledRMS.push_back(false);
+    m_SoftTentacledRMS_v1.push_back(false);
+    m_SoftTentacledRMS_v2.push_back(false);
   }
   
   double GetMinTime() { return m_Time[0]; }
@@ -73,10 +75,12 @@ public:
   vector<bool> m_SoftSAAStrictHSR;
   vector<bool> m_SoftSAAOptimizedHSRFoM;
   vector<bool> m_SoftSAAStrictLSR;
-  vector<bool> m_SoftSAAOptimizedLSRRMS;
+  vector<bool> m_SoftSAAOptimizedLSRRMS_v1;
+  vector<bool> m_SoftSAAOptimizedLSRRMS_v2;
   vector<bool> m_SoftTentacled;
   vector<bool> m_SoftTentacledFoM;
-  vector<bool> m_SoftTentacledRMS;
+  vector<bool> m_SoftTentacledRMS_v1;
+  vector<bool> m_SoftTentacledRMS_v2;
   vector<double> m_LiveTime;
   vector<int> m_NAcceptedEvents;
   vector<int> m_NRejectedEvents;
