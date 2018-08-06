@@ -131,7 +131,7 @@ bool NBackgroundMode4::Analyze()
         cout<<"Need a PHA file name..."<<endl;
         return false;
       }
-      if ((m_DBA = LoadDataBase(m_DataBaseNameA)) == false) continue;
+      m_DBA = LoadDataBase(m_DataBaseNameA);
       if (m_DBA == 0) {
         cout<<"Unable to load data base: "<<m_DataBaseNameA<<endl;
         return false;
@@ -155,7 +155,7 @@ bool NBackgroundMode4::Analyze()
         cout<<"Need a PHA file name..."<<endl;
         return false;
       }
-      if ((m_DBB = LoadDataBase(m_DataBaseNameB)) == false) continue;
+      m_DBB = LoadDataBase(m_DataBaseNameB);
       if (m_DBB == 0) {
         cout<<"Unable to load data base: "<<m_DataBaseNameA<<endl;
         return false;
