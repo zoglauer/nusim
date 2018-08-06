@@ -881,7 +881,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
     
   TCanvas* ShieldRatesHighCanvas = new TCanvas();
   ShieldRatesHighCanvas->cd();
-  ShieldRatesHigh->Draw();
+  ShieldRatesHigh->Draw("HIST");
   ShieldRatesHighCanvas->Update();
   if (m_ShowHistograms.Contains("f")) ShieldRatesHighCanvas->SaveAs(ShieldRatesHigh->GetName() + m_FileType);
   ShowRates(ShieldRatesHigh, SAARegion, 1);
@@ -889,7 +889,7 @@ bool NCheckRates::Show(NFilteredEvents& F, NHousekeeping& H, NOrbits& O, NEngine
       
   TCanvas* ShieldRatesLowCanvas = new TCanvas();
   ShieldRatesLowCanvas->cd();
-  ShieldRatesLow->Draw();
+  ShieldRatesLow->Draw("HIST");
   ShieldRatesLowCanvas->Update();
   if (m_ShowHistograms.Contains("f")) ShieldRatesLowCanvas->SaveAs(ShieldRatesLow->GetName() + m_FileType);
   ShowRates(ShieldRatesLow, SAARegion, 1);
@@ -1311,7 +1311,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
   RatesNoNo->GetYaxis()->SetTitleSize(0.07);
   RatesNoNo->GetYaxis()->SetTitleOffset(1.3);
   RatesNoNo->SetMaximum(1.02*RatesNoNo->GetMaximum());
-  RatesNoNo->Draw();
+  RatesNoNo->Draw("HIST");
   // Draw some lines
   for (unsigned int i = 0; i < Days.size(); ++i) {
     TLine* L = new TLine(Days[i], 0, Days[i], RatesNoNo->GetMaximum());
@@ -1319,7 +1319,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
     L->SetLineColor(15);
     L->Draw("SAME");
   }
-  RatesNoNo->Draw("SAME");
+  RatesNoNo->Draw("HIST SAME");
   
   //SAARegion->Scale(RatesNoNo->GetMaximum()/SAARegion->GetMaximum());
   //SAARegion->DrawCopy("SAME");
@@ -1413,7 +1413,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
   RatesYesNo->GetYaxis()->SetTitleSize(0.07);
   RatesYesNo->GetYaxis()->SetTitleOffset(1.3);
   RatesYesNo->SetMaximum(1.02*RatesYesNo->GetMaximum());
-  RatesYesNo->Draw();
+  RatesYesNo->Draw("HIST");
   // Draw some lines
   for (unsigned int i = 0; i < Days.size(); ++i) {
     TLine* L = new TLine(Days[i], 0, Days[i], RatesYesNo->GetMaximum());
@@ -1421,7 +1421,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
     L->SetLineColor(15);
     L->Draw("SAME");
   }
-  RatesYesNo->Draw("SAME");
+  RatesYesNo->Draw("HIST SAME");
   //SAARegion->Scale(RatesYesNo->GetMaximum()/SAARegion->GetMaximum());
   //SAARegion->DrawCopy("SAME");
   //RatesYesNo->Draw("SAME");
@@ -1515,7 +1515,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
   RatesYesYes->GetYaxis()->SetTitleSize(0.07);
   RatesYesYes->GetYaxis()->SetTitleOffset(1.3);
   RatesYesYes->SetMaximum(1.02*RatesYesYes->GetMaximum());
-  RatesYesYes->Draw();
+  RatesYesYes->Draw("HIST");
   // Draw some lines
   for (unsigned int i = 0; i < Days.size(); ++i) {
     TLine* L = new TLine(Days[i], 0, Days[i], RatesYesYes->GetMaximum());
@@ -1523,7 +1523,7 @@ void NCheckRates::CreateReport(TString Observation, int Algorithm, int Mode,
     L->SetLineColor(15);
     L->Draw("SAME");
   }
-  RatesYesYes->Draw("SAME");
+  RatesYesYes->Draw("HIST SAME");
   //SAARegion->Scale(RatesYesYes->GetMaximum()/SAARegion->GetMaximum());
   //SAARegion->DrawCopy("SAME");
   //RatesYesYes->Draw("SAME");
@@ -1603,10 +1603,10 @@ void NCheckRates::ShowRates(TH1D* Rates, TH1D* SAARegion, double LifeTime)
   TCanvas* Canvas = new TCanvas();
   Canvas->SetTitle(Title);
   Canvas->cd();
-  Rates->Draw();
+  Rates->Draw("HIST");
   SAARegion->Scale(Rates->GetMaximum()/SAARegion->GetMaximum());
-  SAARegion->DrawCopy("SAME");
-  Rates->Draw("SAME");
+  SAARegion->DrawCopy("HIST SAME");
+  Rates->Draw("HIST SAME");
   Canvas->Update();
   if (m_ShowHistograms.Contains("f")) Canvas->SaveAs(Rates->GetName() + m_FileType);
 }

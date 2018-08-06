@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Allowed versions
-RootVersionMin=522
-RootVersionMax=534
+RootVersionMin=534
+RootVersionMax=614
 
 
 ShowSuccess=1;

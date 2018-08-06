@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <limits>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 // ROOT libs:
@@ -1344,16 +1345,16 @@ bool NBaseTool::FindSAAsHighThresholdShieldRateBased(NFilteredEvents& F, NHousek
   if (Show == true) {
     TCanvas* FilteredRateCanvas = new TCanvas();
     FilteredRateCanvas->cd();
-    FilteredRate->Draw();
-    FilteredRateCutOriginal->Draw("SAME");
-    FilteredRateCut->Draw("SAME");
-    FilteredRateAverageLarge->Draw("SAME");
-    FilteredRateAverageSmall->Draw("SAME");
+    FilteredRate->Draw("HIST");
+    FilteredRateCutOriginal->Draw("HIST SAME");
+    FilteredRateCut->Draw("HIST SAME");
+    FilteredRateAverageLarge->Draw("HIST SAME");
+    FilteredRateAverageSmall->Draw("HIST SAME");
     FilteredRateCanvas->Update();
 
     TCanvas* CleanRateCanvas = new TCanvas();
     CleanRateCanvas->cd();
-    CleanRate->Draw();
+    CleanRate->Draw("HIST");
     CleanRateCanvas->Update();
   }
   
@@ -1452,6 +1453,7 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   ShieldRateLow->SetYTitle("cts/sec");
   
   TH1I* OnOffInternalSAA = new TH1I(TString("OnOffInternalSAA") + iID, TString("SAA/RMS: OnOffInternalSAA") + ID, OneSecBins, MinTime, MaxTime);
+  for (int b = 1; b <= OneSecBins; ++b) OnOffInternalSAA->SetBinContent(b, RejectionOff);
 
   TH1D* RawRate = new TH1D(TString("RawRate") + iID, TString("RawRate") + ID, OneSecBins, MinTime, MaxTime);
   RawRate->SetXTitle("Time [sec since 1/1/2010]");
@@ -1463,17 +1465,32 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
      
   // (B) Fill the histograms
   int ExposureTimeInternalSAA = 0;
+  //ostringstream FFname;
+  //FFname<<"nusim_isaa_"<<H.m_Module<<".txt";
+  //FILE* FF = fopen(FFname.str().c_str(), "w");
   for (unsigned int i = 0; i < H.m_Time.size(); ++i) {
+    //fprintf(FF, " HK-i: %u ", i);
     LifeTime->Fill(H.m_Time[i], H.m_LiveTime[i]);  
     if (WithinSpecialGTI(H.m_Time[i]) == false) continue;
-    if (H.m_HardSAA[i] == false) {
+    
+    int OrbitIndex = O.FindClosestIndex(H.m_Time[i]);
+    //fprintf(FF, " OR-i: %u ", OrbitIndex);
+    if (OrbitIndex == -1) {
+      cout<<"Orbit: Index not found for time "<<H.m_Time[i]<<"..."<<endl;
+			continue;      
+		}
+		
+		if (m_Orbits.m_SAAFlag[OrbitIndex] == 0) {
       ShieldRateLow->Fill(H.m_Time[i], H.m_ShieldRateLow[i]);
-      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOff);
+      OnOffInternalSAA->SetBinContent(OnOffInternalSAA->FindBin(H.m_Time[i]), RejectionOff);
       ++ExposureTimeInternalSAA;
+      //fprintf(FF, " --> SAA OFF\n");
     } else {
-      OnOffInternalSAA->Fill(H.m_Time[i], RejectionOn);      
+      OnOffInternalSAA->SetBinContent(OnOffInternalSAA->FindBin(H.m_Time[i]), RejectionOn);
+      //fprintf(FF, " --> SAA ON\n");
     }
   }
+  //fclose(FF);
   DebugOutput(LifeTime, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_LiveTime_" + Version);
   DebugOutput(ShieldRateLow, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_ShieldRateLow_" + Version);
   DebugOutput(OnOffInternalSAA, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffInternalSAA_" + Version); 
@@ -1667,13 +1684,13 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     
     TCanvas* ShieldRateLowBBCanvas = new TCanvas();
     ShieldRateLowBBCanvas->cd();
-    ShieldRateLowBB->Draw();
+    ShieldRateLowBB->Draw("HIST");
     TH1I* OnOffStrictLSRAsDrawn = new TH1I(*OnOffStrictLSR);
     OnOffStrictLSRAsDrawn->Scale(ShieldRateLowBB->GetMaximum());
     OnOffStrictLSRAsDrawn->SetLineColor(kYellow);
     OnOffStrictLSRAsDrawn->SetFillColor(kYellow);
     OnOffStrictLSRAsDrawn->Draw("SAME");
-    ShieldRateLowBB->Draw();
+    ShieldRateLowBB->Draw("HIST");
     ShieldRateLowBBCanvas->Update();
     
     
@@ -1684,13 +1701,13 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
     
     TCanvas* RateCanvas = new TCanvas();
     RateCanvas->cd();
-    Rate->Draw();
+    Rate->Draw("HIST");
     TH1I* OnOffStrictLSRAsDrawn2 = new TH1I(*OnOffStrictLSR);
     OnOffStrictLSRAsDrawn2->Scale(Rate->GetMaximum());
     OnOffStrictLSRAsDrawn2->SetLineColor(kYellow);
     OnOffStrictLSRAsDrawn2->SetFillColor(kYellow);
     OnOffStrictLSRAsDrawn2->Draw("SAME");
-    Rate->Draw("SAME");
+    Rate->Draw("HIST SAME");
     RateCanvas->Update();  
   }
   
@@ -1921,13 +1938,28 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
   }
   
   DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMS_NextStep_" + Version); 
+  DebugOutput(OnOffStrictLSR, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffStrictLSR_B_Final_" + Version); 
   
   // (e) Mask it with the low-shield rate cut
+  //     Comment: LSR is binned in one-sec bins, as consequence if only 1-sec in the 60 sec interval is off, the whole interval is set to off
+  //              It probably should be reversed, if any is on keep it on..
+  //ostringstream FFFname;
+  //FFFname<<"nusim_lrs_"<<H.m_Module<<".txt";
+  //FILE* FFF = fopen(FFFname.str().c_str(), "w");
   for (int b = 1; b <= OnOffStrictLSR->GetNbinsX(); ++b) {
-    if (OnOffStrictLSR->GetBinContent(b) == RejectionOff) {
-      OnOffOptimizedRMS->SetBinContent(OnOffOptimizedRMS->FindBin(OnOffStrictLSR->GetBinCenter(b)), RejectionOff);
+    // Ignore if no housekeeping exits
+    int HKIndex = H.FindClosestIndex(OnOffStrictLSR->GetBinCenter(b));
+    double TimeDiff = fabs(OnOffStrictLSR->GetBinCenter(b) - H.m_Time[HKIndex]);
+    if (TimeDiff < 0.5) {      
+      //fprintf(FFF, "hk: %i, strict: %i",  HKIndex, int(OnOffStrictLSR->GetBinContent(b)));
+      if (OnOffStrictLSR->GetBinContent(b) == RejectionOff) {
+        OnOffOptimizedRMS->SetBinContent(OnOffOptimizedRMS->FindBin(OnOffStrictLSR->GetBinCenter(b)), RejectionOff);
+        //fprintf(FFF, " %i -> off", OnOffOptimizedRMS->FindBin(OnOffStrictLSR->GetBinCenter(b))-1);
+      }
+      //fprintf(FFF, "\n");
     }
   }
+  //fclose(FFF);
   
   DebugOutput(OnOffOptimizedRMS, TString(H.m_ID) + "_" + ((H.m_Module == 0) ? "A" : "B") + "_OnOffOptimizedRMS_BeforeSanityChecks_" + Version); 
   
@@ -2080,28 +2112,28 @@ bool NBaseTool::FindSAAsLowThresholdShieldRateBased(NFilteredEvents& F, NHouseke
  
     TCanvas* NonSAARateCanvas = new TCanvas();
     NonSAARateCanvas->cd();
-    NonSAARate->Draw();
+    NonSAARate->Draw("HIST");
     NonSAARateCanvas->Update();
 
     TCanvas* NonSAARateHistogramCanvas = new TCanvas();
     NonSAARateHistogramCanvas->cd();
-    NonSAARateHistogram->Draw();
+    NonSAARateHistogram->Draw("HIST");
     NonSAARateHistogramCanvas->Update();   
     
  
     TCanvas* EvaluationRateCanvas = new TCanvas();
     EvaluationRateCanvas->cd();
-    EvaluationRate->Draw();
+    EvaluationRate->Draw("HIST");
     OnOffOptimizedRMS->Scale(EvaluationRate->GetMaximum());
     OnOffOptimizedRMS->SetLineColor(kYellow);
     OnOffOptimizedRMS->SetFillColor(kYellow);
     OnOffOptimizedRMS->Draw("SAME");
-    EvaluationRate->Draw("SAME");
+    EvaluationRate->Draw("HIST SAME");
     EvaluationRateCanvas->Update();
 
     TCanvas* FinalOptimizedRateCanvas = new TCanvas();
     FinalOptimizedRateCanvas->cd();
-    FinalOptimizedRate->Draw();
+    FinalOptimizedRate->Draw("HIST");
     FinalOptimizedRateCanvas->Update();
   }
   
@@ -2420,7 +2452,7 @@ bool NBaseTool::FindSAATentacleFoM(NFilteredEvents& FE, NHousekeeping& HK, NOrbi
   if (Show == true) {
     TCanvas* FilteredRateCanvas = new TCanvas();
     FilteredRateCanvas->cd();
-    FilteredRate->Draw();
+    FilteredRate->Draw("HIST");
     FilteredRateCut->Draw("SAME");
     FilteredRateAverageLarge->Draw("SAME");
     FilteredRateAverageSmall->Draw("SAME");
@@ -2428,7 +2460,7 @@ bool NBaseTool::FindSAATentacleFoM(NFilteredEvents& FE, NHousekeeping& HK, NOrbi
     
     TCanvas* CleanRateCanvas = new TCanvas();
     CleanRateCanvas->cd();
-    CleanRate->Draw();
+    CleanRate->Draw("HIST");
     CleanRateCanvas->Update();
   }
   
@@ -2553,7 +2585,7 @@ bool NBaseTool::FindSAATentacleFoM(NFilteredEvents& FE, NHousekeeping& HK, NOrbi
         Rates->SetBinContent(bx, Rates->GetBinContent(bx)/RateNormalizer->GetBinContent(bx));
       }
     }
-    Rates->Draw();
+    Rates->Draw("HIST");
     RatesCanvas->Update();
   }
   
@@ -2700,6 +2732,8 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
   // (C) Create a rate histogram in order to be able to calculate mean and the rms of the rate
   
   // (a) Create a rate histogram
+
+
   int NonSAARateHistogramNumberOfEntries = 0;
   TH1D* NonSAARateHistogram = new TH1D(TString("NonSAARateHistogram") + iID, TString("NonSAARateHistogram") + ID, 1000, 0, NonSAAComparisonRate->GetMaximum() + 1);
   for (int b = 2; b < NonSAAComparisonRate->GetNbinsX(); ++b) {
@@ -3168,14 +3202,14 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
     
     TCanvas* EvaluationRateCanvas = new TCanvas();
     EvaluationRateCanvas->cd();
-    EvaluationRate->Draw();
+    EvaluationRate->Draw("HIST");
     OnOff->Scale(EvaluationRate->GetMaximum());
-    OnOff->Draw("SAME");
+    OnOff->Draw("HIST SAME");
     EvaluationRateCanvas->Update();
     
     TCanvas* NonSAARateHistogramCanvas = new TCanvas();
     NonSAARateHistogramCanvas->cd();
-    NonSAARateHistogram->Draw();
+    NonSAARateHistogram->Draw("HIST");
     NonSAARateHistogramCanvas->Update();
     
     TCanvas* OrbitsCanvas = new TCanvas();
@@ -3197,7 +3231,7 @@ bool NBaseTool::FindSAATentacleRMS(NFilteredEvents& F, NHousekeeping& H, NOrbits
         Rates->SetBinContent(bx, Rates->GetBinContent(bx)/RateNormalizer->GetBinContent(bx));
       }
     }
-    Rates->Draw();
+    Rates->Draw("HIST");
     RatesCanvas->Update();
   }
   
