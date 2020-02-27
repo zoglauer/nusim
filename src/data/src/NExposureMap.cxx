@@ -168,7 +168,7 @@ bool NExposureMap::WriteExposureMap(int index)
 
 	int bitpix   =  FLOAT_IMG;
 	long naxis    =   2;  /* 2-dimensional image                            */    
-  long naxes[2] = { SkyMapX.size(), SkyMapY.size() };   /* image is 300 pixels wide by 200 rows */
+  long naxes[2] = { long(SkyMapX.size()), long(SkyMapY.size()) };   /* image is 300 pixels wide by 200 rows */
 
   array[0] = (float *)malloc( naxes[0] * naxes[1] * sizeof( float ) );
 
