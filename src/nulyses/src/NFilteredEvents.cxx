@@ -77,6 +77,8 @@ void NFilteredEvents::Clean()
   m_RawY.clear();
   m_Det1X.clear();
   m_Det1Y.clear();
+  m_X.clear();
+  m_Y.clear();
   
   m_GTIStart.clear();
   m_GTIStop.clear();
@@ -87,15 +89,19 @@ void NFilteredEvents::Clean()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NFilteredEvents::Read(const TString& FileName)
+bool NFilteredEvents::Read(const TString& EventsFileName)
 {
-  cout<<"Reading filtered events from "<<FileName<<endl;
- 
+  TString FileName = EventsFileName;
   if (MFile::Exists(FileName) == false) {
-    cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
-    return false;
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
-
+  cout<<"Reading filtered events from "<<FileName<<endl;
+  
+  
   // Section 1:
   // initialize the files
   int status = 0;
@@ -120,7 +126,80 @@ bool NFilteredEvents::Read(const TString& FileName)
 
   // Move to the second hdu
   fits_movabs_hdu(File, 2, NULL, &status);
-
+  
+  char Dummy[30];
+  
+  fits_read_keyword(File, "TLMIN13", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TLMIN13 failed!"<<endl; 
+    return false;
+  }
+  m_MinX = atoi(Dummy);
+  
+  fits_read_keyword(File, "TLMAX13", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TLMAX13 failed!"<<endl; 
+    return false;
+  }
+  m_MaxX = atoi(Dummy);
+  
+  fits_read_keyword(File, "TCRPX13", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCRPX13 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelX = atof(Dummy);
+  
+  fits_read_keyword(File, "TCRVL13", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCRVL13 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelValueX = atof(Dummy);
+  
+  fits_read_keyword(File, "TCDLT13", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCDLT13 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelDeltaX = atof(Dummy);
+  
+  
+  fits_read_keyword(File, "TLMIN14", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TLMIN14 failed!"<<endl; 
+    return false;
+  }
+  m_MinY = atoi(Dummy);
+  
+  fits_read_keyword(File, "TLMAX14", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TLMAX14 failed!"<<endl; 
+    return false;
+  }
+  m_MaxY = atoi(Dummy);
+  
+  fits_read_keyword(File, "TCRPX14", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCRPX14 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelY = atof(Dummy);
+  
+  fits_read_keyword(File, "TCRVL14", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCRVL14 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelValueY = atof(Dummy);
+  
+  fits_read_keyword(File, "TCDLT14", Dummy, NULL, &status);
+  if (status != 0) {
+    cout<<"Reading TCDLT14 failed!"<<endl; 
+    return false;
+  }
+  m_ReferencePixelDeltaY = atof(Dummy);
+  
   fits_read_key(File, TDOUBLE, "LiveTime", &valdbl, value, &status);
   m_LiveTime = valdbl;
 
@@ -212,7 +291,19 @@ bool NFilteredEvents::Read(const TString& FileName)
     }
     int Det1Y = valint;
     
-    Add(Time, PI, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY, Det1X, Det1Y);
+    if (fits_read_col_int(File, Columns["X"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (X) failed!"<<endl;
+      break;
+    }
+    int X = valint;
+    
+    if (fits_read_col_int(File, Columns["Y"], r, 1, 1, nullint, &valint, &anynul, &status) ) {
+      cout<<"Column read (Y) failed!"<<endl;
+      break;
+    }
+    int Y = valint;
+    
+    Add(Time, PI, Energy, SurrEnergy, Grade, DetectorID, RawX, RawY, Det1X, Det1Y, X, Y);
   } 
 
   // Move to the thris hdu - GTI

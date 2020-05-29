@@ -93,14 +93,18 @@ int NUnfilteredEvents::FindShieldVeto(double Time) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NUnfilteredEvents::Read(const TString& FileName)
+bool NUnfilteredEvents::Read(const TString& EventsFileName)
 {
-  cout<<"Reading unfiltered events from "<<FileName<<endl;
- 
+  TString FileName = EventsFileName;
   if (MFile::Exists(FileName) == false) {
-    cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
-    return false;
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
+
+  cout<<"Reading unfiltered events from "<<FileName<<endl;
   
   // Section 1:
   // initialize the files

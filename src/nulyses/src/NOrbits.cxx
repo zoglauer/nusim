@@ -119,14 +119,18 @@ double NOrbits::GetMaxGeomagneticCutOff() {
 
 bool NOrbits::Read(const TString& OrbitsFileName)
 {
-  cout<<"Reading orbit data from file "<<OrbitsFileName<<endl;
- 
-  if (MFile::Exists(OrbitsFileName) == false) {
-    cout<<"The file \""<<OrbitsFileName<<"\" does not exists!"<<endl;
-    return false;
+  TString FileName = OrbitsFileName;
+  if (MFile::Exists(FileName) == false) {
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
  
-  // Section 1:
+ cout<<"Reading orbit data from file "<<FileName<<endl;
+ 
+ // Section 1:
   // initialize the files
   int status = 0;
   char value[1000];
@@ -141,12 +145,12 @@ bool NOrbits::Read(const TString& OrbitsFileName)
   int valint = 0;
   
   fitsfile* EventFile = 0;
-  if (fits_open_file(&EventFile, OrbitsFileName, READONLY, &status)) {
+  if (fits_open_file(&EventFile, FileName, READONLY, &status)) {
     fits_get_errstatus(status, value);
-    cout<<"Unable to open Orbits file \""<<OrbitsFileName<<"\": "<<status<<":"<<value<<endl;
+    cout<<"Unable to open Orbits file \""<<FileName<<"\": "<<status<<":"<<value<<endl;
     return false;
   }
-  //cout<<"Opened "<<OrbitsFileName<<endl;
+  //cout<<"Opened "<<FileName<<endl;
 
   // Move to the second hdu
   fits_movabs_hdu(EventFile, 2, NULL, &status);

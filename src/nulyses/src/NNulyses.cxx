@@ -73,6 +73,7 @@ using namespace std;
 #include "NDetectorHealth.h"
 #include "NApertureTester.h"
 #include "NMEGAlibExtract.h"
+#include "NPointSourceFitter.h"
 
 // Special
 #include "fitsio.h"
@@ -112,7 +113,7 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"    Tools:"<<endl;
   Usage<<"      --tool [name of tool]: One of ..."<<endl;
   Usage<<"          quicklook: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
-  Usage<<"          quicklookfiltered: show a quick look of the data (position, spectra, rates) of the unfiltered data"<<endl;
+  Usage<<"          quicklookfiltered: show a quick look of the data (position, spectra, rates) of the filtered data"<<endl;
   Usage<<"          checkrates: Check SAA rates"<<endl;
   Usage<<"          backgroundmode1: Background rates for mode 1"<<endl;
   Usage<<"          backgroundmode23: Background rates for modes 2 & 3"<<endl;
@@ -121,12 +122,13 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
   Usage<<"          backgroundtester: Tests the uncertainties of different background approaches"<<endl;
   Usage<<"          linefitter: Check SAA rates"<<endl;
   Usage<<"          megalibextract: Convert to MEGAlib data format"<<endl;
+  Usage<<"          pointsourcefitter: Fit the strongest point source with a double Gaussian"<<endl;
   Usage<<"    General options:"<<endl;
   Usage<<"      -d:  directory containing all files"<<endl;
   Usage<<"      -dp: directory containing all files plus exclusion region ([data directory] [x center of exclusion region on A in detector pixels] [y center of exclusion region on A in detector pixels] [radius of exclusion region on A] [x center of exclusion region on B in detector pixels] [y center of exclusion region on B in detector pixels]  [radius of exclusion region on B]"<<endl;
   Usage<<"      -g:  good (mandatory) time interval min max time"<<endl;
   Usage<<"      -b:  min max time"<<endl;
-  Usage<<"      -s:  show the histograms: s on screen (default), f to file, can be combined, -s \" \" will don't show anything"<<endl;
+  Usage<<"      -s:  show the histograms: s on screen (default), f to file, \"sf\" can be combined, -s \" \" will don't show anything, if \"s\" is not given then switch to batch mode "<<endl;
   Usage<<"      -h:  print this help"<<endl;
   Usage<<"    Tool specific options:"<<endl;
   Usage<<"      checkrates:"<<endl;
@@ -241,6 +243,12 @@ bool Nulyses::ParseCommandLine(int argc, char** argv)
         NMEGAlibExtract F;
         if (F.ParseCommandLine(argc, argv) == false) return false;
         if (F.IsBatchMode() == true) gROOT->SetBatch(true);
+        if (F.Analyze() == false) return false;
+        return true;
+      } else if (Tool == "pointsourcefitter") {
+        cout<<"Found tool: "<<Tool<<endl;
+        NPointSourceFitter F;
+        if (F.ParseCommandLine(argc, argv) == false) return false;
         if (F.Analyze() == false) return false;
         return true;
       } else if (Tool == "aperturetester") {

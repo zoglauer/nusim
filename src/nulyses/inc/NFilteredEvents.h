@@ -41,7 +41,7 @@ public:
   bool Read(const TString& FileName);
 
   
-  void Add(double Time, int PI, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY, int Det1X, int Det1Y) {
+  void Add(double Time, int PI, double Energy, double SurrEnergy, int Grade, int DetectorID, int RawX, int RawY, int Det1X, int Det1Y, int X, int Y) {
     m_Time.push_back(Time);
     m_PI.push_back(PI);
     m_Energy.push_back(Energy);
@@ -52,6 +52,8 @@ public:
     m_RawY.push_back(RawY);
     m_Det1X.push_back(Det1X);
     m_Det1Y.push_back(Det1Y);
+    m_X.push_back(X);
+    m_Y.push_back(Y);
   }
   void AddGTI(double Start, double Stop, bool Good) {
     m_GTIStart.push_back(Start); 
@@ -92,6 +94,8 @@ public:
       m_RawY = M.m_RawY;
       m_Det1X = M.m_Det1X;
       m_Det1Y = M.m_Det1Y;
+      m_X = M.m_X;
+      m_Y = M.m_Y;
       m_GTIStart = M.m_GTIStart;
       m_GTIStop = M.m_GTIStop;
       m_GoodGTI = M.m_GoodGTI;
@@ -117,6 +121,8 @@ public:
           m_RawY.insert(m_RawY.end(), M.m_RawY.begin()+m, M.m_RawY.begin()+m_max);
           m_Det1X.insert(m_Det1X.end(), M.m_Det1X.begin()+m, M.m_Det1X.begin()+m_max);
           m_Det1Y.insert(m_Det1Y.end(), M.m_Det1Y.begin()+m, M.m_Det1Y.begin()+m_max);
+          m_X.insert(m_X.end(), M.m_X.begin()+m, M.m_X.begin()+m_max);
+          m_Y.insert(m_Y.end(), M.m_Y.begin()+m, M.m_Y.begin()+m_max);
         } else {
           m_Time.insert(m_Time.begin()+Index, M.m_Time.begin()+m, M.m_Time.begin()+m_max);
           m_PI.insert(m_PI.begin()+Index, M.m_PI.begin()+m, M.m_PI.begin()+m_max);
@@ -128,6 +134,8 @@ public:
           m_RawY.insert(m_RawY.begin()+Index, M.m_RawY.begin()+m, M.m_RawY.begin()+m_max);
           m_Det1X.insert(m_Det1X.begin()+Index, M.m_Det1X.begin()+m, M.m_Det1X.begin()+m_max);
           m_Det1Y.insert(m_Det1Y.begin()+Index, M.m_Det1Y.begin()+m, M.m_Det1Y.begin()+m_max);
+          m_X.insert(m_X.begin()+Index, M.m_X.begin()+m, M.m_X.begin()+m_max);
+          m_Y.insert(m_Y.begin()+Index, M.m_Y.begin()+m, M.m_Y.begin()+m_max);
         }
         m = m_max;
       }
@@ -148,7 +156,18 @@ public:
   TString m_ObservationDate;
   TString m_Object;
   double m_DetectorArea;
-
+  
+  int m_MinX;
+  int m_MaxX;
+  double m_ReferencePixelX;
+  double m_ReferencePixelValueX;
+  double m_ReferencePixelDeltaX;
+  int m_MinY;
+  int m_MaxY;
+  double m_ReferencePixelY;
+  double m_ReferencePixelValueY;
+  double m_ReferencePixelDeltaY;
+  
   vector<int> m_PI;
   vector<double> m_Energy;
   vector<double> m_SurrEnergy;
@@ -158,6 +177,8 @@ public:
   vector<int> m_RawY;
   vector<int> m_Det1X;
   vector<int> m_Det1Y;
+  vector<int> m_X;
+  vector<int> m_Y;
   
   vector<double> m_GTIStart;
   vector<double> m_GTIStop;

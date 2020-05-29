@@ -81,15 +81,20 @@ void NHousekeeping::Clean()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-bool NHousekeeping::Read(const TString& FileName)
+bool NHousekeeping::Read(const TString& HKFileName)
 {
-  cout<<"Reading housekeeping from file "<<FileName<<endl;
- 
+  TString FileName = HKFileName;
   if (MFile::Exists(FileName) == false) {
-    cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
-    return false;
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
   
+  cout<<"Reading housekeeping from file "<<FileName<<endl;
+
+
   // Section 1:
   // initialize the files
   int status = 0;

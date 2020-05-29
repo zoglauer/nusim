@@ -74,12 +74,16 @@ void NBadPixel::Clean()
 
 bool NBadPixel::Read(const TString& BadPixelFileName)
 {
-  //cout<<"Reading bad pixels from file "<<BadPixelFileName<<endl;
  
-  if (MFile::Exists(BadPixelFileName) == false) {
-    cout<<"The file \""<<BadPixelFileName<<"\" does not exists!"<<endl;
-    return false;
+  TString FileName = BadPixelFileName;
+  if (MFile::Exists(FileName) == false) {
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
+  //cout<<"Reading bad pixels from file "<<FileName<<endl;
   
   // Section 1:
   // initialize the files
@@ -96,12 +100,12 @@ bool NBadPixel::Read(const TString& BadPixelFileName)
   int valint = 0;
   
   fitsfile* EventFile = 0;
-  if (fits_open_file(&EventFile, BadPixelFileName, READONLY, &status)) {
+  if (fits_open_file(&EventFile, FileName, READONLY, &status)) {
     fits_get_errstatus(status, value);
-    cout<<"Unable to open BadPixel file \""<<BadPixelFileName<<"\": "<<status<<":"<<value<<endl;
+    cout<<"Unable to open BadPixel file \""<<FileName<<"\": "<<status<<":"<<value<<endl;
     return false;
   }
-  //cout<<"Opened "<<BadPixelFileName<<endl;
+  //cout<<"Opened "<<FileName<<endl;
 
   // Move to the second hdu
   for (int h = 2; h <= 5; ++h) {

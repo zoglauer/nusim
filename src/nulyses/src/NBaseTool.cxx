@@ -444,7 +444,12 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   m_FilteredEventsA01.m_ID = Tag;
   
   m_FilteredEventsA02.Clean();
-  if (m_ReadFiltered02 == true && LookAtModule.Contains("a")) if (m_FilteredEventsA02.Read(FIFileNameA02) == false) return false;
+  if (m_ReadFiltered02 == true && LookAtModule.Contains("a")) {
+    if (m_FilteredEventsA02.Read(FIFileNameA02) == false) {
+      cout<<"No #2 filtered events present for module A..."<<endl;
+      //return false;
+    }
+  }
   m_FilteredEventsA02.m_Module = 0;
   m_FilteredEventsA02.m_ID = Tag;
   
@@ -480,7 +485,12 @@ bool NBaseTool::Load(TString Directory, const TString& LookAtModule)
   m_FilteredEventsB01.m_ID = Tag;
   
   m_FilteredEventsB02.Clean();
-  if (m_ReadFiltered02 == true && LookAtModule.Contains("b")) if (m_FilteredEventsB02.Read(FIFileNameB01) == false) return false;
+  if (m_ReadFiltered02 == true && LookAtModule.Contains("b")) {
+    if (m_FilteredEventsB02.Read(FIFileNameB01) == false) {
+      cout<<"No #2 filtered events present for module B..."<<endl;
+      //return false;
+    }
+  }
   m_FilteredEventsB02.m_Module = 1;
   m_FilteredEventsB02.m_ID = Tag;
   

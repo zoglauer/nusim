@@ -68,12 +68,16 @@ void NAttitude::Clean()
 
 bool NAttitude::Read(const TString& AttitudeFileName)
 {
-  cout<<"Reading attitude from file "<<AttitudeFileName<<endl;
- 
-  if (MFile::Exists(AttitudeFileName) == false) {
-    cout<<"The file \""<<AttitudeFileName<<"\" does not exists!"<<endl;
-    return false;
+  TString FileName = AttitudeFileName;
+  if (MFile::Exists(FileName) == false) {
+    FileName += ".gz";
+    if (MFile::Exists(FileName) == false) {
+      cout<<"The file \""<<FileName<<"\" does not exists!"<<endl;
+      return false;
+    }
   }
+
+  cout<<"Reading attitude from file "<<FileName<<endl;
   
   // Section 1:
   // initialize the files
@@ -87,12 +91,12 @@ bool NAttitude::Read(const TString& AttitudeFileName)
   double valdbl = 0;
   
   fitsfile* EventFile = 0;
-  if (fits_open_file(&EventFile, AttitudeFileName, READONLY, &status)) {
+  if (fits_open_file(&EventFile, FileName, READONLY, &status)) {
     fits_get_errstatus(status, value);
-    cout<<"Unable to open Attitude file \""<<AttitudeFileName<<"\": "<<status<<":"<<value<<endl;
+    cout<<"Unable to open Attitude file \""<<FileName<<"\": "<<status<<":"<<value<<endl;
     return false;
   }
-  //cout<<"Opened "<<AttitudeFileName<<endl;
+  //cout<<"Opened "<<FileName<<endl;
 
   // Move to the second hdu
   fits_movabs_hdu(EventFile, 2, NULL, &status);
