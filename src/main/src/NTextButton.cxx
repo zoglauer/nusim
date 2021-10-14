@@ -20,6 +20,7 @@
 // Standard libs:
 
 // ROOT libs:
+#include "TVirtualX.h"
 #include "TGToolTip.h"
 
 // MEGAlib libs:
