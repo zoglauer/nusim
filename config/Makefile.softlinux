@@ -19,7 +19,7 @@ ROOTGLIBS     = $(shell root-config --glibs)
 
 # Compiler & linker options:
 CXX           = g++
-CXXFLAGS      = $(OPT) -Wall -Wno-write-strings -Wno-deprecated -fPIC -ffloat-store -std=c++0x -D_REENTRANT  -I$(LHEASOFT)/include -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
+CXXFLAGS      = $(OPT) -Wall -Wno-write-strings -Wno-deprecated -fPIC -ffloat-store -std=c++14 -D_REENTRANT  -I$(LHEASOFT)/include -I$(IN) -I$(CT) -I. $(ROOTCFLAGS) -D___LINUX___
 DEFINES       = -UHARDWARE
 LD            = g++
 LDFLAGS       = $(OPT) -D___LINUX___

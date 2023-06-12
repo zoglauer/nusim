@@ -2,7 +2,7 @@
 
 # Allowed versions
 RootVersionMin=534
-RootVersionMax=620
+RootVersionMax=628
 
 
 ShowSuccess=1;
