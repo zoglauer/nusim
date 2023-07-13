@@ -45,7 +45,7 @@ namespace tmtc {
   unsigned long binaryToDecimal(const string& str);
     
   /// convert from string, autodetecting hex
-  template<typename __T> __T fromString(const string& str) throw(GUException) {
+  template<typename __T> __T fromString(const string& str) {
     /// special logic to convert from binary
     if (isBinary(str)) 
       return((__T)binaryToDecimal(str));
